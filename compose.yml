@@ -55,7 +55,7 @@ services:
   #   networks:
   #     - cdp-tenant
 
-  cdp-node-backend-template:
+  trade-exports-packinglistparser:
     build:
       context: .
       target: development
