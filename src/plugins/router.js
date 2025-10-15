@@ -1,13 +1,12 @@
-const routes = [].concat(
-  require("../routes/health.js"),
-  require("../routes/helloWorld.js")
-)
+import { health } from '../routes/health.js'
+import { helloWorld } from '../routes/helloWorld.js'
 
 const router = {
   plugin: {
     name: 'router',
     register: (server, _options) => {
-      server.route(routes)
+      server.route([health])
+      server.route([helloWorld])
     }
   }
 }

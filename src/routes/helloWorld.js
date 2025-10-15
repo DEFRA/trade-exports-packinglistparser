@@ -1,8 +1,7 @@
-module.exports = {
-  method: "GET",
-  path: "/non-ai",
-  handler: async (request, h) => {
-    //placeholder for aws logging testing
-    return h.response("Hello World").code(200);
-  },
-};
+const helloWorld = {
+  method: 'GET',
+  path: '/helloWorld',
+  handler: (_request, h) => h.response({ Message: 'Hello World' }).code(200)
+}
+
+export { helloWorld }
