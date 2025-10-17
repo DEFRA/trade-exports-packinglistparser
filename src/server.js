@@ -1,13 +1,12 @@
-import Hapi from '@hapi/hapi'
-import { secureContext } from '@defra/hapi-secure-context'
-
-import { config } from './config.js'
-import { router } from './plugins/router.js'
-import { requestLogger } from './common/helpers/logging/request-logger.js'
-import { failAction } from './common/helpers/fail-action.js'
-import { pulse } from './common/helpers/pulse.js'
-import { requestTracing } from './common/helpers/request-tracing.js'
-import { setupProxy } from './common/helpers/proxy/setup-proxy.js'
+const Hapi = require('@hapi/hapi')
+const { secureContext } = require('@defra/hapi-secure-context')
+const { config } = require('./config.js')
+const { requestLogger } = require('./common/helpers/logging/request-logger.js')
+const { failAction } = require('./common/helpers/fail-action.js')
+const { pulse } = require('./common/helpers/pulse.js')
+const { requestTracing } = require('./common/helpers/request-tracing.js')
+const { setupProxy } = require('./common/helpers/proxy/setup-proxy.js')
+const router = require('./plugins/router.js')
 
 async function createServer() {
   setupProxy()
@@ -53,5 +52,6 @@ async function createServer() {
 
   return server
 }
-
-export { createServer }
+module.exports = {
+  createServer
+}

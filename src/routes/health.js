@@ -1,7 +1,7 @@
-const health = {
+module.exports = {
   method: 'GET',
   path: '/health',
-  handler: (_request, h) => h.response({ message: 'success' })
+  handler: async (request, h) => {
+    return h.response({ Message: 'Success' }).code(200)
+  }
 }
-
-export { health }

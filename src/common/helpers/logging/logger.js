@@ -1,11 +1,11 @@
-import { pino } from 'pino'
-
-import { loggerOptions } from './logger-options.js'
-
+const pino = require('pino')
+const loggerOptions = require('./logger-options').loggerOptions
 const logger = pino(loggerOptions)
 
 function createLogger() {
   return logger
 }
 
-export { createLogger }
+module.exports = {
+  createLogger
+}

@@ -3,7 +3,6 @@
   "version": "0.0.0",
   "description": "trade-exports-packinglistparser",
   "main": "src/index.js",
-  "type": "module",
   "engines": {
     "node": ">=22.16.0"
   },

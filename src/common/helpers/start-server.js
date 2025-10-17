@@ -1,6 +1,5 @@
-import { config } from '../../config.js'
-
-import { createServer } from '../../server.js'
+const config = require('../../config.js').config
+const createServer = require('../../server.js').createServer
 
 async function startServer() {
   const server = await createServer()
@@ -13,5 +12,6 @@ async function startServer() {
 
   return server
 }
-
-export { startServer }
+module.exports = {
+  startServer
+}

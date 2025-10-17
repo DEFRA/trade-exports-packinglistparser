@@ -1,7 +1,7 @@
-const helloWorld = {
+module.exports = {
   method: 'GET',
   path: '/helloWorld',
-  handler: (_request, h) => h.response({ Message: 'Hello World' }).code(200)
+  handler: async (request, h) => {
+    return h.response({ Message: 'Hello World' }).code(200)
+  }
 }
-
-export { helloWorld }
