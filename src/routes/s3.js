@@ -60,7 +60,7 @@ async function makeAddHandler(request, h) {
 
   try {
     console.log('Payload received for S3 upload:', fileData)
-    await uploadJsonFileToS3(key, JSON.stringify(fileData)) // assume JSON?
+    await uploadJsonFileToS3(key, JSON.stringify(fileData))
     return h.response({ message: 'File added to S3 successfully' }).code(201)
   } catch (error) {
     console.error('Error adding file to S3:', error)
