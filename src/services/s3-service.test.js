@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import {
   S3Client,
-  ListBucketsCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   GetObjectCommand
@@ -25,7 +24,6 @@ vi.mock('../../src/config.js', () => ({
 // Mock the S3Client
 vi.mock('@aws-sdk/client-s3', () => ({
   S3Client: vi.fn(),
-  ListBucketsCommand: vi.fn(),
   ListObjectsV2Command: vi.fn(),
   PutObjectCommand: vi.fn(),
   GetObjectCommand: vi.fn()
@@ -36,11 +34,7 @@ describe('S3 Service', () => {
   let mockSend
 
   // Import the actual functions after mocking
-  let listS3Buckets,
-    listS3Objects,
-    uploadJsonFileToS3,
-    getFileFromS3,
-    getStreamFromS3
+  let listS3Objects, uploadJsonFileToS3, getFileFromS3, getStreamFromS3
 
   beforeEach(async () => {
     mockSend = vi.fn()
@@ -55,14 +49,12 @@ describe('S3 Service', () => {
     S3Client.mockImplementation(() => mockS3Client)
 
     // Mock command constructors to return objects with input property
-    ListBucketsCommand.mockImplementation((input) => ({ input }))
     ListObjectsV2Command.mockImplementation((input) => ({ input }))
     PutObjectCommand.mockImplementation((input) => ({ input }))
     GetObjectCommand.mockImplementation((input) => ({ input }))
 
     // Import the service functions after mocking
     const s3Service = await import('./s3-service.js')
-    listS3Buckets = s3Service.listS3Buckets
     listS3Objects = s3Service.listS3Objects
     uploadJsonFileToS3 = s3Service.uploadJsonFileToS3
     getFileFromS3 = s3Service.getFileFromS3
@@ -71,43 +63,6 @@ describe('S3 Service', () => {
 
   afterEach(() => {
     vi.resetModules()
-  })
-
-  describe('listS3Buckets', () => {
-    it('should list S3 buckets successfully', async () => {
-      const mockResponse = {
-        Buckets: [
-          { Name: 'bucket1', CreationDate: new Date() },
-          { Name: 'bucket2', CreationDate: new Date() }
-        ]
-      }
-      mockSend.mockResolvedValue(mockResponse)
-
-      const result = await listS3Buckets()
-
-      expect(S3Client).toHaveBeenCalledWith({
-        region: 'us-east-1',
-        endpoint: 'http://localhost:4566',
-        credentials: {
-          accessKeyId: 'test-access-key',
-          secretAccessKey: 'test-secret-key'
-        },
-        forcePathStyle: true
-      })
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          input: {}
-        })
-      )
-      expect(result).toEqual(mockResponse)
-    })
-
-    it('should handle errors when listing buckets', async () => {
-      const mockError = new Error('Failed to list buckets')
-      mockSend.mockRejectedValue(mockError)
-
-      await expect(listS3Buckets()).rejects.toThrow('Failed to list buckets')
-    })
   })
 
   describe('listS3Objects', () => {
@@ -242,76 +197,6 @@ describe('S3 Service', () => {
       mockSend.mockRejectedValue(mockError)
 
       await expect(getStreamFromS3('test.json')).rejects.toThrow('Stream error')
-    })
-  })
-
-  describe('S3 Client Configuration', () => {
-    it('should configure S3 client with forcePathStyle true for localhost', () => {
-      listS3Buckets()
-
-      expect(S3Client).toHaveBeenCalledWith({
-        region: 'us-east-1',
-        endpoint: 'http://localhost:4566',
-        credentials: {
-          accessKeyId: 'test-access-key',
-          secretAccessKey: 'test-secret-key'
-        },
-        forcePathStyle: true
-      })
-    })
-
-    it('should configure S3 client with forcePathStyle true for localstack', async () => {
-      // Mock config for localstack endpoint
-      const { config } = await import('../config.js')
-      config.get.mockReturnValueOnce({
-        s3Bucket: 'test-bucket',
-        region: 'us-east-1',
-        endpoint: 'http://localstack:4566',
-        accessKeyId: 'test-access-key',
-        secretAccessKey: 'test-secret-key'
-      })
-
-      // Re-import to get fresh instance with new config
-      vi.resetModules()
-      const s3Service = await import('./s3-service.js')
-      await s3Service.listS3Buckets()
-
-      expect(S3Client).toHaveBeenCalledWith({
-        region: 'us-east-1',
-        endpoint: 'http://localstack:4566',
-        credentials: {
-          accessKeyId: 'test-access-key',
-          secretAccessKey: 'test-secret-key'
-        },
-        forcePathStyle: true
-      })
-    })
-
-    it('should configure S3 client with forcePathStyle true for bucket with dots', async () => {
-      // Mock config for bucket with dots
-      const { config } = await import('../config.js')
-      config.get.mockReturnValueOnce({
-        s3Bucket: 'my.bucket.with.dots',
-        region: 'us-east-1',
-        endpoint: 'https://s3.amazonaws.com',
-        accessKeyId: 'test-access-key',
-        secretAccessKey: 'test-secret-key'
-      })
-
-      // Re-import to get fresh instance with new config
-      vi.resetModules()
-      const s3Service = await import('./s3-service.js')
-      await s3Service.listS3Buckets()
-
-      expect(S3Client).toHaveBeenCalledWith({
-        region: 'us-east-1',
-        endpoint: 'https://s3.amazonaws.com',
-        credentials: {
-          accessKeyId: 'test-access-key',
-          secretAccessKey: 'test-secret-key'
-        },
-        forcePathStyle: true
-      })
     })
   })
 

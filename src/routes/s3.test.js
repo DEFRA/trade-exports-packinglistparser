@@ -1,17 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-// Import after mocking
+// Import after mocking so the mocked service is used by the route module
 import { getListFromS3, getFromS3, addFileToS3 } from './s3.js'
 import {
-  listS3Buckets,
   listS3Objects,
   uploadJsonFileToS3,
   getFileFromS3
 } from '../services/s3-service.js'
 
-// Mock the S3 service
-vi.mock('../../src/services/s3-service.js', () => ({
-  listS3Buckets: vi.fn(),
+// Mock the S3 service BEFORE importing the routes so imports pick up the mocks
+vi.mock('../services/s3-service.js', () => ({
   listS3Objects: vi.fn(),
   uploadJsonFileToS3: vi.fn(),
   getFileFromS3: vi.fn()
@@ -48,75 +46,31 @@ describe('S3 Routes', () => {
       expect(typeof getListFromS3.handler).toBe('function')
     })
 
-    it('should successfully list buckets and objects', async () => {
-      const mockBucketsResponse = {
-        Buckets: [{ Name: 'bucket1' }, { Name: 'bucket2' }]
-      }
-
-      const mockObjectsResponse1 = {
+    it('should successfully return objects from listS3Objects', async () => {
+      const mockObjectsResponse = {
         Contents: [
           { Key: 'file1.txt', Size: 100 },
           { Key: 'file2.txt', Size: 200 }
         ]
       }
 
-      const mockObjectsResponse2 = {
-        Contents: [{ Key: 'file3.txt', Size: 300 }]
-      }
-
-      listS3Buckets.mockResolvedValue(mockBucketsResponse)
-      listS3Objects
-        .mockResolvedValueOnce(mockObjectsResponse1)
-        .mockResolvedValueOnce(mockObjectsResponse2)
+      listS3Objects.mockResolvedValue(mockObjectsResponse)
 
       await getListFromS3.handler(mockRequest, mockH)
 
-      expect(listS3Buckets).toHaveBeenCalledTimes(1)
-      expect(listS3Objects).toHaveBeenCalledTimes(2)
-      expect(listS3Objects).toHaveBeenNthCalledWith(1, 'bucket1')
-      expect(listS3Objects).toHaveBeenNthCalledWith(2, 'bucket2')
-
-      expect(mockH.response).toHaveBeenCalledWith({
-        buckets: mockBucketsResponse,
-        objects: [
-          { bucket: 'bucket1', objects: mockObjectsResponse1.Contents },
-          { bucket: 'bucket2', objects: mockObjectsResponse2.Contents }
-        ]
-      })
+      expect(listS3Objects).toHaveBeenCalledTimes(1)
+      // makeListHandler now returns the objectsResponse directly
+      expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
       expect(mockResponse.code).toHaveBeenCalledWith(200)
     })
 
-    it('should handle errors when listing buckets fails', async () => {
-      const mockError = new Error('S3 service error')
-      listS3Buckets.mockRejectedValue(mockError)
-
-      await getListFromS3.handler(mockRequest, mockH)
-
-      expect(listS3Buckets).toHaveBeenCalledTimes(1)
-      expect(listS3Objects).not.toHaveBeenCalled()
-      expect(console.error).toHaveBeenCalledWith(
-        'Error listing S3 buckets:',
-        mockError
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to list S3 buckets'
-      })
-      expect(mockResponse.code).toHaveBeenCalledWith(500)
-    })
-
     it('should handle errors when listing objects fails', async () => {
-      const mockBucketsResponse = {
-        Buckets: [{ Name: 'bucket1' }]
-      }
-      const mockError = new Error('Failed to list objects')
-
-      listS3Buckets.mockResolvedValue(mockBucketsResponse)
+      const mockError = new Error('S3 service error')
       listS3Objects.mockRejectedValue(mockError)
 
       await getListFromS3.handler(mockRequest, mockH)
 
-      expect(listS3Buckets).toHaveBeenCalledTimes(1)
-      expect(listS3Objects).toHaveBeenCalledWith('bucket1')
+      expect(listS3Objects).toHaveBeenCalledTimes(1)
       expect(console.error).toHaveBeenCalledWith(
         'Error listing S3 buckets:',
         mockError
@@ -127,18 +81,17 @@ describe('S3 Routes', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(500)
     })
 
-    it('should handle empty buckets list', async () => {
-      const mockBucketsResponse = { Buckets: [] }
-      listS3Buckets.mockResolvedValue(mockBucketsResponse)
+    // previous bucket-iteration tests removed because makeListHandler now calls
+    // listS3Objects() directly and returns its result
+
+    it('should handle empty objects response', async () => {
+      const mockObjectsResponse = { Contents: [] }
+      listS3Objects.mockResolvedValue(mockObjectsResponse)
 
       await getListFromS3.handler(mockRequest, mockH)
 
-      expect(listS3Buckets).toHaveBeenCalledTimes(1)
-      expect(listS3Objects).not.toHaveBeenCalled()
-      expect(mockH.response).toHaveBeenCalledWith({
-        buckets: mockBucketsResponse,
-        objects: []
-      })
+      expect(listS3Objects).toHaveBeenCalledTimes(1)
+      expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
       expect(mockResponse.code).toHaveBeenCalledWith(200)
     })
   })

@@ -1,5 +1,4 @@
 import {
-  listS3Buckets,
   listS3Objects,
   uploadJsonFileToS3,
   getFileFromS3
@@ -13,18 +12,8 @@ const getListFromS3 = {
 
 async function makeListHandler(_request, h) {
   try {
-    const response = await listS3Buckets()
-
-    const allObjects = []
-    for (const bucket of response.Buckets) {
-      const objectsResponse = await listS3Objects(bucket.Name)
-      allObjects.push({
-        bucket: bucket.Name,
-        objects: objectsResponse.Contents
-      })
-    }
-
-    return h.response({ buckets: response, objects: allObjects }).code(200)
+    const objectsResponse = await listS3Objects()
+    return h.response(objectsResponse).code(200)
   } catch (error) {
     console.error('Error listing S3 buckets:', error)
     return h.response({ error: 'Failed to list S3 buckets' }).code(500)

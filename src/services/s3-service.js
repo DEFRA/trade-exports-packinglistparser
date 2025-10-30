@@ -1,6 +1,5 @@
 import {
   S3Client,
-  ListBucketsCommand,
   ListObjectsV2Command,
   PutObjectCommand,
   GetObjectCommand
@@ -24,12 +23,6 @@ function getS3Config() {
 function createS3Client() {
   const s3Config = getS3Config()
   return new S3Client(s3Config)
-}
-
-function listS3Buckets() {
-  const client = createS3Client()
-  const command = new ListBucketsCommand({})
-  return client.send(command)
 }
 
 function listS3Objects() {
@@ -64,10 +57,4 @@ function getStreamFromS3(key) {
   return client.send(command)
 }
 
-export {
-  listS3Buckets,
-  listS3Objects,
-  uploadJsonFileToS3,
-  getFileFromS3,
-  getStreamFromS3
-}
+export { listS3Objects, uploadJsonFileToS3, getFileFromS3, getStreamFromS3 }
