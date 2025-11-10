@@ -15,9 +15,19 @@ const mockConfig = {
   secretAccessKey: 'test-secret-key'
 }
 
+const mockPackingList = { schemaVersion: 'v1' }
+
 vi.mock('../../src/config.js', () => ({
   config: {
-    get: vi.fn().mockReturnValue(mockConfig)
+    get: vi
+      .fn()
+      .mockImplementation((name) =>
+        name === 'aws'
+          ? mockConfig
+          : name === 'packingList'
+            ? mockPackingList
+            : undefined
+      )
   }
 }))
 
@@ -79,11 +89,15 @@ describe('S3 Service', () => {
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
-          input: { Bucket: 'test-bucket' }
+          input: {
+            Bucket: 'test-bucket',
+            Prefix: `${mockPackingList.schemaVersion}/`
+          }
         })
       )
       const command = mockSend.mock.calls[0][0]
       expect(command.input.Bucket).toBe('test-bucket')
+      expect(command.input.Prefix).toBe(`${mockPackingList.schemaVersion}/`)
       expect(result).toEqual(mockResponse)
     })
 
@@ -99,24 +113,25 @@ describe('S3 Service', () => {
     it('should upload file to S3 successfully', async () => {
       const mockResponse = { ETag: '"abc123"' }
       mockSend.mockResolvedValue(mockResponse)
-
-      const key = 'test-file.json'
+      const location = { filename: 'test-file' }
       const body = '{"test": "data"}'
 
-      const result = await uploadJsonFileToS3(key, body)
+      const result = await uploadJsonFileToS3(location, body)
+
+      const expectedKey = `${mockPackingList.schemaVersion}/${location.filename}.json`
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           input: {
             Bucket: 'test-bucket',
-            Key: key,
+            Key: expectedKey,
             Body: body
           }
         })
       )
       const command = mockSend.mock.calls[0][0]
       expect(command.input.Bucket).toBe('test-bucket')
-      expect(command.input.Key).toBe(key)
+      expect(command.input.Key).toBe(expectedKey)
       expect(command.input.Body).toBe(body)
       expect(result).toEqual(mockResponse)
     })
@@ -126,7 +141,7 @@ describe('S3 Service', () => {
       mockSend.mockRejectedValue(mockError)
 
       await expect(
-        uploadJsonFileToS3('test.json', '{"test": "data"}')
+        uploadJsonFileToS3({ filename: 'test' }, '{"test": "data"}')
       ).rejects.toThrow('Failed to upload file')
     })
   })
@@ -141,19 +156,23 @@ describe('S3 Service', () => {
       }
       mockSend.mockResolvedValue(mockResponse)
 
-      const result = await getFileFromS3('test-file.json')
+      const location = { filename: 'test-file' }
+
+      const result = await getFileFromS3(location)
+
+      const expectedKey = `${mockPackingList.schemaVersion}/${location.filename}.json`
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           input: {
             Bucket: 'test-bucket',
-            Key: 'test-file.json'
+            Key: expectedKey
           }
         })
       )
       const command = mockSend.mock.calls[0][0]
       expect(command.input.Bucket).toBe('test-bucket')
-      expect(command.input.Key).toBe('test-file.json')
+      expect(command.input.Key).toBe(expectedKey)
       expect(result).toBe(mockFileContent)
     })
 
@@ -161,7 +180,7 @@ describe('S3 Service', () => {
       const mockError = new Error('File not found')
       mockSend.mockRejectedValue(mockError)
 
-      await expect(getFileFromS3('nonexistent.json')).rejects.toThrow(
+      await expect(getFileFromS3({ filename: 'nonexistent' })).rejects.toThrow(
         'File not found'
       )
     })
@@ -176,19 +195,23 @@ describe('S3 Service', () => {
       }
       mockSend.mockResolvedValue(mockResponse)
 
-      const result = await getStreamFromS3('test-file.json')
+      const location = { filename: 'test-file' }
+
+      const result = await getStreamFromS3(location)
+
+      const expectedKey = `${mockPackingList.schemaVersion}/${location.filename}.json`
 
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           input: {
             Bucket: 'test-bucket',
-            Key: 'test-file.json'
+            Key: expectedKey
           }
         })
       )
       const command = mockSend.mock.calls[0][0]
       expect(command.input.Bucket).toBe('test-bucket')
-      expect(command.input.Key).toBe('test-file.json')
+      expect(command.input.Key).toBe(expectedKey)
       expect(result).toEqual(mockResponse)
     })
 
@@ -196,7 +219,9 @@ describe('S3 Service', () => {
       const mockError = new Error('Stream error')
       mockSend.mockRejectedValue(mockError)
 
-      await expect(getStreamFromS3('test.json')).rejects.toThrow('Stream error')
+      await expect(getStreamFromS3({ filename: 'test' })).rejects.toThrow(
+        'Stream error'
+      )
     })
   })
 
@@ -211,7 +236,7 @@ describe('S3 Service', () => {
       }
       mockSend.mockResolvedValue(mockResponse)
 
-      const result = await getFileFromS3('test-file.json')
+      const result = await getFileFromS3({ filename: 'test-file' })
 
       expect(mockTransformToString).toHaveBeenCalledTimes(1)
       expect(result).toBe(mockFileContent)
@@ -227,7 +252,7 @@ describe('S3 Service', () => {
       }
       mockSend.mockResolvedValue(mockResponse)
 
-      await expect(getFileFromS3('test-file.json')).rejects.toThrow(
+      await expect(getFileFromS3({ filename: 'test-file' })).rejects.toThrow(
         'Transform failed'
       )
     })

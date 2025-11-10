@@ -56,10 +56,29 @@ describe('S3 Routes', () => {
 
       listS3Objects.mockResolvedValue(mockObjectsResponse)
 
+      // include schema query param
+      mockRequest.query = { schema: 'v2' }
+
       await getListFromS3.handler(mockRequest, mockH)
 
       expect(listS3Objects).toHaveBeenCalledTimes(1)
+      expect(listS3Objects).toHaveBeenCalledWith('v2')
       // makeListHandler now returns the objectsResponse directly
+      expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
+      expect(mockResponse.code).toHaveBeenCalledWith(200)
+    })
+
+    it('should call listS3Objects with undefined when no schema provided', async () => {
+      const mockObjectsResponse = { Contents: [] }
+      listS3Objects.mockResolvedValue(mockObjectsResponse)
+
+      // explicit empty query (no schema)
+      mockRequest.query = {}
+
+      await getListFromS3.handler(mockRequest, mockH)
+
+      expect(listS3Objects).toHaveBeenCalledTimes(1)
+      expect(listS3Objects).toHaveBeenCalledWith(undefined)
       expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
       expect(mockResponse.code).toHaveBeenCalledWith(200)
     })
@@ -67,6 +86,8 @@ describe('S3 Routes', () => {
     it('should handle errors when listing objects fails', async () => {
       const mockError = new Error('S3 service error')
       listS3Objects.mockRejectedValue(mockError)
+
+      mockRequest.query = { schema: 'v2' }
 
       await getListFromS3.handler(mockRequest, mockH)
 
@@ -87,10 +108,12 @@ describe('S3 Routes', () => {
     it('should handle empty objects response', async () => {
       const mockObjectsResponse = { Contents: [] }
       listS3Objects.mockResolvedValue(mockObjectsResponse)
+      mockRequest.query = { schema: 'v2' }
 
       await getListFromS3.handler(mockRequest, mockH)
 
       expect(listS3Objects).toHaveBeenCalledTimes(1)
+      expect(listS3Objects).toHaveBeenCalledWith('v2')
       expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
       expect(mockResponse.code).toHaveBeenCalledWith(200)
     })
@@ -99,34 +122,58 @@ describe('S3 Routes', () => {
   describe('getFromS3', () => {
     it('should have correct route configuration', () => {
       expect(getFromS3.method).toBe('GET')
-      expect(getFromS3.path).toBe('/s3/{key}')
+      expect(getFromS3.path).toBe('/s3/{filename}')
       expect(typeof getFromS3.handler).toBe('function')
     })
 
     it('should successfully get file from S3', async () => {
       const mockFileData = '{"test": "data"}'
-      const testKey = 'test-file.json'
-
-      mockRequest.params.key = testKey
+      const testFilename = 'test-file'
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       getFileFromS3.mockResolvedValue(mockFileData)
 
       await getFromS3.handler(mockRequest, mockH)
 
-      expect(getFileFromS3).toHaveBeenCalledWith(testKey)
+      expect(getFileFromS3).toHaveBeenCalledWith({
+        filename: testFilename,
+        schema: 'v2'
+      })
+      expect(mockH.response).toHaveBeenCalledWith(mockFileData)
+      expect(mockResponse.code).toHaveBeenCalledWith(200)
+    })
+
+    it('should call getFileFromS3 without schema when query empty', async () => {
+      const mockFileData = '{"test": "data"}'
+      const testFilename = 'test-file'
+
+      mockRequest.params.filename = testFilename
+      mockRequest.query = {}
+      getFileFromS3.mockResolvedValue(mockFileData)
+
+      await getFromS3.handler(mockRequest, mockH)
+
+      expect(getFileFromS3).toHaveBeenCalledWith({
+        filename: testFilename,
+        schema: undefined
+      })
       expect(mockH.response).toHaveBeenCalledWith(mockFileData)
       expect(mockResponse.code).toHaveBeenCalledWith(200)
     })
 
     it('should handle errors when getting file fails', async () => {
       const mockError = new Error('File not found')
-      const testKey = 'nonexistent-file.json'
-
-      mockRequest.params.key = testKey
+      const testFilename = 'nonexistent-file'
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       getFileFromS3.mockRejectedValue(mockError)
 
       await getFromS3.handler(mockRequest, mockH)
 
-      expect(getFileFromS3).toHaveBeenCalledWith(testKey)
+      expect(getFileFromS3).toHaveBeenCalledWith({
+        filename: testFilename,
+        schema: 'v2'
+      })
       expect(console.error).toHaveBeenCalledWith(
         'Error getting file from S3:',
         mockError
@@ -139,14 +186,17 @@ describe('S3 Routes', () => {
 
     it('should handle special characters in key', async () => {
       const mockFileData = 'file content'
-      const testKey = 'folder/sub-folder/file with spaces.txt'
-
-      mockRequest.params.key = testKey
+      const testFilename = 'folder/sub-folder/file with spaces.txt'
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       getFileFromS3.mockResolvedValue(mockFileData)
 
       await getFromS3.handler(mockRequest, mockH)
 
-      expect(getFileFromS3).toHaveBeenCalledWith(testKey)
+      expect(getFileFromS3).toHaveBeenCalledWith({
+        filename: testFilename,
+        schema: 'v2'
+      })
       expect(mockH.response).toHaveBeenCalledWith(mockFileData)
       expect(mockResponse.code).toHaveBeenCalledWith(200)
     })
@@ -155,15 +205,16 @@ describe('S3 Routes', () => {
   describe('addFileToS3', () => {
     it('should have correct route configuration', () => {
       expect(addFileToS3.method).toBe('POST')
-      expect(addFileToS3.path).toBe('/s3/{key}')
+      expect(addFileToS3.path).toBe('/s3/{filename}')
       expect(typeof addFileToS3.handler).toBe('function')
     })
 
     it('should successfully upload file to S3', async () => {
-      const testKey = 'new-file.json'
+      const testFilename = 'new-file'
       const testPayload = { data: 'test', value: 123 }
 
-      mockRequest.params.key = testKey
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       mockRequest.payload = testPayload
       uploadJsonFileToS3.mockResolvedValue({ ETag: '"abc123"' })
 
@@ -174,7 +225,28 @@ describe('S3 Routes', () => {
         testPayload
       )
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
-        testKey,
+        { filename: testFilename, schema: 'v2' },
+        JSON.stringify(testPayload)
+      )
+      expect(mockH.response).toHaveBeenCalledWith({
+        message: 'File added to S3 successfully'
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(201)
+    })
+
+    it('should call uploadJsonFileToS3 without schema when query empty', async () => {
+      const testFilename = 'new-file'
+      const testPayload = { data: 'test', value: 123 }
+
+      mockRequest.params.filename = testFilename
+      mockRequest.query = {}
+      mockRequest.payload = testPayload
+      uploadJsonFileToS3.mockResolvedValue({ ETag: '"abc123"' })
+
+      await addFileToS3.handler(mockRequest, mockH)
+
+      expect(uploadJsonFileToS3).toHaveBeenCalledWith(
+        { filename: testFilename, schema: undefined },
         JSON.stringify(testPayload)
       )
       expect(mockH.response).toHaveBeenCalledWith({
@@ -184,7 +256,7 @@ describe('S3 Routes', () => {
     })
 
     it('should handle complex JSON payload', async () => {
-      const testKey = 'complex-file.json'
+      const testFilename = 'complex-file'
       const complexPayload = {
         user: {
           name: 'John Doe',
@@ -200,14 +272,15 @@ describe('S3 Routes', () => {
         ]
       }
 
-      mockRequest.params.key = testKey
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       mockRequest.payload = complexPayload
       uploadJsonFileToS3.mockResolvedValue({ ETag: '"def456"' })
 
       await addFileToS3.handler(mockRequest, mockH)
 
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
-        testKey,
+        { filename: testFilename, schema: 'v2' },
         JSON.stringify(complexPayload)
       )
       expect(mockH.response).toHaveBeenCalledWith({
@@ -218,17 +291,18 @@ describe('S3 Routes', () => {
 
     it('should handle errors when upload fails', async () => {
       const mockError = new Error('Upload failed')
-      const testKey = 'upload-file.json'
+      const testFilename = 'upload-file'
       const testPayload = { test: 'data' }
 
-      mockRequest.params.key = testKey
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       mockRequest.payload = testPayload
       uploadJsonFileToS3.mockRejectedValue(mockError)
 
       await addFileToS3.handler(mockRequest, mockH)
 
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
-        testKey,
+        { filename: testFilename, schema: 'v2' },
         JSON.stringify(testPayload)
       )
       expect(console.error).toHaveBeenCalledWith(
@@ -242,17 +316,18 @@ describe('S3 Routes', () => {
     })
 
     it('should handle empty payload', async () => {
-      const testKey = 'empty-file.json'
+      const testFilename = 'empty-file'
       const emptyPayload = {}
 
-      mockRequest.params.key = testKey
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       mockRequest.payload = emptyPayload
       uploadJsonFileToS3.mockResolvedValue({ ETag: '"empty123"' })
 
       await addFileToS3.handler(mockRequest, mockH)
 
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
-        testKey,
+        { filename: testFilename, schema: 'v2' },
         JSON.stringify(emptyPayload)
       )
       expect(mockH.response).toHaveBeenCalledWith({
@@ -262,16 +337,17 @@ describe('S3 Routes', () => {
     })
 
     it('should handle null payload', async () => {
-      const testKey = 'null-file.json'
+      const testFilename = 'null-file'
 
-      mockRequest.params.key = testKey
+      mockRequest.params.filename = testFilename
+      mockRequest.query = { schema: 'v2' }
       mockRequest.payload = null
       uploadJsonFileToS3.mockResolvedValue({ ETag: '"null123"' })
 
       await addFileToS3.handler(mockRequest, mockH)
 
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
-        testKey,
+        { filename: testFilename, schema: 'v2' },
         JSON.stringify(null)
       )
       expect(mockH.response).toHaveBeenCalledWith({
@@ -283,15 +359,19 @@ describe('S3 Routes', () => {
 
   describe('Integration scenarios', () => {
     it('should handle concurrent requests properly', async () => {
-      const testKey1 = 'file1.json'
-      const testKey2 = 'file2.json'
+      const testFilename1 = 'file1'
+      const testFilename2 = 'file2'
       const testData1 = 'data1'
       const testData2 = 'data2'
 
-      mockRequest.params.key = testKey1
+      mockRequest.params.filename = testFilename1
+      mockRequest.query = { schema: 'v2' }
       getFileFromS3.mockResolvedValueOnce(testData1)
 
-      const request2 = { params: { key: testKey2 } }
+      const request2 = {
+        params: { filename: testFilename2 },
+        query: { schema: 'v3' }
+      }
       getFileFromS3.mockResolvedValueOnce(testData2)
 
       await Promise.all([
@@ -300,8 +380,14 @@ describe('S3 Routes', () => {
       ])
 
       expect(getFileFromS3).toHaveBeenCalledTimes(2)
-      expect(getFileFromS3).toHaveBeenNthCalledWith(1, testKey1)
-      expect(getFileFromS3).toHaveBeenNthCalledWith(2, testKey2)
+      expect(getFileFromS3).toHaveBeenNthCalledWith(1, {
+        filename: testFilename1,
+        schema: 'v2'
+      })
+      expect(getFileFromS3).toHaveBeenNthCalledWith(2, {
+        filename: testFilename2,
+        schema: 'v3'
+      })
     })
   })
 })
