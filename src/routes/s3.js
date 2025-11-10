@@ -10,9 +10,10 @@ const getListFromS3 = {
   handler: makeListHandler
 }
 
-async function makeListHandler(_request, h) {
+async function makeListHandler(request, h) {
+  const schema = request.query.schema
   try {
-    const objectsResponse = await listS3Objects()
+    const objectsResponse = await listS3Objects(schema)
     return h.response(objectsResponse).code(200)
   } catch (error) {
     console.error('Error listing S3 buckets:', error)
@@ -22,14 +23,15 @@ async function makeListHandler(_request, h) {
 
 const getFromS3 = {
   method: 'GET',
-  path: '/s3/{key}',
+  path: '/s3/{filename}',
   handler: makeGetHandler
 }
 
 async function makeGetHandler(request, h) {
-  const { key } = request.params
+  const { filename } = request.params
+  const schema = request.query.schema
   try {
-    const data = await getFileFromS3(key)
+    const data = await getFileFromS3({ filename, schema })
     return h.response(data).code(200)
   } catch (error) {
     console.error('Error getting file from S3:', error)
@@ -39,17 +41,18 @@ async function makeGetHandler(request, h) {
 
 const addFileToS3 = {
   method: 'POST',
-  path: '/s3/{key}',
+  path: '/s3/{filename}',
   handler: makeAddHandler
 }
 
 async function makeAddHandler(request, h) {
-  const { key } = request.params
+  const { filename } = request.params
+  const schema = request.query.schema
   const fileData = request.payload
 
   try {
     console.log('Payload received for S3 upload:', fileData)
-    await uploadJsonFileToS3(key, JSON.stringify(fileData))
+    await uploadJsonFileToS3({ filename, schema }, JSON.stringify(fileData))
     return h.response({ message: 'File added to S3 successfully' }).code(201)
   } catch (error) {
     console.error('Error adding file to S3:', error)

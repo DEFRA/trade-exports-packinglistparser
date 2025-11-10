@@ -128,6 +128,14 @@ const config = convict({
       default: '',
       env: 'AWS_S3_BUCKET'
     }
+  },
+  packingList: {
+    schemaVersion: {
+      doc: 'The schema version for the packing list',
+      format: String,
+      default: 'v0.0',
+      env: 'PACKING_LIST_SCHEMA_VERSION'
+    }
   }
 })
 
