@@ -9,6 +9,8 @@ import { config } from '../config.js'
 const { s3Bucket, region, endpoint, accessKeyId, secretAccessKey } =
   config.get('aws')
 
+const { schemaVersion } = config.get('packingList')
+
 function getS3Config() {
   return {
     region,
@@ -25,36 +27,43 @@ function createS3Client() {
   return new S3Client(s3Config)
 }
 
-function listS3Objects() {
+function listS3Objects(schema = schemaVersion) {
   const client = createS3Client()
+
   const command = new ListObjectsV2Command({
-    Bucket: s3Bucket
+    Bucket: s3Bucket,
+    Prefix: `${schema}/`
   })
   return client.send(command)
 }
 
-function uploadJsonFileToS3(key, body) {
+function uploadJsonFileToS3(location, body) {
   const client = createS3Client()
   const command = new PutObjectCommand({
     Bucket: s3Bucket,
-    Key: key,
+    Key: getKeyFromLocation(location),
     Body: body
   })
   return client.send(command)
 }
 
-async function getFileFromS3(key) {
-  const response = await getStreamFromS3(key)
+async function getFileFromS3(location) {
+  const response = await getStreamFromS3(location)
   return response.Body.transformToString()
 }
 
-function getStreamFromS3(key) {
+function getStreamFromS3(location) {
   const client = createS3Client()
   const command = new GetObjectCommand({
     Bucket: s3Bucket,
-    Key: key
+    Key: getKeyFromLocation(location)
   })
   return client.send(command)
+}
+
+function getKeyFromLocation(location) {
+  if (!location.schema) location.schema = schemaVersion
+  return `${location.schema}/${location.filename}.json`
 }
 
 export { listS3Objects, uploadJsonFileToS3, getFileFromS3, getStreamFromS3 }
