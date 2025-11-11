@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import process from 'node:process'
 
 import { createLogger } from './common/helpers/logging/logger.js'

@@ -105,11 +105,16 @@ git config --global core.autocrlf false
 
 ## API endpoints
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /health`       | Health                         |
-| `GET: /example    `  | Example API (remove as needed) |
-| `GET: /example/<id>` | Example API (remove as needed) |
+| Endpoint                                           | Description                      |
+| :------------------------------------------------- | :------------------------------- |
+| `GET: /health`                                     | Application health check         |
+| `GET: /dynamics/health`                            | Dynamics 365 config health check |
+| `GET: /dynamics/dispatch-location/{applicationId}` | Test Dynamics integration        |
+| `GET: /s3`                                         | List S3 bucket objects           |
+| `GET: /s3/{key}`                                   | Get S3 object by key             |
+| `POST: /s3`                                        | Upload JSON file to S3           |
+
+See [Dynamics Test Routes Documentation](./docs/DYNAMICS-TEST-ROUTES.md) for detailed information about testing the Dynamics 365 integration.
 
 ## Development helpers
 
