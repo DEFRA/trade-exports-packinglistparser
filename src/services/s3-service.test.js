@@ -17,17 +17,15 @@ const mockConfig = {
 
 const mockPackingList = { schemaVersion: 'v1' }
 
+const getConfigByName = (name) => {
+  if (name === 'aws') return mockConfig
+  if (name === 'packingList') return mockPackingList
+  return undefined
+}
+
 vi.mock('../../src/config.js', () => ({
   config: {
-    get: vi
-      .fn()
-      .mockImplementation((name) =>
-        name === 'aws'
-          ? mockConfig
-          : name === 'packingList'
-            ? mockPackingList
-            : undefined
-      )
+    get: vi.fn().mockImplementation((name) => getConfigByName(name))
   }
 }))
 

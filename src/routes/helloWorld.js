@@ -1,7 +1,10 @@
+import { STATUS_CODES } from './statuscodes.js'
+
 const helloWorld = {
   method: 'GET',
   path: '/helloWorld',
-  handler: (_request, h) => h.response({ Message: 'Hello World' }).code(200)
+  handler: (_request, h) =>
+    h.response({ Message: 'Hello World' }).code(STATUS_CODES.OK)
 }
 
 export { helloWorld }

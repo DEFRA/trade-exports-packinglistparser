@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { helloWorld } from './helloWorld.js'
+import { STATUS_CODES } from './statuscodes.js'
 
 describe('Hello World Route', () => {
   let mockH
@@ -24,7 +25,7 @@ describe('Hello World Route', () => {
     const result = helloWorld.handler({}, mockH)
 
     expect(mockH.response).toHaveBeenCalledWith({ Message: 'Hello World' })
-    expect(mockResponse.code).toHaveBeenCalledWith(200)
+    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     expect(result).toBe(mockResponse)
   })
 })
