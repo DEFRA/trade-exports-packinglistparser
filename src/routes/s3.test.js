@@ -8,6 +8,8 @@ import {
   getFileFromS3
 } from '../services/s3-service.js'
 
+import { STATUS_CODES } from 'node:http'
+
 // Mock the S3 service BEFORE importing the routes so imports pick up the mocks
 vi.mock('../services/s3-service.js', () => ({
   listS3Objects: vi.fn(),
@@ -65,7 +67,7 @@ describe('S3 Routes', () => {
       expect(listS3Objects).toHaveBeenCalledWith('v2')
       // makeListHandler now returns the objectsResponse directly
       expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
-      expect(mockResponse.code).toHaveBeenCalledWith(200)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should call listS3Objects with undefined when no schema provided', async () => {
@@ -80,7 +82,7 @@ describe('S3 Routes', () => {
       expect(listS3Objects).toHaveBeenCalledTimes(1)
       expect(listS3Objects).toHaveBeenCalledWith(undefined)
       expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
-      expect(mockResponse.code).toHaveBeenCalledWith(200)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should handle errors when listing objects fails', async () => {
@@ -99,7 +101,9 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to list S3 buckets'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(500)
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
     })
 
     // previous bucket-iteration tests removed because makeListHandler now calls
@@ -115,7 +119,7 @@ describe('S3 Routes', () => {
       expect(listS3Objects).toHaveBeenCalledTimes(1)
       expect(listS3Objects).toHaveBeenCalledWith('v2')
       expect(mockH.response).toHaveBeenCalledWith(mockObjectsResponse)
-      expect(mockResponse.code).toHaveBeenCalledWith(200)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
   })
 
@@ -140,7 +144,7 @@ describe('S3 Routes', () => {
         schema: 'v2'
       })
       expect(mockH.response).toHaveBeenCalledWith(mockFileData)
-      expect(mockResponse.code).toHaveBeenCalledWith(200)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should call getFileFromS3 without schema when query empty', async () => {
@@ -158,7 +162,7 @@ describe('S3 Routes', () => {
         schema: undefined
       })
       expect(mockH.response).toHaveBeenCalledWith(mockFileData)
-      expect(mockResponse.code).toHaveBeenCalledWith(200)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should handle errors when getting file fails', async () => {
@@ -181,7 +185,9 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to get file from S3'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(500)
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
     })
 
     it('should handle special characters in key', async () => {
@@ -198,7 +204,7 @@ describe('S3 Routes', () => {
         schema: 'v2'
       })
       expect(mockH.response).toHaveBeenCalledWith(mockFileData)
-      expect(mockResponse.code).toHaveBeenCalledWith(200)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
   })
 
@@ -231,7 +237,7 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         message: 'File added to S3 successfully'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(201)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.CREATED)
     })
 
     it('should call uploadJsonFileToS3 without schema when query empty', async () => {
@@ -252,7 +258,7 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         message: 'File added to S3 successfully'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(201)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.CREATED)
     })
 
     it('should handle complex JSON payload', async () => {
@@ -286,7 +292,7 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         message: 'File added to S3 successfully'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(201)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.CREATED)
     })
 
     it('should handle errors when upload fails', async () => {
@@ -312,7 +318,9 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to add file to S3'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(500)
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
     })
 
     it('should handle empty payload', async () => {
@@ -333,7 +341,7 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         message: 'File added to S3 successfully'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(201)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.CREATED)
     })
 
     it('should handle null payload', async () => {
@@ -353,7 +361,7 @@ describe('S3 Routes', () => {
       expect(mockH.response).toHaveBeenCalledWith({
         message: 'File added to S3 successfully'
       })
-      expect(mockResponse.code).toHaveBeenCalledWith(201)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.CREATED)
     })
   })
 
