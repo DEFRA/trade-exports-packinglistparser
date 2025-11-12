@@ -4,7 +4,7 @@ import {
   getFileFromS3
 } from '../services/s3-service.js'
 
-import { STATUS_CODES } from 'node:http'
+import { STATUS_CODES } from './statuscodes.js'
 
 const getListFromS3 = {
   method: 'GET',

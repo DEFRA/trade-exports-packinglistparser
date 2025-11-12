@@ -8,7 +8,7 @@ import {
   getFileFromS3
 } from '../services/s3-service.js'
 
-import { STATUS_CODES } from 'node:http'
+import { STATUS_CODES } from './statuscodes.js'
 
 // Mock the S3 service BEFORE importing the routes so imports pick up the mocks
 vi.mock('../services/s3-service.js', () => ({

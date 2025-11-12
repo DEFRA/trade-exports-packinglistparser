@@ -1,4 +1,4 @@
-import { STATUS_CODES } from 'node:http'
+import { STATUS_CODES } from './statuscodes.js'
 
 const helloWorld = {
   method: 'GET',
