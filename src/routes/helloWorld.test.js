@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { helloWorld } from './helloWorld.js'
-import { STATUS_CODES } from 'node:http'
+import { STATUS_CODES } from './statuscodes.js'
 
 describe('Hello World Route', () => {
   let mockH
