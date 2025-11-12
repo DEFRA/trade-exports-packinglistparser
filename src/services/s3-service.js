@@ -62,7 +62,9 @@ function getStreamFromS3(location) {
 }
 
 function getKeyFromLocation(location) {
-  if (!location.schema) location.schema = schemaVersion
+  if (!location.schema) {
+    location.schema = schemaVersion
+  }
   return `${location.schema}/${location.filename}.json`
 }
 
