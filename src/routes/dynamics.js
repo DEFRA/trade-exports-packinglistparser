@@ -1,6 +1,7 @@
 import Joi from 'joi'
 import { getDispatchLocation } from '../services/dynamics-service.js'
 import { config } from '../config.js'
+import { STATUS_CODES } from './statuscodes.js'
 
 /**
  * Test route for Dynamics service
@@ -67,7 +68,7 @@ const getDispatchLocationRoute = {
           { applicationId },
           'Dynamics test endpoint: No REMOS ID found'
         )
-        return h.response(response).code(404)
+        return h.response(response).code(STATUS_CODES.NOT_FOUND)
       }
 
       request.logger.info(
@@ -75,7 +76,7 @@ const getDispatchLocationRoute = {
         'Dynamics test endpoint: Successfully retrieved REMOS ID'
       )
 
-      return h.response(response).code(200)
+      return h.response(response).code(STATUS_CODES.OK)
     } catch (err) {
       request.logger.error(
         { err, applicationId },
@@ -91,7 +92,7 @@ const getDispatchLocationRoute = {
           timestamp: new Date().toISOString(),
           error: 'Internal server error'
         })
-        .code(500)
+        .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
     }
   }
 }
@@ -143,14 +144,14 @@ const dynamicsHealthCheck = {
         { checks: response.checks, environment },
         'Dynamics service is not fully configured'
       )
-      return h.response(response).code(503)
+      return h.response(response).code(STATUS_CODES.SERVICE_UNAVAILABLE)
     }
 
     request.logger.info(
       { checks: response.checks, environment },
       'Dynamics service is properly configured'
     )
-    return h.response(response).code(200)
+    return h.response(response).code(STATUS_CODES.OK)
   }
 }
 

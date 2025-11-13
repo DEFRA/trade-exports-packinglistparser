@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createServer } from '../server.js'
 import { getDispatchLocation } from '../services/dynamics-service.js'
 import { config } from '../config.js'
+import { STATUS_CODES } from './statuscodes.js'
 
 // Mock config before imports
 vi.mock('../config.js', () => ({
@@ -126,7 +127,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(200)
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
       expect(payload.service).toBe('dynamics')
       expect(payload.configured).toBe(true)
       expect(payload.environment).toBe('local')
@@ -166,7 +167,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(503)
+      expect(response.statusCode).toBe(STATUS_CODES.SERVICE_UNAVAILABLE)
       expect(payload.configured).toBe(false)
       expect(payload.checks.url).toBe('missing')
       expect(payload.checks.tokenUrl).toBe('missing')
@@ -206,7 +207,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(503)
+      expect(response.statusCode).toBe(STATUS_CODES.SERVICE_UNAVAILABLE)
       expect(payload.configured).toBe(false)
       expect(payload.checks.url).toBe('configured')
       expect(payload.checks.clientSecret).toBe('missing')
@@ -234,7 +235,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(200)
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
       expect(payload.applicationId).toBe('TEST-APP-123')
       expect(payload.remosId).toBe('REMOS-12345')
       expect(payload.success).toBe(true)
@@ -254,7 +255,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(404)
+      expect(response.statusCode).toBe(STATUS_CODES.NOT_FOUND)
       expect(payload.applicationId).toBe('UNKNOWN-ID')
       expect(payload.remosId).toBeNull()
       expect(payload.success).toBe(false)
@@ -272,7 +273,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(500)
+      expect(response.statusCode).toBe(STATUS_CODES.INTERNAL_SERVER_ERROR)
       expect(payload.applicationId).toBe('TEST-APP-123')
       expect(payload.remosId).toBeNull()
       expect(payload.success).toBe(false)
@@ -298,7 +299,7 @@ describe('Dynamics Routes', () => {
 
       const response = await server.inject(options)
 
-      expect(response.statusCode).toBe(404)
+      expect(response.statusCode).toBe(STATUS_CODES.NOT_FOUND)
     })
 
     it('should handle application IDs with hyphens', async () => {
@@ -312,7 +313,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(200)
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
       expect(payload.applicationId).toBe('TEST-APP-123-ABC')
       expect(payload.remosId).toBe('REMOS-67890')
     })
@@ -328,7 +329,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(200)
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
       expect(payload.applicationId).toBe('TEST_APP_456')
       expect(payload.remosId).toBe('REMOS-99999')
     })
@@ -367,7 +368,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(200)
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
       expect(payload.environment).toBe('dev')
       expect(payload.remosId).toBe('REMOS-DEV-123')
 
@@ -396,7 +397,7 @@ describe('Dynamics Routes', () => {
       const response = await server.inject(options)
       const payload = JSON.parse(response.payload)
 
-      expect(response.statusCode).toBe(200)
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
       expect(payload.environment).toBe('test')
       expect(payload.remosId).toBe('REMOS-TEST-456')
 
