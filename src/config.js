@@ -136,6 +136,63 @@ const config = convict({
       default: 'v0.0',
       env: 'PACKING_LIST_SCHEMA_VERSION'
     }
+  },
+  dynamics: {
+    url: {
+      doc: 'Dynamics 365 instance URL',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'DYNAMICS_URL'
+    },
+    tokenUrl: {
+      doc: 'OAuth token endpoint URL for Dynamics authentication',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'DYNAMICS_TOKEN_URL'
+    },
+    grantType: {
+      doc: 'OAuth grant type for Dynamics authentication',
+      format: String,
+      default: 'client_credentials',
+      env: 'DYNAMICS_GRANT_TYPE'
+    },
+    clientId: {
+      doc: 'Client ID for Dynamics authentication',
+      format: String,
+      nullable: true,
+      default: null,
+      sensitive: true,
+      env: 'DYNAMICS_CLIENT_ID'
+    },
+    clientSecret: {
+      doc: 'Client secret for Dynamics authentication',
+      format: String,
+      nullable: true,
+      default: null,
+      sensitive: true,
+      env: 'DYNAMICS_CLIENT_SECRET'
+    },
+    resource: {
+      doc: 'Resource URL for Dynamics authentication',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'DYNAMICS_RESOURCE'
+    },
+    maxRetries: {
+      doc: 'Maximum number of retry attempts for Dynamics requests',
+      format: 'nat',
+      default: 3,
+      env: 'DYNAMICS_MAX_RETRIES'
+    },
+    retryDelayMs: {
+      doc: 'Delay in milliseconds between retry attempts',
+      format: 'nat',
+      default: 2000,
+      env: 'DYNAMICS_RETRY_DELAY_MS'
+    }
   }
 })
 

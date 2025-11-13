@@ -105,11 +105,16 @@ git config --global core.autocrlf false
 
 ## API endpoints
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /health`       | Health                         |
-| `GET: /example    `  | Example API (remove as needed) |
-| `GET: /example/<id>` | Example API (remove as needed) |
+| Endpoint                                           | Description                      |
+| :------------------------------------------------- | :------------------------------- |
+| `GET: /health`                                     | Application health check         |
+| `GET: /dynamics/health`                            | Dynamics 365 config health check |
+| `GET: /dynamics/dispatch-location/{applicationId}` | Test Dynamics integration        |
+| `GET: /s3`                                         | List S3 bucket objects           |
+| `GET: /s3/{key}`                                   | Get S3 object by key             |
+| `POST: /s3`                                        | Upload JSON file to S3           |
+
+See [Dynamics Test Routes Documentation](./docs/DYNAMICS-TEST-ROUTES.md) for detailed information about testing the Dynamics 365 integration.
 
 ## Development helpers
 
@@ -174,9 +179,29 @@ A local environment with:
 - This service.
 - A commented out frontend example.
 
-```bash
-docker compose up --build -d
-```
+#### Environment Configuration
+
+The application uses two environment files:
+
+- `compose/aws.env` - Committed to git, contains dev/test configuration including Dynamics URLs
+- `compose/secrets.env` - Git-ignored, contains sensitive credentials (Dynamics client ID/secret)
+
+To set up your local environment:
+
+1. Copy the example file:
+
+   ```bash
+   cp compose/secrets.env.example compose/secrets.env
+   ```
+
+2. Edit `compose/secrets.env` with your actual Dynamics credentials (ask your team for these)
+
+3. Start the services:
+   ```bash
+   docker compose up --build -d
+   ```
+
+**Note:** `compose/secrets.env` values override those in `compose/aws.env`, so you can keep your sensitive credentials separate from version control.
 
 ### Dependabot
 
