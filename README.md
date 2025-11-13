@@ -183,25 +183,25 @@ A local environment with:
 
 The application uses two environment files:
 
-- `compose/aws.env` - Committed to git, contains non-sensitive defaults for LocalStack and AWS config
-- `.env.local` - Git-ignored, contains sensitive credentials (Dynamics 365, etc.)
+- `compose/aws.env` - Committed to git, contains dev/test configuration including Dynamics URLs
+- `compose/secrets.env` - Git-ignored, contains sensitive credentials (Dynamics client ID/secret)
 
 To set up your local environment:
 
 1. Copy the example file:
 
    ```bash
-   cp .env.local.example .env.local
+   cp compose/secrets.env.example compose/secrets.env
    ```
 
-2. Edit `.env.local` with your actual credentials (ask your team for these)
+2. Edit `compose/secrets.env` with your actual Dynamics credentials (ask your team for these)
 
 3. Start the services:
    ```bash
    docker compose up --build -d
    ```
 
-**Note:** `.env.local` values override those in `compose/aws.env`, so you can keep your sensitive credentials separate from version control.
+**Note:** `compose/secrets.env` values override those in `compose/aws.env`, so you can keep your sensitive credentials separate from version control.
 
 ### Dependabot
 

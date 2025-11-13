@@ -68,7 +68,7 @@ services:
         condition: service_healthy
     env_file:
       - 'compose/aws.env'
-      - '.env.local'
+      - 'compose/secrets.env'
     environment:
       PORT: 3001
       NODE_ENV: development

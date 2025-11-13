@@ -9,4 +9,4 @@ coverage
 .cache
 .eslintcache
 .env
-.env.local
+compose/secrets.env
