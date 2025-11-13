@@ -179,9 +179,29 @@ A local environment with:
 - This service.
 - A commented out frontend example.
 
-```bash
-docker compose up --build -d
-```
+#### Environment Configuration
+
+The application uses two environment files:
+
+- `compose/aws.env` - Committed to git, contains non-sensitive defaults for LocalStack and AWS config
+- `.env.local` - Git-ignored, contains sensitive credentials (Dynamics 365, etc.)
+
+To set up your local environment:
+
+1. Copy the example file:
+
+   ```bash
+   cp .env.local.example .env.local
+   ```
+
+2. Edit `.env.local` with your actual credentials (ask your team for these)
+
+3. Start the services:
+   ```bash
+   docker compose up --build -d
+   ```
+
+**Note:** `.env.local` values override those in `compose/aws.env`, so you can keep your sensitive credentials separate from version control.
 
 ### Dependabot
 
