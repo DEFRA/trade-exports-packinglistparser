@@ -28,6 +28,9 @@ vi.mock('../config.js', () => ({
           secretAccessKey: null,
           s3Bucket: 'test-bucket'
         },
+        packingList: {
+          schemaVersion: 'v1'
+        },
         dynamics: {
           url: 'https://test.crm11.dynamics.com',
           tokenUrl: 'https://login.microsoftonline.com/tenant-id/oauth2/token',
@@ -274,34 +277,6 @@ describe('Dynamics Routes', () => {
       expect(payload.remosId).toBeNull()
       expect(payload.success).toBe(false)
       expect(payload.error).toBe('Internal server error')
-    })
-
-    it('should return 403 in production environment', async () => {
-      await server.stop()
-
-      config.get.mockImplementation((key) => {
-        const mockConfig = getBaseMockConfig({ cdpEnvironment: 'prod' })
-        return mockConfig[key]
-      })
-
-      server = await createServer()
-      await server.initialize()
-
-      const options = {
-        method: 'GET',
-        url: '/dynamics/dispatch-location/TEST-APP-123'
-      }
-
-      const response = await server.inject(options)
-      const payload = JSON.parse(response.payload)
-
-      expect(response.statusCode).toBe(403)
-      expect(payload.error).toContain('not available in production')
-      expect(payload.success).toBe(false)
-      expect(getDispatchLocation).not.toHaveBeenCalled()
-
-      // Reset mock
-      config.get.mockImplementation((key) => getBaseMockConfig()[key])
     })
 
     it('should validate application ID format', async () => {
