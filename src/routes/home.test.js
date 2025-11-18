@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { helloWorld } from './helloWorld.js'
+import { home } from './home.js'
 import { STATUS_CODES } from './statuscodes.js'
 
-describe('Hello World Route', () => {
+describe('Home Route', () => {
   let mockH
   let mockResponse
 
@@ -16,15 +16,17 @@ describe('Hello World Route', () => {
   })
 
   it('should have correct route configuration', () => {
-    expect(helloWorld.method).toBe('GET')
-    expect(helloWorld.path).toBe('/helloWorld')
-    expect(typeof helloWorld.handler).toBe('function')
+    expect(home.method).toBe('GET')
+    expect(home.path).toBe('/')
+    expect(typeof home.handler).toBe('function')
   })
 
-  it('should return Hello World message with status 200', () => {
-    const result = helloWorld.handler({}, mockH)
+  it('should return HTML body with status 200', () => {
+    const result = home.handler({}, mockH)
 
-    expect(mockH.response).toHaveBeenCalledWith({ Message: 'Hello World' })
+    expect(mockH.response).toHaveBeenCalledWith(
+      expect.stringContaining('<h1>PLP Application</h1>')
+    )
     expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     expect(result).toBe(mockResponse)
   })
