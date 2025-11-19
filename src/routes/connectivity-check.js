@@ -1,5 +1,12 @@
 import { STATUS_CODES } from './statuscodes.js'
 import { listS3Objects } from '../services/s3-service.js'
+import {
+  bearerTokenRequest,
+  checkDynamicsDispatchLocationConnection
+} from '../services/dynamics-service.js'
+import { createLogger } from '../common/helpers/logging/logger.js'
+
+const logger = createLogger()
 
 const connectivityCheck = {
   method: 'GET',
@@ -8,17 +15,52 @@ const connectivityCheck = {
 }
 
 async function connectivityCheckHandler(_request, h) {
-  try {
-    await listS3Objects()
-  } catch (err) {
-    console.error('Connectivity Check Error:', err)
+  const connectionChecks = {
+    s3: await canS3Connect(),
+    dynamicsLogin: await canDynamicsLoginConnect(),
+    dynamicsData: await canWeReceiveDispatchLocationsFromDynamics()
+  }
+  const allConnected = Object.values(connectionChecks).every((v) => v === true)
+
+  if (!allConnected) {
     return h
-      .response({ Message: 'Connectivity Check Failed', Error: err.message })
-      .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
+      .response({
+        Message: 'Connectivity Check Failed',
+        Details: connectionChecks
+      })
+      .code(STATUS_CODES.SERVICE_UNAVAILABLE)
   }
   return h
-    .response({ Message: 'Connectivity Check Passed' })
+    .response({
+      Message: 'Connectivity Check Passed',
+      Details: connectionChecks
+    })
     .code(STATUS_CODES.OK)
+}
+
+async function canS3Connect() {
+  return canConnect(listS3Objects, 'S3')
+}
+
+async function canDynamicsLoginConnect() {
+  return canConnect(bearerTokenRequest, 'Dynamics Login')
+}
+
+async function canWeReceiveDispatchLocationsFromDynamics() {
+  return canConnect(
+    checkDynamicsDispatchLocationConnection,
+    'Dynamics Dispatch Locations'
+  )
+}
+
+async function canConnect(func, name) {
+  try {
+    await func()
+    return true
+  } catch (err) {
+    logger.error({ err }, `${name} connection failure:`)
+    return false
+  }
 }
 
 export { connectivityCheck }

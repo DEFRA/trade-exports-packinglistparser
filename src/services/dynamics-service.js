@@ -59,14 +59,36 @@ function validateBearerToken(bearerToken) {
 }
 
 /**
- * Make HTTP request to Dynamics API
+ * Make HTTP request to Dynamics API to get dispatch Locations
  * @param {string} bearerToken - OAuth access token
  * @param {string} applicationId - Application/Establishment ID
  * @returns {Promise<{response: Response, status: number}>}
  */
-async function makeDynamicsRequest(bearerToken, applicationId) {
+async function makeDynamicsDispatchLocationRequest(bearerToken, applicationId) {
+  return makeDynamicsGetRequest(
+    bearerToken,
+    `trd_inspectionlocations(${applicationId})?$select=rms_remosid`
+  )
+}
+
+/**
+ * Make HTTP request to Dynamics API to confirm access to dispatch Locations
+ * @returns {Promise<{response: Response, status: number}>}
+ */
+async function checkDynamicsDispatchLocationConnection() {
+  const bearerToken = await bearerTokenRequest()
+  return makeDynamicsGetRequest(bearerToken, 'trd_inspectionlocations?$top=1')
+}
+
+/**
+ * Make HTTP GET request to Dynamics API
+ * @param {string} bearerToken - OAuth access token
+ * @param {string} applicationId - Application/Establishment ID
+ * @returns {Promise<{response: Response, status: number}>}
+ */
+async function makeDynamicsGetRequest(bearerToken, relativePath) {
   const token = 'Bearer ' + bearerToken
-  const url = `${dsConfig.url}/api/data/v9.2/trd_inspectionlocations(${applicationId})?$select=rms_remosid`
+  const url = `${dsConfig.url}/api/data/v9.2/${relativePath}`
 
   const response = await fetch(encodeURI(url), {
     method: 'GET',
@@ -155,7 +177,7 @@ async function getDispatchLocation(
         return null
       }
 
-      const { response, status } = await makeDynamicsRequest(
+      const { response, status } = await makeDynamicsDispatchLocationRequest(
         bearerToken,
         applicationId
       )
@@ -183,4 +205,8 @@ async function getDispatchLocation(
   return null
 }
 
-export { getDispatchLocation, bearerTokenRequest }
+export {
+  getDispatchLocation,
+  checkDynamicsDispatchLocationConnection,
+  bearerTokenRequest
+}
