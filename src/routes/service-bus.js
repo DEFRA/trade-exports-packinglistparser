@@ -6,7 +6,7 @@ import { STATUS_CODES } from './statuscodes.js'
 export const sendtoqueue = {
   method: 'GET',
   path: '/tpsb',
-  handler: handler
+  handler
 }
 
 async function handler(_request, h) {
