@@ -193,6 +193,38 @@ const config = convict({
       default: 2000,
       env: 'DYNAMICS_RETRY_DELAY_MS'
     }
+  },
+  azure: {
+    tenantId: {
+      doc: 'Azure AD Tenant ID',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TENANT_ID'
+    }
+  },
+  tradeServiceBus: {
+    clientId: {
+      doc: 'Azure AD Client ID',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TRADE_SERVICE_BUS_CLIENT_ID'
+    },
+    serviceBusNamespace: {
+      doc: 'Azure Service Bus Namespace (fully qualified)',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TRADE_SERVICE_BUS_NAMESPACE'
+    },
+    queueName: {
+      doc: 'Azure Service Bus Queue Name',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TRADE_SERVICE_BUS_QUEUE_NAME'
+    }
   }
 })
 

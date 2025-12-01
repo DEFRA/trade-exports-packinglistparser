@@ -6,6 +6,7 @@ import {
   dynamicsHealthCheck
 } from '../routes/dynamics.js'
 import { home } from '../routes/home.js'
+import { sendtoqueue } from '../routes/service-bus.js'
 
 const router = {
   plugin: {
@@ -16,6 +17,7 @@ const router = {
       server.route([connectivityCheck])
       server.route([getListFromS3, getFromS3, addFileToS3])
       server.route([getDispatchLocationRoute, dynamicsHealthCheck])
+      server.route([sendtoqueue])
     }
   }
 }
