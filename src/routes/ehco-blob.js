@@ -36,9 +36,9 @@ async function handler(request, h) {
 
     return h.response('Success').code(STATUS_CODES.OK)
   } catch (error) {
-    console.error('Error listing credentials:', error)
+    console.error('Error downloading blob:', error)
     return h
-      .response({ error: 'Failed to list credentials' })
+      .response({ error: 'Failed to download blob' })
       .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
   }
 }

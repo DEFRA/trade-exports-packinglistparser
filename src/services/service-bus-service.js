@@ -24,9 +24,8 @@ export function createServiceBusClient(
   const clientOptions = proxyUrl
     ? {
         proxyOptions: {
-          host: new URL(proxyUrl).hostname,
-          port: new URL(proxyUrl).port || 80,
-          protocol: new URL(proxyUrl).protocol.replace(':', '')
+          host: proxyUrl.href,
+          port: proxyUrl.protocol.toLowerCase() === 'https:' ? 443 : 80
         }
       }
     : {}

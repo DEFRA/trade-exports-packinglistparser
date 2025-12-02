@@ -34,9 +34,9 @@ async function handler(_request, h) {
 
     return h.response('Success').code(STATUS_CODES.OK)
   } catch (error) {
-    console.error('Error listing credentials:', error)
+    console.error('Error sending message:', error)
     return h
-      .response({ error: 'Failed to list credentials' })
+      .response({ error: 'Failed to send message to queue' })
       .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
   }
 }
