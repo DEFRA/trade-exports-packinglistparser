@@ -27,8 +27,9 @@ export async function downloadBlob(
     const clientOptions = proxyUrl
       ? {
           proxyOptions: {
-            host: proxyUrl.href,
-            port: proxyUrl.protocol.toLowerCase() === 'https:' ? 443 : 80
+            host: new URL(proxyUrl).href,
+            port:
+              new URL(proxyUrl).protocol.toLowerCase() === 'https:' ? 443 : 80
           }
         }
       : {}
