@@ -18,7 +18,7 @@ async function getCognitoToken() {
 
   const command = new GetOpenIdTokenForDeveloperIdentityCommand({
     IdentityPoolId: poolId,
-    logins
+    Logins: logins
   })
 
   return cognitoClient
