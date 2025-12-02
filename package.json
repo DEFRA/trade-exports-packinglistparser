@@ -32,6 +32,7 @@
     "@aws-sdk/client-s3": "3.916.0",
     "@azure/identity": "4.13.0",
     "@azure/service-bus": "7.9.5",
+    "@azure/storage-blob": "12.29.1",
     "@defra/cdp-auditing": "0.4.0",
     "@defra/hapi-secure-context": "0.1.3",
     "@defra/hapi-tracing": "1.22.0",
