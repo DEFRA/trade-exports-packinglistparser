@@ -3,6 +3,9 @@ import { sendMessageToQueue } from '../services/service-bus-service.js'
 
 import { STATUS_CODES } from './statuscodes.js'
 
+import { createLogger } from '../common/helpers/logging/logger.js'
+const logger = createLogger()
+
 export const sendtoqueue = {
   method: 'GET',
   path: '/tpsb',
@@ -13,8 +16,16 @@ async function handler(_request, h) {
   try {
     const azureConfig = config.get('azure')
     const tradeServiceBusConfig = config.get('tradeServiceBus')
+
+    logger.info(
+      `Using tenantId: ${azureConfig.defraCloudTenantId}, clientId: ${tradeServiceBusConfig.clientId}`
+    )
+    logger.info(
+      `Sending message to Service Bus namespace: ${tradeServiceBusConfig.serviceBusNamespace}, queue: ${tradeServiceBusConfig.queueName}`
+    )
+
     await sendMessageToQueue(
-      azureConfig.tenantId,
+      azureConfig.defraCloudTenantId,
       tradeServiceBusConfig.clientId, // clientId
       tradeServiceBusConfig.serviceBusNamespace, // fullyQualifiedNamespace
       tradeServiceBusConfig.queueName, // queueName

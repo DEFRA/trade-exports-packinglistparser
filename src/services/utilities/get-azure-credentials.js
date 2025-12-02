@@ -4,8 +4,11 @@ import {
 } from '@aws-sdk/client-cognito-identity'
 
 import { ClientAssertionCredential } from '@azure/identity'
+import { config } from '../../config.js'
 
-const cognitoClient = new CognitoIdentityClient({ region: 'eu-west-2' })
+const { poolId, region } = config.get('aws')
+
+const cognitoClient = new CognitoIdentityClient({ region })
 
 async function getCognitoToken() {
   const logins = {
@@ -14,7 +17,7 @@ async function getCognitoToken() {
   }
 
   const command = new GetOpenIdTokenForDeveloperIdentityCommand({
-    IdentityPoolId: 'eu-west-2:088d2b8d-c13b-4ed1-83ee-aff0080e46aa',
+    IdentityPoolId: poolId,
     logins
   })
 

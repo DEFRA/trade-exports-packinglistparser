@@ -127,6 +127,12 @@ const config = convict({
       format: String,
       default: '',
       env: 'AWS_S3_BUCKET'
+    },
+    poolId: {
+      doc: 'Cognito Identity Pool ID',
+      format: String,
+      default: '',
+      env: 'AWS_COGNITO_IDENTITY_POOL_ID'
     }
   },
   packingList: {
@@ -195,12 +201,19 @@ const config = convict({
     }
   },
   azure: {
-    tenantId: {
+    defraCloudTenantId: {
       doc: 'Azure AD Tenant ID',
       format: String,
       nullable: true,
       default: null,
-      env: 'AZURE_TENANT_ID'
+      env: 'AZURE_DEFRA_CLOUD_TENANT_ID'
+    },
+    defraTenantId: {
+      doc: 'Azure AD Tenant ID for DEFRA',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_DEFRA_TENANT_ID'
     }
   },
   tradeServiceBus: {
@@ -224,6 +237,22 @@ const config = convict({
       nullable: true,
       default: null,
       env: 'AZURE_TRADE_SERVICE_BUS_QUEUE_NAME'
+    }
+  },
+  ehcoBlob: {
+    clientId: {
+      doc: 'Azure AD Client ID',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_EHCO_BLOB_CLIENT_ID'
+    },
+    blobStorageAccount: {
+      doc: 'Azure Blob Storage Account',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_EHCO_BLOB_STORAGE_ACCOUNT'
     }
   }
 })

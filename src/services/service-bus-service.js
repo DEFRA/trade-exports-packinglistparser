@@ -18,7 +18,24 @@ export function createServiceBusClient(
   fullyQualifiedNamespace
 ) {
   const credential = getAzureCredentials(tenantId, clientId)
-  return new ServiceBusClient(fullyQualifiedNamespace, credential)
+
+  // Configure proxy if HTTP_PROXY is set
+  const proxyUrl = config.get('httpProxy')
+  const clientOptions = proxyUrl
+    ? {
+        proxyOptions: {
+          host: new URL(proxyUrl).hostname,
+          port: new URL(proxyUrl).port || 80,
+          protocol: new URL(proxyUrl).protocol.replace(':', '')
+        }
+      }
+    : {}
+
+  return new ServiceBusClient(
+    fullyQualifiedNamespace,
+    credential,
+    clientOptions
+  )
 }
 
 /**
