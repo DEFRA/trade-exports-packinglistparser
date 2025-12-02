@@ -8,7 +8,7 @@ const logger = createLogger()
 
 export const sendtoqueue = {
   method: 'GET',
-  path: '/tpsb',
+  path: '/trade-service-bus',
   handler
 }
 

@@ -6,7 +6,7 @@ import { STATUS_CODES } from './statuscodes.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 const logger = createLogger()
 
-export const sendtoqueue = {
+export const getFileFromBlob = {
   method: 'GET',
   path: '/ehco-blob',
   handler

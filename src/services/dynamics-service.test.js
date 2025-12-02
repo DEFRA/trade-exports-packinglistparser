@@ -327,7 +327,7 @@ describe('dynamics-service', () => {
         json: vi.fn().mockResolvedValue({ value: [] })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
