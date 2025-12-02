@@ -18,9 +18,6 @@ export function createServiceBusClient(
   fullyQualifiedNamespace
 ) {
   const credential = getAzureCredentials(tenantId, clientId)
-  credential
-    .getToken('https://servicebus.azure.net//.default')
-    .then((t) => logger.info(`credential: ${t.token}`))
   return new ServiceBusClient(fullyQualifiedNamespace, credential)
 }
 
