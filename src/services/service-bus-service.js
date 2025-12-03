@@ -2,6 +2,8 @@ import { ServiceBusClient } from '@azure/service-bus'
 import { getAzureCredentials } from './utilities/get-azure-credentials.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 import { config } from '../config.js'
+import { HttpsProxyAgent } from 'https-proxy-agent'
+import WebSocket from 'ws'
 
 const logger = createLogger()
 
@@ -19,27 +21,36 @@ export function createServiceBusClient(
 ) {
   const credential = getAzureCredentials(tenantId, clientId)
 
-  // Configure proxy if HTTP_PROXY is set
+  const connectionOptions = {
+    webSocketOptions: {
+      webSocket: WebSocket
+    }
+  }
+
+  // Configure proxy if httpProxy is set in config
   const proxyUrl = config.get('httpProxy')
-  const clientOptions = proxyUrl
-    ? {
-        proxyOptions: {
-          host: new URL(proxyUrl).href,
-          port: new URL(proxyUrl).protocol.toLowerCase() === 'https:' ? 443 : 80
-        }
-      }
-    : {}
+  if (proxyUrl) {
+    const proxyAgent = new HttpsProxyAgent(proxyUrl)
+    connectionOptions.webSocketOptions.webSocketConstructorOptions = {
+      agent: proxyAgent
+    }
+    logger.info(
+      { proxyUrl },
+      'Using proxy for Service Bus WebSocket connection'
+    )
+  }
 
   return new ServiceBusClient(
     fullyQualifiedNamespace,
     credential,
-    clientOptions
+    connectionOptions
   )
 }
 
 /**
  * Convenience helper to create a ServiceBusClient from `config.get('azure')`.
  * Expects `azure` config to include `tenantId`, `clientId` and `serviceBusNamespace`.
+ * Proxy is automatically configured from `config.get('httpProxy')` if set.
  */
 export function createServiceBusClientFromConfig() {
   const azureConfig = config.get('azure') || {}
