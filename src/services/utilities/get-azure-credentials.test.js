@@ -116,7 +116,10 @@ describe('get-azure-credentials', () => {
       const mockCredential = { type: MOCK_TYPES.CLIENT_ASSERTION_CREDENTIAL }
       MockClientAssertionCredential.mockReturnValue(mockCredential)
 
-      const result = getAzureCredentials(TEST_IDS.TENANT_ID_ALT, TEST_IDS.CLIENT_ID_ALT)
+      const result = getAzureCredentials(
+        TEST_IDS.TENANT_ID_ALT,
+        TEST_IDS.CLIENT_ID_ALT
+      )
 
       expect(result).toBe(mockCredential)
     })

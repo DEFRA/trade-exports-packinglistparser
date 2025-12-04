@@ -144,7 +144,10 @@ describe('proxy-helper', () => {
       const result = getServiceBusConnectionOptions()
 
       expect(result).toHaveProperty(PROPERTY_NAMES.WEB_SOCKET_OPTIONS)
-      expect(result.webSocketOptions).toHaveProperty(PROPERTY_NAMES.WEB_SOCKET, WebSocket)
+      expect(result.webSocketOptions).toHaveProperty(
+        PROPERTY_NAMES.WEB_SOCKET,
+        WebSocket
+      )
       expect(result.webSocketOptions).not.toHaveProperty(
         PROPERTY_NAMES.WEB_SOCKET_CONSTRUCTOR_OPTIONS
       )
@@ -167,7 +170,10 @@ describe('proxy-helper', () => {
       const result = getServiceBusConnectionOptions()
 
       expect(result).toHaveProperty(PROPERTY_NAMES.WEB_SOCKET_OPTIONS)
-      expect(result.webSocketOptions).toHaveProperty(PROPERTY_NAMES.WEB_SOCKET, WebSocket)
+      expect(result.webSocketOptions).toHaveProperty(
+        PROPERTY_NAMES.WEB_SOCKET,
+        WebSocket
+      )
       expect(result.webSocketOptions).toHaveProperty(
         PROPERTY_NAMES.WEB_SOCKET_CONSTRUCTOR_OPTIONS
       )
