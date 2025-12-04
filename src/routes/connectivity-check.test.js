@@ -28,6 +28,29 @@ vi.mock('../common/helpers/logging/logger.js', () => ({
   }))
 }))
 
+// Test constants
+const RESPONSE_MESSAGES = {
+  PASSED: 'Connectivity Check Passed',
+  FAILED: 'Connectivity Check Failed'
+}
+
+const RESPONSE_PROPERTIES = {
+  MESSAGE: 'Message',
+  DETAILS: 'Details'
+}
+
+const SERVICE_NAMES = {
+  S3: 's3',
+  DYNAMICS_LOGIN: 'dynamicsLogin',
+  DYNAMICS_DATA: 'dynamicsData',
+  EHCO_BLOB_STORAGE: 'ehcoBlobStorage'
+}
+
+const ROUTE_CONFIG = {
+  METHOD: 'GET',
+  PATH: '/connectivity-check'
+}
+
 describe('Connectivity Check Route', () => {
   let mockH
   let mockResponse
@@ -42,8 +65,8 @@ describe('Connectivity Check Route', () => {
   })
 
   it('should have correct route configuration', () => {
-    expect(connectivityCheck.method).toBe('GET')
-    expect(connectivityCheck.path).toBe('/connectivity-check')
+    expect(connectivityCheck.method).toBe(ROUTE_CONFIG.METHOD)
+    expect(connectivityCheck.path).toBe(ROUTE_CONFIG.PATH)
     expect(typeof connectivityCheck.handler).toBe('function')
   })
 
@@ -60,12 +83,12 @@ describe('Connectivity Check Route', () => {
     expect(checkDynamicsDispatchLocationConnection).toHaveBeenCalledTimes(1)
     expect(checkApplicationFormsContainerExists).toHaveBeenCalledTimes(1)
     expect(mockH.response).toHaveBeenCalledWith({
-      Message: 'Connectivity Check Passed',
-      Details: {
-        s3: true,
-        dynamicsLogin: true,
-        dynamicsData: true,
-        ehcoBlobStorage: true
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.PASSED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: true,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
@@ -81,12 +104,12 @@ describe('Connectivity Check Route', () => {
     await connectivityCheck.handler({}, mockH)
 
     expect(mockH.response).toHaveBeenCalledWith({
-      Message: 'Connectivity Check Failed',
-      Details: {
-        s3: false,
-        dynamicsLogin: true,
-        dynamicsData: true,
-        ehcoBlobStorage: true
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: false,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -104,12 +127,12 @@ describe('Connectivity Check Route', () => {
     await connectivityCheck.handler({}, mockH)
 
     expect(mockH.response).toHaveBeenCalledWith({
-      Message: 'Connectivity Check Failed',
-      Details: {
-        s3: true,
-        dynamicsLogin: false,
-        dynamicsData: true,
-        ehcoBlobStorage: true
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: true,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -127,12 +150,12 @@ describe('Connectivity Check Route', () => {
     await connectivityCheck.handler({}, mockH)
 
     expect(mockH.response).toHaveBeenCalledWith({
-      Message: 'Connectivity Check Failed',
-      Details: {
-        s3: true,
-        dynamicsLogin: true,
-        dynamicsData: false,
-        ehcoBlobStorage: true
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: true,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: false,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -149,12 +172,12 @@ describe('Connectivity Check Route', () => {
     await connectivityCheck.handler({}, mockH)
 
     expect(mockH.response).toHaveBeenCalledWith({
-      Message: 'Connectivity Check Failed',
-      Details: {
-        s3: false,
-        dynamicsLogin: false,
-        dynamicsData: true,
-        ehcoBlobStorage: true
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: false,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -172,12 +195,12 @@ describe('Connectivity Check Route', () => {
     await connectivityCheck.handler({}, mockH)
 
     expect(mockH.response).toHaveBeenCalledWith({
-      Message: 'Connectivity Check Failed',
-      Details: {
-        s3: true,
-        dynamicsLogin: true,
-        dynamicsData: true,
-        ehcoBlobStorage: false
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: true,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -198,12 +221,12 @@ describe('Connectivity Check Route', () => {
     await connectivityCheck.handler({}, mockH)
 
     expect(mockH.response).toHaveBeenCalledWith({
-      Message: 'Connectivity Check Failed',
-      Details: {
-        s3: false,
-        dynamicsLogin: false,
-        dynamicsData: false,
-        ehcoBlobStorage: false
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: false,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
+        [SERVICE_NAMES.DYNAMICS_DATA]: false,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(

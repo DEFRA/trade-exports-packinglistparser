@@ -24,6 +24,11 @@ export async function downloadBlobFromApplicationForms(blobName) {
   }
 }
 
+/**
+ * Checks if the EHCO application forms container exists in Azure Blob Storage
+ * @returns {Promise<boolean>} True if container exists, false otherwise
+ * @throws {Error} If the check fails
+ */
 export async function checkApplicationFormsContainerExists() {
   try {
     const containerClient = createApplicationFormsBlobClient()
@@ -34,6 +39,10 @@ export async function checkApplicationFormsContainerExists() {
   }
 }
 
+/**
+ * Creates a BlobServiceClient with Azure credentials and proxy configuration
+ * @returns {BlobServiceClient} Configured blob service client
+ */
 function createBlobServiceClient() {
   const { defraTenantId } = config.get('azure') || {}
   const { clientId, blobStorageAccount } = config.get('ehcoBlob')
@@ -44,6 +53,10 @@ function createBlobServiceClient() {
   return new BlobServiceClient(blobServiceUrl, credential, clientOptions)
 }
 
+/**
+ * Creates a container client for the EHCO application forms container
+ * @returns {ContainerClient} Container client for application forms
+ */
 function createApplicationFormsBlobClient() {
   const blobServiceClient = createBlobServiceClient()
   const { formsContainerName } = config.get('ehcoBlob')

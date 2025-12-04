@@ -9,6 +9,10 @@ const proxyUrl = config.get('httpProxy')
 const HTTP_PORT = 80
 const HTTPS_PORT = 443
 
+/**
+ * Gets proxy configuration options for Azure SDK clients
+ * @returns {Object} Proxy options object with host and port, or empty object if no proxy
+ */
 export function getClientProxyOptions() {
   return proxyUrl
     ? {
@@ -23,6 +27,10 @@ export function getClientProxyOptions() {
     : {}
 }
 
+/**
+ * Gets WebSocket connection options for Service Bus with optional proxy support
+ * @returns {Object} Connection options with WebSocket configuration and optional proxy agent
+ */
 export function getServiceBusConnectionOptions() {
   const connectionOptions = {
     webSocketOptions: {

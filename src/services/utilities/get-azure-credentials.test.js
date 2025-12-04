@@ -39,6 +39,44 @@ vi.mock('../../config.js', () => ({
 // Import after mocks are set up
 const { getAzureCredentials } = await import('./get-azure-credentials.js')
 
+// Test constants
+const TEST_IDS = {
+  TENANT_ID: 'test-tenant-id',
+  CLIENT_ID: 'test-client-id',
+  TENANT_ID_ALT: 'tenant-id',
+  CLIENT_ID_ALT: 'client-id'
+}
+
+const TEST_TOKENS = {
+  TOKEN_123: 'test-token-123',
+  TOKEN_GENERIC: 'test-token'
+}
+
+const TEST_AWS_CONFIG = {
+  POOL_ID: 'eu-west-2:test-pool-id-1234',
+  REGION: 'eu-west-2',
+  POOL_ID_CUSTOM: 'us-east-1:custom-pool-id',
+  REGION_CUSTOM: 'us-east-1'
+}
+
+const TEST_COGNITO = {
+  LOGIN_KEY: 'trade-exports-packinglistparser-aad-access',
+  LOGIN_VALUE: 'trade-exports-packinglistparser'
+}
+
+const ERROR_MESSAGES = {
+  COGNITO_AUTH_FAILED: 'Cognito authentication failed'
+}
+
+const CONFIG_KEYS = {
+  AWS: 'aws'
+}
+
+const MOCK_TYPES = {
+  CLIENT_ASSERTION_CREDENTIAL: 'ClientAssertionCredential',
+  CREDENTIAL: 'credential'
+}
+
 describe('get-azure-credentials', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -50,10 +88,10 @@ describe('get-azure-credentials', () => {
 
     // Reset default mock behavior
     mockConfigGet.mockImplementation((key) => {
-      if (key === 'aws') {
+      if (key === CONFIG_KEYS.AWS) {
         return {
-          poolId: 'eu-west-2:test-pool-id-1234',
-          region: 'eu-west-2'
+          poolId: TEST_AWS_CONFIG.POOL_ID,
+          region: TEST_AWS_CONFIG.REGION
         }
       }
       return {}
@@ -62,8 +100,8 @@ describe('get-azure-credentials', () => {
 
   describe('getAzureCredentials', () => {
     it('should create ClientAssertionCredential with correct parameters', () => {
-      const tenantId = 'test-tenant-id'
-      const clientId = 'test-client-id'
+      const tenantId = TEST_IDS.TENANT_ID
+      const clientId = TEST_IDS.CLIENT_ID
 
       getAzureCredentials(tenantId, clientId)
 
@@ -75,10 +113,10 @@ describe('get-azure-credentials', () => {
     })
 
     it('should return a ClientAssertionCredential instance', () => {
-      const mockCredential = { type: 'ClientAssertionCredential' }
+      const mockCredential = { type: MOCK_TYPES.CLIENT_ASSERTION_CREDENTIAL }
       MockClientAssertionCredential.mockReturnValue(mockCredential)
 
-      const result = getAzureCredentials('tenant-id', 'client-id')
+      const result = getAzureCredentials(TEST_IDS.TENANT_ID_ALT, TEST_IDS.CLIENT_ID_ALT)
 
       expect(result).toBe(mockCredential)
     })
@@ -88,25 +126,24 @@ describe('get-azure-credentials', () => {
       MockClientAssertionCredential.mockImplementation(
         (_tenantId, _clientId, callback) => {
           capturedCallback = callback
-          return { type: 'credential' }
+          return { type: MOCK_TYPES.CREDENTIAL }
         }
       )
 
-      mockSend.mockResolvedValue({ Token: 'test-token-123' })
+      mockSend.mockResolvedValue({ Token: TEST_TOKENS.TOKEN_123 })
 
-      getAzureCredentials('tenant-id', 'client-id')
+      getAzureCredentials(TEST_IDS.TENANT_ID_ALT, TEST_IDS.CLIENT_ID_ALT)
 
       // Call the captured callback (getCognitoToken)
       const token = await capturedCallback()
 
-      expect(token).toBe('test-token-123')
+      expect(token).toBe(TEST_TOKENS.TOKEN_123)
       expect(
         MockGetOpenIdTokenForDeveloperIdentityCommand
       ).toHaveBeenCalledWith({
-        IdentityPoolId: 'eu-west-2:test-pool-id-1234',
+        IdentityPoolId: TEST_AWS_CONFIG.POOL_ID,
         Logins: {
-          'trade-exports-packinglistparser-aad-access':
-            'trade-exports-packinglistparser'
+          [TEST_COGNITO.LOGIN_KEY]: TEST_COGNITO.LOGIN_VALUE
         }
       })
       expect(mockSend).toHaveBeenCalled()
@@ -117,18 +154,18 @@ describe('get-azure-credentials', () => {
       MockClientAssertionCredential.mockImplementation(
         (_tenantId, _clientId, callback) => {
           capturedCallback = callback
-          return { type: 'credential' }
+          return { type: MOCK_TYPES.CREDENTIAL }
         }
       )
 
-      const mockError = new Error('Cognito authentication failed')
+      const mockError = new Error(ERROR_MESSAGES.COGNITO_AUTH_FAILED)
       mockSend.mockRejectedValue(mockError)
 
-      getAzureCredentials('tenant-id', 'client-id')
+      getAzureCredentials(TEST_IDS.TENANT_ID_ALT, TEST_IDS.CLIENT_ID_ALT)
 
       // Call the captured callback should throw
       await expect(capturedCallback()).rejects.toThrow(
-        'Cognito authentication failed'
+        ERROR_MESSAGES.COGNITO_AUTH_FAILED
       )
     })
 
@@ -137,8 +174,8 @@ describe('get-azure-credentials', () => {
       mockConfigGet.mockClear()
 
       mockConfigGet.mockReturnValue({
-        poolId: 'us-east-1:custom-pool-id',
-        region: 'us-east-1'
+        poolId: TEST_AWS_CONFIG.POOL_ID_CUSTOM,
+        region: TEST_AWS_CONFIG.REGION_CUSTOM
       })
 
       // Reimport the module to trigger config.get call
@@ -146,7 +183,7 @@ describe('get-azure-credentials', () => {
       await import('./get-azure-credentials.js')
 
       // Verify config.get was called with 'aws' during module initialization
-      expect(mockConfigGet).toHaveBeenCalledWith('aws')
+      expect(mockConfigGet).toHaveBeenCalledWith(CONFIG_KEYS.AWS)
     })
 
     it('should use correct logins mapping for Cognito', async () => {
@@ -154,13 +191,13 @@ describe('get-azure-credentials', () => {
       MockClientAssertionCredential.mockImplementation(
         (_tenantId, _clientId, callback) => {
           capturedCallback = callback
-          return { type: 'credential' }
+          return { type: MOCK_TYPES.CREDENTIAL }
         }
       )
 
-      mockSend.mockResolvedValue({ Token: 'test-token' })
+      mockSend.mockResolvedValue({ Token: TEST_TOKENS.TOKEN_GENERIC })
 
-      getAzureCredentials('tenant-id', 'client-id')
+      getAzureCredentials(TEST_IDS.TENANT_ID_ALT, TEST_IDS.CLIENT_ID_ALT)
 
       await capturedCallback()
 
@@ -169,8 +206,7 @@ describe('get-azure-credentials', () => {
       ).toHaveBeenCalledWith({
         IdentityPoolId: expect.any(String),
         Logins: {
-          'trade-exports-packinglistparser-aad-access':
-            'trade-exports-packinglistparser'
+          [TEST_COGNITO.LOGIN_KEY]: TEST_COGNITO.LOGIN_VALUE
         }
       })
     })

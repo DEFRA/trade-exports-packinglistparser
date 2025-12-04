@@ -11,6 +11,12 @@ export const getFileFromBlob = {
   handler: getHandler
 }
 
+/**
+ * Handler for downloading a blob from EHCO application forms container
+ * @param {Object} request - Hapi request object with query.blobname parameter
+ * @param {Object} h - Hapi response toolkit
+ * @returns {Promise<Object>} Response indicating success or error
+ */
 async function getHandler(request, h) {
   try {
     const blobName = request.query.blobname
@@ -32,6 +38,12 @@ export const formsContainerExists = {
   handler: existsHandler
 }
 
+/**
+ * Handler for checking if EHCO application forms container exists
+ * @param {Object} _request - Hapi request object (unused)
+ * @param {Object} h - Hapi response toolkit
+ * @returns {Promise<Object>} Response indicating container existence status
+ */
 async function existsHandler(_request, h) {
   try {
     const exists = await checkApplicationFormsContainerExists()

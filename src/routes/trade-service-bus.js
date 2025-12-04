@@ -8,6 +8,12 @@ export const sendtoqueue = {
   handler
 }
 
+/**
+ * Handler for sending a test message to Service Bus queue
+ * @param {Object} _request - Hapi request object (unused)
+ * @param {Object} h - Hapi response toolkit
+ * @returns {Promise<Object>} Response indicating success or error
+ */
 async function handler(_request, h) {
   try {
     await sendMessageToQueue(
