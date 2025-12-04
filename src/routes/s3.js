@@ -12,6 +12,12 @@ const getListFromS3 = {
   handler: makeListHandler
 }
 
+/**
+ * Handler for listing objects in S3 bucket
+ * @param {Object} request - Hapi request object with query.schema parameter
+ * @param {Object} h - Hapi response toolkit
+ * @returns {Promise<Object>} Response with list of S3 objects or error
+ */
 async function makeListHandler(request, h) {
   const schema = request.query.schema
   try {
@@ -31,6 +37,12 @@ const getFromS3 = {
   handler: makeGetHandler
 }
 
+/**
+ * Handler for retrieving a file from S3 bucket
+ * @param {Object} request - Hapi request object with params.filename and query.schema
+ * @param {Object} h - Hapi response toolkit
+ * @returns {Promise<Object>} Response with file data or error
+ */
 async function makeGetHandler(request, h) {
   const { filename } = request.params
   const schema = request.query.schema
@@ -51,6 +63,12 @@ const addFileToS3 = {
   handler: makeAddHandler
 }
 
+/**
+ * Handler for uploading a file to S3 bucket
+ * @param {Object} request - Hapi request object with params.filename, query.schema, and payload
+ * @param {Object} h - Hapi response toolkit
+ * @returns {Promise<Object>} Response indicating success or error
+ */
 async function makeAddHandler(request, h) {
   const { filename } = request.params
   const schema = request.query.schema

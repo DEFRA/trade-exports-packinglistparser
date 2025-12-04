@@ -1,9 +1,22 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { STATUS_CODES } from '../routes/statuscodes.js'
 import {
   getDispatchLocation,
   bearerTokenRequest,
   checkDynamicsDispatchLocationConnection
 } from './dynamics-service.js'
+
+// Test constants for repeated literals
+const TEST_TOKEN = 'test-token'
+const TEST_REMOS_ID = 'REMOS-12345'
+const TEST_APPLICATION_ID = 'TEST-APP-123'
+
+const ERROR_MESSAGES = {
+  UNAUTHORIZED: 'Unauthorized',
+  NOT_FOUND: 'Not Found',
+  NETWORK_ERROR: 'Network error',
+  NETWORK_TIMEOUT: 'Network timeout'
+}
 
 // Mock config before imports
 vi.mock('../config.js', () => ({
@@ -39,21 +52,21 @@ vi.mock('../common/helpers/logging/logger.js', () => ({
 describe('dynamics-service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    global.fetch = vi.fn()
+    globalThis.fetch = vi.fn()
   })
 
   describe('bearerTokenRequest', () => {
     it('should successfully obtain bearer token', async () => {
       const mockResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
-      global.fetch.mockResolvedValue(mockResponse)
+      globalThis.fetch.mockResolvedValue(mockResponse)
 
       const token = await bearerTokenRequest()
 
-      expect(token).toBe('test-token')
-      expect(global.fetch).toHaveBeenCalledWith(
+      expect(token).toBe(TEST_TOKEN)
+      expect(globalThis.fetch).toHaveBeenCalledWith(
         'https://login.microsoftonline.com/tenant-id/oauth2/token',
         expect.objectContaining({
           method: 'POST',
@@ -65,13 +78,13 @@ describe('dynamics-service', () => {
     it('should throw error if response is not ok', async () => {
       const mockResponse = {
         ok: false,
-        status: 401,
-        text: vi.fn().mockResolvedValue('Unauthorized')
+        status: STATUS_CODES.UNAUTHORIZED,
+        text: vi.fn().mockResolvedValue(ERROR_MESSAGES.UNAUTHORIZED)
       }
-      global.fetch.mockResolvedValue(mockResponse)
+      globalThis.fetch.mockResolvedValue(mockResponse)
 
       await expect(bearerTokenRequest()).rejects.toThrow(
-        'Bearer token request failed - Status: 401, Response: Unauthorized'
+        `Bearer token request failed - Status: ${STATUS_CODES.UNAUTHORIZED}, Response: ${ERROR_MESSAGES.UNAUTHORIZED}`
       )
     })
 
@@ -80,7 +93,7 @@ describe('dynamics-service', () => {
         ok: true,
         json: vi.fn().mockResolvedValue({ error: 'invalid_request' })
       }
-      global.fetch.mockResolvedValue(mockResponse)
+      globalThis.fetch.mockResolvedValue(mockResponse)
 
       await expect(bearerTokenRequest()).rejects.toThrow(
         'No access token in response'
@@ -88,121 +101,123 @@ describe('dynamics-service', () => {
     })
 
     it('should throw error on network failure', async () => {
-      global.fetch.mockRejectedValue(new Error('Network error'))
+      globalThis.fetch.mockRejectedValue(
+        new Error(ERROR_MESSAGES.NETWORK_ERROR)
+      )
 
-      await expect(bearerTokenRequest()).rejects.toThrow('Network error')
+      await expect(bearerTokenRequest()).rejects.toThrow(
+        ERROR_MESSAGES.NETWORK_ERROR
+      )
     })
   })
 
   describe('getDispatchLocation', () => {
-    const mockApplicationId = 'TEST-APP-123'
-
     it('should successfully retrieve dispatch location on first attempt', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ rms_remosid: 'REMOS-12345' })
+        json: vi.fn().mockResolvedValue({ rms_remosid: TEST_REMOS_ID })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
-      const result = await getDispatchLocation(mockApplicationId)
+      const result = await getDispatchLocation(TEST_APPLICATION_ID)
 
-      expect(result).toBe('REMOS-12345')
-      expect(global.fetch).toHaveBeenCalledTimes(2)
+      expect(result).toBe(TEST_REMOS_ID)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(2)
     })
 
     it('should return null on HTTP error (404)', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: false,
-        status: 404,
-        text: vi.fn().mockResolvedValue('Not Found')
+        status: STATUS_CODES.NOT_FOUND,
+        text: vi.fn().mockResolvedValue(ERROR_MESSAGES.NOT_FOUND)
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
-      const result = await getDispatchLocation(mockApplicationId)
+      const result = await getDispatchLocation(TEST_APPLICATION_ID)
 
       expect(result).toBeNull()
-      expect(global.fetch).toHaveBeenCalledTimes(2) // No retry on HTTP errors
+      expect(globalThis.fetch).toHaveBeenCalledTimes(2) // No retry on HTTP errors
     })
 
     it('should return null on HTTP error (401)', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: false,
-        status: 401,
-        text: vi.fn().mockResolvedValue('Unauthorized')
+        status: STATUS_CODES.UNAUTHORIZED,
+        text: vi.fn().mockResolvedValue(ERROR_MESSAGES.UNAUTHORIZED)
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
-      const result = await getDispatchLocation(mockApplicationId)
+      const result = await getDispatchLocation(TEST_APPLICATION_ID)
 
       expect(result).toBeNull()
-      expect(global.fetch).toHaveBeenCalledTimes(2)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(2)
     })
 
     it('should retry on network failure and succeed on second attempt', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ rms_remosid: 'REMOS-12345' })
+        json: vi.fn().mockResolvedValue({ rms_remosid: TEST_REMOS_ID })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse) // First attempt token
-        .mockRejectedValueOnce(new Error('Network timeout')) // First attempt fails
+        .mockRejectedValueOnce(new Error(ERROR_MESSAGES.NETWORK_TIMEOUT)) // First attempt fails
         .mockResolvedValueOnce(tokenResponse) // Second attempt token
         .mockResolvedValueOnce(dynamicsResponse) // Second attempt succeeds
 
-      const result = await getDispatchLocation(mockApplicationId, 3, 10)
+      const result = await getDispatchLocation(TEST_APPLICATION_ID, 3, 10)
 
-      expect(result).toBe('REMOS-12345')
-      expect(global.fetch).toHaveBeenCalledTimes(4)
+      expect(result).toBe(TEST_REMOS_ID)
+      expect(globalThis.fetch).toHaveBeenCalledTimes(4)
     })
 
     it('should return null after max retries on network failures', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
-        .mockRejectedValueOnce(new Error('Network error 1'))
+        .mockRejectedValueOnce(new Error(`${ERROR_MESSAGES.NETWORK_ERROR} 1`))
         .mockResolvedValueOnce(tokenResponse)
-        .mockRejectedValueOnce(new Error('Network error 2'))
+        .mockRejectedValueOnce(new Error(`${ERROR_MESSAGES.NETWORK_ERROR} 2`))
         .mockResolvedValueOnce(tokenResponse)
-        .mockRejectedValueOnce(new Error('Network error 3'))
+        .mockRejectedValueOnce(new Error(`${ERROR_MESSAGES.NETWORK_ERROR} 3`))
 
-      const result = await getDispatchLocation(mockApplicationId, 3, 10)
+      const result = await getDispatchLocation(TEST_APPLICATION_ID, 3, 10)
 
       expect(result).toBeNull()
-      expect(global.fetch).toHaveBeenCalledTimes(6) // 3 attempts × 2 calls each
+      expect(globalThis.fetch).toHaveBeenCalledTimes(6) // 3 attempts × 2 calls each
     })
 
     it('should return null if bearer token is invalid', async () => {
@@ -211,24 +226,24 @@ describe('dynamics-service', () => {
         json: vi.fn().mockResolvedValue({ access_token: 'Error: Invalid' })
       }
 
-      global.fetch.mockResolvedValueOnce(tokenResponse)
+      globalThis.fetch.mockResolvedValueOnce(tokenResponse)
 
-      const result = await getDispatchLocation(mockApplicationId)
+      const result = await getDispatchLocation(TEST_APPLICATION_ID)
 
       expect(result).toBeNull()
-      expect(global.fetch).toHaveBeenCalledTimes(1) // Only token request
+      expect(globalThis.fetch).toHaveBeenCalledTimes(1) // Only token request
     })
 
     it('should return null if bearer token request fails', async () => {
       const tokenResponse = {
         ok: false,
-        status: 401,
+        status: STATUS_CODES.UNAUTHORIZED,
         text: vi.fn().mockResolvedValue('Invalid credentials')
       }
 
-      global.fetch.mockResolvedValueOnce(tokenResponse)
+      globalThis.fetch.mockResolvedValueOnce(tokenResponse)
 
-      const result = await getDispatchLocation(mockApplicationId)
+      const result = await getDispatchLocation(TEST_APPLICATION_ID)
 
       expect(result).toBeNull()
     })
@@ -236,21 +251,21 @@ describe('dynamics-service', () => {
     it('should use correct Dynamics API endpoint', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ rms_remosid: 'REMOS-12345' })
+        json: vi.fn().mockResolvedValue({ rms_remosid: TEST_REMOS_ID })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
-      await getDispatchLocation(mockApplicationId)
+      await getDispatchLocation(TEST_APPLICATION_ID)
 
-      expect(global.fetch).toHaveBeenNthCalledWith(
+      expect(globalThis.fetch).toHaveBeenNthCalledWith(
         2,
         expect.stringContaining(
           'https://test.crm11.dynamics.com/api/data/v9.2/trd_inspectionlocations'
@@ -258,7 +273,7 @@ describe('dynamics-service', () => {
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
+            Authorization: `Bearer ${TEST_TOKEN}`,
             'Content-Type': 'application/json'
           })
         })
@@ -268,21 +283,21 @@ describe('dynamics-service', () => {
     it('should include application ID in API URL', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ rms_remosid: 'REMOS-12345' })
+        json: vi.fn().mockResolvedValue({ rms_remosid: TEST_REMOS_ID })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
       await getDispatchLocation('MY-APP-ID')
 
-      expect(global.fetch).toHaveBeenNthCalledWith(
+      expect(globalThis.fetch).toHaveBeenNthCalledWith(
         2,
         expect.stringContaining('trd_inspectionlocations(MY-APP-ID)'),
         expect.any(Object)
@@ -292,21 +307,21 @@ describe('dynamics-service', () => {
     it('should select rms_remosid field in query', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ rms_remosid: 'REMOS-12345' })
+        json: vi.fn().mockResolvedValue({ rms_remosid: TEST_REMOS_ID })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
-      await getDispatchLocation(mockApplicationId)
+      await getDispatchLocation(TEST_APPLICATION_ID)
 
-      expect(global.fetch).toHaveBeenNthCalledWith(
+      expect(globalThis.fetch).toHaveBeenNthCalledWith(
         2,
         expect.stringContaining('$select=rms_remosid'),
         expect.any(Object)
@@ -318,70 +333,76 @@ describe('dynamics-service', () => {
     it('should successfully check connection to Dynamics dispatch locations', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: true,
-        status: 200,
+        status: STATUS_CODES.OK,
         json: vi.fn().mockResolvedValue({ value: [] })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
       const result = await checkDynamicsDispatchLocationConnection()
 
-      expect(result).toEqual({ response: dynamicsResponse, status: 200 })
-      expect(global.fetch).toHaveBeenCalledTimes(2)
+      expect(result).toEqual({
+        response: dynamicsResponse,
+        status: STATUS_CODES.OK
+      })
+      expect(globalThis.fetch).toHaveBeenCalledTimes(2)
     })
 
     it('should return error status on connection failure', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: false,
-        status: 503,
+        status: STATUS_CODES.SERVICE_UNAVAILABLE,
         json: vi.fn().mockResolvedValue({ error: 'Service Unavailable' })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
       const result = await checkDynamicsDispatchLocationConnection()
 
-      expect(result).toEqual({ response: dynamicsResponse, status: 503 })
+      expect(result).toEqual({
+        response: dynamicsResponse,
+        status: STATUS_CODES.SERVICE_UNAVAILABLE
+      })
     })
 
     it('should use correct endpoint for connection check', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
       const dynamicsResponse = {
         ok: true,
-        status: 200
+        status: STATUS_CODES.OK
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
         .mockResolvedValueOnce(dynamicsResponse)
 
       await checkDynamicsDispatchLocationConnection()
 
-      expect(global.fetch).toHaveBeenNthCalledWith(
+      expect(globalThis.fetch).toHaveBeenNthCalledWith(
         2,
         expect.stringContaining('trd_inspectionlocations?$top=1'),
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
-            Authorization: 'Bearer test-token',
+            Authorization: `Bearer ${TEST_TOKEN}`,
             'Content-Type': 'application/json'
           })
         })
@@ -391,11 +412,11 @@ describe('dynamics-service', () => {
     it('should throw error if bearer token request fails during connection check', async () => {
       const tokenResponse = {
         ok: false,
-        status: 401,
-        text: vi.fn().mockResolvedValue('Unauthorized')
+        status: STATUS_CODES.UNAUTHORIZED,
+        text: vi.fn().mockResolvedValue(ERROR_MESSAGES.UNAUTHORIZED)
       }
 
-      global.fetch.mockResolvedValueOnce(tokenResponse)
+      globalThis.fetch.mockResolvedValueOnce(tokenResponse)
 
       await expect(checkDynamicsDispatchLocationConnection()).rejects.toThrow(
         'Bearer token request failed'
@@ -405,15 +426,15 @@ describe('dynamics-service', () => {
     it('should throw error on network failure during connection check', async () => {
       const tokenResponse = {
         ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'test-token' })
+        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
       }
 
-      global.fetch
+      globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
-        .mockRejectedValueOnce(new Error('Network timeout'))
+        .mockRejectedValueOnce(new Error(ERROR_MESSAGES.NETWORK_TIMEOUT))
 
       await expect(checkDynamicsDispatchLocationConnection()).rejects.toThrow(
-        'Network timeout'
+        ERROR_MESSAGES.NETWORK_TIMEOUT
       )
     })
   })

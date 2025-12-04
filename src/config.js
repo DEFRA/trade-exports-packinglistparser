@@ -127,6 +127,12 @@ const config = convict({
       format: String,
       default: '',
       env: 'AWS_S3_BUCKET'
+    },
+    poolId: {
+      doc: 'Cognito Identity Pool ID',
+      format: String,
+      default: '',
+      env: 'AWS_COGNITO_IDENTITY_POOL_ID'
     }
   },
   packingList: {
@@ -192,6 +198,68 @@ const config = convict({
       format: 'nat',
       default: 2000,
       env: 'DYNAMICS_RETRY_DELAY_MS'
+    }
+  },
+  azure: {
+    defraCloudTenantId: {
+      doc: 'Azure AD Tenant ID',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_DEFRA_CLOUD_TENANT_ID'
+    },
+    defraTenantId: {
+      doc: 'Azure AD Tenant ID for DEFRA',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_DEFRA_TENANT_ID'
+    }
+  },
+  tradeServiceBus: {
+    clientId: {
+      doc: 'Azure AD Client ID',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TRADE_SERVICE_BUS_CLIENT_ID'
+    },
+    serviceBusNamespace: {
+      doc: 'Azure Service Bus Namespace (fully qualified)',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TRADE_SERVICE_BUS_NAMESPACE'
+    },
+    queueName: {
+      doc: 'Azure Service Bus Queue Name',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TRADE_SERVICE_BUS_QUEUE_NAME'
+    }
+  },
+  ehcoBlob: {
+    clientId: {
+      doc: 'Azure AD Client ID',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_EHCO_BLOB_CLIENT_ID'
+    },
+    blobStorageAccount: {
+      doc: 'Azure Blob Storage Account',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_EHCO_BLOB_STORAGE_ACCOUNT'
+    },
+    formsContainerName: {
+      doc: 'Azure Blob Storage Container Name for Forms',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_EHCO_BLOB_FORMS_CONTAINER_NAME'
     }
   }
 })
