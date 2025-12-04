@@ -5,6 +5,7 @@ import {
   bearerTokenRequest,
   checkDynamicsDispatchLocationConnection
 } from '../services/dynamics-service.js'
+import { checkApplicationFormsContainerExists } from '../services/ehco-blob-storage-service.js'
 import { STATUS_CODES } from './statuscodes.js'
 
 // Mock services before importing the route
@@ -15,6 +16,10 @@ vi.mock('../services/s3-service.js', () => ({
 vi.mock('../services/dynamics-service.js', () => ({
   bearerTokenRequest: vi.fn(),
   checkDynamicsDispatchLocationConnection: vi.fn()
+}))
+
+vi.mock('../services/ehco-blob-storage-service.js', () => ({
+  checkApplicationFormsContainerExists: vi.fn()
 }))
 
 vi.mock('../common/helpers/logging/logger.js', () => ({
@@ -46,18 +51,21 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockResolvedValue([])
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
 
     await connectivityCheck.handler({}, mockH)
 
     expect(listS3Objects).toHaveBeenCalledTimes(1)
     expect(bearerTokenRequest).toHaveBeenCalledTimes(1)
     expect(checkDynamicsDispatchLocationConnection).toHaveBeenCalledTimes(1)
+    expect(checkApplicationFormsContainerExists).toHaveBeenCalledTimes(1)
     expect(mockH.response).toHaveBeenCalledWith({
       Message: 'Connectivity Check Passed',
       Details: {
         s3: true,
         dynamicsLogin: true,
-        dynamicsData: true
+        dynamicsData: true,
+        ehcoBlobStorage: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
@@ -68,6 +76,7 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockRejectedValue(mockError)
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
 
     await connectivityCheck.handler({}, mockH)
 
@@ -76,7 +85,8 @@ describe('Connectivity Check Route', () => {
       Details: {
         s3: false,
         dynamicsLogin: true,
-        dynamicsData: true
+        dynamicsData: true,
+        ehcoBlobStorage: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -89,6 +99,7 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockResolvedValue([])
     bearerTokenRequest.mockRejectedValue(mockError)
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
 
     await connectivityCheck.handler({}, mockH)
 
@@ -97,7 +108,8 @@ describe('Connectivity Check Route', () => {
       Details: {
         s3: true,
         dynamicsLogin: false,
-        dynamicsData: true
+        dynamicsData: true,
+        ehcoBlobStorage: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -110,6 +122,7 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockResolvedValue([])
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockRejectedValue(mockError)
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
 
     await connectivityCheck.handler({}, mockH)
 
@@ -118,7 +131,8 @@ describe('Connectivity Check Route', () => {
       Details: {
         s3: true,
         dynamicsLogin: true,
-        dynamicsData: false
+        dynamicsData: false,
+        ehcoBlobStorage: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -130,6 +144,7 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockRejectedValue(new Error('S3 down'))
     bearerTokenRequest.mockRejectedValue(new Error('Auth failed'))
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
 
     await connectivityCheck.handler({}, mockH)
 
@@ -138,7 +153,57 @@ describe('Connectivity Check Route', () => {
       Details: {
         s3: false,
         dynamicsLogin: false,
-        dynamicsData: true
+        dynamicsData: true,
+        ehcoBlobStorage: true
+      }
+    })
+    expect(mockResponse.code).toHaveBeenCalledWith(
+      STATUS_CODES.SERVICE_UNAVAILABLE
+    )
+  })
+
+  it('should return failure when EHCO Blob Storage fails', async () => {
+    const mockError = new Error('Blob storage unavailable')
+    listS3Objects.mockResolvedValue([])
+    bearerTokenRequest.mockResolvedValue({})
+    checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockRejectedValue(mockError)
+
+    await connectivityCheck.handler({}, mockH)
+
+    expect(mockH.response).toHaveBeenCalledWith({
+      Message: 'Connectivity Check Failed',
+      Details: {
+        s3: true,
+        dynamicsLogin: true,
+        dynamicsData: true,
+        ehcoBlobStorage: false
+      }
+    })
+    expect(mockResponse.code).toHaveBeenCalledWith(
+      STATUS_CODES.SERVICE_UNAVAILABLE
+    )
+  })
+
+  it('should return failure when all services fail', async () => {
+    listS3Objects.mockRejectedValue(new Error('S3 down'))
+    bearerTokenRequest.mockRejectedValue(new Error('Auth failed'))
+    checkDynamicsDispatchLocationConnection.mockRejectedValue(
+      new Error('Data error')
+    )
+    checkApplicationFormsContainerExists.mockRejectedValue(
+      new Error('Blob error')
+    )
+
+    await connectivityCheck.handler({}, mockH)
+
+    expect(mockH.response).toHaveBeenCalledWith({
+      Message: 'Connectivity Check Failed',
+      Details: {
+        s3: false,
+        dynamicsLogin: false,
+        dynamicsData: false,
+        ehcoBlobStorage: false
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(

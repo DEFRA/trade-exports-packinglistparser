@@ -4,6 +4,7 @@ import {
   bearerTokenRequest,
   checkDynamicsDispatchLocationConnection
 } from '../services/dynamics-service.js'
+import { checkApplicationFormsContainerExists } from '../services/ehco-blob-storage-service.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 
 const logger = createLogger()
@@ -18,7 +19,8 @@ async function connectivityCheckHandler(_request, h) {
   const connectionChecks = {
     s3: await canS3Connect(),
     dynamicsLogin: await canDynamicsLoginConnect(),
-    dynamicsData: await canWeReceiveDispatchLocationsFromDynamics()
+    dynamicsData: await canWeReceiveDispatchLocationsFromDynamics(),
+    ehcoBlobStorage: await canWeConnectToEhcoBlobStorage()
   }
   const allConnected = Object.values(connectionChecks).every((v) => v === true)
 
@@ -51,6 +53,10 @@ async function canWeReceiveDispatchLocationsFromDynamics() {
     checkDynamicsDispatchLocationConnection,
     'Dynamics Dispatch Locations'
   )
+}
+
+async function canWeConnectToEhcoBlobStorage() {
+  return canConnect(checkApplicationFormsContainerExists, 'EHCO Blob Storage')
 }
 
 async function canConnect(func, name) {

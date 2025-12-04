@@ -1,46 +1,16 @@
 import { BlobServiceClient } from '@azure/storage-blob'
 import { getAzureCredentials } from './utilities/get-azure-credentials.js'
+import { getClientProxyOptions } from './utilities/proxy-helper.js'
 import { config } from '../config.js'
 
 /**
  * Downloads a file from Azure Blob Storage
- * @param {string} tenantId - Azure tenant ID
- * @param {string} clientId - Azure client ID
- * @param {string} storageAccountName - The Azure storage account name
- * @param {string} containerName - The container name
  * @param {string} blobName - The blob (file) name to download
  * @returns {Promise<Buffer>} The downloaded file as a buffer
  */
-export async function downloadBlob(
-  tenantId,
-  clientId,
-  storageAccountName,
-  containerName,
-  blobName
-) {
+export async function downloadBlobFromApplicationForms(blobName) {
   try {
-    const credential = getAzureCredentials(tenantId, clientId)
-    const blobServiceUrl = `https://${storageAccountName}.blob.core.windows.net`
-
-    // Configure proxy if HTTP_PROXY is set
-    const proxyUrl = config.get('httpProxy')
-    const clientOptions = proxyUrl
-      ? {
-          proxyOptions: {
-            host: new URL(proxyUrl).href,
-            port:
-              new URL(proxyUrl).protocol.toLowerCase() === 'https:' ? 443 : 80
-          }
-        }
-      : {}
-
-    const blobServiceClient = new BlobServiceClient(
-      blobServiceUrl,
-      credential,
-      clientOptions
-    )
-
-    const containerClient = blobServiceClient.getContainerClient(containerName)
+    const containerClient = createApplicationFormsBlobClient()
     const blobClient = containerClient.getBlobClient(blobName)
 
     const downloadResponse = await blobClient.download()
@@ -52,6 +22,33 @@ export async function downloadBlob(
   } catch (error) {
     throw new Error(`Failed to download blob: ${error.message}`)
   }
+}
+
+export async function checkApplicationFormsContainerExists() {
+  try {
+    const containerClient = createApplicationFormsBlobClient()
+
+    return await containerClient.exists()
+  } catch (error) {
+    throw new Error(`Failed to download blob: ${error.message}`)
+  }
+}
+
+function createBlobServiceClient() {
+  const { defraTenantId } = config.get('azure') || {}
+  const { clientId, blobStorageAccount } = config.get('ehcoBlob')
+  const credential = getAzureCredentials(defraTenantId, clientId)
+  const blobServiceUrl = `https://${blobStorageAccount}.blob.core.windows.net`
+  const clientOptions = getClientProxyOptions()
+
+  return new BlobServiceClient(blobServiceUrl, credential, clientOptions)
+}
+
+function createApplicationFormsBlobClient() {
+  const blobServiceClient = createBlobServiceClient()
+  const { formsContainerName } = config.get('ehcoBlob')
+
+  return blobServiceClient.getContainerClient(formsContainerName)
 }
 
 /**

@@ -6,8 +6,8 @@ import {
   dynamicsHealthCheck
 } from '../routes/dynamics.js'
 import { home } from '../routes/home.js'
-import { sendtoqueue } from '../routes/service-bus.js'
-import { getFileFromBlob } from '../routes/ehco-blob.js'
+import { sendtoqueue } from '../routes/trade-service-bus.js'
+import { getFileFromBlob, formsContainerExists } from '../routes/ehco-blob.js'
 
 const router = {
   plugin: {
@@ -19,7 +19,7 @@ const router = {
       server.route([getListFromS3, getFromS3, addFileToS3])
       server.route([getDispatchLocationRoute, dynamicsHealthCheck])
       server.route([sendtoqueue])
-      server.route([getFileFromBlob])
+      server.route([getFileFromBlob, formsContainerExists])
     }
   }
 }

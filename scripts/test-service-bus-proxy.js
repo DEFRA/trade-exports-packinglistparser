@@ -13,7 +13,7 @@
  *   HTTP_PROXY or HTTPS_PROXY - Proxy URL (e.g., "http://proxy.example.com:8080")
  */
 
-import { sendMessageToQueue } from '../src/services/service-bus-service.js'
+import { sendMessageToQueue } from '../src/services/trade-service-bus-service.js'
 
 async function testServiceBusWithProxy() {
   const tenantId = process.env.AZURE_TENANT_ID

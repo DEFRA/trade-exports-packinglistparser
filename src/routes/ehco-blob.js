@@ -1,40 +1,42 @@
-import { config } from '../config.js'
-import { downloadBlob } from '../services/blob-storage-service.js'
+import {
+  downloadBlobFromApplicationForms,
+  checkApplicationFormsContainerExists
+} from '../services/ehco-blob-storage-service.js'
 
 import { STATUS_CODES } from './statuscodes.js'
 
-import { createLogger } from '../common/helpers/logging/logger.js'
-const logger = createLogger()
-
 export const getFileFromBlob = {
   method: 'GET',
-  path: '/ehco-blob',
-  handler
+  path: '/ehco-blob-forms',
+  handler: getHandler
 }
 
-async function handler(request, h) {
+async function getHandler(request, h) {
   try {
-    const azureConfig = config.get('azure')
-    const ehcoBlobConfig = config.get('ehcoBlob')
-    const containerName = request.query.containername
     const blobName = request.query.blobname
 
-    logger.info(
-      `Downloading blob from container: ${containerName}, blob: ${blobName}`
-    )
-    logger.info(
-      `Using tenantId: ${azureConfig.defraTenantId}, clientId: ${ehcoBlobConfig.clientId}`
-    )
-
-    await downloadBlob(
-      azureConfig.defraTenantId,
-      ehcoBlobConfig.clientId,
-      ehcoBlobConfig.blobStorageAccount,
-      containerName,
-      blobName
-    )
+    await downloadBlobFromApplicationForms(blobName)
 
     return h.response('Success').code(STATUS_CODES.OK)
+  } catch (error) {
+    console.error('Error downloading blob:', error)
+    return h
+      .response({ error: 'Failed to download blob' })
+      .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
+  }
+}
+
+export const formsContainerExists = {
+  method: 'GET',
+  path: '/ehco-blob-forms-container',
+  handler: existsHandler
+}
+
+async function existsHandler(_request, h) {
+  try {
+    const exists = await checkApplicationFormsContainerExists()
+
+    return h.response(`Success: ${exists}`).code(STATUS_CODES.OK)
   } catch (error) {
     console.error('Error downloading blob:', error)
     return h

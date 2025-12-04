@@ -253,6 +253,13 @@ const config = convict({
       nullable: true,
       default: null,
       env: 'AZURE_EHCO_BLOB_STORAGE_ACCOUNT'
+    },
+    formsContainerName: {
+      doc: 'Azure Blob Storage Container Name for Forms',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_EHCO_BLOB_FORMS_CONTAINER_NAME'
     }
   }
 })

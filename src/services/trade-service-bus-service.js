@@ -2,8 +2,7 @@ import { ServiceBusClient } from '@azure/service-bus'
 import { getAzureCredentials } from './utilities/get-azure-credentials.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 import { config } from '../config.js'
-import { HttpsProxyAgent } from 'https-proxy-agent'
-import WebSocket from 'ws'
+import { getServiceBusConnectionOptions } from './utilities/proxy-helper.js'
 
 const logger = createLogger()
 
@@ -14,31 +13,9 @@ const logger = createLogger()
  * @param {string} fullyQualifiedNamespace - e.g. "your-namespace.servicebus.windows.net"
  * @returns {ServiceBusClient}
  */
-export function createServiceBusClient(
-  tenantId,
-  clientId,
-  fullyQualifiedNamespace
-) {
+function createServiceBusClient(tenantId, clientId, fullyQualifiedNamespace) {
   const credential = getAzureCredentials(tenantId, clientId)
-
-  const connectionOptions = {
-    webSocketOptions: {
-      webSocket: WebSocket
-    }
-  }
-
-  // Configure proxy if httpProxy is set in config
-  const proxyUrl = config.get('httpProxy')
-  if (proxyUrl) {
-    const proxyAgent = new HttpsProxyAgent(proxyUrl)
-    connectionOptions.webSocketOptions.webSocketConstructorOptions = {
-      agent: proxyAgent
-    }
-    logger.info(
-      { proxyUrl },
-      'Using proxy for Service Bus WebSocket connection'
-    )
-  }
+  const connectionOptions = getServiceBusConnectionOptions()
 
   return new ServiceBusClient(
     fullyQualifiedNamespace,
@@ -52,37 +29,32 @@ export function createServiceBusClient(
  * Expects `azure` config to include `tenantId`, `clientId` and `serviceBusNamespace`.
  * Proxy is automatically configured from `config.get('httpProxy')` if set.
  */
-export function createServiceBusClientFromConfig() {
-  const azureConfig = config.get('azure') || {}
-  const { tenantId, clientId, serviceBusNamespace } = azureConfig
-  if (!tenantId || !clientId || !serviceBusNamespace) {
+function createServiceBusClientFromConfig() {
+  const { defraCloudTenantId } = config.get('azure') || {}
+  const { clientId, serviceBusNamespace } = config.get('tradeServiceBus')
+  if (!defraCloudTenantId || !clientId || !serviceBusNamespace) {
     throw new Error(
       'Missing Azure Service Bus configuration (tenantId, clientId, serviceBusNamespace)'
     )
   }
-  return createServiceBusClient(tenantId, clientId, serviceBusNamespace)
+  logger.info(
+    `Using tenantId: ${defraCloudTenantId}, clientId: ${clientId}, namespace: ${serviceBusNamespace}`
+  )
+
+  return createServiceBusClient(
+    defraCloudTenantId,
+    clientId,
+    serviceBusNamespace
+  )
 }
 
 /**
  * Send a single message to a queue
- * @param {string} tenantId
- * @param {string} clientId
- * @param {string} fullyQualifiedNamespace
- * @param {string} queueName
  * @param {any} message
  */
-export async function sendMessageToQueue(
-  tenantId,
-  clientId,
-  fullyQualifiedNamespace,
-  queueName,
-  message
-) {
-  const client = createServiceBusClient(
-    tenantId,
-    clientId,
-    fullyQualifiedNamespace
-  )
+export async function sendMessageToQueue(message) {
+  const client = createServiceBusClientFromConfig()
+  const { queueName } = config.get('tradeServiceBus')
   const sender = client.createSender(queueName)
   try {
     await sender.sendMessages({ body: message })
@@ -105,27 +77,16 @@ export async function sendMessageToQueue(
 
 /**
  * Receive messages from a queue (pull)
- * @param {string} tenantId
- * @param {string} clientId
- * @param {string} fullyQualifiedNamespace
- * @param {string} queueName
  * @param {number} [maxMessages=10]
  * @param {number} [maxWaitTimeInMs=5000]
  * @returns {Promise<any[]>} Array of message bodies
  */
 export async function receiveMessagesFromQueue(
-  tenantId,
-  clientId,
-  fullyQualifiedNamespace,
-  queueName,
   maxMessages = 10,
   maxWaitTimeInMs = 5000
 ) {
-  const client = createServiceBusClient(
-    tenantId,
-    clientId,
-    fullyQualifiedNamespace
-  )
+  const client = createServiceBusClientFromConfig()
+  const { queueName } = config.get('tradeServiceBus')
   const receiver = client.createReceiver(queueName)
   try {
     const messages = await receiver.receiveMessages(maxMessages, {
