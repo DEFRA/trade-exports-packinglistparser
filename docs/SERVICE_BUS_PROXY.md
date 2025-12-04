@@ -14,92 +14,106 @@ The required packages are already installed:
 
 ### 2. Configure Proxy
 
-Set proxy environment variables:
+The proxy is configured through the application's config system. Add to your config:
+
+```javascript
+{
+  httpProxy: 'http://your-proxy.example.com:8080'
+}
+```
+
+Or set via environment variable (depending on your config setup):
 
 ```bash
-export HTTPS_PROXY=http://your-proxy.example.com:8080
-# or
 export HTTP_PROXY=http://your-proxy.example.com:8080
 ```
 
 For authenticated proxies:
 
 ```bash
-export HTTPS_PROXY=http://username:password@your-proxy.example.com:8080
+export HTTP_PROXY=http://username:password@your-proxy.example.com:8080
 ```
 
 ### 3. Use in Code
 
-#### Option A: Using Config-Based Client
+#### Option A: Using Config-Based Client (Recommended)
 
 Add to your config:
 
 ```javascript
 {
   azure: {
-    tenantId: 'your-tenant-id',
+    defraCloudTenantId: 'your-tenant-id'  // or defraTenantId for blob storage
+  },
+  tradeServiceBus: {
     clientId: 'your-client-id',
     serviceBusNamespace: 'mynamespace.servicebus.windows.net',
-    proxyUrl: process.env.HTTPS_PROXY  // optional
-  }
+    queueName: 'your-queue-name'
+  },
+  httpProxy: 'http://proxy.example.com:8080'  // optional, auto-configured if present
 }
 ```
 
-Then use:
+Then use the high-level functions:
 
 ```javascript
-import { createServiceBusClientFromConfig } from './src/services/service-bus-service.js'
+import {
+  sendMessageToQueue,
+  receiveMessagesFromQueue
+} from './src/services/trade-service-bus-service.js'
 
-const client = createServiceBusClientFromConfig()
+// Send a message (proxy automatically configured)
+await sendMessageToQueue({ text: 'Hello, Service Bus!' })
+
+// Receive messages
+const messages = await receiveMessagesFromQueue(10, 5000)
 ```
 
-#### Option B: Direct Function Calls
+#### Option B: Manual Client Creation
+
+For more control, use the lower-level functions:
 
 ```javascript
-import { sendMessageToQueue } from './src/services/service-bus-service.js'
+import { ServiceBusClient } from '@azure/service-bus'
+import { getAzureCredentials } from './src/services/utilities/get-azure-credentials.js'
+import { getServiceBusConnectionOptions } from './src/services/utilities/proxy-helper.js'
 
-await sendMessageToQueue(
-  'tenant-id',
-  'client-id',
+// Create client with automatic proxy configuration
+const credential = getAzureCredentials('tenant-id', 'client-id')
+const connectionOptions = getServiceBusConnectionOptions() // Reads httpProxy from config
+
+const client = new ServiceBusClient(
   'mynamespace.servicebus.windows.net',
-  'my-queue',
-  { message: 'Hello World' },
-  { proxyUrl: 'http://proxy.example.com:8080' } // optional
-)
-```
-
-#### Option C: Manual Client Creation
-
-```javascript
-import { createServiceBusClient } from './src/services/service-bus-service.js'
-
-const client = createServiceBusClient(
-  'tenant-id',
-  'client-id',
-  'mynamespace.servicebus.windows.net',
-  { proxyUrl: 'http://proxy.example.com:8080' } // optional
+  credential,
+  connectionOptions
 )
 
+// Use the client
 const sender = client.createSender('my-queue')
 await sender.sendMessages({ body: { test: true } })
 await sender.close()
 await client.close()
 ```
 
-## Test Script
+## Test Routes
 
-Run the included test script:
+Test Service Bus connectivity through the API route:
 
 ```bash
-# Set required variables
-export AZURE_TENANT_ID='your-tenant-id'
-export AZURE_CLIENT_ID='your-client-id'
-export SERVICE_BUS_NAMESPACE='mynamespace.servicebus.windows.net'
-export SERVICE_BUS_QUEUE='my-queue'
-export HTTPS_PROXY='http://proxy.example.com:8080'
+# Configure your application (in config or env vars)
+export HTTP_PROXY='http://proxy.example.com:8080'
 
-# Run test
-node scripts/test-service-bus-proxy.js
+# Start the server
+npm start
+
+# Test the endpoint
+curl http://localhost:3000/trade-service-bus
+```
+
+Or check connectivity through the connectivity-check endpoint:
+
+```bash
+curl http://localhost:3000/connectivity-check
 ```
 
 ## How It Works
@@ -112,20 +126,26 @@ node scripts/test-service-bus-proxy.js
 
 ### Proxy Configuration
 
-The service automatically configures WebSocket to use the proxy when `proxyUrl` is provided:
+The service automatically configures WebSocket to use the proxy when `httpProxy` is set in config:
 
 ```javascript
-const proxyAgent = new HttpsProxyAgent(proxyUrl)
-connectionOptions.webSocketOptions.webSocketConstructorOptions = {
-  agent: proxyAgent
+// From proxy-helper.js
+const proxyUrl = config.get('httpProxy')
+
+if (proxyUrl) {
+  const proxyAgent = new HttpsProxyAgent(proxyUrl)
+  connectionOptions.webSocketOptions.webSocketConstructorOptions = {
+    agent: proxyAgent
+  }
 }
 ```
 
-The proxy agent handles:
+The `HttpsProxyAgent` handles:
 
 - HTTP CONNECT tunneling for HTTPS connections
-- Authentication (basic auth in URL)
+- Authentication (basic auth in URL: `http://user:pass@proxy:8080`)
 - Certificate validation
+- Both HTTP and HTTPS proxy protocols
 
 ## Troubleshooting
 
@@ -151,25 +171,43 @@ DEBUG=azure*,rhea* node your-script.js
 
 ### 2. Authentication Issues
 
+This application uses **AWS Cognito** to obtain OpenID tokens for Azure AD federation.
+
 **Test credentials separately:**
 
 ```javascript
 import { getAzureCredentials } from './src/services/utilities/get-azure-credentials.js'
 
+// This uses Cognito to get a token for Azure authentication
 const credential = getAzureCredentials(tenantId, clientId)
 const token = await credential.getToken('https://servicebus.azure.net/.default')
 console.log('Token obtained:', !!token.token)
 ```
 
+**Check Cognito configuration:**
+
+Ensure your AWS Cognito identity pool is properly configured in `config.get('aws')` with:
+
+- `poolId`: Cognito identity pool ID
+- `region`: AWS region
+
 ### 3. Proxy Authentication
 
-For authenticated proxies, include credentials in URL:
+For authenticated proxies, include credentials in the config URL:
 
-```bash
-export HTTPS_PROXY=http://username:password@proxy.example.com:8080
+```javascript
+{
+  httpProxy: 'http://username:password@proxy.example.com:8080'
+}
 ```
 
-Special characters in password need URL encoding:
+Or via environment:
+
+```bash
+export HTTP_PROXY=http://username:password@proxy.example.com:8080
+```
+
+**Special characters in password need URL encoding:**
 
 ```javascript
 const password = encodeURIComponent('p@ssw0rd!')
@@ -190,24 +228,49 @@ export NODE_EXTRA_CA_CERTS=/path/to/corporate-ca.pem
 Test without proxy first to isolate issues:
 
 ```javascript
-// Without proxy
-await sendMessageToQueue(tenantId, clientId, namespace, queue, message)
+import { config } from './src/config.js'
+import { sendMessageToQueue } from './src/services/trade-service-bus-service.js'
 
-// With proxy
-await sendMessageToQueue(tenantId, clientId, namespace, queue, message, {
-  proxyUrl: 'http://proxy.example.com:8080'
-})
+// Without proxy - remove from config
+delete config.httpProxy
+await sendMessageToQueue({ test: 'message' })
+
+// With proxy - add back to config
+config.httpProxy = 'http://proxy.example.com:8080'
+await sendMessageToQueue({ test: 'message' })
 ```
 
-## Environment Variables
+## Configuration
 
-| Variable              | Description                     | Example                         |
-| --------------------- | ------------------------------- | ------------------------------- |
-| `HTTPS_PROXY`         | Proxy URL for HTTPS connections | `http://proxy.example.com:8080` |
-| `HTTP_PROXY`          | Fallback proxy URL              | `http://proxy.example.com:8080` |
-| `NO_PROXY`            | Hosts to exclude from proxy     | `localhost,127.0.0.1`           |
-| `NODE_EXTRA_CA_CERTS` | Custom CA certificate path      | `/etc/ssl/certs/ca.pem`         |
-| `DEBUG`               | Enable debug logging            | `azure*,rhea*`                  |
+### Config Structure
+
+```javascript
+{
+  azure: {
+    defraCloudTenantId: 'your-azure-tenant-id',  // For Service Bus
+    defraTenantId: 'your-azure-tenant-id'        // For Blob Storage
+  },
+  aws: {
+    poolId: 'eu-west-2:your-cognito-pool-id',
+    region: 'eu-west-2'
+  },
+  tradeServiceBus: {
+    clientId: 'your-service-bus-client-id',
+    serviceBusNamespace: 'mynamespace.servicebus.windows.net',
+    queueName: 'your-queue-name'
+  },
+  httpProxy: 'http://proxy.example.com:8080'  // Optional
+}
+```
+
+### Environment Variables
+
+| Variable              | Description                 | Example                         |
+| --------------------- | --------------------------- | ------------------------------- |
+| `HTTP_PROXY`          | Proxy URL (read by config)  | `http://proxy.example.com:8080` |
+| `NO_PROXY`            | Hosts to exclude from proxy | `localhost,127.0.0.1`           |
+| `NODE_EXTRA_CA_CERTS` | Custom CA certificate path  | `/etc/ssl/certs/ca.pem`         |
+| `DEBUG`               | Enable debug logging        | `azure*,rhea*`                  |
 
 ## Proxy Requirements
 
