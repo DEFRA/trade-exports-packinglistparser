@@ -13,7 +13,7 @@ export function getClientProxyOptions() {
   return proxyUrl
     ? {
         proxyOptions: {
-          host: new URL(proxyUrl).hostname,
+          host: new URL(proxyUrl).href,
           port:
             new URL(proxyUrl).protocol.toLowerCase() === 'https:'
               ? HTTPS_PORT

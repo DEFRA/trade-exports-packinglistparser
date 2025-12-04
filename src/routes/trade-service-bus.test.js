@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { STATUS_CODES } from './statuscodes.js'
 
 // Mock sendMessageToQueue - must declare before vi.mock
 const mockSendMessageToQueue = vi.fn()
@@ -8,6 +9,12 @@ vi.mock('../services/trade-service-bus-service.js', () => ({
 
 // Import after mocks
 const { sendtoqueue } = await import('./trade-service-bus.js')
+
+// Test constants
+const ERROR_MESSAGES = {
+  FAILED_SEND: 'Failed to send message to queue',
+  ERROR_SENDING: 'Error sending message:'
+}
 
 describe('trade-service-bus routes', () => {
   let mockRequest
@@ -44,7 +51,7 @@ describe('trade-service-bus routes', () => {
         text: 'Hello, Service Bus!'
       })
       expect(mockH.response).toHaveBeenCalledWith('Success')
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
       expect(result).toBe(mockH)
     })
 
@@ -55,13 +62,15 @@ describe('trade-service-bus routes', () => {
       const result = await sendtoqueue.handler(mockRequest, mockH)
 
       expect(console.error).toHaveBeenCalledWith(
-        'Error sending message:',
+        ERROR_MESSAGES.ERROR_SENDING,
         error
       )
       expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to send message to queue'
+        error: ERROR_MESSAGES.FAILED_SEND
       })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expect(mockH.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
       expect(result).toBe(mockH)
     })
 
@@ -72,9 +81,11 @@ describe('trade-service-bus routes', () => {
       const result = await sendtoqueue.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to send message to queue'
+        error: ERROR_MESSAGES.FAILED_SEND
       })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expect(mockH.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
       expect(result).toBe(mockH)
     })
 
@@ -85,13 +96,15 @@ describe('trade-service-bus routes', () => {
       const result = await sendtoqueue.handler(mockRequest, mockH)
 
       expect(console.error).toHaveBeenCalledWith(
-        'Error sending message:',
+        ERROR_MESSAGES.ERROR_SENDING,
         authError
       )
       expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to send message to queue'
+        error: ERROR_MESSAGES.FAILED_SEND
       })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expect(mockH.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
       expect(result).toBe(mockH)
     })
   })

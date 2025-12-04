@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { STATUS_CODES } from './statuscodes.js'
 
 // Mock functions - must be declared before vi.mock
 const mockDownloadBlobFromApplicationForms = vi.fn()
@@ -31,15 +32,71 @@ vi.mock('../common/helpers/logging/logger.js', () => ({
 // Import after all mocks
 const { getFileFromBlob, formsContainerExists } = await import('./ehco-blob.js')
 
+// Test constants
+const ERROR_MESSAGES = {
+  FAILED_DOWNLOAD: 'Failed to download blob',
+  ERROR_DOWNLOADING: 'Error downloading blob:'
+}
+
+// Helper functions to reduce code duplication
+const setupSuccessfulDownload = (buffer) => {
+  mockDownloadBlobFromApplicationForms.mockResolvedValue(buffer)
+}
+
+const setupFailedDownload = (error) => {
+  mockDownloadBlobFromApplicationForms.mockRejectedValue(error)
+}
+
+const setupContainerCheck = (exists) => {
+  mockCheckApplicationFormsContainerExists.mockResolvedValue(exists)
+}
+
+const setupFailedContainerCheck = (error) => {
+  mockCheckApplicationFormsContainerExists.mockRejectedValue(error)
+}
+
+const expectSuccessResponse = (mockH, message = 'Success') => {
+  expect(mockH.response).toHaveBeenCalledWith(message)
+  expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+}
+
+const expectErrorResponse = (
+  mockH,
+  errorMessage = ERROR_MESSAGES.FAILED_DOWNLOAD
+) => {
+  expect(mockH.response).toHaveBeenCalledWith({ error: errorMessage })
+  expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.INTERNAL_SERVER_ERROR)
+}
+
+const expectErrorLogged = (mockConsoleError, error) => {
+  expect(mockConsoleError).toHaveBeenCalledWith(
+    ERROR_MESSAGES.ERROR_DOWNLOADING,
+    error
+  )
+}
+
+const createErrorWithCode = (message, code) => {
+  const error = new Error(message)
+  error.code = code
+  return error
+}
+
+const createErrorWithStatus = (message, statusCode) => {
+  const error = new Error(message)
+  error.statusCode = statusCode
+  return error
+}
+
 describe('EHCO Blob Routes', () => {
   let mockRequest
   let mockH
+  let mockConsoleError
 
   beforeEach(() => {
     vi.clearAllMocks()
 
     // Console.error spy
-    vi.spyOn(console, 'error').mockImplementation(() => {})
+    mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     mockRequest = {
       query: {
@@ -74,22 +131,19 @@ describe('EHCO Blob Routes', () => {
   describe('GET /ehco-blob-forms', () => {
     it('should download blob successfully and return 200', async () => {
       const testBuffer = Buffer.from('test file content')
-      mockDownloadBlobFromApplicationForms.mockResolvedValue(testBuffer)
+      setupSuccessfulDownload(testBuffer)
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
       expect(mockDownloadBlobFromApplicationForms).toHaveBeenCalledWith(
         'test-file.pdf'
       )
-      expect(mockH.response).toHaveBeenCalledWith('Success')
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expectSuccessResponse(mockH)
     })
 
     it('should handle blob name from query parameter', async () => {
       mockRequest.query.blobname = 'documents/report.xlsx'
-      mockDownloadBlobFromApplicationForms.mockResolvedValue(
-        Buffer.from('excel content')
-      )
+      setupSuccessfulDownload(Buffer.from('excel content'))
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
@@ -99,89 +153,66 @@ describe('EHCO Blob Routes', () => {
     })
 
     it('should return 500 when download fails', async () => {
-      const error = new Error('Failed to download blob')
-      mockDownloadBlobFromApplicationForms.mockRejectedValue(error)
+      const error = new Error(ERROR_MESSAGES.FAILED_DOWNLOAD)
+      setupFailedDownload(error)
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error downloading blob:',
-        error
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to download blob'
-      })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expectErrorLogged(mockConsoleError, error)
+      expectErrorResponse(mockH)
     })
 
     it('should handle network timeout errors', async () => {
-      const timeoutError = new Error('Request timeout')
-      timeoutError.code = 'ETIMEDOUT'
-      mockDownloadBlobFromApplicationForms.mockRejectedValue(timeoutError)
+      const timeoutError = createErrorWithCode('Request timeout', 'ETIMEDOUT')
+      setupFailedDownload(timeoutError)
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error downloading blob:',
-        timeoutError
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to download blob'
-      })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expectErrorLogged(mockConsoleError, timeoutError)
+      expectErrorResponse(mockH)
     })
 
     it('should handle authentication errors', async () => {
-      const authError = new Error('Authentication failed')
-      authError.statusCode = 401
-      mockDownloadBlobFromApplicationForms.mockRejectedValue(authError)
+      const authError = createErrorWithStatus(
+        'Authentication failed',
+        STATUS_CODES.UNAUTHORIZED
+      )
+      setupFailedDownload(authError)
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error downloading blob:',
-        authError
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to download blob'
-      })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expectErrorLogged(mockConsoleError, authError)
+      expectErrorResponse(mockH)
     })
 
     it('should handle blob not found errors', async () => {
-      const notFoundError = new Error('BlobNotFound')
-      notFoundError.statusCode = 404
-      mockDownloadBlobFromApplicationForms.mockRejectedValue(notFoundError)
+      const notFoundError = createErrorWithStatus(
+        'BlobNotFound',
+        STATUS_CODES.NOT_FOUND
+      )
+      setupFailedDownload(notFoundError)
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error downloading blob:',
-        notFoundError
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to download blob'
-      })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expectErrorLogged(mockConsoleError, notFoundError)
+      expectErrorResponse(mockH)
     })
 
     it('should handle different blob names with special characters', async () => {
       mockRequest.query.blobname = 'folder/sub-folder/file_name-123.pdf'
-      mockDownloadBlobFromApplicationForms.mockResolvedValue(
-        Buffer.from('content')
-      )
+      setupSuccessfulDownload(Buffer.from('content'))
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
       expect(mockDownloadBlobFromApplicationForms).toHaveBeenCalledWith(
         'folder/sub-folder/file_name-123.pdf'
       )
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should handle empty blob name', async () => {
       mockRequest.query.blobname = ''
-      mockDownloadBlobFromApplicationForms.mockResolvedValue(Buffer.from(''))
+      setupSuccessfulDownload(Buffer.from(''))
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
@@ -191,86 +222,69 @@ describe('EHCO Blob Routes', () => {
     it('should handle undefined blob name', async () => {
       mockRequest.query.blobname = undefined
       const error = new Error('Blob name is required')
-      mockDownloadBlobFromApplicationForms.mockRejectedValue(error)
+      setupFailedDownload(error)
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
       expect(mockDownloadBlobFromApplicationForms).toHaveBeenCalledWith(
         undefined
       )
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expect(mockH.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
     })
   })
 
   describe('GET /ehco-blob-forms-container', () => {
     it('should return 200 when container exists', async () => {
-      mockCheckApplicationFormsContainerExists.mockResolvedValue(true)
+      setupContainerCheck(true)
 
       await formsContainerExists.handler(mockRequest, mockH)
 
       expect(mockCheckApplicationFormsContainerExists).toHaveBeenCalled()
-      expect(mockH.response).toHaveBeenCalledWith('Success: true')
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expectSuccessResponse(mockH, 'Success: true')
     })
 
     it('should return 200 when container does not exist', async () => {
-      mockCheckApplicationFormsContainerExists.mockResolvedValue(false)
+      setupContainerCheck(false)
 
       await formsContainerExists.handler(mockRequest, mockH)
 
       expect(mockCheckApplicationFormsContainerExists).toHaveBeenCalled()
-      expect(mockH.response).toHaveBeenCalledWith('Success: false')
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expectSuccessResponse(mockH, 'Success: false')
     })
 
     it('should return 500 when check fails', async () => {
       const error = new Error('Failed to check container')
-      mockCheckApplicationFormsContainerExists.mockRejectedValue(error)
+      setupFailedContainerCheck(error)
 
       await formsContainerExists.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error downloading blob:',
-        error
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to download blob'
-      })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expectErrorLogged(mockConsoleError, error)
+      expectErrorResponse(mockH)
     })
 
     it('should handle network timeout errors', async () => {
-      const timeoutError = new Error('Request timeout')
-      timeoutError.code = 'ETIMEDOUT'
-      mockCheckApplicationFormsContainerExists.mockRejectedValue(timeoutError)
+      const timeoutError = createErrorWithCode('Request timeout', 'ETIMEDOUT')
+      setupFailedContainerCheck(timeoutError)
 
       await formsContainerExists.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error downloading blob:',
-        timeoutError
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to download blob'
-      })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expectErrorLogged(mockConsoleError, timeoutError)
+      expectErrorResponse(mockH)
     })
 
     it('should handle authentication errors', async () => {
-      const authError = new Error('Authentication failed')
-      authError.statusCode = 401
-      mockCheckApplicationFormsContainerExists.mockRejectedValue(authError)
+      const authError = createErrorWithStatus(
+        'Authentication failed',
+        STATUS_CODES.UNAUTHORIZED
+      )
+      setupFailedContainerCheck(authError)
 
       await formsContainerExists.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        'Error downloading blob:',
-        authError
-      )
-      expect(mockH.response).toHaveBeenCalledWith({
-        error: 'Failed to download blob'
-      })
-      expect(mockH.code).toHaveBeenCalledWith(500)
+      expectErrorLogged(mockConsoleError, authError)
+      expectErrorResponse(mockH)
     })
   })
 })

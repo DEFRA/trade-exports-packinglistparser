@@ -59,7 +59,7 @@ describe('proxy-helper', () => {
 
       expect(result).toEqual({
         proxyOptions: {
-          host: 'proxy.example.com',
+          host: 'http://proxy.example.com:8080/',
           port: 80
         }
       })
@@ -75,7 +75,7 @@ describe('proxy-helper', () => {
 
       expect(result).toEqual({
         proxyOptions: {
-          host: 'proxy.example.com',
+          host: 'https://proxy.example.com:8443/',
           port: 443
         }
       })
@@ -91,7 +91,7 @@ describe('proxy-helper', () => {
 
       expect(result).toEqual({
         proxyOptions: {
-          host: 'proxy.example.com',
+          host: 'http://proxy.example.com/',
           port: 80
         }
       })

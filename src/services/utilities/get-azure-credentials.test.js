@@ -86,7 +86,7 @@ describe('get-azure-credentials', () => {
     it('should use getCognitoToken callback that requests token from Cognito', async () => {
       let capturedCallback
       MockClientAssertionCredential.mockImplementation(
-        (tenantId, clientId, callback) => {
+        (_tenantId, _clientId, callback) => {
           capturedCallback = callback
           return { type: 'credential' }
         }
@@ -115,7 +115,7 @@ describe('get-azure-credentials', () => {
     it('should throw error when Cognito token request fails', async () => {
       let capturedCallback
       MockClientAssertionCredential.mockImplementation(
-        (tenantId, clientId, callback) => {
+        (_tenantId, _clientId, callback) => {
           capturedCallback = callback
           return { type: 'credential' }
         }
@@ -152,7 +152,7 @@ describe('get-azure-credentials', () => {
     it('should use correct logins mapping for Cognito', async () => {
       let capturedCallback
       MockClientAssertionCredential.mockImplementation(
-        (tenantId, clientId, callback) => {
+        (_tenantId, _clientId, callback) => {
           capturedCallback = callback
           return { type: 'credential' }
         }

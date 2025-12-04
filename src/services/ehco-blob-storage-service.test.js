@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { Readable } from 'stream'
+import { Readable } from 'node:stream'
 
 // Mock BlobServiceClient - must be declared before vi.mock
 const mockDownload = vi.fn()
@@ -46,39 +46,90 @@ const {
 } = await import('./ehco-blob-storage-service.js')
 const { BlobServiceClient } = await import('@azure/storage-blob')
 
+// Test constants for repeated literals
+const TEST_CREDENTIALS = {
+  TENANT_ID: 'test-tenant-id',
+  CLIENT_ID: 'test-client-id'
+}
+
+const TEST_BLOB_CONFIG = {
+  STORAGE_ACCOUNT: 'testaccount',
+  CONTAINER_NAME: 'test-forms-container'
+}
+
+const TEST_URLS = {
+  BLOB_SERVICE: 'https://testaccount.blob.core.windows.net'
+}
+
+const ERROR_CODES = {
+  TIMEOUT: 'ETIMEDOUT',
+  UNAUTHORIZED: 401
+}
+
+// Helper functions to reduce code duplication and complexity
+const setupDefaultConfig = () => {
+  mockConfigGet.mockImplementation((key) => {
+    if (key === 'azure') {
+      return {
+        defraTenantId: TEST_CREDENTIALS.TENANT_ID
+      }
+    }
+    if (key === 'ehcoBlob') {
+      return {
+        clientId: TEST_CREDENTIALS.CLIENT_ID,
+        blobStorageAccount: TEST_BLOB_CONFIG.STORAGE_ACCOUNT,
+        formsContainerName: TEST_BLOB_CONFIG.CONTAINER_NAME
+      }
+    }
+    return {}
+  })
+}
+
+const setupCustomConfig = (
+  tenantId,
+  clientId,
+  storageAccount,
+  containerName
+) => {
+  mockConfigGet.mockImplementation((key) => {
+    if (key === 'azure') {
+      return {
+        defraTenantId: tenantId
+      }
+    }
+    if (key === 'ehcoBlob') {
+      return {
+        clientId,
+        blobStorageAccount: storageAccount,
+        formsContainerName: containerName
+      }
+    }
+    return {}
+  })
+}
+
+const createMockReadableStream = (data) => {
+  return Readable.from([data])
+}
+
+const setupSuccessfulDownload = (data) => {
+  const readableStream = createMockReadableStream(data)
+  mockDownload.mockResolvedValue({
+    readableStreamBody: readableStream
+  })
+}
+
 describe('ehco-blob-storage-service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-
-    // Reset proxy helper mock
     mockGetClientProxyOptions.mockReturnValue({})
-
-    // Reset config mock to default values
-    mockConfigGet.mockImplementation((key) => {
-      if (key === 'azure') {
-        return {
-          defraTenantId: 'test-tenant-id'
-        }
-      }
-      if (key === 'ehcoBlob') {
-        return {
-          clientId: 'test-client-id',
-          blobStorageAccount: 'testaccount',
-          formsContainerName: 'test-forms-container'
-        }
-      }
-      return {}
-    })
+    setupDefaultConfig()
   })
 
   describe('downloadBlobFromApplicationForms', () => {
     it('should download a blob successfully', async () => {
       const testData = Buffer.from('test file content')
-      const readableStream = Readable.from([testData])
-
-      mockDownload.mockResolvedValue({
-        readableStreamBody: readableStream
-      })
+      setupSuccessfulDownload(testData)
 
       const result = await downloadBlobFromApplicationForms('test-blob.txt')
 
@@ -104,16 +155,12 @@ describe('ehco-blob-storage-service', () => {
       mockGetClientProxyOptions.mockReturnValue(proxyOptions)
 
       const testData = Buffer.from('test content with proxy')
-      const readableStream = Readable.from([testData])
-
-      mockDownload.mockResolvedValue({
-        readableStreamBody: readableStream
-      })
+      setupSuccessfulDownload(testData)
 
       const result = await downloadBlobFromApplicationForms('test-blob.pdf')
 
       expect(BlobServiceClient).toHaveBeenCalledWith(
-        'https://testaccount.blob.core.windows.net',
+        TEST_URLS.BLOB_SERVICE,
         { type: 'credential' },
         proxyOptions
       )
@@ -174,21 +221,12 @@ describe('ehco-blob-storage-service', () => {
     })
 
     it('should throw error when BlobServiceClient creation fails', async () => {
-      mockConfigGet.mockImplementation((key) => {
-        if (key === 'azure') {
-          return {
-            defraTenantId: 'test-tenant-id'
-          }
-        }
-        if (key === 'ehcoBlob') {
-          return {
-            clientId: 'test-client-id',
-            blobStorageAccount: null, // Missing required config
-            formsContainerName: 'test-container'
-          }
-        }
-        return {}
-      })
+      setupCustomConfig(
+        TEST_CREDENTIALS.TENANT_ID,
+        TEST_CREDENTIALS.CLIENT_ID,
+        null,
+        'test-container'
+      )
 
       mockBlobServiceClient.mockImplementationOnce(() => {
         throw new Error('Invalid blob storage account')
@@ -201,30 +239,8 @@ describe('ehco-blob-storage-service', () => {
 
     it('should construct correct blob service URL', async () => {
       const testData = Buffer.from('url test')
-      const readableStream = Readable.from([testData])
-
-      mockDownload.mockResolvedValue({
-        readableStreamBody: readableStream
-      })
-
-      // Reset proxy options to empty for this test
-      mockGetClientProxyOptions.mockReturnValue({})
-
-      mockConfigGet.mockImplementation((key) => {
-        if (key === 'azure') {
-          return {
-            defraTenantId: 'tenant-123'
-          }
-        }
-        if (key === 'ehcoBlob') {
-          return {
-            clientId: 'client-456',
-            blobStorageAccount: 'myaccount',
-            formsContainerName: 'forms'
-          }
-        }
-        return {}
-      })
+      setupSuccessfulDownload(testData)
+      setupCustomConfig('tenant-123', 'client-456', 'myaccount', 'forms')
 
       await downloadBlobFromApplicationForms('file.txt')
 
@@ -249,11 +265,7 @@ describe('ehco-blob-storage-service', () => {
 
     it('should call config.get with correct keys', async () => {
       const testData = Buffer.from('config test')
-      const readableStream = Readable.from([testData])
-
-      mockDownload.mockResolvedValue({
-        readableStreamBody: readableStream
-      })
+      setupSuccessfulDownload(testData)
 
       await downloadBlobFromApplicationForms('config-test.txt')
 
@@ -270,16 +282,16 @@ describe('ehco-blob-storage-service', () => {
       const result = await checkApplicationFormsContainerExists()
 
       expect(mockGetAzureCredentials).toHaveBeenCalledWith(
-        'test-tenant-id',
-        'test-client-id'
+        TEST_CREDENTIALS.TENANT_ID,
+        TEST_CREDENTIALS.CLIENT_ID
       )
       expect(BlobServiceClient).toHaveBeenCalledWith(
-        'https://testaccount.blob.core.windows.net',
+        TEST_URLS.BLOB_SERVICE,
         { type: 'credential' },
         {}
       )
       expect(mockGetContainerClient).toHaveBeenCalledWith(
-        'test-forms-container'
+        TEST_BLOB_CONFIG.CONTAINER_NAME
       )
       expect(mockExists).toHaveBeenCalled()
       expect(result).toBe(true)
@@ -302,7 +314,7 @@ describe('ehco-blob-storage-service', () => {
       const result = await checkApplicationFormsContainerExists()
 
       expect(BlobServiceClient).toHaveBeenCalledWith(
-        'https://testaccount.blob.core.windows.net',
+        TEST_URLS.BLOB_SERVICE,
         { type: 'credential' },
         proxyOptions
       )
@@ -319,7 +331,7 @@ describe('ehco-blob-storage-service', () => {
 
     it('should throw error when authentication fails', async () => {
       const authError = new Error('Invalid credentials')
-      authError.statusCode = 401
+      authError.statusCode = ERROR_CODES.UNAUTHORIZED
       mockExists.mockRejectedValue(authError)
 
       await expect(checkApplicationFormsContainerExists()).rejects.toThrow(
@@ -329,7 +341,7 @@ describe('ehco-blob-storage-service', () => {
 
     it('should throw error when network timeout occurs', async () => {
       const timeoutError = new Error('Request timeout')
-      timeoutError.code = 'ETIMEDOUT'
+      timeoutError.code = ERROR_CODES.TIMEOUT
       mockExists.mockRejectedValue(timeoutError)
 
       await expect(checkApplicationFormsContainerExists()).rejects.toThrow(
@@ -338,21 +350,12 @@ describe('ehco-blob-storage-service', () => {
     })
 
     it('should use correct Azure credentials', async () => {
-      mockConfigGet.mockImplementation((key) => {
-        if (key === 'azure') {
-          return {
-            defraTenantId: 'custom-tenant'
-          }
-        }
-        if (key === 'ehcoBlob') {
-          return {
-            clientId: 'custom-client',
-            blobStorageAccount: 'customaccount',
-            formsContainerName: 'custom-container'
-          }
-        }
-        return {}
-      })
+      setupCustomConfig(
+        'custom-tenant',
+        'custom-client',
+        'customaccount',
+        'custom-container'
+      )
       mockExists.mockResolvedValue(true)
 
       await checkApplicationFormsContainerExists()

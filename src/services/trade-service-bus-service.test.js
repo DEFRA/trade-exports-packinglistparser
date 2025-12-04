@@ -64,6 +64,17 @@ const { sendMessageToQueue, receiveMessagesFromQueue } = await import(
 )
 const { ServiceBusClient } = await import('@azure/service-bus')
 
+// Test constants for repeated literals
+const TEST_CREDENTIALS = {
+  TENANT_ID: 'test-tenant-id',
+  CLIENT_ID: 'test-client-id'
+}
+
+const TEST_SERVICE_BUS_CONFIG = {
+  NAMESPACE: 'test-namespace.servicebus.windows.net',
+  QUEUE_NAME: 'test-queue'
+}
+
 describe('trade-service-bus-service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -72,14 +83,14 @@ describe('trade-service-bus-service', () => {
     mockConfigGet.mockImplementation((key) => {
       if (key === 'azure') {
         return {
-          defraCloudTenantId: 'test-tenant-id'
+          defraCloudTenantId: TEST_CREDENTIALS.TENANT_ID
         }
       }
       if (key === 'tradeServiceBus') {
         return {
-          clientId: 'test-client-id',
-          serviceBusNamespace: 'test-namespace.servicebus.windows.net',
-          queueName: 'test-queue'
+          clientId: TEST_CREDENTIALS.CLIENT_ID,
+          serviceBusNamespace: TEST_SERVICE_BUS_CONFIG.NAMESPACE,
+          queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME
         }
       }
       return {}
@@ -94,18 +105,20 @@ describe('trade-service-bus-service', () => {
       await sendMessageToQueue(message)
 
       expect(mockGetAzureCredentials).toHaveBeenCalledWith(
-        'test-tenant-id',
-        'test-client-id'
+        TEST_CREDENTIALS.TENANT_ID,
+        TEST_CREDENTIALS.CLIENT_ID
       )
       expect(ServiceBusClient).toHaveBeenCalledWith(
-        'test-namespace.servicebus.windows.net',
+        TEST_SERVICE_BUS_CONFIG.NAMESPACE,
         { type: 'credential' },
         { webSocketOptions: { webSocket: {} } }
       )
-      expect(mockCreateSender).toHaveBeenCalledWith('test-queue')
+      expect(mockCreateSender).toHaveBeenCalledWith(
+        TEST_SERVICE_BUS_CONFIG.QUEUE_NAME
+      )
       expect(mockSendMessages).toHaveBeenCalledWith({ body: message })
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { queueName: 'test-queue' },
+        { queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME },
         'Message sent to Service Bus queue'
       )
     })
@@ -128,7 +141,7 @@ describe('trade-service-bus-service', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { err: error, queueName: 'test-queue' },
+        { err: error, queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME },
         'Failed to send message to Service Bus queue'
       )
     })
@@ -185,14 +198,16 @@ describe('trade-service-bus-service', () => {
 
       const result = await receiveMessagesFromQueue(10, 5000)
 
-      expect(mockCreateReceiver).toHaveBeenCalledWith('test-queue')
+      expect(mockCreateReceiver).toHaveBeenCalledWith(
+        TEST_SERVICE_BUS_CONFIG.QUEUE_NAME
+      )
       expect(mockReceiveMessages).toHaveBeenCalledWith(10, {
         maxWaitTimeInMs: 5000
       })
       expect(result).toEqual([{ text: 'Message 1' }, { text: 'Message 2' }])
       expect(mockCompleteMessage).toHaveBeenCalledTimes(2)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { queueName: 'test-queue', count: 2 },
+        { queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME, count: 2 },
         'Received messages from Service Bus queue'
       )
     })
@@ -214,7 +229,7 @@ describe('trade-service-bus-service', () => {
 
       expect(result).toEqual([])
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { queueName: 'test-queue', count: 0 },
+        { queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME, count: 0 },
         'Received messages from Service Bus queue'
       )
     })
@@ -235,7 +250,7 @@ describe('trade-service-bus-service', () => {
       await expect(receiveMessagesFromQueue()).rejects.toThrow('Receive failed')
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { err: error, queueName: 'test-queue' },
+        { err: error, queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME },
         'Failed to receive messages from Service Bus queue'
       )
     })
