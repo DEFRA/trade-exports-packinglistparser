@@ -8,6 +8,7 @@ import {
 import { home } from '../routes/home.js'
 import { sendtoqueue } from '../routes/trade-service-bus.js'
 import { getFileFromBlob, formsContainerExists } from '../routes/ehco-blob.js'
+import { ineligibleItems } from '../routes/mdm.js'
 
 const router = {
   plugin: {
@@ -20,6 +21,7 @@ const router = {
       server.route([getDispatchLocationRoute, dynamicsHealthCheck])
       server.route([sendtoqueue])
       server.route([getFileFromBlob, formsContainerExists])
+      server.route([ineligibleItems])
     }
   }
 }
