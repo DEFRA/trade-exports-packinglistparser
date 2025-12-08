@@ -14,7 +14,7 @@ const logger = createLogger()
 export async function callAzureApiWithToken(url, options) {
   try {
     const { defraCloudTenantId } = config.get('azure') || {}
-    const { clientId, internalAPIMScope } = config.get('mdm')
+    const { clientId, internalAPIMScope, subscriptionKey } = config.get('mdm')
 
     if (!defraCloudTenantId || !clientId) {
       throw new Error(
@@ -37,6 +37,7 @@ export async function callAzureApiWithToken(url, options) {
     // Prepare headers with Bearer token
     const headers = {
       Authorization: `Bearer ${tokenResponse.token}`,
+      'Ocp-Apim-Subscription-Key': subscriptionKey,
       'Content-Type': 'application/json',
       ...options.headers
     }

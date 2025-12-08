@@ -275,6 +275,7 @@ const config = convict({
       format: String,
       nullable: true,
       default: null,
+      sensitive: true,
       env: 'AZURE_MDM_SUBSCRIPTION_KEY'
     },
     internalAPIMScope: {
