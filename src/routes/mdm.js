@@ -16,15 +16,15 @@ export const ineligibleItems = {
  */
 async function getHandler(_request, h) {
   try {
-    const ineligibleItems = await getIneligibleItems()
+    const items = await getIneligibleItems()
 
     return h
-      .response(`Success: ${JSON.stringify(ineligibleItems)} `)
+      .response(`Success: ${JSON.stringify(items)} `)
       .code(STATUS_CODES.OK)
   } catch (error) {
-    console.error('Error downloading blob:', error)
+    console.error('Error downloading ineligible items:', error)
     return h
-      .response({ error: 'Failed to download blob' })
+      .response({ error: 'Failed to download ineligible items' })
       .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
   }
 }

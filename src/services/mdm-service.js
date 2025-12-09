@@ -93,6 +93,7 @@ export async function callAzureApiJson(url, options) {
 export function getIneligibleItems() {
   const { internalAPIMEndpoint, getIneligibleItemsEndpoint } = config.get('mdm')
   const url = `${internalAPIMEndpoint}${getIneligibleItemsEndpoint}`
+  logger.info(`Getting ineligible items from MDM API - ${url}`)
   return getFromAzureApi(url, {})
 }
 
