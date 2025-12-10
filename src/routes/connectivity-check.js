@@ -5,6 +5,7 @@ import {
   checkDynamicsDispatchLocationConnection
 } from '../services/dynamics-service.js'
 import { checkApplicationFormsContainerExists } from '../services/ehco-blob-storage-service.js'
+import { getIneligibleItems } from '../services/mdm-service.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 
 const logger = createLogger()
@@ -27,7 +28,8 @@ async function connectivityCheckHandler(_request, h) {
     s3: await canS3Connect(),
     dynamicsLogin: await canDynamicsLoginConnect(),
     dynamicsData: await canWeReceiveDispatchLocationsFromDynamics(),
-    ehcoBlobStorage: await canWeConnectToEhcoBlobStorage()
+    ehcoBlobStorage: await canWeConnectToEhcoBlobStorage(),
+    mdmIneligibleItems: await canWeConnectToMdmService()
   }
   const allConnected = Object.values(connectionChecks).every((v) => v === true)
 
@@ -80,6 +82,14 @@ async function canWeReceiveDispatchLocationsFromDynamics() {
  */
 async function canWeConnectToEhcoBlobStorage() {
   return canConnect(checkApplicationFormsContainerExists, 'EHCO Blob Storage')
+}
+
+/**
+ * Check if we can connect to MDM service
+ * @returns {Promise<boolean>} True if connected, false otherwise
+ */
+async function canWeConnectToMdmService() {
+  return canConnect(getIneligibleItems, 'MDM Service')
 }
 
 /**

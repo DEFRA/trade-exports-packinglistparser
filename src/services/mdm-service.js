@@ -28,7 +28,7 @@ export async function callAzureApiWithToken(url, options) {
 
     const tokenResponse = await credential.getToken(internalAPIMScope)
 
-    if (!tokenResponse || !tokenResponse.token) {
+    if (!tokenResponse?.token) {
       throw new Error('Failed to obtain access token')
     }
 
