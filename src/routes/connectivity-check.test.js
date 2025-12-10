@@ -6,6 +6,7 @@ import {
   checkDynamicsDispatchLocationConnection
 } from '../services/dynamics-service.js'
 import { checkApplicationFormsContainerExists } from '../services/ehco-blob-storage-service.js'
+import { getIneligibleItems } from '../services/mdm-service.js'
 import { STATUS_CODES } from './statuscodes.js'
 
 // Mock services before importing the route
@@ -20,6 +21,10 @@ vi.mock('../services/dynamics-service.js', () => ({
 
 vi.mock('../services/ehco-blob-storage-service.js', () => ({
   checkApplicationFormsContainerExists: vi.fn()
+}))
+
+vi.mock('../services/mdm-service.js', () => ({
+  getIneligibleItems: vi.fn()
 }))
 
 vi.mock('../common/helpers/logging/logger.js', () => ({
@@ -43,12 +48,24 @@ const SERVICE_NAMES = {
   S3: 's3',
   DYNAMICS_LOGIN: 'dynamicsLogin',
   DYNAMICS_DATA: 'dynamicsData',
-  EHCO_BLOB_STORAGE: 'ehcoBlobStorage'
+  EHCO_BLOB_STORAGE: 'ehcoBlobStorage',
+  MDM_INELIGIBLE_ITEMS: 'mdmIneligibleItems'
 }
 
 const ROUTE_CONFIG = {
   METHOD: 'GET',
   PATH: '/connectivity-check'
+}
+
+const ERROR_MESSAGES = {
+  S3_DOWN: 'S3 down',
+  AUTH_FAILED: 'Auth failed',
+  DATA_FETCH_FAILED: 'Data fetch failed',
+  BLOB_STORAGE_UNAVAILABLE: 'Blob storage unavailable',
+  DATA_ERROR: 'Data error',
+  BLOB_ERROR: 'Blob error',
+  MDM_ERROR: 'MDM error',
+  MDM_SERVICE_UNAVAILABLE: 'MDM service unavailable'
 }
 
 describe('Connectivity Check Route', () => {
@@ -75,6 +92,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockResolvedValue([])
 
     await connectivityCheck.handler({}, mockH)
 
@@ -82,24 +100,27 @@ describe('Connectivity Check Route', () => {
     expect(bearerTokenRequest).toHaveBeenCalledTimes(1)
     expect(checkDynamicsDispatchLocationConnection).toHaveBeenCalledTimes(1)
     expect(checkApplicationFormsContainerExists).toHaveBeenCalledTimes(1)
+    expect(getIneligibleItems).toHaveBeenCalledTimes(1)
     expect(mockH.response).toHaveBeenCalledWith({
       [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.PASSED,
       [RESPONSE_PROPERTIES.DETAILS]: {
         [SERVICE_NAMES.S3]: true,
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
   })
 
   it('should return failure with details when s3 fails', async () => {
-    const mockError = new Error('S3 down')
+    const mockError = new Error(ERROR_MESSAGES.S3_DOWN)
     listS3Objects.mockRejectedValue(mockError)
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockResolvedValue([])
 
     await connectivityCheck.handler({}, mockH)
 
@@ -109,7 +130,8 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.S3]: false,
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -118,11 +140,12 @@ describe('Connectivity Check Route', () => {
   })
 
   it('should return failure with details when dynamics login fails', async () => {
-    const mockError = new Error('Auth failed')
+    const mockError = new Error(ERROR_MESSAGES.AUTH_FAILED)
     listS3Objects.mockResolvedValue([])
     bearerTokenRequest.mockRejectedValue(mockError)
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockResolvedValue([])
 
     await connectivityCheck.handler({}, mockH)
 
@@ -132,7 +155,8 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.S3]: true,
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -141,11 +165,12 @@ describe('Connectivity Check Route', () => {
   })
 
   it('should return failure with details when dynamics data fetch fails', async () => {
-    const mockError = new Error('Data fetch failed')
+    const mockError = new Error(ERROR_MESSAGES.DATA_FETCH_FAILED)
     listS3Objects.mockResolvedValue([])
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockRejectedValue(mockError)
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockResolvedValue([])
 
     await connectivityCheck.handler({}, mockH)
 
@@ -155,7 +180,8 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.S3]: true,
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: false,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -164,10 +190,11 @@ describe('Connectivity Check Route', () => {
   })
 
   it('should return failure when multiple services fail', async () => {
-    listS3Objects.mockRejectedValue(new Error('S3 down'))
-    bearerTokenRequest.mockRejectedValue(new Error('Auth failed'))
+    listS3Objects.mockRejectedValue(new Error(ERROR_MESSAGES.S3_DOWN))
+    bearerTokenRequest.mockRejectedValue(new Error(ERROR_MESSAGES.AUTH_FAILED))
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockResolvedValue([])
 
     await connectivityCheck.handler({}, mockH)
 
@@ -177,7 +204,8 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.S3]: false,
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -186,11 +214,12 @@ describe('Connectivity Check Route', () => {
   })
 
   it('should return failure when EHCO Blob Storage fails', async () => {
-    const mockError = new Error('Blob storage unavailable')
+    const mockError = new Error(ERROR_MESSAGES.BLOB_STORAGE_UNAVAILABLE)
     listS3Objects.mockResolvedValue([])
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockRejectedValue(mockError)
+    getIneligibleItems.mockResolvedValue([])
 
     await connectivityCheck.handler({}, mockH)
 
@@ -200,7 +229,8 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.S3]: true,
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
@@ -209,14 +239,15 @@ describe('Connectivity Check Route', () => {
   })
 
   it('should return failure when all services fail', async () => {
-    listS3Objects.mockRejectedValue(new Error('S3 down'))
-    bearerTokenRequest.mockRejectedValue(new Error('Auth failed'))
+    listS3Objects.mockRejectedValue(new Error(ERROR_MESSAGES.S3_DOWN))
+    bearerTokenRequest.mockRejectedValue(new Error(ERROR_MESSAGES.AUTH_FAILED))
     checkDynamicsDispatchLocationConnection.mockRejectedValue(
-      new Error('Data error')
+      new Error(ERROR_MESSAGES.DATA_ERROR)
     )
     checkApplicationFormsContainerExists.mockRejectedValue(
-      new Error('Blob error')
+      new Error(ERROR_MESSAGES.BLOB_ERROR)
     )
+    getIneligibleItems.mockRejectedValue(new Error(ERROR_MESSAGES.MDM_ERROR))
 
     await connectivityCheck.handler({}, mockH)
 
@@ -226,7 +257,33 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.S3]: false,
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: false,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: false
+      }
+    })
+    expect(mockResponse.code).toHaveBeenCalledWith(
+      STATUS_CODES.SERVICE_UNAVAILABLE
+    )
+  })
+
+  it('should return failure when MDM service fails', async () => {
+    const mockError = new Error(ERROR_MESSAGES.MDM_SERVICE_UNAVAILABLE)
+    listS3Objects.mockResolvedValue([])
+    bearerTokenRequest.mockResolvedValue({})
+    checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockRejectedValue(mockError)
+
+    await connectivityCheck.handler({}, mockH)
+
+    expect(mockH.response).toHaveBeenCalledWith({
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: true,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: false
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(

@@ -261,6 +261,44 @@ const config = convict({
       default: null,
       env: 'AZURE_EHCO_BLOB_FORMS_CONTAINER_NAME'
     }
+  },
+  mdm: {
+    clientId: {
+      doc: 'Azure AD Client ID',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_MDM_CLIENT_ID'
+    },
+    subscriptionKey: {
+      doc: 'Azure APIM Subscription Key',
+      format: String,
+      nullable: true,
+      default: null,
+      sensitive: true,
+      env: 'AZURE_MDM_SUBSCRIPTION_KEY'
+    },
+    internalAPIMScope: {
+      doc: 'Azure APIM Internal Scope',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_MDM_INTERNAL_APIM_SCOPE'
+    },
+    internalAPIMEndpoint: {
+      doc: 'Azure APIM Internal Endpoint',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_MDM_INTERNAL_APIM_ENDPOINT'
+    },
+    getIneligibleItemsEndpoint: {
+      doc: 'Azure APIM Get Ineligible Items Endpoint',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_MDM_GET_INELIGIBLE_ITEMS_ENDPOINT'
+    }
   }
 })
 
