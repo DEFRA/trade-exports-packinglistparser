@@ -1,5 +1,7 @@
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import { HttpsProxyAgent } from 'https-proxy-agent'
+
 const logger = createLogger()
 
 // Configure proxy if HTTP_PROXY is set
@@ -34,13 +36,10 @@ export function getServiceBusConnectionOptions() {
 
   // Configure proxy if httpProxy is set in config
   if (proxyUrl) {
+    // For AMQP connections over TLS, we need to use HttpsProxyAgent
+    const proxyAgent = new HttpsProxyAgent(proxyUrl)
     connectionOptions.proxyOptions = {
-      host: new URL(proxyUrl).hostname,
-      port:
-        new URL(proxyUrl).port ||
-        (new URL(proxyUrl).protocol.toLowerCase() === 'https:'
-          ? HTTPS_PORT
-          : HTTP_PORT)
+      proxyAgent
     }
     logger.info('Using proxy for Service Bus connection via AMQP transport')
   }
