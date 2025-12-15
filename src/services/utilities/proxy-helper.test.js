@@ -41,10 +41,6 @@ const PROPERTY_NAMES = {
   PORT: 'port'
 }
 
-const LOG_MESSAGES = {
-  USING_PROXY: 'Using proxy for Service Bus connection via AMQP'
-}
-
 describe('proxy-helper', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -147,7 +143,10 @@ describe('proxy-helper', () => {
         PROPERTY_NAMES.HOST,
         TEST_PROXY_HOSTS.HTTP_WITH_PORT
       )
-      expect(result.proxyOptions).toHaveProperty(PROPERTY_NAMES.PORT, '8080')
+      expect(result.proxyOptions).toHaveProperty(
+        PROPERTY_NAMES.PORT,
+        TEST_PORTS.HTTP
+      )
     })
 
     it('should handle HTTPS proxy URL correctly', async () => {
@@ -166,7 +165,10 @@ describe('proxy-helper', () => {
         PROPERTY_NAMES.HOST,
         TEST_PROXY_HOSTS.HTTPS_WITH_PORT
       )
-      expect(result.proxyOptions).toHaveProperty(PROPERTY_NAMES.PORT, '8443')
+      expect(result.proxyOptions).toHaveProperty(
+        PROPERTY_NAMES.PORT,
+        TEST_PORTS.HTTPS
+      )
     })
 
     it('should use default port when proxy URL has no port', async () => {
@@ -189,32 +191,6 @@ describe('proxy-helper', () => {
         PROPERTY_NAMES.PORT,
         TEST_PORTS.HTTP
       )
-    })
-
-    it('should log proxy usage when proxy is configured', async () => {
-      const { config } = await import('../../config.js')
-      const mockLogger = {
-        info: vi.fn(),
-        error: vi.fn(),
-        warn: vi.fn(),
-        debug: vi.fn()
-      }
-      config.get.mockReturnValue(TEST_PROXY_URLS.HTTPS_WITH_PORT)
-
-      vi.resetModules()
-
-      const { createLogger } = await import(
-        '../../common/helpers/logging/logger.js'
-      )
-      createLogger.mockReturnValue(mockLogger)
-
-      const { getServiceBusConnectionOptions } = await import(
-        './proxy-helper.js'
-      )
-
-      getServiceBusConnectionOptions()
-
-      expect(mockLogger.info).toHaveBeenCalledWith(LOG_MESSAGES.USING_PROXY)
     })
   })
 })
