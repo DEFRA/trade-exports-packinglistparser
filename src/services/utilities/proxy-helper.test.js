@@ -17,11 +17,6 @@ vi.mock('../../common/helpers/logging/logger.js', () => ({
   }))
 }))
 
-// Mock HttpsProxyAgent
-vi.mock('https-proxy-agent', () => ({
-  HttpsProxyAgent: vi.fn()
-}))
-
 // Test constants
 const TEST_PROXY_URLS = {
   HTTP_WITH_PORT: 'http://proxy.example.com:8080',
@@ -42,13 +37,12 @@ const TEST_PORTS = {
 
 const PROPERTY_NAMES = {
   PROXY_OPTIONS: 'proxyOptions',
-  PROXY_AGENT: 'proxyAgent',
   HOST: 'host',
   PORT: 'port'
 }
 
 const LOG_MESSAGES = {
-  USING_PROXY: 'Using proxy for Service Bus connection via AMQP transport'
+  USING_PROXY: 'Using proxy for Service Bus connection via AMQP'
 }
 
 describe('proxy-helper', () => {
@@ -137,15 +131,11 @@ describe('proxy-helper', () => {
       expect(result).toEqual({})
     })
 
-    it('should return connection options with proxy agent when proxy is configured', async () => {
+    it('should return connection options with proxy when HTTP proxy is configured', async () => {
       const { config } = await import('../../config.js')
       config.get.mockReturnValue(TEST_PROXY_URLS.HTTP_WITH_PORT)
 
       vi.resetModules()
-      const { HttpsProxyAgent } = await import('https-proxy-agent')
-      const mockProxyAgent = { isProxyAgent: true }
-      HttpsProxyAgent.mockReturnValue(mockProxyAgent)
-
       const { getServiceBusConnectionOptions } = await import(
         './proxy-helper.js'
       )
@@ -154,12 +144,10 @@ describe('proxy-helper', () => {
 
       expect(result).toHaveProperty(PROPERTY_NAMES.PROXY_OPTIONS)
       expect(result.proxyOptions).toHaveProperty(
-        PROPERTY_NAMES.PROXY_AGENT,
-        mockProxyAgent
+        PROPERTY_NAMES.HOST,
+        TEST_PROXY_HOSTS.HTTP_WITH_PORT
       )
-      expect(HttpsProxyAgent).toHaveBeenCalledWith(
-        TEST_PROXY_URLS.HTTP_WITH_PORT
-      )
+      expect(result.proxyOptions).toHaveProperty(PROPERTY_NAMES.PORT, '8080')
     })
 
     it('should handle HTTPS proxy URL correctly', async () => {
@@ -167,10 +155,6 @@ describe('proxy-helper', () => {
       config.get.mockReturnValue(TEST_PROXY_URLS.HTTPS_WITH_PORT)
 
       vi.resetModules()
-      const { HttpsProxyAgent } = await import('https-proxy-agent')
-      const mockProxyAgent = { isProxyAgent: true }
-      HttpsProxyAgent.mockReturnValue(mockProxyAgent)
-
       const { getServiceBusConnectionOptions } = await import(
         './proxy-helper.js'
       )
@@ -179,23 +163,17 @@ describe('proxy-helper', () => {
 
       expect(result).toHaveProperty(PROPERTY_NAMES.PROXY_OPTIONS)
       expect(result.proxyOptions).toHaveProperty(
-        PROPERTY_NAMES.PROXY_AGENT,
-        mockProxyAgent
+        PROPERTY_NAMES.HOST,
+        TEST_PROXY_HOSTS.HTTPS_WITH_PORT
       )
-      expect(HttpsProxyAgent).toHaveBeenCalledWith(
-        TEST_PROXY_URLS.HTTPS_WITH_PORT
-      )
+      expect(result.proxyOptions).toHaveProperty(PROPERTY_NAMES.PORT, '8443')
     })
 
-    it('should use proxy agent when proxy URL has no port', async () => {
+    it('should use default port when proxy URL has no port', async () => {
       const { config } = await import('../../config.js')
       config.get.mockReturnValue(TEST_PROXY_URLS.HTTP_WITHOUT_PORT)
 
       vi.resetModules()
-      const { HttpsProxyAgent } = await import('https-proxy-agent')
-      const mockProxyAgent = { isProxyAgent: true }
-      HttpsProxyAgent.mockReturnValue(mockProxyAgent)
-
       const { getServiceBusConnectionOptions } = await import(
         './proxy-helper.js'
       )
@@ -204,11 +182,12 @@ describe('proxy-helper', () => {
 
       expect(result).toHaveProperty(PROPERTY_NAMES.PROXY_OPTIONS)
       expect(result.proxyOptions).toHaveProperty(
-        PROPERTY_NAMES.PROXY_AGENT,
-        mockProxyAgent
+        PROPERTY_NAMES.HOST,
+        TEST_PROXY_HOSTS.HTTP_WITHOUT_PORT
       )
-      expect(HttpsProxyAgent).toHaveBeenCalledWith(
-        TEST_PROXY_URLS.HTTP_WITHOUT_PORT
+      expect(result.proxyOptions).toHaveProperty(
+        PROPERTY_NAMES.PORT,
+        TEST_PORTS.HTTP
       )
     })
 

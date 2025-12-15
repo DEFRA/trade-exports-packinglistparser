@@ -1,6 +1,5 @@
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
-import { HttpsProxyAgent } from 'https-proxy-agent'
 
 const logger = createLogger()
 
@@ -29,19 +28,28 @@ export function getClientProxyOptions() {
 
 /**
  * Gets AMQP connection options for Service Bus with optional proxy support
- * @returns {Object} Connection options with optional proxy agent
+ * Uses Azure SDK's native proxy support via proxyOptions
+ * The proxy itself is accessed on the port specified in the HTTP_PROXY URL (typically 3128 for CDP)
+ * The Service Bus will be accessed on port 5671 through the proxy
+ * @returns {Object} Connection options with optional proxy configuration
  */
 export function getServiceBusConnectionOptions() {
   const connectionOptions = {}
 
   // Configure proxy if httpProxy is set in config
   if (proxyUrl) {
-    // For AMQP connections over TLS, we need to use HttpsProxyAgent
-    const proxyAgent = new HttpsProxyAgent(proxyUrl)
+    // Azure Service Bus SDK native proxy support
+    const proxyUrlObj = new URL(proxyUrl)
+    // Use the port from the proxy URL (e.g., 3128), or default based on protocol
+    const proxyPort =
+      proxyUrlObj.port ||
+      (proxyUrlObj.protocol.toLowerCase() === 'https:' ? HTTPS_PORT : HTTP_PORT)
+
     connectionOptions.proxyOptions = {
-      proxyAgent
+      host: proxyUrlObj.href,
+      port: proxyPort
     }
-    logger.info('Using proxy for Service Bus connection via AMQP transport')
+    logger.info('Using proxy for Service Bus connection via AMQP')
   }
   return connectionOptions
 }
