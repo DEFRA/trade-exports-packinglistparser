@@ -36,11 +36,13 @@ export function getServiceBusConnectionOptions() {
   if (proxyUrl) {
     connectionOptions.proxyOptions = {
       host: new URL(proxyUrl).hostname,
-      port: new URL(proxyUrl).port || (new URL(proxyUrl).protocol.toLowerCase() === 'https:' ? HTTPS_PORT : HTTP_PORT)
+      port:
+        new URL(proxyUrl).port ||
+        (new URL(proxyUrl).protocol.toLowerCase() === 'https:'
+          ? HTTPS_PORT
+          : HTTP_PORT)
     }
-    logger.info(
-      'Using proxy for Service Bus connection via AMQP transport'
-    )
+    logger.info('Using proxy for Service Bus connection via AMQP transport')
   }
   return connectionOptions
 }
