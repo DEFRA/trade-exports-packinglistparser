@@ -1,6 +1,4 @@
 import { config } from '../../config.js'
-import { HttpsProxyAgent } from 'https-proxy-agent'
-import WebSocket from 'ws'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 const logger = createLogger()
 
@@ -28,25 +26,20 @@ export function getClientProxyOptions() {
 }
 
 /**
- * Gets WebSocket connection options for Service Bus with optional proxy support
- * @returns {Object} Connection options with WebSocket configuration and optional proxy agent
+ * Gets AMQP connection options for Service Bus with optional proxy support
+ * @returns {Object} Connection options with optional proxy agent
  */
 export function getServiceBusConnectionOptions() {
-  const connectionOptions = {
-    webSocketOptions: {
-      webSocket: WebSocket
-    }
-  }
+  const connectionOptions = {}
 
   // Configure proxy if httpProxy is set in config
   if (proxyUrl) {
-    const proxyAgent = new HttpsProxyAgent(proxyUrl)
-    connectionOptions.webSocketOptions.webSocketConstructorOptions = {
-      agent: proxyAgent
+    connectionOptions.proxyOptions = {
+      host: new URL(proxyUrl).hostname,
+      port: new URL(proxyUrl).port || (new URL(proxyUrl).protocol.toLowerCase() === 'https:' ? HTTPS_PORT : HTTP_PORT)
     }
     logger.info(
-      { proxyUrl },
-      'Using proxy for Service Bus WebSocket connection'
+      'Using proxy for Service Bus connection via AMQP transport'
     )
   }
   return connectionOptions
