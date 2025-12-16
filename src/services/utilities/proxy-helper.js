@@ -1,4 +1,8 @@
 import { config } from '../../config.js'
+import { HttpsProxyAgent } from 'https-proxy-agent'
+import WebSocket from 'ws'
+import { createLogger } from '../../common/helpers/logging/logger.js'
+const logger = createLogger()
 
 // Configure proxy if HTTP_PROXY is set
 const proxyUrl = config.get('httpProxy')
@@ -24,22 +28,26 @@ export function getClientProxyOptions() {
 }
 
 /**
- * Gets AMQP connection options for Service Bus with optional proxy support
- * Uses Azure SDK's native proxy support via proxyOptions
- * The proxy itself is accessed on the port specified in the HTTP_PROXY URL (typically 3128 for CDP)
- * The Service Bus will be accessed on port 5671 through the proxy
- * @returns {Object} Connection options with optional proxy configuration
+ * Gets WebSocket connection options for Service Bus with optional proxy support
+ * @returns {Object} Connection options with WebSocket configuration and optional proxy agent
  */
 export function getServiceBusConnectionOptions() {
-  return proxyUrl
-    ? {
-        proxyOptions: {
-          host: new URL(proxyUrl).href,
-          port:
-            new URL(proxyUrl).protocol.toLowerCase() === 'https:'
-              ? HTTPS_PORT
-              : HTTP_PORT
-        }
-      }
-    : {}
+  const connectionOptions = {
+    webSocketOptions: {
+      webSocket: WebSocket
+    }
+  }
+
+  // Configure proxy if httpProxy is set in config
+  if (proxyUrl) {
+    const proxyAgent = new HttpsProxyAgent(proxyUrl)
+    connectionOptions.webSocketOptions.webSocketConstructorOptions = {
+      agent: proxyAgent
+    }
+    logger.info(
+      { proxyUrl },
+      'Using proxy for Service Bus WebSocket connection'
+    )
+  }
+  return connectionOptions
 }

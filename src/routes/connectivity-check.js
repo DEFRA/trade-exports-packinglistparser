@@ -7,6 +7,7 @@ import {
 import { checkApplicationFormsContainerExists } from '../services/ehco-blob-storage-service.js'
 import { getIneligibleItems } from '../services/mdm-service.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { checkTradeServiceBusConnection } from '../services/trade-service-bus-service.js'
 
 const logger = createLogger()
 
@@ -29,7 +30,8 @@ async function connectivityCheckHandler(_request, h) {
     dynamicsLogin: await canDynamicsLoginConnect(),
     dynamicsData: await canWeReceiveDispatchLocationsFromDynamics(),
     ehcoBlobStorage: await canWeConnectToEhcoBlobStorage(),
-    mdmIneligibleItems: await canWeConnectToMdmService()
+    mdmIneligibleItems: await canWeConnectToMdmService(),
+    tradeServiceBus: await canWeConnectToTradeServiceBus()
   }
   const allConnected = Object.values(connectionChecks).every((v) => v === true)
 
@@ -47,6 +49,14 @@ async function connectivityCheckHandler(_request, h) {
       Details: connectionChecks
     })
     .code(STATUS_CODES.OK)
+}
+
+/*
+ * Check if we can connect to Trade Service Bus
+ * @returns {Promise<boolean>} True if connected, false otherwise
+ */
+async function canWeConnectToTradeServiceBus() {
+  return canConnect(checkTradeServiceBusConnection, 'Trade Service Bus')
 }
 
 /**
