@@ -5,6 +5,7 @@ convict.addFormats(convictFormatWithValidator)
 
 const isProduction = process.env.NODE_ENV === 'production'
 const isTest = process.env.NODE_ENV === 'test'
+const AZURE_AD_CLIENT_ID_DOC = 'Azure AD Client ID'
 
 const config = convict({
   serviceVersion: {
@@ -218,7 +219,7 @@ const config = convict({
   },
   tradeServiceBus: {
     clientId: {
-      doc: 'Azure AD Client ID',
+      doc: AZURE_AD_CLIENT_ID_DOC,
       format: String,
       nullable: true,
       default: null,
@@ -241,7 +242,7 @@ const config = convict({
   },
   ehcoBlob: {
     clientId: {
-      doc: 'Azure AD Client ID',
+      doc: AZURE_AD_CLIENT_ID_DOC,
       format: String,
       nullable: true,
       default: null,
@@ -264,7 +265,7 @@ const config = convict({
   },
   mdm: {
     clientId: {
-      doc: 'Azure AD Client ID',
+      doc: AZURE_AD_CLIENT_ID_DOC,
       format: String,
       nullable: true,
       default: null,
