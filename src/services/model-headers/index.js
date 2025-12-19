@@ -5,16 +5,10 @@
  * Add new retailer headers here as they are implemented.
  */
 
-// TODO: Import and export retailer header definitions
-// Example:
-// import asdaHeaders from './asda/index.js'
-// import tescoHeaders from './tesco/index.js'
-//
-// export default {
-//   ...asdaHeaders,
-//   ...tescoHeaders
-// }
+import csvIcelandHeaders from './iceland.js'
+import asdaHeaders from './asda.js'
 
 export default {
-  // Placeholder - add retailer headers here
+  ...csvIcelandHeaders,
+  ...asdaHeaders
 }

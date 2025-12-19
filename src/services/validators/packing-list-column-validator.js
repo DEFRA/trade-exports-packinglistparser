@@ -106,10 +106,7 @@ function getPackingListStatusResults(packingList) {
  * @returns {Object} cooResults - Arrays of row_location values for CoO failures
  */
 function getCountryOfOriginValidationResults(packingList) {
-  // TODO: Check if CoO validation is enabled based on parser configuration
-  const validateCoO = false // packingList.validateCountryOfOrigin
-
-  if (validateCoO) {
+  if (packingList.validateCountryOfOrigin) {
     return {
       missingNirms: findItems(packingList.items, hasMissingNirms),
       invalidNirms: findItems(packingList.items, hasInvalidNirms),

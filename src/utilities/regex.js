@@ -1,44 +1,81 @@
 /**
- * Regex utilities
+ * Regex helper utilities
  *
- * Common regex patterns and helpers used across parsers.
+ * A collection of helpers that simplify searching over the common data
+ * structures used in the project (arrays of row objects where each property
+ * is a string). Functions are intentionally defensive about input shapes and
+ * focus on returning small, usable results (booleans, first match, arrays).
  */
 
-/**
- * REMOS regex pattern for RMS establishment numbers.
- * Format: RMS-GB-XXXXXX-XXX where X is a digit.
- */
 const remosRegex = /^RMS-GB-\d{6}-\d{3}$/i
 
 /**
- * Find first match of a regex pattern in data structure.
- * Recursively searches through arrays and objects.
- *
- * @param {RegExp} regex - Regex pattern to match
- * @param {*} data - Data to search (object, array, or primitive)
- * @returns {string|null} First matching value or null
+ * Create case-insensitive global regex pattern.
+ * @param {RegExp|string} regex - Regex to convert
+ * @returns {RegExp} Global case-insensitive regex
  */
-function findMatch(regex, data) {
-  if (!data) {
-    return null
-  }
+function createSearchPattern(regex) {
+  return new RegExp(regex, 'gi') // 'g' for global, 'i' for case-insensitive
+}
 
-  if (typeof data === 'string') {
-    return regex.test(data) ? data : null
-  }
+/**
+ * Check if object property is a string.
+ * @param {Object} obj - Object to check
+ * @param {string} key - Property key
+ * @returns {boolean} True if property exists and is string
+ */
+function isValidStringProperty(obj, key) {
+  return Object.hasOwn(obj, key) && typeof obj[key] === 'string'
+}
 
-  if (Array.isArray(data)) {
-    for (const item of data) {
-      const match = findMatch(regex, item)
-      if (match) {
-        return match
+/**
+ * Get all string property keys from object.
+ * @param {Object} obj - Object to extract from
+ * @returns {Array<string>} Array of property keys that are strings
+ */
+function getStringProperties(obj) {
+  return Object.keys(obj).filter((key) => isValidStringProperty(obj, key))
+}
+
+/**
+ * Test if any string property in array matches regex.
+ * @param {RegExp|string} regex - Pattern to test
+ * @param {Array<Object>} array - Array of objects to search
+ * @returns {boolean} True if any match found
+ */
+function test(regex, array) {
+  const searchPattern = createSearchPattern(regex)
+
+  for (const obj of array) {
+    const stringProperties = getStringProperties(obj)
+
+    for (const key of stringProperties) {
+      if (searchPattern.test(obj[key])) {
+        return true
       }
     }
-  } else if (typeof data === 'object') {
-    for (const key in data) {
-      const match = findMatch(regex, data[key])
+  }
+
+  return false
+}
+
+/**
+ * Find and return first matched substring in array.
+ * @param {RegExp|string} regex - Pattern to match
+ * @param {Array<Object>} array - Array of objects to search
+ * @returns {string|null} Matched substring or null
+ */
+function findMatch(regex, array) {
+  const searchPattern = createSearchPattern(regex)
+
+  for (const obj of array) {
+    const stringProperties = getStringProperties(obj)
+
+    for (const key of stringProperties) {
+      const value = obj[key]
+      const match = value.match(searchPattern) // Use match to extract the part of the string that matches
       if (match) {
-        return match
+        return match[0] // Return only the matching part of the string
       }
     }
   }
@@ -47,63 +84,112 @@ function findMatch(regex, data) {
 }
 
 /**
- * Find all matches of a regex pattern in data structure.
- * Recursively searches through arrays and objects.
+ * Check if all regex patterns match any string property in object.
+ * @param {Array<RegExp>} regexArray - Array of patterns to test
+ * @param {Object} obj - Object to search
+ * @returns {boolean} True if all patterns match
+ */
+function testAllPatterns(regexArray, obj) {
+  const searchPatterns = regexArray.map((regex) => createSearchPattern(regex))
+  const stringProperties = getStringProperties(obj)
+
+  for (const pattern of searchPatterns) {
+    let foundMatch = false
+    for (const key of stringProperties) {
+      const value = obj[key]
+      if (pattern.test(value)) {
+        foundMatch = true
+        break // Stop searching if a match is found for this pattern
+      }
+    }
+    if (!foundMatch) {
+      return false // If any regex doesn't find a match, return false
+    }
+  }
+
+  return true // All patterns have a match in the object
+}
+
+/**
+ * Extract weight unit from header string.
+ * @param {string} header - Header string to search
+ * @returns {string|null} Matched unit or null
+ */
+function findUnit(header) {
+  const unitRegex = /(KGS?|KILOGRAMS?|KILOS?)/i // regex of all possible units
+  const match = unitRegex.exec(header)
+  if (match) {
+    return match[0] // return only the matching part of the string (the unit)
+  }
+  return null
+}
+
+/**
+ * Add match to array if not already present.
+ * @param {string} matchToAdd - Match to add
+ * @param {Array<string>} matches - Existing matches
+ * @returns {Array<string>} Updated matches array
+ */
+function addMatch(matchToAdd, matches) {
+  if (!matches.includes(matchToAdd)) {
+    matches.push(matchToAdd)
+  }
+  return matches
+}
+
+/**
+ * Find all unique matches across array of objects.
+ * @param {RegExp} searchPattern - Pattern to match
+ * @param {Array<Object>} array - Array of objects to search
+ * @param {Array<string>} matches - Existing matches array
+ * @returns {Array<string>} Updated matches array
+ */
+function findAllMatches(searchPattern, array, matches) {
+  for (const obj of array) {
+    const stringProperties = getStringProperties(obj)
+
+    for (const key of stringProperties) {
+      const value = obj[key]
+      const match = value.match(searchPattern)
+
+      if (match) {
+        matches = addMatch(match[1] ?? match[0], matches)
+      }
+    }
+  }
+  return matches
+}
+
+/**
+ * Find the position (row and column) of the first match in JSON array.
  *
+ * @param {Array<Object>} json - Array of objects to search
  * @param {RegExp} regex - Regex pattern to match
- * @param {*} data - Data to search (object, array, or primitive)
- * @param {Array} accumulator - Array to accumulate matches (optional)
- * @returns {Array} All matching values (unique)
+ * @returns {Array} [rowIndex, columnKey] or [null, null] if not found
  */
-function findAllMatches(regex, data, accumulator = []) {
-  if (!data) {
-    return accumulator
-  }
-
-  if (typeof data === 'string') {
-    if (regex.test(data) && !accumulator.includes(data)) {
-      accumulator.push(data)
-    }
-  } else if (Array.isArray(data)) {
-    for (const item of data) {
-      findAllMatches(regex, item, accumulator)
-    }
-  } else if (typeof data === 'object') {
-    for (const key in data) {
-      findAllMatches(regex, data[key], accumulator)
+function positionFinder(json, regex) {
+  let colIndex = null
+  let rowIndex = null
+  for (let row = 0; row < json.length; row++) {
+    const match = findMatch(regex, [json[row]])
+    if (match) {
+      rowIndex = row
+      colIndex = Object.keys(json[row]).find((key) => {
+        return regex.test(json[row][key])
+      })
+      break
     }
   }
-
-  return accumulator
+  return [rowIndex, colIndex]
 }
 
-/**
- * Test if any value in data structure matches the regex.
- *
- * @param {RegExp} regex - Regex pattern to test
- * @param {*} data - Data to search
- * @returns {boolean} True if any match found
- */
-function test(regex, data) {
-  return findMatch(regex, data) !== null
-}
-
-/**
- * Test if all patterns match at least once in the data.
- * Used for header validation.
- *
- * @param {Array<RegExp>} patterns - Array of regex patterns
- * @param {*} data - Data to search
- * @returns {boolean} True if all patterns found
- */
-function testAllPatterns(patterns, data) {
-  return patterns.every((pattern) => test(pattern, data))
-}
-
-module.exports = {
+export {
   remosRegex,
-  findMatch,
-  findAllMatches,
   test,
-  testAllPatterns
+  findMatch,
+  testAllPatterns,
+  findUnit,
+  findAllMatches,
+  addMatch,
+  positionFinder
 }

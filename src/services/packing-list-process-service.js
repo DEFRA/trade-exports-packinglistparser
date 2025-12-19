@@ -1,5 +1,5 @@
-import parsePackingList from '../parsers/packing-list-parser.js'
-import { getDispatchLocation } from './dispatch-location-service.js'
+import { parsePackingList } from './parser-service.js'
+import { getDispatchLocation } from './dynamics-service.js'
 import { downloadBlobFromApplicationForms } from './ehco-blob-storage-service.js'
 
 export async function processPackingList(message) {

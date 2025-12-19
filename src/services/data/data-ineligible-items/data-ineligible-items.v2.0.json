@@ -1,0 +1,2037 @@
+[
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0207",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UA",
+    "commodity_code": "0207",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CM",
+    "commodity_code": "03028410",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TR",
+    "commodity_code": "03028410",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "No Treatment"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08045000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "No Treatment"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "No Treatment"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051020",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "No Treatment"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055010",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055010",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055010",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055010",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055010",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055010",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08059000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08059000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08059000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08059000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08059000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08059000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0805900000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "0805900000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "0805900000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "0805900000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08093030",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08093030",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08093030",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08093030",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08093030",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08105000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NZ",
+    "commodity_code": "08105000",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "08109020",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "16025031",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0201",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0202",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "DZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AD",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AQ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BD",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BB",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BJ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BQ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BV",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CV",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TD",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CX",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CD",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "HR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "DK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "DJ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "DM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "DO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SV",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GQ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ER",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ET",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "FK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "FO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "FJ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "FI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "FR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "DE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GD",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GP",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "HT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "HM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "VA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "HN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "HK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "HU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ID",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IQ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "JM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "JP",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "JE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "JO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KP",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LV",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LB",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MV",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ML",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MQ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "YT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MX",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "FM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MD",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ME",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NP",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MP",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "NO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "OM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "QA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "RO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "RU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "RW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "RE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "KN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "MF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "PM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "VC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "WS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ST",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "RS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SX",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SB",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SS",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ES",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "LK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SD",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SJ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "SY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TJ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TL",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TK",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TO",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TT",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TV",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TR",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UA",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "US",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UZ",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "VU",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "VE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "VN",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "VG",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "VI",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "WF",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "EH",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "YE",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZM",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "AX",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "IC",
+    "commodity_code": "0602",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "!processed"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "!dried"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "080930",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "080930",
+    "type_of_treatment": "No treatment"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08051020",
+    "type_of_treatment": "No treatment"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08051080",
+    "type_of_treatment": "No treatment"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0809400500",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0809400500",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0809400500",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0809400500",
+    "type_of_treatment": "Unprocessed"
+  }
+]

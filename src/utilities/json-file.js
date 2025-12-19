@@ -21,8 +21,8 @@ function sanitise(jsonString) {
     const sanitized = sanitizeObject(obj)
     return JSON.stringify(sanitized)
   } catch (err) {
-    // If parsing fails, return original string
-    return jsonString
+    // If parsing fails, return null
+    return null
   }
 }
 

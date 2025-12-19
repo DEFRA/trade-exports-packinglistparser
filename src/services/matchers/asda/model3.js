@@ -1,0 +1,59 @@
+/**
+ * ASDA Model 3 matcher
+ *
+ * Detects whether a provided Excel-converted packing list matches
+ * the ASDA Model 3 format by checking the establishment number and
+ * header row patterns.
+ */
+import { createLogger } from '../../../common/helpers/logging/logger.js'
+import matcherResult from '../../matcher-result.js'
+import { matchesHeader } from '../../matches-header.js'
+import * as regex from '../../../utilities/regex.js'
+import headers from '../../model-headers.js'
+
+const logger = createLogger()
+
+/**
+ * Check whether the provided packing list matches ASDA Model 3.
+ * @param {Object} packingList - Excel->JSON representation keyed by sheet
+ * @param {string} filename - Source filename for logging
+ * @returns {string} - One of matcherResult codes
+ */
+export function matches(packingList, filename) {
+  try {
+    let result
+    const sheets = Object.keys(packingList)
+
+    if (sheets?.length === 0) {
+      return matcherResult.EMPTY_FILE
+    }
+
+    for (const sheet of sheets) {
+      // Check for correct establishment number
+      if (
+        !regex.test(headers.ASDA3.establishmentNumber.regex, packingList[sheet])
+      ) {
+        return matcherResult.WRONG_ESTABLISHMENT_NUMBER
+      }
+
+      // Check for header values
+      result = matchesHeader(
+        Object.values(headers.ASDA3.regex),
+        packingList[sheet]
+      )
+
+      if (result === matcherResult.WRONG_HEADER) {
+        return result
+      }
+    }
+
+    if (result === matcherResult.CORRECT) {
+      logger.info({ filename }, 'Packing list matches ASDA Model 3')
+    }
+
+    return result
+  } catch (err) {
+    logger.error({ err, filename }, 'Error in matches()')
+    return matcherResult.GENERIC_ERROR
+  }
+}
