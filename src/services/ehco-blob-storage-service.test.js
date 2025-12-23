@@ -32,7 +32,23 @@ vi.mock('./utilities/proxy-helper.js', () => ({
 }))
 
 // Mock config
-const mockConfigGet = vi.fn()
+const mockConfigGet = vi.fn((key) => {
+  if (key === 'log') {
+    return {
+      isEnabled: false,
+      level: 'silent',
+      format: 'pino-pretty',
+      redact: []
+    }
+  }
+  if (key === 'serviceName') {
+    return 'test-service'
+  }
+  if (key === 'serviceVersion') {
+    return '1.0.0'
+  }
+  return {}
+})
 vi.mock('../config.js', () => ({
   config: {
     get: mockConfigGet
@@ -69,6 +85,20 @@ const ERROR_CODES = {
 // Helper functions to reduce code duplication and complexity
 const setupDefaultConfig = () => {
   mockConfigGet.mockImplementation((key) => {
+    if (key === 'log') {
+      return {
+        isEnabled: false,
+        level: 'silent',
+        format: 'pino-pretty',
+        redact: []
+      }
+    }
+    if (key === 'serviceName') {
+      return 'test-service'
+    }
+    if (key === 'serviceVersion') {
+      return '1.0.0'
+    }
     if (key === 'azure') {
       return {
         defraTenantId: TEST_CREDENTIALS.TENANT_ID
@@ -92,6 +122,20 @@ const setupCustomConfig = (
   containerName
 ) => {
   mockConfigGet.mockImplementation((key) => {
+    if (key === 'log') {
+      return {
+        isEnabled: false,
+        level: 'silent',
+        format: 'pino-pretty',
+        redact: []
+      }
+    }
+    if (key === 'serviceName') {
+      return 'test-service'
+    }
+    if (key === 'serviceVersion') {
+      return '1.0.0'
+    }
     if (key === 'azure') {
       return {
         defraTenantId: tenantId
