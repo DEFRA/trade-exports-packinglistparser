@@ -126,3 +126,28 @@ export async function receiveMessagesFromQueue(
     await client.close()
   }
 }
+
+/**
+ * Check if we can connect to Trade Service Bus by attempting to peek at messages.
+ * @returns {Promise<boolean>} True if connected, false otherwise
+ */
+export async function checkTradeServiceBusConnection() {
+  const client = createServiceBusClientFromConfig()
+  const { queueName } = config.get('tradeServiceBus')
+  const receiver = client.createReceiver(queueName)
+  try {
+    await receiver.peekMessages(1)
+    logger.info({ queueName }, 'Successfully connected to Service Bus')
+    return true
+  } catch (err) {
+    logger.error({ err, queueName }, 'Failed to connect to Service Bus')
+    return false
+  } finally {
+    try {
+      await receiver.close()
+    } catch (e) {
+      logger.warn({ err: e }, 'Failed to close Service Bus receiver')
+    }
+    await client.close()
+  }
+}
