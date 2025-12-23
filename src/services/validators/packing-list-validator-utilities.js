@@ -429,5 +429,7 @@ export {
   hasInvalidCoO,
   hasIneligibleItems,
   removeEmptyItems,
-  removeBadData
+  removeBadData,
+  isNirms,
+  isNotNirms
 }
