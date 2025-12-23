@@ -7,13 +7,7 @@
  */
 
 import * as fileExtension from '../../utilities/file-extension.js'
-import config from '../../config.js'
-import {
-  getCsvParser,
-  getExcelParser,
-  getPdfParser,
-  getPdfNonAiParser
-} from './parsers.js'
+import { getCsvParser, getExcelParser, getPdfNonAiParser } from './parsers.js'
 import * as packingListValidator from '../validators/packing-list-column-validator.js'
 import {
   removeEmptyItems,
@@ -51,11 +45,6 @@ async function findParser(sanitizedPackingList, fileName) {
   } else if (fileExtension.isPdf(fileName)) {
     // Try non-AI PDF parsers first
     parser = await getPdfNonAiParser(sanitizedPackingList, fileName)
-
-    // If no match and AI is enabled, try AI-based parsers
-    if (!parser && config.isDiEnabled) {
-      parser = await getPdfParser(sanitizedPackingList, fileName)
-    }
   } else {
     parser = null
   }

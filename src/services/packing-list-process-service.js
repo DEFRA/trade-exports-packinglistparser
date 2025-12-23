@@ -156,7 +156,7 @@ async function notifyExternalApplications(parsedData, applicationId) {
 function createServiceBusMessage(applicationId, failureReasons) {
   return {
     body: {
-      applicationId: applicationId,
+      applicationId,
       approvalStatus: failureReasons ? 'approved' : 'rejected',
       failureReasons
     },
