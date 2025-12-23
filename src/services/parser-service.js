@@ -45,6 +45,10 @@ async function findParser(packingList, fileName, dispatchLocation) {
 async function parsePackingList(packingList, fileName, dispatchLocation) {
   try {
     // Input Sanitization
+    logger.info(
+      { filename: filenameForLogging, function: 'parsePackingList()' },
+      `Sanitizing packing list input for ${fileName}`
+    )
     const sanitizedPackingList = sanitizeInput(packingList, fileName)
 
     // Parser Discovery

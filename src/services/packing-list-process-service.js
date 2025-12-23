@@ -12,30 +12,34 @@ import { createLogger } from '../common/helpers/logging/logger.js'
 
 const logger = createLogger()
 
-export async function processPackingList(message) {
+export async function processPackingList(payload) {
   // 1. Download packing list from blob storage
   const packingList = await downloadBlobFromApplicationForms(
-    message.body.packing_list_blob
+    payload.packing_list_blob
   )
 
   // 2. Process packing list
-  const parsedData = await getParsedPackingList(packingList, message)
+  const parsedData = await getParsedPackingList(packingList, payload)
 
   // 3. Process results
-  await processPackingListResults(parsedData, message.body.application_id)
+  await processPackingListResults(parsedData, payload.application_id)
 
   return { status: 'complete', data: parsedData }
 }
 
-async function getParsedPackingList(packingList, message) {
+async function getParsedPackingList(packingList, payload) {
   const establishmentId =
-    message.body.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId
+    payload.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId
   logger.info(
     { establishmentId },
     'Fetching dispatch location for packing list parsing'
   )
   const dispatchLocation = await getDispatchLocation(establishmentId)
-  return parsePackingList(packingList, message, dispatchLocation)
+  return parsePackingList(
+    packingList,
+    payload.packing_list_blob,
+    dispatchLocation
+  )
 }
 
 async function processPackingListResults(packingList, applicationId) {

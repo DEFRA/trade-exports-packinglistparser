@@ -25,6 +25,10 @@ export async function downloadBlobFromApplicationForms(blobName) {
       downloadResponse.readableStreamBody
     )
 
+    logger.info(
+      { blobName },
+      'Blob downloaded from application forms container'
+    )
     return downloadedContent
   } catch (error) {
     throw new Error(`Failed to download blob: ${error.message}`)
