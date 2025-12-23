@@ -2,6 +2,9 @@ import { BlobServiceClient } from '@azure/storage-blob'
 import { getAzureCredentials } from './utilities/get-azure-credentials.js'
 import { getClientProxyOptions } from './utilities/proxy-helper.js'
 import { config } from '../config.js'
+import { createLogger } from '../common/helpers/logging/logger.js'
+
+const logger = createLogger()
 
 /**
  * Downloads a file from Azure Blob Storage
@@ -10,6 +13,10 @@ import { config } from '../config.js'
  */
 export async function downloadBlobFromApplicationForms(blobName) {
   try {
+    logger.info(
+      { blobName },
+      'Downloading blob from application forms container'
+    )
     const containerClient = createApplicationFormsBlobClient()
     const blobClient = containerClient.getBlobClient(blobName)
 
