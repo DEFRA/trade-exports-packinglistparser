@@ -16,6 +16,7 @@ import {
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { noMatchParsers } from '../model-parsers.js'
 
 const logger = createLogger()
 
@@ -55,8 +56,7 @@ async function findParser(sanitizedPackingList, fileName) {
       { filename: filenameForLogging, function: 'findParser', fileName },
       'Failed to parse packing list, no match'
     )
-    // TODO: Import noMatchParsers when model-parsers is created
-    parser = { parserModel: 'UNRECOGNISED', parse: () => ({ items: [] }) }
+    parser = noMatchParsers.UNRECOGNISED
   }
 
   return parser

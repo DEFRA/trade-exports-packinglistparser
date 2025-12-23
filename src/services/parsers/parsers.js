@@ -5,33 +5,17 @@
  * and PDF packing lists based on header matching rules and REMOS values.
  */
 
-// TODO: Import these from model-parsers when created
-// import {
-//   parsersExcel,
-//   parsersCsv,
-//   parsersPdf,
-//   parsersPdfNonAi,
-//   noMatchParsers
-// } from '../model-parsers.js'
+import {
+  parsersExcel,
+  parsersCsv,
+  parsersPdf,
+  parsersPdfNonAi,
+  noMatchParsers
+} from '../model-parsers.js'
 
-// Placeholder - will be replaced with actual imports
-const parsersExcel = {}
-const parsersCsv = {}
-const parsersPdf = {}
-const parsersPdfNonAi = {}
-const noMatchParsers = {
-  NOREMOS: { matches: () => false },
-  NOREMOSCSV: { matches: () => false },
-  NOREMOSPDF: { matches: async () => false }
-}
-
-// TODO: Import these from model-headers when created
-// import headers from '../model-headers/index.js'
-// import headersCsv from '../model-headers-csv/index.js'
-// import headersPdf from '../model-headers-pdf/index.js'
-const headers = {}
-const headersCsv = {}
-const headersPdf = {}
+import headers from '../model-headers.js'
+import headersCsv from '../model-headers-csv.js'
+import headersPdf from '../model-headers-pdf.js'
 
 /**
  * Get Excel parser based on REMOS validation and header matching.
