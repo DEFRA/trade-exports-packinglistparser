@@ -51,13 +51,28 @@ export async function callAzureApiWithToken(url, options) {
     })
 
     logger.info(
-      { url, status: response.status, ok: response.ok },
+      {
+        url: {
+          full: url
+        }
+      },
       'Azure API response received'
     )
 
     return response
   } catch (err) {
-    logger.error({ err, url }, 'Failed to call Azure API')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        },
+        url: {
+          full: url
+        }
+      },
+      'Failed to call Azure API'
+    )
     throw err
   }
 }

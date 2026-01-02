@@ -118,8 +118,7 @@ describe('trade-service-bus-service', () => {
       )
       expect(mockSendMessages).toHaveBeenCalledWith({ body: message })
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME },
-        'Message sent to Service Bus queue'
+        `Message sent to Service Bus queue: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`
       )
     })
 
@@ -141,8 +140,8 @@ describe('trade-service-bus-service', () => {
       )
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { err: error, queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME },
-        'Failed to send message to Service Bus queue'
+        { err: error },
+        `Failed to send message to Service Bus queue: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`
       )
     })
 

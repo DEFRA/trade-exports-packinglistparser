@@ -58,11 +58,11 @@ export async function sendMessageToQueue(message) {
   const sender = client.createSender(queueName)
   try {
     await sender.sendMessages({ body: message })
-    logger.info({ queueName }, 'Message sent to Service Bus queue')
+    logger.info(`Message sent to Service Bus queue: ${queueName}`)
   } catch (err) {
     logger.error(
-      { err, queueName },
-      'Failed to send message to Service Bus queue'
+      { err },
+      `Failed to send message to Service Bus queue: ${queueName}`
     )
     throw err
   } finally {
@@ -137,10 +137,10 @@ export async function checkTradeServiceBusConnection() {
   const receiver = client.createReceiver(queueName)
   try {
     await receiver.peekMessages(1)
-    logger.info({ queueName }, 'Successfully connected to Service Bus')
+    logger.info(`Successfully connected to Service Bus: ${queueName}`)
     return true
   } catch (err) {
-    logger.error({ err, queueName }, 'Failed to connect to Service Bus')
+    logger.error(`Failed to connect to Service Bus: ${queueName}`, { err })
     return false
   } finally {
     try {

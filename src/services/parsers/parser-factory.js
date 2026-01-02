@@ -14,14 +14,9 @@ import {
   removeBadData
 } from '../validators/packing-list-validator-utilities.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 import { noMatchParsers } from '../model-parsers.js'
 
 const logger = createLogger()
-
-const currentFilename = fileURLToPath(import.meta.url)
-const filenameForLogging = path.join('src', currentFilename.split('src')[1])
 
 /**
  * Find a parser suitable for the supplied packing list and filename.
@@ -52,10 +47,7 @@ async function findParser(sanitizedPackingList, fileName) {
 
   // If no parser found, return UNRECOGNISED
   if (parser === null || Object.keys(parser).length === 0) {
-    logger.info(
-      { filename: filenameForLogging, function: 'findParser', fileName },
-      'Failed to parse packing list, no match'
-    )
+    logger.info(`Failed to parse packing list for file ${fileName}, no match`)
     parser = noMatchParsers.UNRECOGNISED
   }
 

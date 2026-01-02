@@ -81,7 +81,15 @@ export function parse(packingListCsv) {
       headers.ICELAND2 // Required for Country of Origin validation
     )
   } catch (err) {
-    logger.error({ err }, 'Error in parse()')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in parse()'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

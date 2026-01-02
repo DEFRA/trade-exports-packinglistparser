@@ -31,8 +31,7 @@ async function getParsedPackingList(packingList, payload) {
   const establishmentId =
     payload.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId
   logger.info(
-    { establishmentId },
-    'Fetching dispatch location for packing list parsing'
+    `Fetching dispatch location for packing list parsing: ${establishmentId}`
   )
   const dispatchLocation = await getDispatchLocation(establishmentId)
   return parsePackingList(
@@ -48,7 +47,9 @@ async function processPackingListResults(packingList, applicationId) {
 }
 
 async function persistPackingList(parsedData, applicationId) {
-  logger.info({ applicationId }, 'Persisting parsed packing list data')
+  logger.info(
+    `Persisting parsed packing list data for application ${applicationId}`
+  )
   const processedData = mapPackingListForStorage(parsedData, applicationId)
   await uploadJsonFileToS3(processedData, applicationId)
 }
@@ -140,8 +141,7 @@ function itemsMapper(o, applicationId) {
 
 async function notifyExternalApplications(parsedData, applicationId) {
   logger.info(
-    { applicationId },
-    'Notifying external applications of parsed packing list result'
+    `Notifying external applications of parsed packing list result for application ${applicationId}`
   )
   const message = createServiceBusMessage(
     applicationId,

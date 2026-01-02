@@ -24,7 +24,15 @@ export function matchesHeader(regexHeaders, packingListSheet) {
     }
     return matcherResult.WRONG_HEADER
   } catch (err) {
-    logger.error({ err }, 'Error in matchesHeader()')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in matchesHeader()'
+    )
     return matcherResult.GENERIC_ERROR
   }
 }

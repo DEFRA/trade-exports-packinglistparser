@@ -49,8 +49,7 @@ const getDispatchLocationRoute = {
 
     try {
       request.logger.info(
-        { applicationId },
-        'Dynamics test endpoint: Getting dispatch location'
+        `Dynamics test endpoint: Getting dispatch location for application ${applicationId}`
       )
 
       const remosId = await getDispatchLocation(applicationId)
@@ -72,15 +71,19 @@ const getDispatchLocationRoute = {
       }
 
       request.logger.info(
-        { applicationId, remosId },
-        'Dynamics test endpoint: Successfully retrieved REMOS ID'
+        `Dynamics test endpoint: Successfully retrieved REMOS ID ${remosId} for application ${applicationId}`
       )
 
       return h.response(response).code(STATUS_CODES.OK)
     } catch (err) {
       request.logger.error(
-        { err, applicationId },
-        'Dynamics test endpoint: Error retrieving dispatch location'
+        {
+          error: {
+            message: err.message,
+            stack_trace: err.stack
+          }
+        },
+        `Dynamics test endpoint: Error retrieving dispatch location for ${applicationId}`
       )
 
       return h
@@ -147,10 +150,7 @@ const dynamicsHealthCheck = {
       return h.response(response).code(STATUS_CODES.SERVICE_UNAVAILABLE)
     }
 
-    request.logger.info(
-      { checks: response.checks, environment },
-      'Dynamics service is properly configured'
-    )
+    request.logger.info('Dynamics service is properly configured')
     return h.response(response).code(STATUS_CODES.OK)
   }
 }

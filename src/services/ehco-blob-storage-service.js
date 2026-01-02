@@ -14,8 +14,7 @@ const logger = createLogger()
 export async function downloadBlobFromApplicationForms(blobName) {
   try {
     logger.info(
-      { blobName },
-      'Downloading blob from application forms container'
+      `Downloading blob from application forms container: ${blobName}`
     )
     const containerClient = createApplicationFormsBlobClient()
     const blobClient = containerClient.getBlobClient(blobName)
@@ -25,10 +24,7 @@ export async function downloadBlobFromApplicationForms(blobName) {
       downloadResponse.readableStreamBody
     )
 
-    logger.info(
-      { blobName },
-      'Blob downloaded from application forms container'
-    )
+    logger.info(`Blob downloaded from application forms container: ${blobName}`)
     return downloadedContent
   } catch (error) {
     throw new Error(`Failed to download blob: ${error.message}`)

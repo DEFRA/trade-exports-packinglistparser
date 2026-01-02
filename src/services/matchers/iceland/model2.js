@@ -42,12 +42,12 @@ export function matches(packingList, filename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info({ filename }, 'Packing list matches Iceland Model 2 CSV')
+      logger.info(`${filename} Packing list matches Iceland Model 2 CSV`)
     }
 
     return result
   } catch (err) {
-    logger.error({ err, filename }, 'Error in matches()')
+    logger.error(`Error in matches() for file ${filename}`, { err })
     return matcherResult.GENERIC_ERROR
   }
 }
