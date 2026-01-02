@@ -13,6 +13,7 @@ import {
   noMatchParsers
 } from '../model-parsers.js'
 
+import matcherResult from '../matcher-result.js'
 import headers from '../model-headers.js'
 import headersCsv from '../model-headers-csv.js'
 import headersPdf from '../model-headers-pdf.js'
@@ -81,7 +82,8 @@ function getParser(
       if (
         parser === null && // check if parser has already been matched
         parserHeaders[key]?.deprecated !== true && // check if model is deprecated
-        parsers[key].matches(sanitisedPackingList, filename) === 'CORRECT'
+        parsers[key].matches(sanitisedPackingList, filename) ===
+          matcherResult.CORRECT
       ) {
         parser = parsers[key]
       }
@@ -119,7 +121,7 @@ async function getPdfParser(sanitisedPackingList, filename) {
         )
       }
 
-      if (result.isMatched === 'CORRECT') {
+      if (result.isMatched === matcherResult.CORRECT) {
         parser.parser = parsersPdf[pdfModel]
         parser.result = result
         break
@@ -148,7 +150,7 @@ async function getPdfNonAiParser(sanitisedPackingList, filename) {
     for (const key in parsersPdfNonAi) {
       if (
         (await parsersPdfNonAi[key].matches(sanitisedPackingList, filename)) ===
-        'CORRECT'
+        matcherResult.CORRECT
       ) {
         parser = parsersPdfNonAi[key]
       }
