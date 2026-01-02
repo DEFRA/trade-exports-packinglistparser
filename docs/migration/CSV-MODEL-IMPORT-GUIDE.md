@@ -415,7 +415,16 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error({ err, filename }, 'Error in matches()')
+    logger.error(
+      {
+        filename,
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in matches()'
+    )
     return matcherResult.GENERIC_ERROR
   }
 }
@@ -511,7 +520,15 @@ export function parse(packingListCsv) {
       headers.LIDL1 // Required for Country of Origin validation
     )
   } catch (err) {
-    logger.error({ err }, 'Error in parse()')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in parse()'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }
@@ -882,7 +899,16 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error({ err, filename }, 'Error in matches()')
+    logger.error(
+      {
+        filename,
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in matches()'
+    )
     return matcherResult.GENERIC_ERROR
   }
 }
@@ -952,7 +978,15 @@ export function parse(packingListCsv) {
       headers.MODEL
     )
   } catch (err) {
-    logger.error({ err }, 'Error in parse()')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in parse()'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }
@@ -1021,7 +1055,15 @@ export function parse(packingListCsv) {
       headers.MODEL
     )
   } catch (err) {
-    logger.error({ err }, 'Error in parse()')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in parse()'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }
@@ -1101,7 +1143,15 @@ export function parse(packingListCsv) {
       headers.MODEL
     )
   } catch (err) {
-    logger.error({ err }, 'Error in parse()')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in parse()'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

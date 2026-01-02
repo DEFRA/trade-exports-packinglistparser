@@ -386,7 +386,16 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error({ err, filename }, 'Error in matches()')
+    logger.error(
+      {
+        filename,
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in matches()'
+    )
     return matcherResult.GENERIC_ERROR
   }
 }
@@ -396,7 +405,7 @@ export function matches(packingList, filename) {
 
 - Use ES6 imports instead of `require()`
 - Import and use Pino logger via `createLogger()` from `common/helpers/logging/logger.js`
-- Use structured logging: `logger.info({ context }, 'message')` and `logger.error({ err, context }, 'message')`
+- Use structured logging: `logger.info({ context }, 'message')` and `logger.error({ error: { message: err.message, stack_trace: err.stack }, context }, 'message')`
 - Keep the same matching logic
 
 ---
@@ -492,7 +501,15 @@ export function parse(packingListJson) {
       headers.ASDA3 // Required for Country of Origin validation
     )
   } catch (err) {
-    logger.error({ err }, 'Error in parse()')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in parse()'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }
@@ -502,7 +519,7 @@ export function parse(packingListJson) {
 
 - Use ES6 imports instead of `require()`
 - Import and use Pino logger via `createLogger()` from `common/helpers/logging/logger.js`
-- Use structured logging: `logger.error({ err }, 'message')` for errors
+- Use structured logging: `logger.error({ error: { message: err.message, stack_trace: err.stack } }, 'message')` for errors
 - **CRITICAL:** Ensure the 6th parameter (headers) is passed to `combineParser.combine()` - this is required for validation flags
 - **DO NOT modify the parsing logic** - keep the same flow and structure from legacy
 - **DO NOT change parameter names** - `combineParser.combine()` expects legacy parameter names:

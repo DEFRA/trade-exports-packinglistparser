@@ -512,7 +512,16 @@ export function matches(formRecognizerOutput, filename) {
 
     return matcherResult.CORRECT
   } catch (err) {
-    logger.error({ err, filename }, 'Error in matches()')
+    logger.error(
+      {
+        filename,
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in matches()'
+    )
     return matcherResult.GENERIC_ERROR
   }
 }

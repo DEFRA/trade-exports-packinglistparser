@@ -1,6 +1,6 @@
 import { parsePackingList } from './parser-service.js'
 import { getDispatchLocation } from './dynamics-service.js'
-import { downloadBlobFromApplicationForms } from './ehco-blob-storage-service.js'
+import { downloadBlobFromApplicationFormsContainerAsJson } from './ehco-blob-storage-service.js'
 import { uploadJsonFileToS3 } from './s3-service.js'
 import { sendMessageToQueue } from './trade-service-bus-service.js'
 import {
@@ -14,7 +14,7 @@ const logger = createLogger()
 
 export async function processPackingList(payload) {
   // 1. Download packing list from blob storage
-  const packingList = await downloadBlobFromApplicationForms(
+  const packingList = await downloadBlobFromApplicationFormsContainerAsJson(
     payload.packing_list_blob
   )
 
@@ -82,8 +82,13 @@ function mapPackingListForStorage(packingListJson, applicationId) {
     }
   } catch (err) {
     logger.error(
-      { applicationId, err },
-      'Error mapping packing list for storage'
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      `Error mapping packing list for storage for application ${applicationId}`
     )
     return undefined
   }

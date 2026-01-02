@@ -69,7 +69,17 @@ logger.logError(filename, 'functionName', error)
 
 // New style (pino)
 logger.info({ filename, function: 'functionName' }, 'message')
-logger.error({ filename, function: 'functionName', err: error }, 'message')
+logger.error(
+  {
+    filename,
+    function: 'functionName',
+    error: {
+      message: error.message,
+      stack_trace: error.stack
+    }
+  },
+  'message'
+)
 ```
 
 ### 3. Naming Conventions

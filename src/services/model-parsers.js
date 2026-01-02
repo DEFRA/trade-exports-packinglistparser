@@ -20,6 +20,14 @@ import { parse as parseAsda3 } from './parsers/asda/model3.js'
 import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
 import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 
+// No-match matchers and parsers
+import {
+  noRemosMatch,
+  noRemosMatchCsv,
+  noRemosMatchPdf
+} from './matchers/no-match/model1.js'
+import { noRemosParse, unrecognisedParse } from './parsers/no-match/model1.js'
+
 // TODO: Import retailer-specific matchers and parsers
 // Example structure:
 // import * as coopMatcher from './matchers/co-op/model1.js'
@@ -101,67 +109,28 @@ const parsersPdfNonAi = {
 /**
  * No-match parsers for documents without REMOS or unrecognized formats.
  */
+const missingRemosParserMessage = 'missing remos parser'
+
 const noMatchParsers = {
+  UNRECOGNISED: {
+    parse: (_packingList, _filename) =>
+      unrecognisedParse(_packingList, _filename),
+    name: 'unrecognised parser'
+  },
   NOREMOS: {
-    matches: (packingList, _filename) => {
-      // TODO: Implement REMOS validation
-      return false
-    },
-    parse: () => ({
-      parserModel: 'NOREMOS',
-      registration_approval_number: null,
-      items: [],
-      business_checks: {
-        all_required_fields_present: false
-      },
-      establishment_numbers: []
-    }),
-    name: 'Missing REMOS'
+    matches: (packingList, _filename) => noRemosMatch(packingList, _filename),
+    parse: (_packingList, _filename) => noRemosParse(_packingList, _filename),
+    name: missingRemosParserMessage
   },
   NOREMOSCSV: {
-    matches: (packingList) => {
-      // TODO: Implement CSV REMOS validation
-      return false
-    },
-    parse: () => ({
-      parserModel: 'NOREMOSCSV',
-      registration_approval_number: null,
-      items: [],
-      business_checks: {
-        all_required_fields_present: false
-      },
-      establishment_numbers: []
-    }),
-    name: 'Missing REMOS CSV'
+    matches: (packingList) => noRemosMatchCsv(packingList),
+    parse: () => noRemosParse(),
+    name: missingRemosParserMessage
   },
   NOREMOSPDF: {
-    matches: async (packingList) => {
-      // TODO: Implement PDF REMOS validation
-      return false
-    },
-    parse: () => ({
-      parserModel: 'NOREMOSPDF',
-      registration_approval_number: null,
-      items: [],
-      business_checks: {
-        all_required_fields_present: false
-      },
-      establishment_numbers: []
-    }),
-    name: 'Missing REMOS PDF'
-  },
-  UNRECOGNISED: {
-    matches: () => true,
-    parse: () => ({
-      parserModel: 'NOMATCH',
-      registration_approval_number: null,
-      items: [],
-      business_checks: {
-        all_required_fields_present: false
-      },
-      establishment_numbers: []
-    }),
-    name: 'Unrecognised format'
+    matches: (packingList) => noRemosMatchPdf(packingList),
+    parse: () => noRemosParse(),
+    name: missingRemosParserMessage
   }
 }
 
