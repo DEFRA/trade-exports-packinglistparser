@@ -5,10 +5,14 @@
  * Helpers to detect whether a document contains an RMS/REMOS number.
  * Used to classify files that do not contain an RMS as NOMATCH.
  */
-import regex from '../../../utilities/regex.js'
+import {
+  findMatch,
+  remosRegex as standardRemosRegex
+} from '../../../utilities/regex.js'
 import { extractPdf } from '../../../utilities/pdf-helper.js'
-import logger from '../../../common/helpers/logging/logger.js'
+import { createLogger } from '../../../common/helpers/logging/logger.js'
 //import headersPdf from '../../model-headers-pdf.js'
+const logger = createLogger()
 
 /**
  * Check for presence of a REMOS/RMS number in a sheet-based packing list.
@@ -89,16 +93,16 @@ async function noRemosMatchPdf(packingList) {
     const pdfJson = await extractPdf(packingList)
 
     for (const page of pdfJson.pages) {
-      const result = regex.findMatch(regex.remosRegex, page.content) /*||
-              regex.findMatch(
+      const result = findMatch(standardRemosRegex, page.content) /*||
+              findMatch(
                 headersPdf.ICELAND1.establishmentNumber.regex,
                 page.content
               ) ||
-              regex.findMatch(
+              findMatch(
                 headersPdf.GREGGS1.establishmentNumber.regex,
                 page.content
               ) ||
-              regex.findMatch(
+              findMatch(
                 headersPdf.MANDS1.establishmentNumber.regex,
                 page.content
               ) */
