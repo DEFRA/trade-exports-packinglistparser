@@ -4,17 +4,12 @@
  * Main entry point for packing list parsing. Coordinates sanitization, parser selection,
  * and result generation for Excel, CSV, and PDF documents.
  */
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 import * as jsonFile from '../utilities/json-file.js'
 import * as fileExtension from '../utilities/file-extension.js'
 import * as parserFactory from './parsers/parser-factory.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 
 const logger = createLogger()
-
-const currentFilename = fileURLToPath(import.meta.url)
-const filenameForLogging = path.join('src', currentFilename.split('src')[1])
 
 /**
  * Find appropriate parser and parse packing list document.
@@ -45,10 +40,7 @@ async function findParser(packingList, fileName, dispatchLocation) {
 async function parsePackingList(packingList, fileName, dispatchLocation) {
   try {
     // Input Sanitization
-    logger.info(
-      { filename: filenameForLogging, function: 'parsePackingList()' },
-      `Sanitizing packing list input for ${fileName}`
-    )
+    logger.info(`Sanitizing packing list input for ${fileName}`)
     const sanitizedPackingList = sanitizeInput(packingList, fileName)
 
     // Parser Discovery
@@ -78,7 +70,12 @@ async function parsePackingList(packingList, fileName, dispatchLocation) {
     }
   } catch (err) {
     logger.error(
-      { filename: filenameForLogging, function: 'parsePackingList()', err },
+      {
+        error: {
+          message: err.message,
+          stack: err.stack
+        }
+      },
       'Error parsing packing list'
     )
     return {}
