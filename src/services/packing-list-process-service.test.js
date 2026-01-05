@@ -368,7 +368,7 @@ describe('packing-list-process-service', () => {
       await processPackingList(mockPayload)
 
       expect(mockUploadJsonFileToS3).toHaveBeenCalledWith(
-        mockApplicationId,
+        { filename: mockApplicationId },
         expect.stringContaining('"applicationId":"12345"')
       )
 

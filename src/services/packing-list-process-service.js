@@ -51,7 +51,10 @@ async function persistPackingList(parsedData, applicationId) {
     `Persisting parsed packing list data for application ${applicationId}`
   )
   const processedData = mapPackingListForStorage(parsedData, applicationId)
-  await uploadJsonFileToS3(applicationId, JSON.stringify(processedData))
+  await uploadJsonFileToS3(
+    { filename: applicationId },
+    JSON.stringify(processedData)
+  )
 }
 
 /**
