@@ -140,7 +140,7 @@ describe('packing-list-process-service', () => {
       expect(mockSendMessageToQueue).toHaveBeenCalled()
       expect(result).toEqual({
         status: 'complete',
-        data: mockParsedData
+        data: `s3/${mockApplicationId}`
       })
     })
 
@@ -207,7 +207,7 @@ describe('packing-list-process-service', () => {
 
       await processPackingList(mockPayload)
 
-      const uploadCall = mockUploadJsonFileToS3.mock.calls[0][0]
+      const uploadCall = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
       expect(uploadCall.items[0].nirms).toBe(true)
     })
 
@@ -232,7 +232,7 @@ describe('packing-list-process-service', () => {
 
       await processPackingList(mockPayload)
 
-      const uploadCall = mockUploadJsonFileToS3.mock.calls[0][0]
+      const uploadCall = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
       expect(uploadCall.items[0].nirms).toBe(false)
     })
 
@@ -258,7 +258,7 @@ describe('packing-list-process-service', () => {
 
       await processPackingList(mockPayload)
 
-      const uploadCall = mockUploadJsonFileToS3.mock.calls[0][0]
+      const uploadCall = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
       expect(uploadCall.items[0].nirms).toBe(null)
     })
 
@@ -368,24 +368,29 @@ describe('packing-list-process-service', () => {
       await processPackingList(mockPayload)
 
       expect(mockUploadJsonFileToS3).toHaveBeenCalledWith(
-        expect.objectContaining({
-          packinglist: expect.objectContaining({
-            applicationId: mockApplicationId,
-            registrationApprovalNumber: 'RMS-GB-123456-001',
-            allRequiredFieldsPresent: true,
-            parserModel: 'TESTMODEL1',
-            reasonsForFailure: [],
-            dispatchLocationNumber: mockDispatchLocation
-          }),
-          items: expect.arrayContaining([
-            expect.objectContaining({
-              description: 'Test Item',
-              applicationId: mockApplicationId
-            })
-          ])
-        }),
-        mockApplicationId
+        mockApplicationId,
+        expect.stringContaining('"applicationId":"12345"')
       )
+
+      // Verify the structure by parsing the JSON from second argument
+      const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
+      expect(uploadedData).toMatchObject({
+        packinglist: {
+          applicationId: mockApplicationId,
+          registrationApprovalNumber: 'RMS-GB-123456-001',
+          allRequiredFieldsPresent: true,
+          parserModel: 'TESTMODEL1',
+          reasonsForFailure: [],
+          dispatchLocationNumber: mockDispatchLocation
+        },
+        items: [
+          expect.objectContaining({
+            description: 'Test Item',
+            applicationId: mockApplicationId,
+            nirms: true
+          })
+        ]
+      })
     })
   })
 })

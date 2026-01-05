@@ -24,7 +24,7 @@ export async function processPackingList(payload) {
   // 3. Process results
   await processPackingListResults(parsedData, payload.application_id)
 
-  return { status: 'complete', data: parsedData }
+  return { status: 'complete', data: `s3/${payload.application_id}` }
 }
 
 async function getParsedPackingList(packingList, payload) {
@@ -51,7 +51,7 @@ async function persistPackingList(parsedData, applicationId) {
     `Persisting parsed packing list data for application ${applicationId}`
   )
   const processedData = mapPackingListForStorage(parsedData, applicationId)
-  await uploadJsonFileToS3(processedData, applicationId)
+  await uploadJsonFileToS3(applicationId, JSON.stringify(processedData))
 }
 
 /**
