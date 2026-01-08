@@ -35,11 +35,13 @@ async function findParser(sanitizedPackingList, fileName) {
 
   // File Type Detection
   if (fileExtension.isExcel(fileName)) {
+    logger.info(`Detected Excel file for ${fileName}`)
     parser = getExcelParser(sanitizedPackingList, fileName)
   } else if (fileExtension.isCsv(fileName)) {
+    logger.info(`Detected CSV file for ${fileName}`)
     parser = getCsvParser(sanitizedPackingList, fileName)
   } else if (fileExtension.isPdf(fileName)) {
-    // Try non-AI PDF parsers first
+    logger.info(`Detected PDF file for ${fileName}`)
     parser = await getPdfNonAiParser(sanitizedPackingList, fileName)
   } else {
     parser = null
