@@ -4,6 +4,9 @@
  * Removes trailing spaces and empty cells from JSON-serialized Excel/CSV data.
  */
 
+import { createLogger } from '../common/helpers/logging/logger.js'
+const logger = createLogger()
+
 /**
  * Sanitise JSON string by removing trailing spaces and null values.
  *
@@ -22,6 +25,7 @@ function sanitise(jsonString) {
     return JSON.stringify(sanitized)
   } catch (err) {
     // If parsing fails, return null
+    logger.warn(`Failed to parse JSON string: ${jsonString}`)
     return null
   }
 }
@@ -51,9 +55,11 @@ function sanitizeObject(obj) {
   if (typeof obj === 'object') {
     const sanitized = {}
     for (const key in obj) {
-      const value = sanitizeObject(obj[key])
-      // Keep the key even if value is null (for cell tracking)
-      sanitized[key] = value
+      if (Object.hasOwn(obj, key)) {
+        const value = sanitizeObject(obj[key])
+        // Keep the key even if value is null (for cell tracking)
+        sanitized[key] = value
+      }
     }
     return sanitized
   }

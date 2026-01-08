@@ -549,7 +549,7 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Packing list contains no data')
+    expect(result.failureReasons).toContain('No product line data found')
   })
 
   test('missing identifier', () => {
@@ -607,7 +607,7 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Description is missing')
+    expect(result.failureReasons).toContain('Product description is missing')
   })
 
   test('missing packages', () => {
@@ -636,7 +636,7 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Number of packages is missing')
+    expect(result.failureReasons).toContain('No of packages is missing')
   })
 
   test('missing net weight', () => {
@@ -665,7 +665,7 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Net weight is missing')
+    expect(result.failureReasons).toContain('Total net weight is missing')
   })
 
   test('missing net weight unit', () => {
@@ -694,7 +694,9 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Net weight unit is missing')
+    expect(result.failureReasons).toContain(
+      'Net Weight Unit of Measure (kg) not found'
+    )
   })
 
   test('invalid packages', () => {
@@ -723,7 +725,7 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Invalid number of packages')
+    expect(result.failureReasons).toContain('No of packages is invalid')
   })
 
   test('invalid net weight', () => {
@@ -752,7 +754,7 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Invalid net weight')
+    expect(result.failureReasons).toContain('Total net weight is invalid')
   })
 
   test('invalid product code', () => {
@@ -781,7 +783,7 @@ describe('generateFailuresByIndexAndTypes', () => {
     )
 
     expect(result.hasAllFields).toBeFalsy()
-    expect(result.failureReasons).toContain('Invalid product codes')
+    expect(result.failureReasons).toContain('Product code is invalid')
   })
 
   test('multiple RMS numbers', () => {
@@ -811,7 +813,679 @@ describe('generateFailuresByIndexAndTypes', () => {
 
     expect(result.hasAllFields).toBeFalsy()
     expect(result.failureReasons).toContain(
-      'Multiple RMS establishment numbers'
+      'Multiple GB Place of Dispatch (Establishment) numbers found on packing list'
     )
+  })
+
+  test('net weight unit missing with unitInHeader true', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [{ rowNumber: 1 }],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const packingListWithHeaderUnit = {
+      ...packingList,
+      unitInHeader: true
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingListWithHeaderUnit
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'Net Weight Unit of Measure (kg) not found'
+    )
+  })
+
+  test('net weight unit missing with unitInHeader false', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [{ rowNumber: 1 }],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const packingListWithoutHeaderUnit = {
+      ...packingList,
+      unitInHeader: false
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingListWithoutHeaderUnit
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'Net Weight Unit of Measure (kg) not found'
+    )
+  })
+
+  test('NIRMS missing with blanketNirms true', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [{ rowNumber: 1 }],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const packingListWithBlanketNirms = {
+      ...packingList,
+      blanketNirms: true
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingListWithBlanketNirms
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'NIRMS/Non-NIRMS goods not specified'
+    )
+  })
+
+  test('NIRMS missing with blanketNirms false', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [{ rowNumber: 1 }],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const packingListWithoutBlanketNirms = {
+      ...packingList,
+      blanketNirms: false
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingListWithoutBlanketNirms
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'NIRMS/Non-NIRMS goods not specified'
+    )
+  })
+
+  test('invalid NIRMS', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [{ rowNumber: 1 }],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'Invalid entry for NIRMS/Non-NIRMS goods'
+    )
+  })
+
+  test('missing country of origin', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [{ rowNumber: 1 }],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('Missing Country of Origin')
+  })
+
+  test('invalid country of origin', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [{ rowNumber: 1 }],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'Invalid Country of Origin ISO Code'
+    )
+  })
+
+  test('ineligible items', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: [{ rowNumber: 1 }]
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'Prohibited item identified on the packing list'
+    )
+  })
+
+  test('sheet-aware location formatting with single row', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [{ sheetName: 'Sheet1', rowNumber: 5 }],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('sheet "Sheet1" row 5')
+  })
+
+  test('sheet-aware location formatting with two rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [
+        { sheetName: 'Sheet1', rowNumber: 5 },
+        { sheetName: 'Sheet2', rowNumber: 3 }
+      ],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'sheet "Sheet1" row 5 and sheet "Sheet2" row 3'
+    )
+  })
+
+  test('sheet-aware location formatting with three rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [
+        { sheetName: 'Sheet1', rowNumber: 5 },
+        { sheetName: 'Sheet2', rowNumber: 3 },
+        { sheetName: 'Sheet3', rowNumber: 7 }
+      ],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'sheet "Sheet1" row 5, sheet "Sheet2" row 3 and sheet "Sheet3" row 7'
+    )
+  })
+
+  test('sheet-aware location formatting with more than three rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [
+        { sheetName: 'Sheet1', rowNumber: 5 },
+        { sheetName: 'Sheet2', rowNumber: 3 },
+        { sheetName: 'Sheet3', rowNumber: 7 },
+        { sheetName: 'Sheet4', rowNumber: 2 },
+        { sheetName: 'Sheet5', rowNumber: 9 }
+      ],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('in addition to 2 other locations')
+  })
+
+  test('page-aware location formatting with single row', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [{ pageNumber: 1, rowNumber: 5 }],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('page 1 row 5')
+  })
+
+  test('page-aware location formatting with two rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [
+        { pageNumber: 1, rowNumber: 5 },
+        { pageNumber: 2, rowNumber: 3 }
+      ],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('page 1 row 5 and page 2 row 3')
+  })
+
+  test('page-aware location formatting with more than three rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [
+        { pageNumber: 1, rowNumber: 5 },
+        { pageNumber: 2, rowNumber: 3 },
+        { pageNumber: 3, rowNumber: 7 },
+        { pageNumber: 4, rowNumber: 2 }
+      ],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('in addition to 1 other locations')
+  })
+
+  test('row-only formatting with two rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [{ rowNumber: 5 }, { rowNumber: 8 }],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('rows 5 and 8')
+  })
+
+  test('row-only formatting with three rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [
+        { rowNumber: 5 },
+        { rowNumber: 8 },
+        { rowNumber: 12 }
+      ],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('rows 5, 8 and 12')
+  })
+
+  test('row-only formatting with more than three rows', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [
+        { rowNumber: 5 },
+        { rowNumber: 8 },
+        { rowNumber: 12 },
+        { rowNumber: 15 },
+        { rowNumber: 20 }
+      ],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain(
+      'rows 5, 8, 12 in addition to 2 other locations'
+    )
+  })
+
+  test('noMatch returns null failure reasons', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      noMatch: true,
+      missingRemos: false,
+      missingIdentifier: [],
+      invalidProductCodes: [],
+      missingDescription: [],
+      missingPackages: [],
+      missingNetWeight: [],
+      invalidPackages: [],
+      invalidNetWeight: [],
+      hasSingleRms: true,
+      missingNetWeightUnit: [],
+      missingNirms: [],
+      invalidNirms: [],
+      missingCoO: [],
+      invalidCoO: [],
+      ineligibleItems: []
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toBeNull()
+  })
+
+  test('combined validation failures', () => {
+    const validationResult = {
+      hasAllFields: false,
+      isEmpty: false,
+      missingIdentifier: [{ rowNumber: 1 }],
+      invalidProductCodes: [{ rowNumber: 2 }],
+      missingDescription: [{ rowNumber: 3 }],
+      missingPackages: [{ rowNumber: 4 }],
+      missingNetWeight: [{ rowNumber: 5 }],
+      invalidPackages: [{ rowNumber: 6 }],
+      invalidNetWeight: [{ rowNumber: 7 }],
+      hasSingleRms: false,
+      missingNetWeightUnit: [{ rowNumber: 8 }],
+      missingNirms: [{ rowNumber: 9 }],
+      invalidNirms: [{ rowNumber: 10 }],
+      missingCoO: [{ rowNumber: 11 }],
+      invalidCoO: [{ rowNumber: 12 }],
+      ineligibleItems: [{ rowNumber: 13 }]
+    }
+
+    const result = generateFailuresByIndexAndTypes(
+      validationResult,
+      packingList
+    )
+
+    expect(result.hasAllFields).toBeFalsy()
+    expect(result.failureReasons).toContain('Identifier is missing')
+    expect(result.failureReasons).toContain('Product code is invalid')
+    expect(result.failureReasons).toContain('Product description is missing')
+    expect(result.failureReasons).toContain('No of packages is missing')
+    expect(result.failureReasons).toContain('Total net weight is missing')
+    expect(result.failureReasons).toContain('No of packages is invalid')
+    expect(result.failureReasons).toContain('Total net weight is invalid')
+    expect(result.failureReasons).toContain('Multiple GB Place of Dispatch')
+    expect(result.failureReasons).toContain('Net Weight Unit of Measure')
+    expect(result.failureReasons).toContain(
+      'NIRMS/Non-NIRMS goods not specified'
+    )
+    expect(result.failureReasons).toContain(
+      'Invalid entry for NIRMS/Non-NIRMS goods'
+    )
+    expect(result.failureReasons).toContain('Missing Country of Origin')
+    expect(result.failureReasons).toContain(
+      'Invalid Country of Origin ISO Code'
+    )
+    expect(result.failureReasons).toContain('Prohibited item identified')
   })
 })

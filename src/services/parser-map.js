@@ -136,7 +136,9 @@ function isNotEmpty(col, headerCols) {
  * @returns {*} Treatment type value
  */
 function getTypeOfTreatment(col, headerCols, blanketValues, hasData) {
-  if (!hasData) return null
+  if (!hasData) {
+    return null
+  }
   return (
     columnValue(col[headerCols.type_of_treatment]) ||
     blanketValues.blanketTreatmentType ||
@@ -153,7 +155,9 @@ function getTypeOfTreatment(col, headerCols, blanketValues, hasData) {
  * @returns {*} Net weight unit value
  */
 function getNetWeightUnit(col, headerCols, blanketValues, hasData) {
-  if (!hasData) return null
+  if (!hasData) {
+    return null
+  }
   return (
     columnValue(col[headerCols.total_net_weight_unit]) ||
     blanketValues.netWeightUnit ||
@@ -170,7 +174,9 @@ function getNetWeightUnit(col, headerCols, blanketValues, hasData) {
  * @returns {*} NIRMS value
  */
 function getNirms(col, headerCols, blanketValues, hasData) {
-  if (!hasData) return null
+  if (!hasData) {
+    return null
+  }
   return (
     columnValue(col[headerCols.nirms]) || blanketValues.blanketNirms || null
   )
