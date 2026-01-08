@@ -31,8 +31,51 @@ vi.mock('./utilities/proxy-helper.js', () => ({
   getClientProxyOptions: mockGetClientProxyOptions
 }))
 
+// Mock logger
+const mockLogger = {
+  info: vi.fn(),
+  error: vi.fn(),
+  warn: vi.fn(),
+  debug: vi.fn()
+}
+vi.mock('../common/helpers/logging/logger.js', () => ({
+  createLogger: vi.fn(() => mockLogger)
+}))
+
+// Mock excel-helper
+const mockIsExcel = vi.fn()
+const mockConvertExcelToJson = vi.fn()
+vi.mock('../utilities/excel-helper.js', () => ({
+  isExcel: mockIsExcel,
+  convertExcelToJson: mockConvertExcelToJson
+}))
+
+// Mock csv-helper
+const mockIsCsv = vi.fn()
+const mockConvertCsvToJson = vi.fn()
+vi.mock('../utilities/csv-helper.js', () => ({
+  isCsv: mockIsCsv,
+  convertCsvToJson: mockConvertCsvToJson
+}))
+
 // Mock config
-const mockConfigGet = vi.fn()
+const mockConfigGet = vi.fn((key) => {
+  if (key === 'log') {
+    return {
+      isEnabled: false,
+      level: 'silent',
+      format: 'pino-pretty',
+      redact: []
+    }
+  }
+  if (key === 'serviceName') {
+    return 'test-service'
+  }
+  if (key === 'serviceVersion') {
+    return '1.0.0'
+  }
+  return {}
+})
 vi.mock('../config.js', () => ({
   config: {
     get: mockConfigGet
@@ -42,6 +85,7 @@ vi.mock('../config.js', () => ({
 // Import after all mocks
 const {
   downloadBlobFromApplicationForms,
+  downloadBlobFromApplicationFormsContainerAsJson,
   checkApplicationFormsContainerExists
 } = await import('./ehco-blob-storage-service.js')
 const { BlobServiceClient } = await import('@azure/storage-blob')
@@ -69,6 +113,20 @@ const ERROR_CODES = {
 // Helper functions to reduce code duplication and complexity
 const setupDefaultConfig = () => {
   mockConfigGet.mockImplementation((key) => {
+    if (key === 'log') {
+      return {
+        isEnabled: false,
+        level: 'silent',
+        format: 'pino-pretty',
+        redact: []
+      }
+    }
+    if (key === 'serviceName') {
+      return 'test-service'
+    }
+    if (key === 'serviceVersion') {
+      return '1.0.0'
+    }
     if (key === 'azure') {
       return {
         defraTenantId: TEST_CREDENTIALS.TENANT_ID
@@ -92,6 +150,20 @@ const setupCustomConfig = (
   containerName
 ) => {
   mockConfigGet.mockImplementation((key) => {
+    if (key === 'log') {
+      return {
+        isEnabled: false,
+        level: 'silent',
+        format: 'pino-pretty',
+        redact: []
+      }
+    }
+    if (key === 'serviceName') {
+      return 'test-service'
+    }
+    if (key === 'serviceVersion') {
+      return '1.0.0'
+    }
     if (key === 'azure') {
       return {
         defraTenantId: tenantId
@@ -124,6 +196,14 @@ describe('ehco-blob-storage-service', () => {
     vi.clearAllMocks()
     mockGetClientProxyOptions.mockReturnValue({})
     setupDefaultConfig()
+    mockLogger.info.mockClear()
+    mockLogger.error.mockClear()
+    mockLogger.warn.mockClear()
+    mockLogger.debug.mockClear()
+    mockIsExcel.mockReturnValue(false)
+    mockIsCsv.mockReturnValue(false)
+    mockConvertExcelToJson.mockReturnValue({})
+    mockConvertCsvToJson.mockResolvedValue([])
   })
 
   describe('downloadBlobFromApplicationForms', () => {
@@ -148,6 +228,12 @@ describe('ehco-blob-storage-service', () => {
       expect(mockGetBlobClient).toHaveBeenCalledWith('test-blob.txt')
       expect(mockDownload).toHaveBeenCalled()
       expect(result).toEqual(testData)
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Downloading blob from application forms container: test-blob.txt'
+      )
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        'Blob downloaded from application forms container: test-blob.txt'
+      )
     })
 
     it('should download a blob with proxy configuration', async () => {
@@ -263,6 +349,34 @@ describe('ehco-blob-storage-service', () => {
       expect(result).toEqual(Buffer.from([]))
     })
 
+    it('should extract blob name from full URL', async () => {
+      const testData = Buffer.from('full url test')
+      setupSuccessfulDownload(testData)
+      const fullUrl = `https://${TEST_BLOB_CONFIG.STORAGE_ACCOUNT}.blob.core.windows.net/${TEST_BLOB_CONFIG.CONTAINER_NAME}/subdirectory/test-file.pdf`
+
+      const result = await downloadBlobFromApplicationForms(fullUrl)
+
+      expect(mockGetBlobClient).toHaveBeenCalledWith(
+        'subdirectory/test-file.pdf'
+      )
+      expect(result).toEqual(testData)
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Downloading blob from application forms container: ${fullUrl}`
+      )
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Blob downloaded from application forms container: ${fullUrl}`
+      )
+    })
+
+    it('should throw error for invalid blob URL format', async () => {
+      const invalidUrl =
+        'https://wrongaccount.blob.core.windows.net/wrongcontainer/file.pdf'
+
+      await expect(
+        downloadBlobFromApplicationForms(invalidUrl)
+      ).rejects.toThrow('Failed to download blob: Invalid blob URL')
+    })
+
     it('should call config.get with correct keys', async () => {
       const testData = Buffer.from('config test')
       setupSuccessfulDownload(testData)
@@ -271,7 +385,94 @@ describe('ehco-blob-storage-service', () => {
 
       expect(mockConfigGet).toHaveBeenCalledWith('azure')
       expect(mockConfigGet).toHaveBeenCalledWith('ehcoBlob')
-      expect(mockConfigGet).toHaveBeenCalledTimes(3) // Called once for 'azure', twice for 'ehcoBlob' (in createBlobServiceClient and createApplicationFormsBlobClient)
+      expect(mockConfigGet).toHaveBeenCalledTimes(4) // Called once for 'azure', three times for 'ehcoBlob' (in createBlobServiceClient, createApplicationFormsBlobClient, and getBlobNameFromUrl)
+    })
+  })
+
+  describe('downloadBlobFromApplicationFormsContainerAsJson', () => {
+    it('should download and convert Excel file to JSON', async () => {
+      const testData = Buffer.from('excel data')
+      setupSuccessfulDownload(testData)
+      mockIsExcel.mockReturnValue(true)
+      const expectedJson = { Sheet1: [{ A: 'data' }] }
+      mockConvertExcelToJson.mockReturnValue(expectedJson)
+
+      const result =
+        await downloadBlobFromApplicationFormsContainerAsJson('test.xlsx')
+
+      expect(mockIsExcel).toHaveBeenCalledWith('test.xlsx')
+      expect(mockConvertExcelToJson).toHaveBeenCalledWith({ source: testData })
+      expect(result).toEqual(expectedJson)
+    })
+
+    it('should download and convert CSV file to JSON', async () => {
+      const testData = Buffer.from('csv,data\n1,2')
+      setupSuccessfulDownload(testData)
+      mockIsCsv.mockReturnValue(true)
+      const expectedJson = [
+        ['csv', 'data'],
+        ['1', '2']
+      ]
+      mockConvertCsvToJson.mockResolvedValue(expectedJson)
+
+      const result =
+        await downloadBlobFromApplicationFormsContainerAsJson('test.csv')
+
+      expect(mockIsCsv).toHaveBeenCalledWith('test.csv')
+      expect(mockConvertCsvToJson).toHaveBeenCalledWith(testData)
+      expect(result).toEqual(expectedJson)
+    })
+
+    it('should return buffer for non-Excel/CSV files', async () => {
+      const testData = Buffer.from('pdf data')
+      setupSuccessfulDownload(testData)
+      mockIsExcel.mockReturnValue(false)
+      mockIsCsv.mockReturnValue(false)
+
+      const result =
+        await downloadBlobFromApplicationFormsContainerAsJson('test.pdf')
+
+      expect(mockIsExcel).toHaveBeenCalledWith('test.pdf')
+      expect(mockIsCsv).toHaveBeenCalledWith('test.pdf')
+      expect(mockConvertExcelToJson).not.toHaveBeenCalled()
+      expect(mockConvertCsvToJson).not.toHaveBeenCalled()
+      expect(result).toEqual(testData)
+    })
+
+    it('should throw error when download fails', async () => {
+      mockDownload.mockRejectedValue(new Error('Download failed'))
+
+      await expect(
+        downloadBlobFromApplicationFormsContainerAsJson('test.xlsx')
+      ).rejects.toThrow(
+        'Failed to download and convert blob: Failed to download blob: Download failed'
+      )
+    })
+
+    it('should throw error when Excel conversion fails', async () => {
+      const testData = Buffer.from('excel data')
+      setupSuccessfulDownload(testData)
+      mockIsExcel.mockReturnValue(true)
+      mockConvertExcelToJson.mockImplementation(() => {
+        throw new Error('Conversion error')
+      })
+
+      await expect(
+        downloadBlobFromApplicationFormsContainerAsJson('test.xlsx')
+      ).rejects.toThrow('Failed to download and convert blob: Conversion error')
+    })
+
+    it('should throw error when CSV conversion fails', async () => {
+      const testData = Buffer.from('csv data')
+      setupSuccessfulDownload(testData)
+      mockIsCsv.mockReturnValue(true)
+      mockConvertCsvToJson.mockRejectedValue(new Error('CSV conversion error'))
+
+      await expect(
+        downloadBlobFromApplicationFormsContainerAsJson('test.csv')
+      ).rejects.toThrow(
+        'Failed to download and convert blob: CSV conversion error'
+      )
     })
   })
 

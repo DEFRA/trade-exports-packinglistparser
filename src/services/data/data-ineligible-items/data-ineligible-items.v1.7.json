@@ -1,0 +1,2062 @@
+[
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0207",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "UA",
+    "commodity_code": "0207",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CM",
+    "commodity_code": "03028410",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "TR",
+    "commodity_code": "03028410",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "MA",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "SN",
+    "commodity_code": "07069090",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "07094000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "KE",
+    "commodity_code": "07099310",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "07099910",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "IN",
+    "commodity_code": "0709999020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "GH",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "GB",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08045000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08051080",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "PE",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08052100",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08054000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08055010",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08059000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "0805900000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08092900",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "AR",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "EG",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "UY",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "ZW",
+    "commodity_code": "08093030",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Frozen"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CL",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "NZ",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "NZ",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "NZ",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "NZ",
+    "commodity_code": "08105000",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "08109020",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "08109020",
+    "type_of_treatment": "Fresh"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "08109020",
+    "type_of_treatment": "Raw"
+  },
+  {
+    "country_of_origin": "CA",
+    "commodity_code": "08109020",
+    "type_of_treatment": "Unprocessed"
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "16025031",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0201",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0202",
+    "type_of_treatment": null
+  }
+]

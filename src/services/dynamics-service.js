@@ -40,7 +40,15 @@ async function bearerTokenRequest() {
 
     return json.access_token
   } catch (err) {
-    logger.error({ err }, 'bearerTokenRequest() failed')
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'bearerTokenRequest() failed'
+    )
     throw err
   }
 }
@@ -173,7 +181,15 @@ async function getDispatchLocation(
 
       if (!validateBearerToken(bearerToken)) {
         const error = new Error(`Failed to obtain bearer token: ${bearerToken}`)
-        logger.error({ err: error }, GET_DISPATCH_LOCATION_METHOD)
+        logger.error(
+          {
+            error: {
+              message: error.message,
+              stack_trace: error.stack
+            }
+          },
+          GET_DISPATCH_LOCATION_METHOD
+        )
         return null
       }
 

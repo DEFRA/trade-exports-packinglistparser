@@ -6,9 +6,11 @@ import {
   dynamicsHealthCheck
 } from '../routes/dynamics.js'
 import { home } from '../routes/home.js'
+import { packingListProcessRoute } from '../routes/packing-list-process.js'
 import { sendtoqueue } from '../routes/trade-service-bus.js'
 import { getFileFromBlob, formsContainerExists } from '../routes/ehco-blob.js'
 import { ineligibleItems } from '../routes/mdm.js'
+import { testRoute } from '../routes/test-parse.js'
 
 const router = {
   plugin: {
@@ -22,6 +24,8 @@ const router = {
       server.route([sendtoqueue])
       server.route([getFileFromBlob, formsContainerExists])
       server.route([ineligibleItems])
+      server.route([packingListProcessRoute])
+      server.route([testRoute])
     }
   }
 }

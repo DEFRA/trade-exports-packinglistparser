@@ -113,7 +113,15 @@ async function canConnect(func, name) {
     await func()
     return true
   } catch (err) {
-    logger.error({ err }, `${name} connection failure:`)
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      `${name} connection failure:`
+    )
     return false
   }
 }

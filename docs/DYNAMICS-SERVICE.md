@@ -206,7 +206,15 @@ Content-Type: application/json
 All errors are logged with context using Pino logger:
 
 ```javascript
-logger.error({ err }, 'bearerTokenRequest() failed')
+logger.error(
+  {
+    error: {
+      message: err.message,
+      stack_trace: err.stack
+    }
+  },
+  'bearerTokenRequest() failed'
+)
 logger.error('Request failed - HTTP 404: Not Found')
 logger.error('Attempt 1 failed with error: Network timeout, retrying in 2000ms')
 logger.error('Final attempt failed with error: Network timeout')
