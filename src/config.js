@@ -238,6 +238,13 @@ const config = convict({
       nullable: true,
       default: null,
       env: 'AZURE_TRADE_SERVICE_BUS_QUEUE_NAME'
+    },
+    disableSend: {
+      doc: 'Is sending messages to the Service Bus disabled',
+      format: Boolean,
+      nullable: false,
+      default: false,
+      env: 'AZURE_TRADE_SERVICE_BUS_DISABLE_SEND'
     }
   },
   ehcoBlob: {

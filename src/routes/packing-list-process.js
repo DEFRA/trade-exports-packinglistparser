@@ -11,10 +11,10 @@ async function processPackingListHandler(request, h) {
   try {
     const message = request.payload
     const result = await processPackingList(message)
-    return h.response({ success: true, result }).code(STATUS_CODES.OK)
+    return h.response(result).code(STATUS_CODES.OK)
   } catch (err) {
     return h
-      .response({ success: false, error: err.message })
+      .response({ result: 'failure', error: err.message })
       .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
   }
 }

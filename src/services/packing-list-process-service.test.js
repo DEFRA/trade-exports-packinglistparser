@@ -99,7 +99,11 @@ describe('packing-list-process-service', () => {
         total_net_weight_kg: 100.5,
         total_net_weight_unit: 'kg',
         country_of_origin: 'GB',
-        nirms: 'NIRMS'
+        nirms: 'NIRMS',
+        row_location: {
+          rowNumber: 5,
+          sheetName: 'Sheet1'
+        }
       }
     ]
   }
@@ -139,7 +143,7 @@ describe('packing-list-process-service', () => {
       expect(mockUploadJsonFileToS3).toHaveBeenCalled()
       expect(mockSendMessageToQueue).toHaveBeenCalled()
       expect(result).toEqual({
-        status: 'complete',
+        result: 'success',
         data: `s3/${mockApplicationId}`
       })
     })
@@ -217,7 +221,11 @@ describe('packing-list-process-service', () => {
         items: [
           {
             ...mockParsedData.items[0],
-            nirms: 'NOT NIRMS'
+            nirms: 'NOT NIRMS',
+            row_location: {
+              rowNumber: 5,
+              sheetName: 'Sheet1'
+            }
           }
         ]
       }
@@ -242,7 +250,11 @@ describe('packing-list-process-service', () => {
         items: [
           {
             ...mockParsedData.items[0],
-            nirms: 'INVALID'
+            nirms: 'INVALID',
+            row_location: {
+              rowNumber: 5,
+              sheetName: 'Sheet1'
+            }
           }
         ]
       }
@@ -282,7 +294,7 @@ describe('packing-list-process-service', () => {
       await processPackingList(mockPayload)
 
       const messageCall = mockSendMessageToQueue.mock.calls[0][0]
-      expect(messageCall.body.approvalStatus).toBe('approved')
+      expect(messageCall.body.approvalStatus).toBe('rejected')
       expect(messageCall.body.failureReasons).toEqual([
         'Missing commodity code',
         'Invalid weight'
@@ -375,19 +387,20 @@ describe('packing-list-process-service', () => {
       // Verify the structure by parsing the JSON from second argument
       const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
       expect(uploadedData).toMatchObject({
-        packinglist: {
-          applicationId: mockApplicationId,
-          registrationApprovalNumber: 'RMS-GB-123456-001',
-          allRequiredFieldsPresent: true,
-          parserModel: 'TESTMODEL1',
-          reasonsForFailure: [],
-          dispatchLocationNumber: mockDispatchLocation
-        },
+        applicationId: mockApplicationId,
+        registrationApprovalNumber: 'RMS-GB-123456-001',
+        allRequiredFieldsPresent: true,
+        parserModel: 'TESTMODEL1',
+        reasonsForFailure: [],
+        dispatchLocationNumber: mockDispatchLocation,
+        approvalStatus: 'approved',
         items: [
           expect.objectContaining({
             description: 'Test Item',
             applicationId: mockApplicationId,
-            nirms: true
+            nirms: true,
+            row: 5,
+            location: 'Sheet1'
           })
         ]
       })
