@@ -89,28 +89,34 @@ describe('Parser Factory - Unrecognised Files', () => {
   describe('generateParsedPackingList - Unrecognised Files', () => {
     it('handles UNRECOGNISED parser returning NOMATCH', async () => {
       const packingListJson = {}
+      const dispatchLocation = 'TEST-LOCATION-001'
 
       const result = await parserFactory.generateParsedPackingList(
         noMatchParsers.UNRECOGNISED,
-        packingListJson
+        packingListJson,
+        dispatchLocation
       )
 
       expect(result.parserModel).toBe(parserModel.NOMATCH)
       expect(result.items).toEqual([])
       expect(result.business_checks.all_required_fields_present).toBe(false)
+      expect(result.dispatchLocationNumber).toBe(dispatchLocation)
     })
 
     it('handles NOREMOS parser', async () => {
       const packingListJson = {}
+      const dispatchLocation = 'TEST-LOCATION-002'
 
       const result = await parserFactory.generateParsedPackingList(
         noMatchParsers.NOREMOS,
-        packingListJson
+        packingListJson,
+        dispatchLocation
       )
 
       expect(result.parserModel).toBe(parserModel.NOREMOS)
       expect(result.items).toEqual([])
       expect(result.business_checks.all_required_fields_present).toBe(false)
+      expect(result.dispatchLocationNumber).toBe(dispatchLocation)
     })
 
     it('removes empty items from parsed result', async () => {
@@ -163,17 +169,81 @@ describe('Parser Factory - Unrecognised Files', () => {
           }
         ]
       }
+      const dispatchLocation = 'TEST-LOCATION-003'
 
       // Use a real parser that exists (ASDA3) if available, otherwise skip
       if (parsersExcel.ASDA3) {
         const result = await parserFactory.generateParsedPackingList(
           parsersExcel.ASDA3,
-          emptyDataPackingListJson
+          emptyDataPackingListJson,
+          dispatchLocation
         )
 
         // Should have removed the row with all null values
         expect(result.items.length).toBeGreaterThanOrEqual(0)
+        expect(result.dispatchLocationNumber).toBe(dispatchLocation)
       }
+    })
+
+    it('handles null sanitizedFullPackingList parameter', async () => {
+      const packingListJson = {}
+      const dispatchLocation = 'TEST-LOCATION-004'
+
+      const result = await parserFactory.generateParsedPackingList(
+        noMatchParsers.UNRECOGNISED,
+        packingListJson,
+        dispatchLocation,
+        null
+      )
+
+      expect(result.dispatchLocationNumber).toBe(dispatchLocation)
+      expect(result.business_checks).toBeDefined()
+    })
+
+    it('handles optional sanitizedFullPackingList parameter', async () => {
+      const packingListJson = {}
+      const dispatchLocation = 'TEST-LOCATION-005'
+      const fullPackingList = { additionalData: 'test' }
+
+      const result = await parserFactory.generateParsedPackingList(
+        noMatchParsers.UNRECOGNISED,
+        packingListJson,
+        dispatchLocation,
+        fullPackingList
+      )
+
+      expect(result.dispatchLocationNumber).toBe(dispatchLocation)
+      expect(result.business_checks).toBeDefined()
+    })
+
+    it('sets failure_reasons when validation fails', async () => {
+      const packingListJson = {}
+      const dispatchLocation = 'TEST-LOCATION-006'
+
+      const result = await parserFactory.generateParsedPackingList(
+        noMatchParsers.UNRECOGNISED,
+        packingListJson,
+        dispatchLocation
+      )
+
+      expect(result.business_checks).toHaveProperty('failure_reasons')
+      expect(result.dispatchLocationNumber).toBe(dispatchLocation)
+    })
+
+    it('removes bad data after validation', async () => {
+      const packingListJson = {}
+      const dispatchLocation = 'TEST-LOCATION-007'
+
+      const result = await parserFactory.generateParsedPackingList(
+        noMatchParsers.UNRECOGNISED,
+        packingListJson,
+        dispatchLocation
+      )
+
+      // Items should be cleaned up (empty in this case)
+      expect(result.items).toBeDefined()
+      expect(Array.isArray(result.items)).toBe(true)
+      expect(result.dispatchLocationNumber).toBe(dispatchLocation)
     })
   })
 
