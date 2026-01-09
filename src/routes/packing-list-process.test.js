@@ -53,10 +53,7 @@ describe('Packing List Process Route', () => {
       await packingListProcessRoute.handler(mockRequest, mockH)
 
       expect(processPackingList).toHaveBeenCalledWith(mockMessage)
-      expect(mockH.response).toHaveBeenCalledWith({
-        success: true,
-        result: mockResult
-      })
+      expect(mockH.response).toHaveBeenCalledWith(mockResult)
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
@@ -69,7 +66,7 @@ describe('Packing List Process Route', () => {
       await packingListProcessRoute.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        success: false,
+        result: 'failure',
         error: errorMessage
       })
       expect(mockResponse.code).toHaveBeenCalledWith(
@@ -92,10 +89,7 @@ describe('Packing List Process Route', () => {
       await packingListProcessRoute.handler(mockRequest, mockH)
 
       expect(processPackingList).toHaveBeenCalledWith({})
-      expect(mockH.response).toHaveBeenCalledWith({
-        success: true,
-        result: mockResult
-      })
+      expect(mockH.response).toHaveBeenCalledWith(mockResult)
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
@@ -107,7 +101,7 @@ describe('Packing List Process Route', () => {
       await packingListProcessRoute.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        success: false,
+        result: 'failure',
         error: 'Database connection failed'
       })
       expect(mockResponse.code).toHaveBeenCalledWith(

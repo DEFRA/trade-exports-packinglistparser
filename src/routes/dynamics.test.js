@@ -41,6 +41,12 @@ vi.mock('../config.js', () => ({
           resource: 'https://test.crm11.dynamics.com',
           maxRetries: 3,
           retryDelayMs: 100
+        },
+        tradeServiceBus: {
+          clientId: null,
+          serviceBusNamespace: null,
+          queueName: null,
+          disableSend: false
         }
       }
       return mockConfig[key]
