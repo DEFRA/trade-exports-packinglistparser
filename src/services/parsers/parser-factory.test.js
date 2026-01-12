@@ -294,4 +294,331 @@ describe('Parser Factory - Unrecognised Files', () => {
       expect(result.registration_approval_number).toBe(null)
     })
   })
+
+  describe('generateParsedPackingList - Item Failure Messages', () => {
+    it('adds failure messages to items when validation fails', async () => {
+      // Create a mock parser that returns items with validation issues
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: null, // Missing identifier
+              description: 'Some description', // Has description so it won't be filtered out
+              number_of_packages: null,
+              total_net_weight_kg: null,
+              total_net_weight_unit: null,
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: false
+          },
+          validateCountryOfOrigin: false,
+          unitInHeader: false
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      expect(result.items.length).toBe(1)
+      expect(result.items[0]).toHaveProperty('failure')
+      expect(result.items[0].failure).not.toBeNull()
+      expect(result.items[0].failure).toContain('Identifier is missing')
+    })
+
+    it('adds null failure when item has no validation issues', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Valid Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: 'kg',
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: true
+          },
+          validateCountryOfOrigin: false,
+          unitInHeader: false
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      expect(result.items.length).toBe(1)
+      expect(result.items[0]).toHaveProperty('failure')
+      expect(result.items[0].failure).toBeNull()
+    })
+
+    it('respects validateCountryOfOrigin flag when true', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: 'kg',
+              nirms: null, // Missing NIRMS when validateCountryOfOrigin is true
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: false
+          },
+          validateCountryOfOrigin: true,
+          unitInHeader: false
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      expect(result.items[0].failure).not.toBeNull()
+      expect(result.items[0].failure).toContain(
+        'NIRMS/Non-NIRMS goods not specified'
+      )
+    })
+
+    it('respects validateCountryOfOrigin flag when false', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: 'kg',
+              nirms: null, // Should not trigger failure when validateCountryOfOrigin is false
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: true
+          },
+          validateCountryOfOrigin: false,
+          unitInHeader: false
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      expect(result.items[0].failure).toBeNull()
+    })
+
+    it('respects unitInHeader flag when true', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: null, // Should not trigger failure when unitInHeader is true
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: true
+          },
+          validateCountryOfOrigin: false,
+          unitInHeader: true
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      expect(result.items[0].failure).toBeNull()
+    })
+
+    it('respects unitInHeader flag when false', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: null, // Should trigger failure when unitInHeader is false
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: false
+          },
+          validateCountryOfOrigin: false,
+          unitInHeader: false
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      expect(result.items[0].failure).not.toBeNull()
+      expect(result.items[0].failure).toContain(
+        'Net Weight Unit of Measure (kg) not found'
+      )
+    })
+
+    it('defaults validateCountryOfOrigin to false when undefined', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: 'kg',
+              nirms: null,
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: true
+          }
+          // validateCountryOfOrigin is undefined
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      // Should not check NIRMS since validateCountryOfOrigin defaults to false
+      expect(result.items[0].failure).toBeNull()
+    })
+
+    it('defaults unitInHeader to false when undefined', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: null,
+              row_location: { rowNumber: 1 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: false
+          }
+          // unitInHeader is undefined
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      // Should check net weight unit since unitInHeader defaults to false
+      expect(result.items[0].failure).not.toBeNull()
+      expect(result.items[0].failure).toContain(
+        'Net Weight Unit of Measure (kg) not found'
+      )
+    })
+
+    it('handles multiple items with mixed validation results', async () => {
+      const mockParser = {
+        name: 'TEST_PARSER',
+        parse: async () => ({
+          parserModel: 'TEST',
+          registration_approval_number: 'RMS-GB-000010-001',
+          items: [
+            {
+              commodity_code: '12345678',
+              description: 'Valid Product',
+              number_of_packages: 10,
+              total_net_weight_kg: 5.5,
+              total_net_weight_unit: 'kg',
+              row_location: { rowNumber: 1 }
+            },
+            {
+              commodity_code: null,
+              description: 'Invalid Product',
+              number_of_packages: null,
+              total_net_weight_kg: null,
+              total_net_weight_unit: null,
+              row_location: { rowNumber: 2 }
+            }
+          ],
+          business_checks: {
+            all_required_fields_present: false
+          },
+          validateCountryOfOrigin: false,
+          unitInHeader: false
+        })
+      }
+
+      const result = await parserFactory.generateParsedPackingList(
+        mockParser,
+        {},
+        'TEST-LOCATION'
+      )
+
+      expect(result.items.length).toBe(2)
+      expect(result.items[0].failure).toBeNull()
+      expect(result.items[1].failure).not.toBeNull()
+    })
+  })
 })

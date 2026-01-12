@@ -7,8 +7,12 @@ import {
   isNirms,
   isNotNirms
 } from './validators/packing-list-validator-utilities.js'
+import { determineApprovalStatus } from '../utilities/approval-status.js'
 import { v4 } from 'uuid'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { config } from '../config.js'
+
+const { disableSend } = config.get('tradeServiceBus')
 
 const logger = createLogger()
 
@@ -24,7 +28,7 @@ export async function processPackingList(payload) {
   // 3. Process results
   await processPackingListResults(parsedData, payload.application_id)
 
-  return { status: 'complete', data: `s3/${payload.application_id}` }
+  return { result: 'success', data: `s3/${payload.application_id}` }
 }
 
 async function getParsedPackingList(packingList, payload) {
@@ -71,16 +75,17 @@ async function persistPackingList(parsedData, applicationId) {
 function mapPackingListForStorage(packingListJson, applicationId) {
   try {
     return {
-      packinglist: {
-        applicationId,
-        registrationApprovalNumber:
-          packingListJson.registration_approval_number,
-        allRequiredFieldsPresent:
-          packingListJson.business_checks.all_required_fields_present,
-        parserModel: packingListJson.parserModel,
-        reasonsForFailure: packingListJson.business_checks.failure_reasons,
-        dispatchLocationNumber: packingListJson.dispatchLocationNumber
-      },
+      applicationId,
+      registrationApprovalNumber: packingListJson.registration_approval_number,
+      allRequiredFieldsPresent:
+        packingListJson.business_checks.all_required_fields_present,
+      parserModel: packingListJson.parserModel,
+      reasonsForFailure: packingListJson.business_checks.failure_reasons,
+      dispatchLocationNumber: packingListJson.dispatchLocationNumber,
+      approvalStatus: determineApprovalStatus(
+        packingListJson.business_checks.all_required_fields_present,
+        packingListJson.business_checks.failure_reasons
+      ),
       items: packingListJson.items.map((n) => itemsMapper(n, applicationId))
     }
   } catch (err) {
@@ -136,7 +141,10 @@ function itemsMapper(o, applicationId) {
       totalWeightUnit: o.total_net_weight_unit,
       applicationId,
       countryOfOrigin: o.country_of_origin,
-      nirms: getNirmsBooleanValue(o.nirms)
+      nirms: getNirmsBooleanValue(o.nirms),
+      row: o.row_location.rowNumber,
+      location: o.row_location.sheetName ?? o.row_location.sheetName.pageNumber,
+      failureReason: o.failure
     }
   } catch (err) {
     logger.error(
@@ -147,6 +155,11 @@ function itemsMapper(o, applicationId) {
   }
 }
 
+/**
+ * Notify external applications of parsed packing list result.
+ * @param {*} parsedData -Data that was parsed for storage
+ * @param {*} applicationId - Primary id to assign to the record
+ */
 async function notifyExternalApplications(parsedData, applicationId) {
   logger.info(
     `Notifying external applications of parsed packing list result for application ${applicationId}`
@@ -155,7 +168,13 @@ async function notifyExternalApplications(parsedData, applicationId) {
     applicationId,
     parsedData.business_checks.failure_reasons
   )
-  await sendMessageToQueue(message)
+  if (disableSend) {
+    logger.info(
+      `Trade Service Bus sending is disabled. Skipping notification for application ${applicationId}`
+    )
+  } else {
+    await sendMessageToQueue(message)
+  }
 }
 
 /**
@@ -169,7 +188,10 @@ function createServiceBusMessage(applicationId, failureReasons) {
   return {
     body: {
       applicationId,
-      approvalStatus: failureReasons ? 'approved' : 'rejected',
+      approvalStatus: determineApprovalStatus(
+        !failureReasons || failureReasons.length === 0,
+        failureReasons
+      ),
       failureReasons
     },
     // Top-level metadata properties used by the messaging infra
