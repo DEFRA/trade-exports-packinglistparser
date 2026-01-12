@@ -274,12 +274,12 @@ describe('packing-list-process-service', () => {
       expect(uploadCall.items[0].nirms).toBe(null)
     })
 
-    it('should handle failures with failure reasons', async () => {
+    it('should handle failures with failure reasons and rejected_other status', async () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
         business_checks: {
           all_required_fields_present: false,
-          failure_reasons: ['Missing commodity code', 'Invalid weight']
+          failure_reasons: 'Missing commodity code\nInvalid weight'
         }
       }
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
@@ -294,11 +294,63 @@ describe('packing-list-process-service', () => {
       await processPackingList(mockPayload)
 
       const messageCall = mockSendMessageToQueue.mock.calls[0][0]
-      expect(messageCall.body.approvalStatus).toBe('rejected')
-      expect(messageCall.body.failureReasons).toEqual([
-        'Missing commodity code',
-        'Invalid weight'
-      ])
+      expect(messageCall.body.approvalStatus).toBe('rejected_other')
+      expect(messageCall.body.failureReasons).toBe(
+        'Missing commodity code\nInvalid weight'
+      )
+    })
+
+    it('should handle failures with rejected_ineligible status when prohibited items detected', async () => {
+      const parsedDataWithFailures = {
+        ...mockParsedData,
+        business_checks: {
+          all_required_fields_present: false,
+          failure_reasons:
+            'Prohibited item identified on the packing list for line 3'
+        }
+      }
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(parsedDataWithFailures)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      const messageCall = mockSendMessageToQueue.mock.calls[0][0]
+      expect(messageCall.body.approvalStatus).toBe('rejected_ineligible')
+      expect(messageCall.body.failureReasons).toBe(
+        'Prohibited item identified on the packing list for line 3'
+      )
+    })
+
+    it('should handle failures with rejected_coo status when country of origin issues detected', async () => {
+      const parsedDataWithFailures = {
+        ...mockParsedData,
+        business_checks: {
+          all_required_fields_present: false,
+          failure_reasons: 'Invalid Country of Origin ISO Code for line 5'
+        }
+      }
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(parsedDataWithFailures)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      const messageCall = mockSendMessageToQueue.mock.calls[0][0]
+      expect(messageCall.body.approvalStatus).toBe('rejected_coo')
+      expect(messageCall.body.failureReasons).toBe(
+        'Invalid Country of Origin ISO Code for line 5'
+      )
     })
 
     it('should create service bus message with correct structure', async () => {

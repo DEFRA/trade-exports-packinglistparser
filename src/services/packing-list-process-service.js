@@ -7,6 +7,7 @@ import {
   isNirms,
   isNotNirms
 } from './validators/packing-list-validator-utilities.js'
+import { determineApprovalStatus } from '../utilities/approval-status.js'
 import { v4 } from 'uuid'
 import { createLogger } from '../common/helpers/logging/logger.js'
 import { config } from '../config.js'
@@ -81,10 +82,10 @@ function mapPackingListForStorage(packingListJson, applicationId) {
       parserModel: packingListJson.parserModel,
       reasonsForFailure: packingListJson.business_checks.failure_reasons,
       dispatchLocationNumber: packingListJson.dispatchLocationNumber,
-      approvalStatus:
-        packingListJson.business_checks.failure_reasons?.length > 0
-          ? 'rejected'
-          : 'approved',
+      approvalStatus: determineApprovalStatus(
+        packingListJson.business_checks.all_required_fields_present,
+        packingListJson.business_checks.failure_reasons
+      ),
       items: packingListJson.items.map((n) => itemsMapper(n, applicationId))
     }
   } catch (err) {
@@ -142,7 +143,8 @@ function itemsMapper(o, applicationId) {
       countryOfOrigin: o.country_of_origin,
       nirms: getNirmsBooleanValue(o.nirms),
       row: o.row_location.rowNumber,
-      location: o.row_location.sheetName ?? o.row_location.sheetName.pageNumber
+      location: o.row_location.sheetName ?? o.row_location.sheetName.pageNumber,
+      failureReason: o.failure
     }
   } catch (err) {
     logger.error(
@@ -186,7 +188,10 @@ function createServiceBusMessage(applicationId, failureReasons) {
   return {
     body: {
       applicationId,
-      approvalStatus: failureReasons?.length > 0 ? 'rejected' : 'approved',
+      approvalStatus: determineApprovalStatus(
+        !failureReasons || failureReasons.length === 0,
+        failureReasons
+      ),
       failureReasons
     },
     // Top-level metadata properties used by the messaging infra

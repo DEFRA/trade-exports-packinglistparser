@@ -11,7 +11,8 @@ import { getCsvParser, getExcelParser, getPdfNonAiParser } from './parsers.js'
 import * as packingListValidator from '../validators/packing-list-column-validator.js'
 import {
   removeEmptyItems,
-  removeBadData
+  removeBadData,
+  getItemFailureMessage
 } from '../validators/packing-list-validator-utilities.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { noMatchParsers } from '../model-parsers.js'
@@ -92,6 +93,17 @@ async function generateParsedPackingList(
 
   // Remove items with all null/undefined values
   parsedPackingList.items = removeEmptyItems(parsedPackingList.items)
+
+  // Generate item failure messages before removeBadData so validation can
+  // distinguish between invalid and missing net weight/packages
+  const validateCountryOfOrigin =
+    parsedPackingList.validateCountryOfOrigin ?? false
+  const unitInHeader = parsedPackingList.unitInHeader ?? false
+
+  parsedPackingList.items = parsedPackingList.items.map((item) => ({
+    ...item,
+    failure: getItemFailureMessage(item, validateCountryOfOrigin, unitInHeader)
+  }))
 
   // Run validation
   const validationResults =

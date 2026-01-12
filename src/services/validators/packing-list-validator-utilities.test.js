@@ -17,7 +17,8 @@ import {
   isNullOrEmptyString,
   hasMissingNetWeightUnit,
   isNirms,
-  isNotNirms
+  isNotNirms,
+  getItemFailureMessage
 } from './packing-list-validator-utilities.js'
 
 // Mock the data files
@@ -655,5 +656,245 @@ describe('removeEmptyItems', () => {
     const result = removeEmptyItems(packingList.items)
 
     expect(result.length).toBe(1)
+  })
+})
+
+describe('getItemFailureMessage', () => {
+  test('should return null when item has no failures', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg'
+    }
+    expect(getItemFailureMessage(item, false, false)).toBeNull()
+  })
+
+  test('should return identifier missing message', () => {
+    const item = {
+      commodity_code: null,
+      nature_of_products: null,
+      type_of_treatment: null,
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg'
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('Identifier is missing')
+  })
+
+  test('should return invalid product code message', () => {
+    const item = {
+      commodity_code: 'ABC123',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg'
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('Product code is invalid')
+  })
+
+  test('should return description missing message', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: null,
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg'
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('Product description is missing')
+  })
+
+  test('should return packages missing message', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: null,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg'
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('No of packages is missing')
+  })
+
+  test('should return packages invalid message', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 'invalid',
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg'
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('No of packages is invalid')
+  })
+
+  test('should return net weight missing message', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: null,
+      total_net_weight_unit: 'kg'
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('Total net weight is missing')
+  })
+
+  test('should return net weight invalid message', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 'invalid',
+      total_net_weight_unit: 'kg'
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('Total net weight is invalid')
+  })
+
+  test('should return net weight unit missing message when unitInHeader is false', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: null
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('Net Weight Unit of Measure (kg) not found')
+  })
+
+  test('should NOT return net weight unit missing message when unitInHeader is true', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: null
+    }
+    const result = getItemFailureMessage(item, false, true)
+    expect(result).toBeNull()
+  })
+
+  test('should include NIRMS validation when validateCountryOfOrigin is true', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg',
+      nirms: null
+    }
+    const result = getItemFailureMessage(item, true, false)
+    expect(result).toContain('NIRMS/Non-NIRMS goods not specified')
+  })
+
+  test('should include invalid NIRMS message when validateCountryOfOrigin is true', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg',
+      nirms: 'invalid'
+    }
+    const result = getItemFailureMessage(item, true, false)
+    expect(result).toContain('Invalid entry for NIRMS/Non-NIRMS goods')
+  })
+
+  test('should include missing country of origin message when NIRMS and validateCountryOfOrigin is true', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg',
+      nirms: 'NIRMS',
+      country_of_origin: null
+    }
+    const result = getItemFailureMessage(item, true, false)
+    expect(result).toContain('Missing Country of Origin')
+  })
+
+  test('should include invalid country of origin message when validateCountryOfOrigin is true', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg',
+      nirms: 'NIRMS',
+      country_of_origin: 'INVALID_ISO'
+    }
+    const result = getItemFailureMessage(item, true, false)
+    expect(result).toContain('Invalid Country of Origin ISO Code')
+  })
+
+  test('should include prohibited item message when item is ineligible', () => {
+    const item = {
+      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg',
+      nirms: 'NIRMS',
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    }
+    const result = getItemFailureMessage(item, true, false)
+    expect(result).toContain('Prohibited item identified on the packing list')
+  })
+
+  test('should combine multiple failures with semicolons', () => {
+    const item = {
+      commodity_code: null,
+      description: null,
+      number_of_packages: null,
+      total_net_weight_kg: null,
+      total_net_weight_unit: null
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toContain('Identifier is missing')
+    expect(result).toContain('Product description is missing')
+    expect(result).toContain('No of packages is missing')
+    expect(result).toContain('Total net weight is missing')
+    expect(result).toContain('Net Weight Unit of Measure (kg) not found')
+    // Check that failures are separated by semicolons
+    expect(result?.split(';').length).toBeGreaterThan(1)
+  })
+
+  test('should NOT include country of origin validations when validateCountryOfOrigin is false', () => {
+    const item = {
+      commodity_code: '12345678',
+      description: 'Test Product',
+      number_of_packages: 10,
+      total_net_weight_kg: 5.5,
+      total_net_weight_unit: 'kg',
+      nirms: null,
+      country_of_origin: null
+    }
+    const result = getItemFailureMessage(item, false, false)
+    expect(result).toBeNull()
+  })
+
+  test('should handle combination of basic and country of origin failures', () => {
+    const item = {
+      commodity_code: null,
+      description: null,
+      number_of_packages: null,
+      total_net_weight_kg: null,
+      total_net_weight_unit: null,
+      nirms: null,
+      country_of_origin: null
+    }
+    const result = getItemFailureMessage(item, true, false)
+    expect(result).toContain('Identifier is missing')
+    expect(result).toContain('NIRMS/Non-NIRMS goods not specified')
+    expect(result?.split(';').length).toBeGreaterThan(1)
   })
 })
