@@ -8,7 +8,7 @@ describe('findParser', () => {
   const packingListJson = {
     Sheet1: [
       {
-        A: 'Consignor / Place o f Despatch',
+        A: 'Consignor / Place of Despatch',
         B: 'CONSIGNEE',
         C: 'Trailer',
         D: 'Seal',
@@ -58,7 +58,7 @@ describe('findParser', () => {
   const emptyDataPackingListJson = {
     Sheet1: [
       {
-        A: 'Consignor / Place o f Despatch',
+        A: 'Consignor / Place of Despatch',
         B: 'CONSIGNEE',
         C: 'Trailer',
         D: 'Seal',
@@ -135,7 +135,7 @@ describe('findParser', () => {
     const packingListJsonMissing = {
       Sheet1: [
         {
-          A: 'Consignor / Place o f Despatch',
+          A: 'Consignor / Place of Despatch',
           B: 'CONSIGNEE',
           C: 'Trailer',
           D: 'Seal',
@@ -193,7 +193,7 @@ describe('findParser', () => {
     const packingListJsonEmpty = {
       Sheet1: [
         {
-          A: 'Consignor / Place o f Despatch',
+          A: 'Consignor / Place of Despatch',
           B: 'CONSIGNEE',
           C: 'Trailer',
           D: 'Seal',
@@ -267,7 +267,7 @@ describe('sanitizeInput', () => {
     const packingListJson = {
       Sheet1: [
         {
-          A: 'Consignor / Place o f Despatch',
+          A: 'Consignor / Place of Despatch',
           B: 'CONSIGNEE',
           C: 'Trailer',
           D: 'Seal'
@@ -291,7 +291,7 @@ describe('sanitizeInput', () => {
     const packingListJson = {
       Sheet1: [
         {
-          A: 'Consignor / Place o f Despatch',
+          A: 'Consignor / Place of Despatch',
           B: 'CONSIGNEE',
           C: 'Trailer',
           D: 'Seal',
