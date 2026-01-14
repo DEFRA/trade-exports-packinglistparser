@@ -35,4 +35,15 @@ describe('Iceland Model 2 CSV Matcher', () => {
     const result = matches(model.validCooModel, filename)
     expect(result).toBe(matcherResult.CORRECT)
   })
+
+  test('returns GENERIC_ERROR when exception occurs', () => {
+    // Pass invalid data structure to trigger error
+    const invalidData = {
+      toString: () => {
+        throw new Error('Test error')
+      }
+    }
+    const result = matches(invalidData, filename)
+    expect(result).toBe(matcherResult.GENERIC_ERROR)
+  })
 })
