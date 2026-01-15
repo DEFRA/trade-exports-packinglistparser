@@ -1,9 +1,10 @@
 import { parsePackingList } from '../services/parser-service.js'
 import { STATUS_CODES } from './statuscodes.js'
 import { convertExcelToJson } from '../utilities/excel-utility.js'
+import { convertCsvToJson } from '../utilities/csv-utility.js'
+import { isCsv, isPdf } from '../utilities/file-extension.js'
 import path from 'node:path'
-import { isPdf } from '../utilities/file-extension.js'
-import fs from 'node:fs/promises'
+import fs from 'node:fs'
 
 const testRoute = {
   method: 'GET',
@@ -17,8 +18,11 @@ async function processPackingListHandler(request, h) {
     const filePath = path.join(plDirectory, request.query.filename)
 
     let payload
-    if (isPdf(request.query.filename)) {
-      payload = await fs.readFile(filePath)
+    if (isCsv(request.query.filename)) {
+      const csvBuffer = fs.readFileSync(filePath)
+      payload = await convertCsvToJson(csvBuffer)
+    } else if (isPdf(request.query.filename)) {
+      payload = fs.readFileSync(filePath)
     } else {
       payload = convertExcelToJson({
         sourceFile: filePath

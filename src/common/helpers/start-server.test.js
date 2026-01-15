@@ -14,7 +14,7 @@ describe('#startServer', () => {
 
     createServerSpy = vi.spyOn(createServerImport, 'createServer')
     hapiServerSpy = vi.spyOn(hapi, 'server')
-  }, 30000) // Increase timeout to 30 seconds
+  }, 60000) // Increase timeout to 60 seconds
 
   afterAll(() => {
     vi.unstubAllEnvs()

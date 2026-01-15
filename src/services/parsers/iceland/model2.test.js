@@ -28,4 +28,25 @@ describe('Iceland Model 2 CSV Parser', () => {
     expect(result.parserModel).toBe(parserModel.NOMATCH)
     expect(result.business_checks.all_required_fields_present).toBe(false)
   })
+
+  test('returns NOMATCH when header row not found', () => {
+    const modelWithoutHeaders = [
+      ['Invalid', 'Headers', 'Row'],
+      ['Some', 'Data', 'Here']
+    ]
+    const result = parse(modelWithoutHeaders)
+    expect(result.parserModel).toBe(parserModel.NOMATCH)
+  })
+
+  test('handles parsing errors gracefully', () => {
+    // Pass data that will cause an error during parsing
+    const invalidData = {
+      toString: () => {
+        throw new Error('Parse error')
+      }
+    }
+    const result = parse(invalidData)
+    expect(result.parserModel).toBe(parserModel.NOMATCH)
+    expect(result.business_checks.all_required_fields_present).toBe(false)
+  })
 })
