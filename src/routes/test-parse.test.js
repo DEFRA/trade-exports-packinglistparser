@@ -4,6 +4,9 @@ import path from 'node:path'
 import { testRoute } from './test-parse.js'
 import { parsePackingList } from '../services/parser-service.js'
 import { convertExcelToJson } from '../utilities/excel-utility.js'
+import { convertCsvToJson } from '../utilities/csv-utility.js'
+import { isCsv } from '../utilities/file-extension.js'
+import fs from 'node:fs'
 
 // Mock the dependencies - must be before imports
 vi.mock('../services/parser-service.js', () => ({
@@ -12,6 +15,20 @@ vi.mock('../services/parser-service.js', () => ({
 
 vi.mock('../utilities/excel-utility.js', () => ({
   convertExcelToJson: vi.fn()
+}))
+
+vi.mock('../utilities/csv-utility.js', () => ({
+  convertCsvToJson: vi.fn()
+}))
+
+vi.mock('../utilities/file-extension.js', () => ({
+  isCsv: vi.fn()
+}))
+
+vi.mock('node:fs', () => ({
+  default: {
+    readFileSync: vi.fn()
+  }
 }))
 
 describe('Test Parse Route', () => {
@@ -208,6 +225,77 @@ describe('Test Parse Route', () => {
         result: mockResult
       })
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+    })
+
+    it('should handle CSV files correctly', async () => {
+      mockRequest.query.filename = 'test-file.csv'
+      const mockCsvBuffer = Buffer.from('header1,header2\nvalue1,value2')
+      const mockPayload = [{ header1: 'value1', header2: 'value2' }]
+      const mockResult = {
+        parserModel: 'ICELAND2',
+        items: [{ description: 'Item 1' }]
+      }
+      const expectedFilePath = path.join(plDirectory, 'test-file.csv')
+
+      isCsv.mockReturnValue(true)
+      fs.readFileSync.mockReturnValue(mockCsvBuffer)
+      convertCsvToJson.mockResolvedValue(mockPayload)
+      parsePackingList.mockResolvedValue(mockResult)
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(isCsv).toHaveBeenCalledWith('test-file.csv')
+      expect(fs.readFileSync).toHaveBeenCalledWith(expectedFilePath)
+      expect(convertCsvToJson).toHaveBeenCalledWith(mockCsvBuffer)
+      expect(parsePackingList).toHaveBeenCalledWith(
+        mockPayload,
+        expectedFilePath
+      )
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: true,
+        result: mockResult
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+    })
+
+    it('should handle CSV file read errors', async () => {
+      mockRequest.query.filename = 'test-file.csv'
+      const error = new Error('File not found')
+
+      isCsv.mockReturnValue(true)
+      fs.readFileSync.mockImplementation(() => {
+        throw error
+      })
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: 'File not found'
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
+    })
+
+    it('should handle CSV conversion errors', async () => {
+      mockRequest.query.filename = 'test-file.csv'
+      const mockCsvBuffer = Buffer.from('invalid,csv')
+      const error = new Error('CSV parse error')
+
+      isCsv.mockReturnValue(true)
+      fs.readFileSync.mockReturnValue(mockCsvBuffer)
+      convertCsvToJson.mockRejectedValue(error)
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: 'CSV parse error'
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
     })
   })
 })

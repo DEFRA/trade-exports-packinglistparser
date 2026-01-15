@@ -99,10 +99,178 @@ const validCooTestResult = {
   parserModel: parserModel.ICELAND2
 }
 
+const ineligibleItemsWithTreatmentTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining(
+      'Invalid Country of Origin ISO Code'
+    )
+  },
+  items: expect.any(Array),
+  registration_approval_number: 'RMS-GB-000040-001',
+  parserModel: parserModel.ICELAND2
+}
+
+const ineligibleItemsNoTreatmentTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining(
+      'Invalid Country of Origin ISO Code'
+    )
+  },
+  items: expect.any(Array),
+  registration_approval_number: 'RMS-GB-000040-001',
+  parserModel: parserModel.ICELAND2
+}
+
+const ineligibleItemsMultipleWithTreatmentTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining(
+      'Invalid Country of Origin ISO Code'
+    )
+  },
+  items: expect.any(Array),
+  registration_approval_number: 'RMS-GB-000040-001',
+  parserModel: parserModel.ICELAND2
+}
+
+const ineligibleItemsMultipleNoTreatmentTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining(
+      'Invalid Country of Origin ISO Code'
+    )
+  },
+  items: expect.any(Array),
+  registration_approval_number: 'RMS-GB-000040-001',
+  parserModel: parserModel.ICELAND2
+}
+
+const nonNirmsTestResult = {
+  business_checks: {
+    all_required_fields_present: true,
+    failure_reasons: null
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const nullNirmsTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining(
+      'NIRMS/Non-NIRMS goods not specified'
+    )
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const invalidNirmsTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining(
+      'Invalid entry for NIRMS/Non-NIRMS goods'
+    )
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const nullNirmsMultipleTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining('in addition to')
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const invalidNirmsMultipleTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining('in addition to')
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const nullCooTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining('Missing Country of Origin')
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const invalidCooTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining(
+      'Invalid Country of Origin ISO Code'
+    )
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const nullCooMultipleTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining('in addition to')
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const invalidCooMultipleTestResult = {
+  business_checks: {
+    all_required_fields_present: false,
+    failure_reasons: expect.stringContaining('in addition to')
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
+const cooPlaceholderXTestResult = {
+  business_checks: {
+    all_required_fields_present: true,
+    failure_reasons: null
+  },
+  items: expect.any(Array),
+  registration_approval_number: expect.any(String),
+  parserModel: parserModel.ICELAND2
+}
+
 export default {
   validTestResult,
   invalidTestResult_MissingCells,
   invalidTestResult_MultipleRms,
   invalidTestResult_MissingKgUnit,
-  validCooTestResult
+  validCooTestResult,
+  ineligibleItemsWithTreatmentTestResult,
+  ineligibleItemsNoTreatmentTestResult,
+  ineligibleItemsMultipleWithTreatmentTestResult,
+  ineligibleItemsMultipleNoTreatmentTestResult,
+  nonNirmsTestResult,
+  nullNirmsTestResult,
+  invalidNirmsTestResult,
+  nullNirmsMultipleTestResult,
+  invalidNirmsMultipleTestResult,
+  nullCooTestResult,
+  invalidCooTestResult,
+  nullCooMultipleTestResult,
+  invalidCooMultipleTestResult,
+  cooPlaceholderXTestResult
 }
