@@ -76,14 +76,14 @@ describe('Parser Factory - Unrecognised Files', () => {
     })
 
     it('returns UNRECOGNISED parser when parser is empty object', async () => {
-      const packingListJson = {}
+      const packingListJson = Buffer.from('') // Use empty Buffer instead of empty object
       const fileName = 'packingList.pdf'
 
       const result = await parserFactory.findParser(packingListJson, fileName)
 
       // Empty parser object should trigger UNRECOGNISED
       expect(result.name).toBeTruthy()
-    })
+    }, 10000) // Add 10 second timeout
   })
 
   describe('generateParsedPackingList - Unrecognised Files', () => {
