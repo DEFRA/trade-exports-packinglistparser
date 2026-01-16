@@ -108,7 +108,7 @@ describe('Connectivity Check Route', () => {
     expect(bearerTokenRequest).toHaveBeenCalledTimes(1)
     expect(checkDynamicsDispatchLocationConnection).toHaveBeenCalledTimes(1)
     expect(checkApplicationFormsContainerExists).toHaveBeenCalledTimes(1)
-    expect(getIneligibleItems).toHaveBeenCalledTimes(1)
+    //expect(getIneligibleItems).toHaveBeenCalledTimes(1)
     expect(checkTradeServiceBusConnection).toHaveBeenCalledTimes(1)
     expect(mockH.response).toHaveBeenCalledWith({
       [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.PASSED,
@@ -117,7 +117,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
     })
@@ -142,7 +142,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
     })
@@ -169,7 +169,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
     })
@@ -196,7 +196,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: false,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
     })
@@ -222,7 +222,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
     })
@@ -249,7 +249,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
     })
@@ -276,7 +276,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: false
       }
     })
@@ -308,35 +308,8 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: false,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: false,
+        //[SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: false,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: false
-      }
-    })
-    expect(mockResponse.code).toHaveBeenCalledWith(
-      STATUS_CODES.SERVICE_UNAVAILABLE
-    )
-  })
-
-  it('should return failure when MDM service fails', async () => {
-    const mockError = new Error(ERROR_MESSAGES.MDM_SERVICE_UNAVAILABLE)
-    listS3Objects.mockResolvedValue([])
-    bearerTokenRequest.mockResolvedValue({})
-    checkDynamicsDispatchLocationConnection.mockResolvedValue({})
-    checkApplicationFormsContainerExists.mockResolvedValue(true)
-    getIneligibleItems.mockRejectedValue(mockError)
-    checkTradeServiceBusConnection.mockResolvedValue(true)
-
-    await connectivityCheck.handler({}, mockH)
-
-    expect(mockH.response).toHaveBeenCalledWith({
-      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
-      [RESPONSE_PROPERTIES.DETAILS]: {
-        [SERVICE_NAMES.S3]: true,
-        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
-        [SERVICE_NAMES.DYNAMICS_DATA]: true,
-        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
-        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: false,
-        [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
     })
     expect(mockResponse.code).toHaveBeenCalledWith(
