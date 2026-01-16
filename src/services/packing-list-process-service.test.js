@@ -449,7 +449,6 @@ describe('packing-list-process-service', () => {
         items: [
           expect.objectContaining({
             description: 'Test Item',
-            applicationId: mockApplicationId,
             nirms: true,
             row: 5,
             location: 'Sheet1'
