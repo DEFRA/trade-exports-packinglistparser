@@ -5,7 +5,7 @@ import { testRoute } from './test-parse.js'
 import { parsePackingList } from '../services/parser-service.js'
 import { convertExcelToJson } from '../utilities/excel-utility.js'
 import { convertCsvToJson } from '../utilities/csv-utility.js'
-import { isCsv } from '../utilities/file-extension.js'
+import { isCsv, isPdf } from '../utilities/file-extension.js'
 import fs from 'node:fs'
 
 // Mock the dependencies - must be before imports
@@ -22,7 +22,8 @@ vi.mock('../utilities/csv-utility.js', () => ({
 }))
 
 vi.mock('../utilities/file-extension.js', () => ({
-  isCsv: vi.fn()
+  isCsv: vi.fn(),
+  isPdf: vi.fn()
 }))
 
 vi.mock('node:fs', () => ({
@@ -296,6 +297,84 @@ describe('Test Parse Route', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(
         STATUS_CODES.INTERNAL_SERVER_ERROR
       )
+    })
+
+    // PDF-specific tests
+    describe('PDF handling', () => {
+      it('should successfully parse a PDF file', async () => {
+        mockRequest.query.filename = 'test-packing-list.pdf'
+        const mockPdfBuffer = Buffer.from('mock pdf content')
+        const mockResult = {
+          parserModel: 'GIOVANNI3',
+          items: [{ description: 'Product A', number_of_packages: '5' }],
+          business_checks: {
+            all_required_fields_present: true
+          },
+          establishment_numbers: ['RMS-GB-000149-002']
+        }
+        const expectedFilePath = path.join(plDirectory, 'test-packing-list.pdf')
+
+        isCsv.mockReturnValue(false)
+        isPdf.mockReturnValue(true)
+        fs.readFileSync.mockReturnValue(mockPdfBuffer)
+        parsePackingList.mockResolvedValue(mockResult)
+
+        await testRoute.handler(mockRequest, mockH)
+
+        expect(isPdf).toHaveBeenCalledWith('test-packing-list.pdf')
+        expect(fs.readFileSync).toHaveBeenCalledWith(expectedFilePath)
+        expect(parsePackingList).toHaveBeenCalledWith(
+          mockPdfBuffer,
+          expectedFilePath
+        )
+        expect(mockH.response).toHaveBeenCalledWith({
+          success: true,
+          result: mockResult
+        })
+        expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+      })
+
+      it('should return error when PDF file cannot be read', async () => {
+        mockRequest.query.filename = 'missing.pdf'
+        const error = new Error('ENOENT: no such file or directory')
+
+        isCsv.mockReturnValue(false)
+        isPdf.mockReturnValue(true)
+        fs.readFileSync.mockImplementation(() => {
+          throw error
+        })
+
+        await testRoute.handler(mockRequest, mockH)
+
+        expect(mockH.response).toHaveBeenCalledWith({
+          success: false,
+          error: 'ENOENT: no such file or directory'
+        })
+        expect(mockResponse.code).toHaveBeenCalledWith(
+          STATUS_CODES.INTERNAL_SERVER_ERROR
+        )
+      })
+
+      it('should handle PDF parsing errors gracefully', async () => {
+        mockRequest.query.filename = 'corrupt.pdf'
+        const mockPdfBuffer = Buffer.from('corrupted pdf')
+        const error = new Error('PDF extraction failed')
+
+        isCsv.mockReturnValue(false)
+        isPdf.mockReturnValue(true)
+        fs.readFileSync.mockReturnValue(mockPdfBuffer)
+        parsePackingList.mockRejectedValue(error)
+
+        await testRoute.handler(mockRequest, mockH)
+
+        expect(mockH.response).toHaveBeenCalledWith({
+          success: false,
+          error: 'PDF extraction failed'
+        })
+        expect(mockResponse.code).toHaveBeenCalledWith(
+          STATUS_CODES.INTERNAL_SERVER_ERROR
+        )
+      })
     })
   })
 })

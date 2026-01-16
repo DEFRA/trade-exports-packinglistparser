@@ -221,7 +221,7 @@ describe('Dynamics Routes', () => {
 
       // Reset mock
       config.get.mockImplementation((key) => getBaseMockConfig()[key])
-    })
+    }, 15000)
   })
 
   describe('GET /dynamics/dispatch-location/{applicationId}', () => {

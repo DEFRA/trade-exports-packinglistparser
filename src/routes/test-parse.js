@@ -2,7 +2,7 @@ import { parsePackingList } from '../services/parser-service.js'
 import { STATUS_CODES } from './statuscodes.js'
 import { convertExcelToJson } from '../utilities/excel-utility.js'
 import { convertCsvToJson } from '../utilities/csv-utility.js'
-import { isCsv } from '../utilities/file-extension.js'
+import { isCsv, isPdf } from '../utilities/file-extension.js'
 import path from 'node:path'
 import fs from 'node:fs'
 
@@ -21,6 +21,8 @@ async function processPackingListHandler(request, h) {
     if (isCsv(request.query.filename)) {
       const csvBuffer = fs.readFileSync(filePath)
       payload = await convertCsvToJson(csvBuffer)
+    } else if (isPdf(request.query.filename)) {
+      payload = fs.readFileSync(filePath)
     } else {
       payload = convertExcelToJson({
         sourceFile: filePath
