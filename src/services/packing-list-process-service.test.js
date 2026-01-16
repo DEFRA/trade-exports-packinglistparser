@@ -456,5 +456,150 @@ describe('packing-list-process-service', () => {
         ]
       })
     })
+
+    it('should handle items with pageNumber for location (PDF)', async () => {
+      const parsedDataWithPage = {
+        ...mockParsedData,
+        items: [
+          {
+            ...mockParsedData.items[0],
+            row_location: {
+              rowNumber: 3,
+              pageNumber: 2
+            }
+          }
+        ]
+      }
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(parsedDataWithPage)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
+      expect(uploadedData.items[0].location).toBe(2)
+      expect(uploadedData.items[0].row).toBe(3)
+    })
+
+    it('should handle items with null location when neither sheetName nor pageNumber present', async () => {
+      const parsedDataWithNullLocation = {
+        ...mockParsedData,
+        items: [
+          {
+            ...mockParsedData.items[0],
+            row_location: {
+              rowNumber: 7
+            }
+          }
+        ]
+      }
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(parsedDataWithNullLocation)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
+      expect(uploadedData.items[0].location).toBe(null)
+      expect(uploadedData.items[0].row).toBe(7)
+    })
+
+    it('should handle items mapper error and log it', async () => {
+      const parsedDataWithBadItem = {
+        ...mockParsedData,
+        items: [
+          {
+            description: 'Good Item',
+            nature_of_products: 'Chilled',
+            type_of_treatment: 'Processed',
+            commodity_code: '12345678',
+            number_of_packages: 10,
+            total_net_weight_kg: 100.5,
+            total_net_weight_unit: 'kg',
+            country_of_origin: 'GB',
+            nirms: 'NIRMS',
+            row_location: {
+              rowNumber: 5,
+              sheetName: 'Sheet1'
+            }
+          },
+          {
+            description: 'Bad Item',
+            // Missing row_location will cause error
+            nature_of_products: 'Chilled'
+          }
+        ]
+      }
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(parsedDataWithBadItem)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.objectContaining({
+          applicationId: mockApplicationId,
+          item: parsedDataWithBadItem.items[1]
+        }),
+        'Error mapping packing list item'
+      )
+
+      const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
+      // Should have 2 items: 1 good item and 1 undefined (becomes null in JSON)
+      expect(uploadedData.items.length).toBe(2)
+      expect(uploadedData.items[0].description).toBe('Good Item')
+      expect(uploadedData.items[1]).toBeNull()
+    })
+
+    it('should skip sending message when disableSend is true', async () => {
+      // Need to reimport with different config
+      const originalDisableSend = { disableSend: true }
+      vi.doMock('../config.js', () => ({
+        config: {
+          get: vi.fn((key) => {
+            if (key === 'tradeServiceBus') {
+              return originalDisableSend
+            }
+            return {}
+          })
+        }
+      }))
+
+      // Re-import to get the new config
+      vi.resetModules()
+      const { processPackingList: processPackingListWithDisable } =
+        await import('./packing-list-process-service.js')
+
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockClear()
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingListWithDisable(mockPayload)
+
+      expect(mockSendMessageToQueue).not.toHaveBeenCalled()
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Trade Service Bus sending is disabled. Skipping notification for application ${mockApplicationId}`
+      )
+    })
   })
 })
