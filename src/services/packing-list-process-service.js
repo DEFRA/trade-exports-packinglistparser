@@ -139,11 +139,10 @@ function itemsMapper(o, applicationId) {
       numberOfPackages: o.number_of_packages,
       totalWeight: o.total_net_weight_kg,
       totalWeightUnit: o.total_net_weight_unit,
-      applicationId,
       countryOfOrigin: o.country_of_origin,
       nirms: getNirmsBooleanValue(o.nirms),
       row: o.row_location.rowNumber,
-      location: o.row_location.sheetName ?? o.row_location.sheetName.pageNumber,
+      location: o.row_location.sheetName ?? o.row_location.pageNumber ?? null,
       failureReason: o.failure
     }
   } catch (err) {
