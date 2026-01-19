@@ -85,6 +85,8 @@ describe('packing-list-process-service', () => {
     registration_approval_number: 'RMS-GB-123456-001',
     parserModel: 'TESTMODEL1',
     dispatchLocationNumber: mockDispatchLocation,
+    approvalStatus: 'approved',
+    reasonsForFailure: [],
     business_checks: {
       all_required_fields_present: true,
       failure_reasons: []
@@ -100,6 +102,7 @@ describe('packing-list-process-service', () => {
         total_net_weight_unit: 'kg',
         country_of_origin: 'GB',
         nirms: 'NIRMS',
+        failure: null,
         row_location: {
           rowNumber: 5,
           sheetName: 'Sheet1'
@@ -144,7 +147,11 @@ describe('packing-list-process-service', () => {
       expect(mockSendMessageToQueue).toHaveBeenCalled()
       expect(result).toEqual({
         result: 'success',
-        data: `s3/${mockApplicationId}`
+        data: {
+          approvalStatus: 'approved',
+          reasonsForFailure: [],
+          parserModel: 'TESTMODEL1'
+        }
       })
     })
 
@@ -222,6 +229,7 @@ describe('packing-list-process-service', () => {
           {
             ...mockParsedData.items[0],
             nirms: 'NOT NIRMS',
+            failure: null,
             row_location: {
               rowNumber: 5,
               sheetName: 'Sheet1'
@@ -251,6 +259,7 @@ describe('packing-list-process-service', () => {
           {
             ...mockParsedData.items[0],
             nirms: 'INVALID',
+            failure: null,
             row_location: {
               rowNumber: 5,
               sheetName: 'Sheet1'
@@ -277,6 +286,8 @@ describe('packing-list-process-service', () => {
     it('should handle failures with failure reasons and rejected_other status', async () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
+        approvalStatus: 'rejected_other',
+        reasonsForFailure: 'Missing commodity code\nInvalid weight',
         business_checks: {
           all_required_fields_present: false,
           failure_reasons: 'Missing commodity code\nInvalid weight'
@@ -303,6 +314,9 @@ describe('packing-list-process-service', () => {
     it('should handle failures with rejected_ineligible status when prohibited items detected', async () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
+        approvalStatus: 'rejected_ineligible',
+        reasonsForFailure:
+          'Prohibited item identified on the packing list for line 3',
         business_checks: {
           all_required_fields_present: false,
           failure_reasons:
@@ -330,6 +344,8 @@ describe('packing-list-process-service', () => {
     it('should handle failures with rejected_coo status when country of origin issues detected', async () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
+        approvalStatus: 'rejected_coo',
+        reasonsForFailure: 'Invalid Country of Origin ISO Code for line 5',
         business_checks: {
           all_required_fields_present: false,
           failure_reasons: 'Invalid Country of Origin ISO Code for line 5'
@@ -412,7 +428,7 @@ describe('packing-list-process-service', () => {
       mockUploadJsonFileToS3.mockResolvedValue(undefined)
       mockSendMessageToQueue.mockResolvedValue(undefined)
 
-      await processPackingList(mockPayload)
+      await expect(processPackingList(mockPayload)).rejects.toThrow()
 
       expect(mockLogger.error).toHaveBeenCalled()
       const errorCall = mockLogger.error.mock.calls[0]
@@ -463,6 +479,7 @@ describe('packing-list-process-service', () => {
         items: [
           {
             ...mockParsedData.items[0],
+            failure: null,
             row_location: {
               rowNumber: 3,
               pageNumber: 2
@@ -492,6 +509,7 @@ describe('packing-list-process-service', () => {
         items: [
           {
             ...mockParsedData.items[0],
+            failure: null,
             row_location: {
               rowNumber: 7
             }
@@ -528,6 +546,7 @@ describe('packing-list-process-service', () => {
             total_net_weight_unit: 'kg',
             country_of_origin: 'GB',
             nirms: 'NIRMS',
+            failure: null,
             row_location: {
               rowNumber: 5,
               sheetName: 'Sheet1'
@@ -600,6 +619,60 @@ describe('packing-list-process-service', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         `Trade Service Bus sending is disabled. Skipping notification for application ${mockApplicationId}`
       )
+    })
+
+    it('should skip persistence and notifications when stopDataExit is true', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload, { stopDataExit: true })
+
+      expect(mockUploadJsonFileToS3).not.toHaveBeenCalled()
+      expect(mockSendMessageToQueue).not.toHaveBeenCalled()
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `S3 storage is disabled. Skipping persisting data for application ${mockApplicationId}`
+      )
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Trade Service Bus sending is disabled. Skipping notification for application ${mockApplicationId}`
+      )
+    })
+
+    it('should perform persistence and notifications when stopDataExit is false', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload, { stopDataExit: false })
+
+      expect(mockUploadJsonFileToS3).toHaveBeenCalled()
+      expect(mockSendMessageToQueue).toHaveBeenCalled()
+    })
+
+    it('should default stopDataExit to false when not provided', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      expect(mockUploadJsonFileToS3).toHaveBeenCalled()
+      expect(mockSendMessageToQueue).toHaveBeenCalled()
     })
   })
 })
