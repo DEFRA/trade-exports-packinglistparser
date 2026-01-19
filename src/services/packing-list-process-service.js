@@ -28,7 +28,14 @@ export async function processPackingList(payload) {
   // 3. Process results
   await processPackingListResults(parsedData, payload.application_id)
 
-  return { result: 'success', data: `s3/${payload.application_id}` }
+  return {
+    result: 'success',
+    data: {
+      approvalStatus: parsedData.approvalStatus,
+      reasonsForFailure: parsedData.reasonsForFailure,
+      parserModel: parsedData.parserModel
+    }
+  }
 }
 
 async function getParsedPackingList(packingList, payload) {

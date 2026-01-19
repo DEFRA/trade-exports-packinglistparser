@@ -85,6 +85,8 @@ describe('packing-list-process-service', () => {
     registration_approval_number: 'RMS-GB-123456-001',
     parserModel: 'TESTMODEL1',
     dispatchLocationNumber: mockDispatchLocation,
+    approvalStatus: 'approved',
+    reasonsForFailure: [],
     business_checks: {
       all_required_fields_present: true,
       failure_reasons: []
@@ -144,7 +146,11 @@ describe('packing-list-process-service', () => {
       expect(mockSendMessageToQueue).toHaveBeenCalled()
       expect(result).toEqual({
         result: 'success',
-        data: `s3/${mockApplicationId}`
+        data: {
+          approvalStatus: 'approved',
+          reasonsForFailure: [],
+          parserModel: 'TESTMODEL1'
+        }
       })
     })
 
@@ -277,6 +283,8 @@ describe('packing-list-process-service', () => {
     it('should handle failures with failure reasons and rejected_other status', async () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
+        approvalStatus: 'rejected_other',
+        reasonsForFailure: 'Missing commodity code\nInvalid weight',
         business_checks: {
           all_required_fields_present: false,
           failure_reasons: 'Missing commodity code\nInvalid weight'
@@ -303,6 +311,9 @@ describe('packing-list-process-service', () => {
     it('should handle failures with rejected_ineligible status when prohibited items detected', async () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
+        approvalStatus: 'rejected_ineligible',
+        reasonsForFailure:
+          'Prohibited item identified on the packing list for line 3',
         business_checks: {
           all_required_fields_present: false,
           failure_reasons:
@@ -330,6 +341,8 @@ describe('packing-list-process-service', () => {
     it('should handle failures with rejected_coo status when country of origin issues detected', async () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
+        approvalStatus: 'rejected_coo',
+        reasonsForFailure: 'Invalid Country of Origin ISO Code for line 5',
         business_checks: {
           all_required_fields_present: false,
           failure_reasons: 'Invalid Country of Origin ISO Code for line 5'
