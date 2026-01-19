@@ -26,14 +26,17 @@ export async function processPackingList(payload) {
   const parsedData = await getParsedPackingList(packingList, payload)
 
   // 3. Process results
-  await processPackingListResults(parsedData, payload.application_id)
+  const persistedData = await processPackingListResults(
+    parsedData,
+    payload.application_id
+  )
 
   return {
     result: 'success',
     data: {
-      approvalStatus: parsedData.approvalStatus,
-      reasonsForFailure: parsedData.reasonsForFailure,
-      parserModel: parsedData.parserModel
+      approvalStatus: persistedData.approvalStatus,
+      reasonsForFailure: persistedData.reasonsForFailure,
+      parserModel: persistedData.parserModel
     }
   }
 }
@@ -53,8 +56,9 @@ async function getParsedPackingList(packingList, payload) {
 }
 
 async function processPackingListResults(packingList, applicationId) {
-  await persistPackingList(packingList, applicationId)
+  const persistedData = await persistPackingList(packingList, applicationId)
   await notifyExternalApplications(packingList, applicationId)
+  return persistedData
 }
 
 async function persistPackingList(parsedData, applicationId) {
@@ -66,6 +70,7 @@ async function persistPackingList(parsedData, applicationId) {
     { filename: applicationId },
     JSON.stringify(processedData)
   )
+  return processedData
 }
 
 /**

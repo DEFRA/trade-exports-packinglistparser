@@ -102,6 +102,7 @@ describe('packing-list-process-service', () => {
         total_net_weight_unit: 'kg',
         country_of_origin: 'GB',
         nirms: 'NIRMS',
+        failure: null,
         row_location: {
           rowNumber: 5,
           sheetName: 'Sheet1'
@@ -228,6 +229,7 @@ describe('packing-list-process-service', () => {
           {
             ...mockParsedData.items[0],
             nirms: 'NOT NIRMS',
+            failure: null,
             row_location: {
               rowNumber: 5,
               sheetName: 'Sheet1'
@@ -257,6 +259,7 @@ describe('packing-list-process-service', () => {
           {
             ...mockParsedData.items[0],
             nirms: 'INVALID',
+            failure: null,
             row_location: {
               rowNumber: 5,
               sheetName: 'Sheet1'
@@ -425,7 +428,7 @@ describe('packing-list-process-service', () => {
       mockUploadJsonFileToS3.mockResolvedValue(undefined)
       mockSendMessageToQueue.mockResolvedValue(undefined)
 
-      await processPackingList(mockPayload)
+      await expect(processPackingList(mockPayload)).rejects.toThrow()
 
       expect(mockLogger.error).toHaveBeenCalled()
       const errorCall = mockLogger.error.mock.calls[0]
@@ -476,6 +479,7 @@ describe('packing-list-process-service', () => {
         items: [
           {
             ...mockParsedData.items[0],
+            failure: null,
             row_location: {
               rowNumber: 3,
               pageNumber: 2
@@ -505,6 +509,7 @@ describe('packing-list-process-service', () => {
         items: [
           {
             ...mockParsedData.items[0],
+            failure: null,
             row_location: {
               rowNumber: 7
             }
@@ -541,6 +546,7 @@ describe('packing-list-process-service', () => {
             total_net_weight_unit: 'kg',
             country_of_origin: 'GB',
             nirms: 'NIRMS',
+            failure: null,
             row_location: {
               rowNumber: 5,
               sheetName: 'Sheet1'
