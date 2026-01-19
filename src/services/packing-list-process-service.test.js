@@ -620,5 +620,59 @@ describe('packing-list-process-service', () => {
         `Trade Service Bus sending is disabled. Skipping notification for application ${mockApplicationId}`
       )
     })
+
+    it('should skip persistence and notifications when stopDataExit is true', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload, { stopDataExit: true })
+
+      expect(mockUploadJsonFileToS3).not.toHaveBeenCalled()
+      expect(mockSendMessageToQueue).not.toHaveBeenCalled()
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `S3 storage is disabled. Skipping persisting data for application ${mockApplicationId}`
+      )
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Trade Service Bus sending is disabled. Skipping notification for application ${mockApplicationId}`
+      )
+    })
+
+    it('should perform persistence and notifications when stopDataExit is false', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload, { stopDataExit: false })
+
+      expect(mockUploadJsonFileToS3).toHaveBeenCalled()
+      expect(mockSendMessageToQueue).toHaveBeenCalled()
+    })
+
+    it('should default stopDataExit to false when not provided', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      expect(mockUploadJsonFileToS3).toHaveBeenCalled()
+      expect(mockSendMessageToQueue).toHaveBeenCalled()
+    })
   })
 })

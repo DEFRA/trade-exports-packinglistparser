@@ -21,7 +21,8 @@ describe('Packing List Process Route', () => {
       response: vi.fn().mockReturnValue(mockResponse)
     }
     mockRequest = {
-      payload: {}
+      payload: {},
+      query: {}
     }
 
     vi.clearAllMocks()
@@ -52,7 +53,9 @@ describe('Packing List Process Route', () => {
 
       await packingListProcessRoute.handler(mockRequest, mockH)
 
-      expect(processPackingList).toHaveBeenCalledWith(mockMessage)
+      expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
+        stopDataExit: false
+      })
       expect(mockH.response).toHaveBeenCalledWith(mockResult)
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
@@ -88,7 +91,10 @@ describe('Packing List Process Route', () => {
 
       await packingListProcessRoute.handler(mockRequest, mockH)
 
-      expect(processPackingList).toHaveBeenCalledWith({})
+      expect(processPackingList).toHaveBeenCalledWith(
+        {},
+        { stopDataExit: false }
+      )
       expect(mockH.response).toHaveBeenCalledWith(mockResult)
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
@@ -125,8 +131,56 @@ describe('Packing List Process Route', () => {
 
       await packingListProcessRoute.handler(mockRequest, mockH)
 
-      expect(processPackingList).toHaveBeenCalledWith(mockMessage)
+      expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
+        stopDataExit: false
+      })
       expect(processPackingList).toHaveBeenCalledTimes(1)
+    })
+
+    it('should pass stopDataExit=true when query parameter is set', async () => {
+      const mockMessage = { filename: 'test.pdf' }
+      const mockResult = { success: true }
+
+      mockRequest.payload = mockMessage
+      mockRequest.query.stopDataExit = 'true'
+      processPackingList.mockResolvedValue(mockResult)
+
+      await packingListProcessRoute.handler(mockRequest, mockH)
+
+      expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
+        stopDataExit: true
+      })
+      expect(mockH.response).toHaveBeenCalledWith(mockResult)
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+    })
+
+    it('should pass stopDataExit=false when query parameter is not true', async () => {
+      const mockMessage = { filename: 'test.pdf' }
+      const mockResult = { success: true }
+
+      mockRequest.payload = mockMessage
+      mockRequest.query.stopDataExit = 'false'
+      processPackingList.mockResolvedValue(mockResult)
+
+      await packingListProcessRoute.handler(mockRequest, mockH)
+
+      expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
+        stopDataExit: false
+      })
+    })
+
+    it('should pass stopDataExit=false when query parameter is not set', async () => {
+      const mockMessage = { filename: 'test.pdf' }
+      const mockResult = { success: true }
+
+      mockRequest.payload = mockMessage
+      processPackingList.mockResolvedValue(mockResult)
+
+      await packingListProcessRoute.handler(mockRequest, mockH)
+
+      expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
+        stopDataExit: false
+      })
     })
   })
 })

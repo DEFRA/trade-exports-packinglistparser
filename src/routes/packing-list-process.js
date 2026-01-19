@@ -10,7 +10,8 @@ const packingListProcessRoute = {
 async function processPackingListHandler(request, h) {
   try {
     const message = request.payload
-    const result = await processPackingList(message)
+    const stopDataExit = request.query.stopDataExit === 'true'
+    const result = await processPackingList(message, { stopDataExit })
     return h.response(result).code(STATUS_CODES.OK)
   } catch (err) {
     return h

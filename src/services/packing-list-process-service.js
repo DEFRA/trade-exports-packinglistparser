@@ -16,7 +16,10 @@ const { disableSend } = config.get('tradeServiceBus')
 
 const logger = createLogger()
 
-export async function processPackingList(payload) {
+export async function processPackingList(
+  payload,
+  { stopDataExit = false } = {}
+) {
   // 1. Download packing list from blob storage
   const packingList = await downloadBlobFromApplicationFormsContainerAsJson(
     payload.packing_list_blob
@@ -28,7 +31,8 @@ export async function processPackingList(payload) {
   // 3. Process results
   const persistedData = await processPackingListResults(
     parsedData,
-    payload.application_id
+    payload.application_id,
+    { stopDataExit }
   )
 
   return {
@@ -55,9 +59,29 @@ async function getParsedPackingList(packingList, payload) {
   )
 }
 
-async function processPackingListResults(packingList, applicationId) {
-  const persistedData = await persistPackingList(packingList, applicationId)
-  await notifyExternalApplications(packingList, applicationId)
+async function processPackingListResults(
+  packingList,
+  applicationId,
+  { stopDataExit }
+) {
+  const persistedData = mapPackingListForStorage(packingList, applicationId)
+
+  if (stopDataExit) {
+    logger.info(
+      `S3 storage is disabled. Skipping persisting data for application ${applicationId}`
+    )
+  } else {
+    await persistPackingList(persistedData, applicationId)
+  }
+
+  if (disableSend || stopDataExit) {
+    logger.info(
+      `Trade Service Bus sending is disabled. Skipping notification for application ${applicationId}`
+    )
+  } else {
+    await notifyExternalApplications(packingList, applicationId)
+  }
+
   return persistedData
 }
 
@@ -65,12 +89,26 @@ async function persistPackingList(parsedData, applicationId) {
   logger.info(
     `Persisting parsed packing list data for application ${applicationId}`
   )
-  const processedData = mapPackingListForStorage(parsedData, applicationId)
   await uploadJsonFileToS3(
     { filename: applicationId },
-    JSON.stringify(processedData)
+    JSON.stringify(parsedData)
   )
-  return processedData
+}
+
+/**
+ * Notify external applications of parsed packing list result.
+ * @param {*} parsedData -Data that was parsed for storage
+ * @param {*} applicationId - Primary id to assign to the record
+ */
+async function notifyExternalApplications(parsedData, applicationId) {
+  logger.info(
+    `Notifying external applications of parsed packing list result for application ${applicationId}`
+  )
+  const message = createServiceBusMessage(
+    applicationId,
+    parsedData.business_checks.failure_reasons
+  )
+  await sendMessageToQueue(message)
 }
 
 /**
@@ -163,28 +201,6 @@ function itemsMapper(o, applicationId) {
       'Error mapping packing list item'
     )
     return undefined
-  }
-}
-
-/**
- * Notify external applications of parsed packing list result.
- * @param {*} parsedData -Data that was parsed for storage
- * @param {*} applicationId - Primary id to assign to the record
- */
-async function notifyExternalApplications(parsedData, applicationId) {
-  logger.info(
-    `Notifying external applications of parsed packing list result for application ${applicationId}`
-  )
-  const message = createServiceBusMessage(
-    applicationId,
-    parsedData.business_checks.failure_reasons
-  )
-  if (disableSend) {
-    logger.info(
-      `Trade Service Bus sending is disabled. Skipping notification for application ${applicationId}`
-    )
-  } else {
-    await sendMessageToQueue(message)
   }
 }
 
