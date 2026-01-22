@@ -307,6 +307,33 @@ const config = convict({
       default: null,
       env: 'AZURE_MDM_GET_INELIGIBLE_ITEMS_ENDPOINT'
     }
+  },
+  ineligibleItemsCache: {
+    s3FileName: {
+      doc: 'S3 file name for ineligible items data (without extension)',
+      format: String,
+      default: 'ineligible-items',
+      env: 'INELIGIBLE_ITEMS_S3_FILE_NAME'
+    },
+    s3Schema: {
+      doc: 'S3 schema/prefix for ineligible items file',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'INELIGIBLE_ITEMS_S3_SCHEMA'
+    },
+    maxRetries: {
+      doc: 'Maximum number of retry attempts when fetching ineligible items from S3',
+      format: 'nat',
+      default: 3,
+      env: 'INELIGIBLE_ITEMS_MAX_RETRIES'
+    },
+    retryDelayMs: {
+      doc: 'Delay in milliseconds between retry attempts for ineligible items',
+      format: 'nat',
+      default: 2000,
+      env: 'INELIGIBLE_ITEMS_RETRY_DELAY_MS'
+    }
   }
 })
 
