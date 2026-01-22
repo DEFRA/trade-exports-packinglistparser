@@ -57,9 +57,40 @@ CSV packing lists differ from Excel in several important ways:
 
 ## Prerequisites
 
-1. Access to the legacy repository: https://github.com/DEFRA/trade-exportscore-plp
-2. Identify the specific retailer CSV model you want to import (e.g., LIDL1)
-3. Know the model's parser identifier (e.g., `LIDL1`, `KEPAK2`)
+### Required Information
+
+Before starting the migration, gather the following information:
+
+1. **Legacy Repository URL**
+
+   - Default: `https://github.com/DEFRA/trade-exportscore-plp`
+   - If using a different repository or branch, note the full URL
+   - Example: `https://github.com/DEFRA/trade-exportscore-plp/tree/main`
+
+2. **CSV Retailer Model to Import**
+
+   - Identify the specific retailer (e.g., LIDL, KEPAK, ICELAND)
+   - Identify the model variant (e.g., Model 1, Model 2)
+   - Examples: LIDL1, KEPAK2, ICELAND1_CSV
+
+3. **Parser Identifier**
+   - The exact CSV parser model name used in code (e.g., `LIDL1`, `KEPAK2`)
+   - This is typically `[RETAILER][NUMBER]` format
+   - Check legacy repository to confirm exact naming
+   - Note: CSV parsers may be in `model-headers-csv` or `model-headers` directory
+
+### Access Requirements
+
+- Read access to the legacy repository
+- Ability to clone or download files from the repository
+- Understanding of the retailer's CSV packing list format
+- Sample CSV files for testing (recommended)
+
+**💡 Tip:** If you don't have this information, browse the legacy repository structure:
+
+- CSV model headers: `app/services/model-headers-csv/` or `app/services/model-headers/`
+- CSV matchers: `app/services/matchers-csv/[retailer]/` or `app/services/matchers/[retailer]/`
+- CSV parsers: `app/services/parsers-csv/[retailer]/` or `app/services/parsers/[retailer]/`
 
 ---
 
@@ -543,6 +574,51 @@ export function parse(packingListCsv) {
 - `mapParser` receives `null` for sheet name (5th parameter)
 - **CRITICAL:** Still pass headers as 6th parameter to `combineParser.combine()`
 
+#### 4.3 Verify Validator Logic
+
+**CRITICAL:** CSV parsers depend on the same validator utilities as Excel parsers. Validator bugs affect ALL parser types.
+
+**Compare validator implementations:**
+
+```bash
+# Fetch legacy validator
+curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+# Compare with current implementation
+diff /tmp/legacy-validator.js src/services/validators/packing-list-validator-utilities.js
+```
+
+**Check for common migration bugs:**
+
+1. **Function call mismatches** - Verify helper functions are called correctly:
+
+   - ✅ Correct: `isInvalidCoO(item.country_of_origin)` - validates CoO value only
+   - ❌ Wrong: `hasInvalidCoO(item)` - checks NIRMS AND CoO, causing double-checks
+
+2. **Parameter differences** - Ensure function signatures match:
+
+   ```javascript
+   // Legacy
+   function hasIneligibleItems(item) {
+     return (
+       isNirms(item.nirms) &&
+       !isInvalidCoO(item.country_of_origin) &&  // ← Note: direct CoO validation
+       // ...
+     )
+   }
+   ```
+
+3. **Regex pattern changes** - Verify patterns match exactly:
+
+   - NIRMS patterns: `/^(yes|nirms|green|y|g)$/i` or `/^green lane/i`
+   - Non-NIRMS patterns: `/^(no|red|n|r)$/i`, `/^red lane/i`, or `/^non[- ]?nirms/i`
+
+4. **Logic flow changes** - Check conditional statements haven't been reordered or modified
+
+**If tests pass in legacy but fail after migration, validator bugs are the likely cause.**
+
+---
+
 **CSV-Specific Edge Cases:**
 
 Some CSV models may need to:
@@ -651,7 +727,9 @@ export function getCsvParser(packingList, filename) {
 
 ---
 
-### Step 6: Add Test Data (Optional but Recommended)
+### Step 6: Add Test Data (Strongly Recommended)
+
+⚠️ **Test data is critical for validation** - Without it, you cannot verify the migration is correct.
 
 #### 6.1 Create Test Data Directory
 
@@ -660,9 +738,32 @@ mkdir -p test/test-data-and-results/models-csv/lidl
 mkdir -p test/test-data-and-results/results-csv/lidl
 ```
 
-#### 6.2 Copy and Adapt Test Data
+#### 6.2 Copy Test Data Without Modifications
 
-Copy test models from legacy repo:
+⚠️ **CRITICAL:** Test data variations are intentional - do not "normalize" or "clean up" them.
+
+**Rules for copying CSV test data:**
+
+1. **Copy EXACTLY from legacy** - No modifications to values, row counts, or structure
+2. **Preserve all variations** - NIRMS value variations test regex pattern matching:
+   - NIRMS variations: `'yes'`, `'nirms'`, `'green'`, `'y'`, `'g'`
+   - Non-NIRMS variations: `'no'`, `'non-nirms'`, `'non nirms'`, `'red'`, `'r'`, `'n'`
+3. **Keep exact row counts** - Don't add/remove rows to "standardize" tests
+4. **Maintain row order** - Row positions may be significant for test expectations
+5. **Preserve empty/missing fields** - These test validation logic
+6. **Keep array structure** - CSV test data is array of arrays, not objects
+
+**Verification:**
+
+```bash
+# After copying, verify no unintended changes
+cd /path/to/legacy-repo
+git diff --no-index \
+  test/unit/test-data-and-results/models-csv/[retailer]/model[N].js \
+  /path/to/new-repo/test/test-data-and-results/models-csv/[retailer]/model[N].js
+```
+
+**Copy test models from legacy repo:**
 
 ```javascript
 // test/test-data-and-results/models-csv/lidl/model1.js
@@ -860,6 +961,101 @@ test('rejects CSV packing list without REMOS', () => {
   expect(parser.parserModel).toBe('NOREMOSCSV')
 })
 ```
+
+#### 8.4 Compare with Legacy Repository on Test Failures
+
+⚠️ **If migrated tests fail but legacy tests pass, check CODE first, then DATA.**
+
+**Step-by-step debugging process:**
+
+1. **Fetch and run legacy tests:**
+
+   ```bash
+   # Clone legacy repo if not already available
+   git clone https://github.com/DEFRA/trade-exportscore-plp.git /tmp/legacy-plp
+   cd /tmp/legacy-plp
+
+   # Install and run tests for the specific model
+   npm install
+   npm test -- test/unit/services/parsers-csv/[retailer]/model[N].test.js
+   ```
+
+2. **Compare test data files:**
+
+   ```bash
+   # Check CSV test data differences
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/models-csv/[retailer]/model[N].js \
+     test/test-data-and-results/models-csv/[retailer]/model[N].js
+
+   # Check expected results differences
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/results-csv/[retailer]/model[N].js \
+     test/test-data-and-results/results-csv/[retailer]/model[N].js
+   ```
+
+3. **Compare validator implementations:**
+
+   ```bash
+   # Fetch legacy validator
+   curl -o /tmp/legacy-validator.js \
+     https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+   # Compare with migrated version
+   diff -u /tmp/legacy-validator.js \
+     src/services/validators/packing-list-validator-utilities.js | less
+   ```
+
+4. **Check for common migration bugs:**
+
+   - **Validator function calls:** Search for function name mismatches
+     ```bash
+     # Check for hasInvalidCoO vs isInvalidCoO usage
+     grep -n "hasInvalidCoO\|isInvalidCoO" src/services/validators/*.js
+     ```
+   - **Missing parameters:** Verify 6th parameter in combineParser.combine() calls
+     ```bash
+     grep -A 7 "combineParser.combine" src/services/parsers/[retailer]/*.js
+     ```
+   - **Regex pattern changes:** Compare header regex patterns
+     ```bash
+     diff -u \
+       /tmp/legacy-plp/app/services/model-headers-csv/[retailer].js \
+       src/services/model-headers/[retailer].js
+     ```
+
+5. **Document findings:**
+
+   Create a migration issues log:
+
+   ```markdown
+   # Migration Issues - [Retailer] CSV Model [N]
+
+   ## Test Failures
+
+   - Test: [test name]
+   - Expected: [expected result]
+   - Actual: [actual result]
+
+   ## Root Cause
+
+   - [ ] Test data mismatch (copied incorrectly)
+   - [ ] Validator logic bug (function call mismatch)
+   - [ ] Parser logic bug (missing parameters)
+   - [ ] Regex pattern change (header mismatch)
+
+   ## Resolution
+
+   [Describe fix applied]
+   ```
+
+**Priority order for investigation:**
+
+1. ✅ Validator utilities logic (most common cause)
+2. ✅ Test data exact match with legacy
+3. ✅ Parser combineParser.combine() parameters
+4. ✅ Header regex patterns and validation flags
+5. ✅ Helper function parameter signatures
 
 ---
 
@@ -1288,13 +1484,85 @@ Use this checklist when importing a new CSV model:
 3. Verify REMOS regex pattern is correct
 4. Check if REMOS numbers are in different columns
 
+#### Issue: Tests pass in legacy but fail after migration
+
+**Symptoms:** Legacy tests pass with same data, but migrated CSV tests fail
+
+**Root Cause:** Usually a code migration bug in validator utilities, not CSV-specific issue
+
+**Debugging Steps:**
+
+1. **Compare validator logic first:**
+
+   ```bash
+   # Fetch legacy validator
+   curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+   # Search for the specific validation function
+   grep -A 20 "function hasIneligibleItems" /tmp/legacy-validator.js
+   grep -A 20 "function hasIneligibleItems" src/services/validators/packing-list-validator-utilities.js
+   ```
+
+2. **Check for function call mismatches:**
+
+   - Legacy: `!isInvalidCoO(item.country_of_origin)` ✅
+   - Migrated: `!hasInvalidCoO(item)` ❌ (double-checks NIRMS)
+
+3. **Verify CSV test data is identical:**
+
+   ```bash
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/models-csv/[retailer]/model[N].js \
+     test/test-data-and-results/models-csv/[retailer]/model[N].js
+   ```
+
+4. **Check parser parameters:**
+
+   - Ensure all 6 parameters passed to `combineParser.combine()`
+   - Verify `null` passed for sheet name (5th parameter)
+   - Verify header config passed as 6th parameter
+
+5. **Run legacy tests to confirm baseline:**
+   ```bash
+   cd /tmp/legacy-plp
+   npm test -- test/unit/services/parsers-csv/[retailer]/model[N].test.js
+   ```
+
+**Example Bug:**
+
+```javascript
+// ❌ WRONG - Double-checks NIRMS status
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !hasInvalidCoO(item) &&  // hasInvalidCoO internally checks isNirms again
+    // ...
+  )
+}
+
+// ✅ CORRECT - Validates only CoO value
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !isInvalidCoO(item.country_of_origin) &&  // Just validates CoO
+    // ...
+  )
+}
+```
+
 ---
 
 ## CSV-Specific Best Practices
 
-1. **Header Detection:** Most CSVs have header at index 0, but always verify. Some may have metadata rows first.
+1. **Compare with Legacy First:** When tests fail, always check the legacy repository for differences in CODE before modifying TEST DATA. Validator bugs affect all parser types (Excel, CSV, PDF).
 
-2. **Empty Row Handling:** CSVs often have trailing empty rows. Filter these before processing:
+2. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" CSV test data - variations are intentional to test regex patterns.
+
+3. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
+
+4. **Header Detection:** Most CSVs have header at index 0, but always verify. Some may have metadata rows first.
+
+5. **Empty Row Handling:** CSVs often have trailing empty rows. Filter these before processing:
 
 ```javascript
 const validRows = csv.filter((row) =>
@@ -1302,13 +1570,13 @@ const validRows = csv.filter((row) =>
 )
 ```
 
-3. **Cell Value Sanitization:** CSV cells may have extra whitespace:
+6. **Cell Value Sanitization:** CSV cells may have extra whitespace:
 
 ```javascript
 const cleanValue = cell?.toString().trim()
 ```
 
-4. **Array Bounds Checking:** Always verify row exists before accessing:
+7. **Array Bounds Checking:** Always verify row exists before accessing:
 
 ```javascript
 if (headerRow >= 0 && headerRow < csv.length) {
@@ -1316,11 +1584,11 @@ if (headerRow >= 0 && headerRow < csv.length) {
 }
 ```
 
-5. **REMOS Format:** Verify REMOS follows `RMS-GB-XXXXXX-XXX` pattern
+8. **REMOS Format:** Verify REMOS follows `RMS-GB-XXXXXX-XXX` pattern
 
-6. **Sheet Name:** Always pass `null` for sheet name in CSV parsers (5th parameter to mapParser)
+9. **Sheet Name:** Always pass `null` for sheet name in CSV parsers (5th parameter to mapParser)
 
-7. **Test Data Format:** CSV test data should be array of arrays, not objects:
+10. **Test Data Format:** CSV test data should be array of arrays, not objects:
 
 ```javascript
 // Correct
@@ -1335,11 +1603,11 @@ if (headerRow >= 0 && headerRow < csv.length) {
 }
 ```
 
-8. **Performance:** CSVs are typically smaller than Excel files, but still validate input size
+11. **Performance:** CSVs are typically smaller than Excel files, but still validate input size
 
-9. **Encoding:** Be aware of CSV encoding issues (UTF-8, BOM markers, etc.)
+12. **Encoding:** Be aware of CSV encoding issues (UTF-8, BOM markers, etc.)
 
-10. **Delimiter Handling:** Verify CSV uses standard comma delimiter
+13. **Delimiter Handling:** Verify CSV uses standard comma delimiter
 
 ---
 

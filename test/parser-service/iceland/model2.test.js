@@ -1,7 +1,7 @@
-import * as parserService from '../../../../../src/services/parser-service.js'
-import model from '../../../../test-data-and-results/models-csv/iceland/model2.js'
-import parserModel from '../../../../../src/services/parser-model.js'
-import test_results from '../../../../test-data-and-results/results-csv/iceland/model2.js'
+import * as parserService from '../../../src/services/parser-service.js'
+import model from '../../test-data-and-results/models-csv/iceland/model2.js'
+import parserModel from '../../../src/services/parser-model.js'
+import test_results from '../../test-data-and-results/results-csv/iceland/model2.js'
 
 const filename = 'packinglist.csv'
 

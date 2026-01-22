@@ -72,10 +72,48 @@ When importing models, you MUST maintain:
 
 ## Prerequisites
 
-1. Access to the legacy repository: https://github.com/DEFRA/trade-exportscore-plp
-2. Identify the specific retailer PDF model you want to import (e.g., ICELAND1, BOOKER1, GIOVANNI1)
-3. Know the model's parser identifier (e.g., `ICELAND1`, `BOOKER1`)
-4. Understanding of Azure Form Recognizer output format
+### Required Information
+
+Before starting the migration, gather the following information:
+
+1. **Legacy Repository URL**
+
+   - Default: `https://github.com/DEFRA/trade-exportscore-plp`
+   - If using a different repository or branch, note the full URL
+   - Example: `https://github.com/DEFRA/trade-exportscore-plp/tree/main`
+
+2. **PDF Retailer Model to Import**
+
+   - Identify the specific retailer (e.g., ICELAND, BOOKER, GIOVANNI)
+   - Identify the model variant (e.g., Model 1, Model 1 Landscape)
+   - Examples: ICELAND1, BOOKER1, BOOKER1L, GIOVANNI1
+   - Note: PDF models often have layout variants (portrait vs landscape)
+
+3. **Parser Identifier**
+
+   - The exact PDF parser model name used in code (e.g., `ICELAND1`, `BOOKER1`, `BOOKER1L`)
+   - This is typically `[RETAILER][NUMBER]` or `[RETAILER][NUMBER]L` format
+   - Check legacy repository to confirm exact naming
+
+4. **Azure Form Recognizer Details**
+   - Model ID (if using custom trained models)
+   - Understanding of Form Recognizer output format
+   - Coordinate system used (if coordinate-based headers)
+
+### Access Requirements
+
+- Read access to the legacy repository
+- Ability to clone or download files from the repository
+- Understanding of Azure Form Recognizer output structure
+- Sample PDF files and Form Recognizer output for testing (recommended)
+- Access to Azure Form Recognizer service (for testing with real PDFs)
+
+**💡 Tip:** If you don't have this information, browse the legacy repository structure:
+
+- PDF model headers: `app/services/model-headers/` (look for coordinate definitions)
+- PDF matchers: `app/services/matchers/[retailer]/model[N]-pdf.js` or `model[N].js`
+- PDF parsers: `app/services/parsers/[retailer]/model[N]-pdf.js` or AI-specific directory
+- Test data: `test/unit/test-data-and-results/models-pdf/`
 
 ---
 
@@ -1018,6 +1056,49 @@ function isValidItem(item) {
 - Implement coordinate-based extraction if using advanced headers
 - Handle Azure Form Recognizer output structure (fields, tables, cells, boundingBox)
 
+#### 4.3 Verify Validator Logic
+
+**CRITICAL:** PDF parsers depend on the same validator utilities as Excel/CSV parsers. Validator bugs affect ALL parser types.
+
+**Compare validator implementations:**
+
+```bash
+# Fetch legacy validator
+curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+# Compare with current implementation
+diff /tmp/legacy-validator.js src/services/validators/packing-list-validator-utilities.js
+```
+
+**Check for common migration bugs:**
+
+1. **Function call mismatches** - Verify helper functions are called correctly:
+
+   - ✅ Correct: `isInvalidCoO(item.country_of_origin)` - validates CoO value only
+   - ❌ Wrong: `hasInvalidCoO(item)` - checks NIRMS AND CoO, causing double-checks
+
+2. **Parameter differences** - Ensure function signatures match:
+
+   ```javascript
+   // Legacy
+   function hasIneligibleItems(item) {
+     return (
+       isNirms(item.nirms) &&
+       !isInvalidCoO(item.country_of_origin) &&  // ← Note: direct CoO validation
+       // ...
+     )
+   }
+   ```
+
+3. **Regex pattern changes** - Verify patterns match exactly:
+
+   - NIRMS patterns: `/^(yes|nirms|green|y|g)$/i` or `/^green lane/i`
+   - Non-NIRMS patterns: `/^(no|red|n|r)$/i`, `/^red lane/i`, or `/^non[- ]?nirms/i`
+
+4. **Logic flow changes** - Check conditional statements haven't been reordered or modified
+
+**If tests pass in legacy but fail after migration, validator bugs are the likely cause.**
+
 ---
 
 ### Step 5: Register Parser and Matcher
@@ -1057,7 +1138,9 @@ const parsersPdf = {
 
 ---
 
-### Step 6: Add Test Data (Optional but Recommended)
+### Step 6: Add Test Data (Strongly Recommended)
+
+⚠️ **Test data is critical for validation** - Without it, you cannot verify the migration is correct.
 
 #### 6.1 Create Test Data Directory
 
@@ -1066,7 +1149,30 @@ mkdir -p test/test-data-and-results/models-pdf/iceland
 mkdir -p test/test-data-and-results/results-pdf/iceland
 ```
 
-#### 6.2 Copy and Adapt Test Data
+#### 6.2 Copy Test Data Without Modifications
+
+⚠️ **CRITICAL:** Test data variations are intentional - do not "normalize" or "clean up" them.
+
+**Rules for copying PDF test data:**
+
+1. **Copy EXACTLY from legacy** - No modifications to Form Recognizer output structure
+2. **Preserve all variations** - Field value variations test regex pattern matching:
+   - NIRMS variations: `'yes'`, `'nirms'`, `'green'`, `'y'`, `'g'`
+   - Non-NIRMS variations: `'no'`, `'non-nirms'`, `'non nirms'`, `'red'`, `'r'`, `'n'`
+3. **Keep exact item counts** - Don't add/remove items to "standardize" tests
+4. **Maintain coordinate data** - Preserve boundingBox values exactly
+5. **Preserve confidence scores** - These may be used for validation
+6. **Keep Form Recognizer structure** - Don't simplify the JSON structure
+
+**Verification:**
+
+```bash
+# After copying, verify no unintended changes
+cd /path/to/legacy-repo
+git diff --no-index \
+  test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js \
+  /path/to/new-repo/test/test-data-and-results/models-pdf/[retailer]/model[N].js
+```
 
 **Note:** Azure Form Recognizer output is typically very large. Consider using abbreviated/simplified versions for tests.
 
@@ -1557,25 +1663,97 @@ Use this checklist when importing a new PDF model:
 3. Improve PDF quality (resolution, clarity)
 4. Add confidence score validation in parser
 
+#### Issue: Tests pass in legacy but fail after migration
+
+**Symptoms:** Legacy tests pass with same Form Recognizer data, but migrated PDF tests fail
+
+**Root Cause:** Usually a code migration bug in validator utilities, not PDF-specific issue
+
+**Debugging Steps:**
+
+1. **Compare validator logic first:**
+
+   ```bash
+   # Fetch legacy validator
+   curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+   # Search for the specific validation function
+   grep -A 20 "function hasIneligibleItems" /tmp/legacy-validator.js
+   grep -A 20 "function hasIneligibleItems" src/services/validators/packing-list-validator-utilities.js
+   ```
+
+2. **Check for function call mismatches:**
+
+   - Legacy: `!isInvalidCoO(item.country_of_origin)` ✅
+   - Migrated: `!hasInvalidCoO(item)` ❌ (double-checks NIRMS)
+
+3. **Verify PDF test data is identical:**
+
+   ```bash
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js \
+     test/test-data-and-results/models-pdf/[retailer]/model[N].js
+   ```
+
+4. **Check parser parameters:**
+
+   - Ensure all 6 parameters passed to `combineParser.combine()`
+   - Verify parameter order matches legacy
+   - Check coordinate extraction logic matches legacy
+
+5. **Run legacy tests to confirm baseline:**
+   ```bash
+   cd /tmp/legacy-plp
+   npm test -- test/unit/services/parsers/[retailer]/model[N]-pdf.test.js
+   ```
+
+**Example Bug:**
+
+```javascript
+// ❌ WRONG - Double-checks NIRMS status
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !hasInvalidCoO(item) &&  // hasInvalidCoO internally checks isNirms again
+    // ...
+  )
+}
+
+// ✅ CORRECT - Validates only CoO value
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !isInvalidCoO(item.country_of_origin) &&  // Just validates CoO
+    // ...
+  )
+}
+```
+
 ---
 
 ## Best Practices
 
-1. **Test with Real PDFs:** Always test with actual Form Recognizer output from real PDFs, not just hand-crafted test data.
+1. **Compare with Legacy First:** When tests fail, always check the legacy repository for differences in CODE before modifying TEST DATA. Validator bugs affect all parser types (Excel, CSV, PDF).
 
-2. **Coordinate Precision:** When using coordinate-based extraction, verify boundaries with multiple PDF samples to ensure consistency.
+2. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" Form Recognizer test data - variations are intentional to test regex patterns.
 
-3. **Layout Variants:** Create separate models for significantly different layouts (portrait vs landscape, different retailers).
+3. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
 
-4. **Confidence Scores:** Consider adding minimum confidence thresholds to filter unreliable extractions.
+4. **Test with Real PDFs:** Always test with actual Form Recognizer output from real PDFs, not just hand-crafted test data.
 
-5. **Error Logging:** Include detailed error logging for Form Recognizer output processing to aid debugging.
+5. **Coordinate Precision:** When using coordinate-based extraction, verify boundaries with multiple PDF samples to ensure consistency.
 
-6. **Performance:** Form Recognizer processing is slower than Excel/CSV. Consider caching or async processing for production.
+6. **Layout Variants:** Create separate models for significantly different layouts (portrait vs landscape, different retailers).
 
-7. **Model Versioning:** Track Form Recognizer model versions in headers config (`modelId`) for reproducibility.
+7. **Confidence Scores:** Consider adding minimum confidence thresholds to filter unreliable extractions.
 
-8. **Totals Filtering:** Always implement totals filtering if PDFs include summary rows - these should not appear in parsed items.
+8. **Error Logging:** Include detailed error logging for Form Recognizer output processing to aid debugging.
+
+9. **Performance:** Form Recognizer processing is slower than Excel/CSV. Consider caching or async processing for production.
+
+10. **Model Versioning:** Track Form Recognizer model versions in headers config (`modelId`) for reproducibility.
+
+11. **Totals Filtering:** Always implement totals filtering if PDFs include summary rows - these should not appear in parsed items.
 
 ---
 

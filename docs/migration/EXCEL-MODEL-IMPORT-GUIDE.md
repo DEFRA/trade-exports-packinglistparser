@@ -41,9 +41,38 @@ When importing models, you MUST maintain:
 
 ## Prerequisites
 
-1. Access to the legacy repository: https://github.com/DEFRA/trade-exportscore-plp
-2. Identify the specific retailer model you want to import (e.g., ASDA1, TESCO2, COOP1)
-3. Know the model's parser identifier (e.g., `ASDA1`, `MARS1`, `TURNERS1`)
+### Required Information
+
+Before starting the migration, gather the following information:
+
+1. **Legacy Repository URL**
+
+   - Default: `https://github.com/DEFRA/trade-exportscore-plp`
+   - If using a different repository or branch, note the full URL
+   - Example: `https://github.com/DEFRA/trade-exportscore-plp/tree/main`
+
+2. **Retailer Model to Import**
+
+   - Identify the specific retailer (e.g., SAINSBURYS, TESCO, COOP)
+   - Identify the model variant (e.g., Model 1, Model 2, Model 3)
+   - Examples: SAINSBURYS1, TESCO2, COOP1, ASDA3
+
+3. **Parser Identifier**
+   - The exact parser model name used in code (e.g., `ASDA1`, `MARS1`, `TURNERS1`)
+   - This is typically `[RETAILER][NUMBER]` format
+   - Check legacy repository to confirm exact naming
+
+### Access Requirements
+
+- Read access to the legacy repository
+- Ability to clone or download files from the repository
+- Understanding of the retailer's packing list format
+
+**💡 Tip:** If you don't have this information, browse the legacy repository structure:
+
+- Model headers: `app/services/model-headers/`
+- Matchers: `app/services/matchers/[retailer]/`
+- Parsers: `app/services/parsers/[retailer]/`
 
 ---
 
@@ -56,7 +85,7 @@ For each retailer model, you'll need to collect the following files from the leg
 #### 1.1 Model Headers Configuration
 
 **Old Location:** `app/services/model-headers/[retailer].js`  
-**Example:** `app/services/model-headers/asda.js`
+**Example:** `app/services/model-headers/sainsburys.js`
 
 This file contains:
 
@@ -68,22 +97,21 @@ This file contains:
 **What to extract:**
 
 ```javascript
-// Example from ASDA3
-ASDA3: {
+// Example from SAINSBURYS1
+SAINSBURYS1: {
   establishmentNumber: {
-    regex: /^RMS-GB-000015-\d{3}$/i,
+    regex: /^RMS-GB-000094-\d{3}$/i,
   },
   regex: {
-    description: /Description Of All Retail Goods/i,
-    nature_of_products: /Nature of Product/i,
-    type_of_treatment: /Treatment Type/i,
+    description: /Description/i,
+    nature_of_products: /Nature of Products/i,
+    type_of_treatment: /Type of Treatment/i,
     number_of_packages: /Number of Packages/i,
-    total_net_weight_kg: /Net Weight/i,
+    total_net_weight_kg: /Total Net Weight/i,
   },
-  total_net_weight_unit: /kilograms\/grams/i,
   commodity_code: /Commodity Code/i,
   country_of_origin: /Country of Origin/i,
-  nirms: /NIRMs\/Non-NIRMs/i,
+  nirms: /NIRMS \(ENTER yes or no\)/i,
   validateCountryOfOrigin: true,
 }
 ```
@@ -91,7 +119,7 @@ ASDA3: {
 #### 1.2 Matcher Implementation
 
 **Old Location:** `app/services/matchers/[retailer]/model[N].js`  
-**Example:** `app/services/matchers/asda/model3.js`
+**Example:** `app/services/matchers/sainsburys/model1.js`
 
 This file implements the `matches()` function that:
 
@@ -113,13 +141,17 @@ function matches(packingList, filename) {
     for (const sheet of sheets) {
       // check for correct establishment number
       if (
-        !regex.test(headers.ASDA3.establishmentNumber.regex, packingList[sheet])
+        !regex.test(
+          headers.SAINSBURYS1.establishmentNumber.regex,
+          packingList[sheet]
+        )
       ) {
         return matcherResult.WRONG_ESTABLISHMENT_NUMBER
       }
+
       // check for header values
       result = matchesHeader(
-        Object.values(headers.ASDA3.regex),
+        Object.values(headers.SAINSBURYS1.regex),
         packingList[sheet]
       )
       if (result === matcherResult.WRONG_HEADER) {
@@ -128,16 +160,23 @@ function matches(packingList, filename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.logInfo(
-        filenameForLogging,
-        'matches()',
-        `Packing list matches ASDA Model 3 with filename: ${filename}`
+      logger.info(
+        { filename },
+        `Packing list matches Sainsburys Model 1 with filename: ${filename}`
       )
     }
 
     return result
   } catch (err) {
-    logger.logError(filenameForLogging, 'matches()', err)
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in Sainsburys 1 matcher'
+    )
     return matcherResult.GENERIC_ERROR
   }
 }
@@ -146,7 +185,7 @@ function matches(packingList, filename) {
 #### 1.3 Parser Implementation
 
 **Old Location:** `app/services/parsers/[retailer]/model[N].js`  
-**Example:** `app/services/parsers/asda/model3.js`
+**Example:** `app/services/parsers/sainsburys/model1.js`
 
 This file implements the `parse()` function that:
 
@@ -165,12 +204,15 @@ function parse(packingListJson) {
     let packingListContentsTemp = []
     let establishmentNumbers = []
 
-    const establishmentNumber = regex.findMatch(
-      headers.ASDA3.establishmentNumber.regex,
-      packingListJson[sheets[0]]
-    )
+    const establishmentNumber =
+      regex
+        .findMatch(
+          headers.SAINSBURYS1.establishmentNumber.regex,
+          packingListJson[sheets[0]]
+        )
+        ?.replaceAll(/\u200B/g, '') ?? null
 
-    const headerTitles = Object.values(headers.ASDA3.regex)
+    const headerTitles = Object.values(headers.SAINSBURYS1.regex)
     const headerCallback = function (x) {
       return matchesHeader(headerTitles, [x]) === MatcherResult.CORRECT
     }
@@ -189,7 +231,7 @@ function parse(packingListJson) {
         packingListJson[sheet],
         headerRow,
         dataRow,
-        headers.ASDA3,
+        headers.SAINSBURYS1,
         sheet
       )
       packingListContents = packingListContents.concat(packingListContentsTemp)
@@ -199,28 +241,36 @@ function parse(packingListJson) {
       establishmentNumber,
       packingListContents,
       true,
-      parserModel.ASDA3,
+      parserModel.SAINSBURYS1,
       establishmentNumbers,
-      headers.ASDA3
+      headers.SAINSBURYS1
     )
   } catch (err) {
-    logger.logError(filenameForLogging, 'parse()', err)
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in Sainsburys 1 parser'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }
 ```
 
-#### 1.4 Test Data (Optional but Recommended)
+#### 1.4 Test Data (Strongly Recommended)
 
 **Old Location:** `test/unit/test-data-and-results/models/[retailer]/model[N].js`  
-**Example:** `test/unit/test-data-and-results/models/asda/model3.js`
+**Example:** `test/unit/test-data-and-results/models/sainsburys/model1.js`
 
 Contains sample packing list data for testing.
 
-#### 1.5 Expected Test Results (Optional but Recommended)
+#### 1.5 Expected Test Results (Strongly Recommended)
 
 **Old Location:** `test/unit/test-data-and-results/results/[retailer]/model[N].js`  
-**Example:** `test/unit/test-data-and-results/results/asda/model3.js`
+**Example:** `test/unit/test-data-and-results/results/sainsburys/model1.js`
 
 Contains expected parser output for validation.
 
@@ -235,7 +285,7 @@ Contains expected parser output for validation.
 If the retailer doesn't exist yet, create a new file:
 
 ```bash
-touch src/services/model-headers/asda.js
+touch src/services/model-headers/sainsburys.js
 ```
 
 #### 2.2 Adapt Header Configuration
@@ -244,40 +294,48 @@ Transform the old format to match the new project's structure:
 
 ```javascript
 /**
- * ASDA model headers
+ * Sainsburys model headers
  *
  * Provides establishment number regexes and header regex mappings
- * for ASDA packing list variants used by matchers.
+ * for Sainsburys packing list variants used by matchers.
  */
 
-const asdaHeaders = {
-  ASDA3: {
+const sainsburysHeaders = {
+  SAINSBURYS1: {
     establishmentNumber: {
-      regex: /^RMS-GB-000015-\d{3}$/i
+      regex: /^RMS-GB-000094-\d{3}$/i
     },
     regex: {
-      description: /Description Of All Retail Goods/i,
-      nature_of_products: /Nature of Product/i,
-      type_of_treatment: /Treatment Type/i,
+      description: /Description/i,
+      nature_of_products: /Nature of Products/i,
+      type_of_treatment: /Type of Treatment/i,
       number_of_packages: /Number of Packages/i,
-      total_net_weight_kg: /Net Weight/i
+      total_net_weight_kg: /Total Net Weight/i
     },
     // Optional fields
-    total_net_weight_unit: /kilograms\/grams/i,
     commodity_code: /Commodity Code/i,
     country_of_origin: /Country of Origin/i,
-    nirms: /NIRMs\/Non-NIRMs/i,
+    nirms: /NIRMS \(ENTER yes or no\)/i,
     // Validation flags
     validateCountryOfOrigin: true,
     findUnitInHeader: false,
     // For models with invalid sheets to skip
     invalidSheets: [],
+    // Required and optional field lists
+    required: [
+      'description',
+      'nature_of_products',
+      'type_of_treatment',
+      'number_of_packages',
+      'total_net_weight_kg'
+    ],
+    optional: ['commodity_code', 'country_of_origin', 'nirms'],
     // Deprecated flag (if applicable)
     deprecated: false
   }
 }
 
-export default asdaHeaders
+export default sainsburysHeaders
 ```
 
 **Key Changes:**
@@ -300,12 +358,12 @@ export default asdaHeaders
 Update `src/services/model-headers.js` (NOT index.js!):
 
 ```javascript
-// Import the new retailer's Excel headers (named import)
-import { asdaHeaders } from './model-headers/asda.js'
+// Import the new retailer's Excel headers
+import sainsburysHeaders from './model-headers/sainsburys.js'
 
 const headers = {
   // Existing Excel retailers...
-  ...asdaHeaders
+  ...sainsburysHeaders
 }
 
 export default headers
@@ -322,8 +380,8 @@ export default headers
 #### 3.1 Create Directory Structure
 
 ```bash
-mkdir -p src/services/matchers/asda
-touch src/services/matchers/asda/model3.js
+mkdir -p src/services/matchers/sainsburys
+touch src/services/matchers/sainsburys/model1.js
 ```
 
 #### 3.2 Implement Matcher
@@ -332,10 +390,10 @@ Adapt the matcher from the legacy repo:
 
 ```javascript
 /**
- * ASDA Model 3 matcher
+ * Sainsburys Model 1 matcher
  *
  * Detects whether a provided Excel-converted packing list matches
- * the ASDA Model 3 format by checking the establishment number and
+ * the Sainsburys Model 1 format by checking the establishment number and
  * header row patterns.
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
@@ -347,7 +405,7 @@ import headers from '../../model-headers.js' // Excel headers registry
 const logger = createLogger()
 
 /**
- * Check whether the provided packing list matches ASDA Model 3.
+ * Check whether the provided packing list matches Sainsburys Model 1.
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
  * @returns {string} - One of matcherResult codes
@@ -364,14 +422,17 @@ export function matches(packingList, filename) {
     for (const sheet of sheets) {
       // Check for correct establishment number
       if (
-        !regex.test(headers.ASDA3.establishmentNumber.regex, packingList[sheet])
+        !regex.test(
+          headers.SAINSBURYS1.establishmentNumber.regex,
+          packingList[sheet]
+        )
       ) {
         return matcherResult.WRONG_ESTABLISHMENT_NUMBER
       }
 
       // Check for header values
       result = matchesHeader(
-        Object.values(headers.ASDA3.regex),
+        Object.values(headers.SAINSBURYS1.regex),
         packingList[sheet]
       )
 
@@ -381,20 +442,22 @@ export function matches(packingList, filename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info({ filename }, 'Packing list matches ASDA Model 3')
+      logger.info(
+        { filename },
+        `Packing list matches Sainsburys Model 1 with filename: ${filename}`
+      )
     }
 
     return result
   } catch (err) {
     logger.error(
       {
-        filename,
         error: {
           message: err.message,
           stack_trace: err.stack
         }
       },
-      'Error in matches()'
+      'Error in Sainsburys 1 matcher'
     )
     return matcherResult.GENERIC_ERROR
   }
@@ -405,7 +468,11 @@ export function matches(packingList, filename) {
 
 - Use ES6 imports instead of `require()`
 - Import and use Pino logger via `createLogger()` from `common/helpers/logging/logger.js`
-- Use structured logging: `logger.info({ context }, 'message')` and `logger.error({ error: { message: err.message, stack_trace: err.stack }, context }, 'message')`
+- Use structured logging:
+  - Info: `logger.info({ context }, 'message')` - context object first, message second
+  - Error: `logger.error({ error: { message: err.message, stack_trace: err.stack } }, 'message')`
+  - **Legacy format:** `logger.logInfo(file, function, message)` and `logger.logError(file, function, err)`
+  - **New format:** Structured logging with context objects
 - Keep the same matching logic
 
 ---
@@ -417,8 +484,8 @@ export function matches(packingList, filename) {
 #### 4.1 Create Directory Structure
 
 ```bash
-mkdir -p src/services/parsers/asda
-touch src/services/parsers/asda/model3.js
+mkdir -p src/services/parsers/sainsburys
+touch src/services/parsers/sainsburys/model1.js
 ```
 
 #### 4.2 Implement Parser
@@ -427,15 +494,15 @@ Adapt the parser from the legacy repo:
 
 ```javascript
 /**
- * ASDA Excel parser - Model 3
- * @module parsers/asda/model3
+ * Sainsburys Excel parser - Model 1
+ * @module parsers/sainsburys/model1
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js' // Excel headers registry
 import { rowFinder } from '../../../utilities/row-finder.js'
-import mapParser from '../../parser-map.js'
+import { mapParser } from '../../parser-map.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
 import * as regex from '../../../utilities/regex.js'
@@ -443,7 +510,7 @@ import * as regex from '../../../utilities/regex.js'
 const logger = createLogger()
 
 /**
- * Parse the provided packing list JSON for ASDA model 3.
+ * Parse the provided packing list JSON for Sainsburys model 1.
  * @param {Object} packingListJson - Workbook JSON keyed by sheet name.
  * @returns {Object} Combined parser result.
  */
@@ -454,14 +521,17 @@ export function parse(packingListJson) {
     let packingListContentsTemp = []
     let establishmentNumbers = []
 
-    // Find primary establishment number
-    const establishmentNumber = regex.findMatch(
-      headers.ASDA3.establishmentNumber.regex,
-      packingListJson[sheets[0]]
-    )
+    // Find primary establishment number and clean zero-width spaces
+    const establishmentNumber =
+      regex
+        .findMatch(
+          headers.SAINSBURYS1.establishmentNumber.regex,
+          packingListJson[sheets[0]]
+        )
+        ?.replaceAll(/\u200B/g, '') ?? null
 
     // Setup header callback
-    const headerTitles = Object.values(headers.ASDA3.regex)
+    const headerTitles = Object.values(headers.SAINSBURYS1.regex)
     const headerCallback = function (x) {
       return matchesHeader(headerTitles, [x]) === MatcherResult.CORRECT
     }
@@ -484,7 +554,7 @@ export function parse(packingListJson) {
         packingListJson[sheet],
         headerRow,
         dataRow,
-        headers.ASDA3,
+        headers.SAINSBURYS1,
         sheet
       )
 
@@ -496,9 +566,9 @@ export function parse(packingListJson) {
       establishmentNumber,
       packingListContents,
       true,
-      parserModel.ASDA3,
+      parserModel.SAINSBURYS1,
       establishmentNumbers,
-      headers.ASDA3 // Required for Country of Origin validation
+      headers.SAINSBURYS1 // Required for Country of Origin validation
     )
   } catch (err) {
     logger.error(
@@ -508,7 +578,7 @@ export function parse(packingListJson) {
           stack_trace: err.stack
         }
       },
-      'Error in parse()'
+      'Error in Sainsburys 1 parser'
     )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
@@ -529,6 +599,51 @@ export function parse(packingListJson) {
   4. `ParserModel` (model identifier)
   5. `establishmentNumbers` (array)
   6. `header` (header config object)
+
+#### 4.3 Verify Validator Logic
+
+**CRITICAL:** Parsers depend on validator utilities that must also be migrated correctly.
+
+**Compare validator implementations:**
+
+```bash
+# Fetch legacy validator
+curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+# Compare with current implementation
+diff /tmp/legacy-validator.js src/services/validators/packing-list-validator-utilities.js
+```
+
+**Check for common migration bugs:**
+
+1. **Function call mismatches** - Verify helper functions are called correctly:
+
+   - ✅ Correct: `isInvalidCoO(item.country_of_origin)` - validates CoO value only
+   - ❌ Wrong: `hasInvalidCoO(item)` - checks NIRMS AND CoO, causing double-checks
+
+2. **Parameter differences** - Ensure function signatures match:
+
+   ```javascript
+   // Legacy
+   function hasIneligibleItems(item) {
+     return (
+       isNirms(item.nirms) &&
+       !isInvalidCoO(item.country_of_origin) &&  // ← Note: direct CoO validation
+       // ...
+     )
+   }
+   ```
+
+3. **Regex pattern changes** - Verify patterns match exactly:
+
+   - NIRMS patterns: `/^(yes|nirms|green|y|g)$/i` or `/^green lane/i`
+   - Non-NIRMS patterns: `/^(no|red|n|r)$/i`, `/^red lane/i`, or `/^non[- ]?nirms/i`
+
+4. **Logic flow changes** - Check conditional statements haven't been reordered or modified
+
+**If tests pass in legacy but fail after migration, validator bugs are the likely cause.**
+
+---
 
 **Parser Return Structure:**
 The parser MUST return the legacy structure via `combineParser.combine()`:
@@ -606,7 +721,9 @@ export const parsersExcel = {
 
 ---
 
-### Step 6: Add Test Data (Optional but Recommended)
+### Step 6: Add Test Data (Strongly Recommended)
+
+⚠️ **Test data is critical for validation** - Without it, you cannot verify the migration is correct.
 
 #### 6.1 Create Test Data Directory
 
@@ -615,9 +732,31 @@ mkdir -p test/test-data-and-results/models/asda
 mkdir -p test/test-data-and-results/results/asda
 ```
 
-#### 6.2 Copy and Adapt Test Data
+#### 6.2 Copy Test Data Without Modifications
 
-Copy test models from legacy repo:
+⚠️ **CRITICAL:** Test data variations are intentional - do not "normalize" or "clean up" them.
+
+**Rules for copying test data:**
+
+1. **Copy EXACTLY from legacy** - No modifications to values, row counts, or structure
+2. **Preserve all variations** - P value variations test regex pattern matching:
+   - NIRMS variations: `'yes'`, `'nirms'`, `'green'`, `'y'`, `'g'`
+   - Non-NIRMS variations: `'no'`, `'non-nirms'`, `'non nirms'`, `'red'`, `'r'`, `'n'`
+3. **Keep exact row counts** - Don't add/remove rows to "standardize" tests
+4. **Maintain row order** - Row positions may be significant for test expectations
+5. **Preserve empty/missing fields** - These test validation logic
+
+**Verification:**
+
+```bash
+# After copying, verify no unintended changes
+cd /path/to/legacy-repo
+git diff --no-index \
+  test/unit/test-data-and-results/models/[retailer]/model[N].js \
+  /path/to/new-repo/test/test-data-and-results/models/[retailer]/model[N].js
+```
+
+**Example test data (copied exactly from legacy):**
 
 ```javascript
 // test/test-data-and-results/models/asda/model3.js
@@ -648,7 +787,7 @@ export default {
       }
     ]
   }
-  // ... other test cases
+  // ... other test cases - copy ALL exactly as-is
 }
 ```
 
@@ -776,6 +915,101 @@ test('rejects packing list without REMOS', () => {
   expect(parser.parserModel).toBe('NOREMOS')
 })
 ```
+
+#### 8.4 Compare with Legacy Repository on Test Failures
+
+⚠️ **If migrated tests fail but legacy tests pass, check CODE first, then DATA.**
+
+**Step-by-step debugging process:**
+
+1. **Fetch and run legacy tests:**
+
+   ```bash
+   # Clone legacy repo if not already available
+   git clone https://github.com/DEFRA/trade-exportscore-plp.git /tmp/legacy-plp
+   cd /tmp/legacy-plp
+
+   # Install and run tests for the specific model
+   npm install
+   npm test -- test/unit/services/parsers/[retailer]/model[N].test.js
+   ```
+
+2. **Compare test data files:**
+
+   ```bash
+   # Check test data differences
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/models/[retailer]/model[N].js \
+     test/test-data-and-results/models/[retailer]/model[N].js
+
+   # Check expected results differences
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/results/[retailer]/model[N].js \
+     test/test-data-and-results/results/[retailer]/model[N].js
+   ```
+
+3. **Compare validator implementations:**
+
+   ```bash
+   # Fetch legacy validator
+   curl -o /tmp/legacy-validator.js \
+     https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+   # Compare with migrated version
+   diff -u /tmp/legacy-validator.js \
+     src/services/validators/packing-list-validator-utilities.js | less
+   ```
+
+4. **Check for common migration bugs:**
+
+   - **Validator function calls:** Search for function name mismatches
+     ```bash
+     # Check for hasInvalidCoO vs isInvalidCoO usage
+     grep -n "hasInvalidCoO\|isInvalidCoO" src/services/validators/*.js
+     ```
+   - **Missing parameters:** Verify 6th parameter in combineParser.combine() calls
+     ```bash
+     grep -A 7 "combineParser.combine" src/services/parsers/[retailer]/*.js
+     ```
+   - **Regex pattern changes:** Compare header regex patterns
+     ```bash
+     diff -u \
+       /tmp/legacy-plp/app/services/model-headers/[retailer].js \
+       src/services/model-headers/[retailer].js
+     ```
+
+5. **Document findings:**
+
+   Create a migration issues log:
+
+   ```markdown
+   # Migration Issues - [Retailer] Model [N]
+
+   ## Test Failures
+
+   - Test: [test name]
+   - Expected: [expected result]
+   - Actual: [actual result]
+
+   ## Root Cause
+
+   - [ ] Test data mismatch (copied incorrectly)
+   - [ ] Validator logic bug (function call mismatch)
+   - [ ] Parser logic bug (missing parameters)
+   - [ ] Regex pattern change (header mismatch)
+
+   ## Resolution
+
+   [Describe fix applied]
+   ```
+
+**Priority order for investigation:**
+
+1. ✅ Validator utilities logic (most common cause)
+2. ✅ Test data exact match with legacy
+3. ✅ Parser combineParser.combine() parameters
+4. ✅ Header regex patterns and validation flags
+5. ✅ Helper function parameter signatures
 
 ---
 
@@ -1123,6 +1357,71 @@ Use this checklist when importing a new Excel model:
 2. Check headers object includes all optional field patterns
 3. Ensure headers parameter is the model's headers object, not the values
 
+#### Issue: Tests pass in legacy but fail after migration
+
+**Symptoms:** Legacy tests pass with same data, but migrated tests fail
+
+**Root Cause:** Usually a code migration bug, not test data issue
+
+**Debugging Steps:**
+
+1. **Compare validator logic first:**
+
+   ```bash
+   # Fetch legacy validator
+   curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+   # Search for the specific validation function
+   grep -A 20 "function hasIneligibleItems" /tmp/legacy-validator.js
+   grep -A 20 "function hasIneligibleItems" src/services/validators/packing-list-validator-utilities.js
+   ```
+
+2. **Check for function call mismatches:**
+
+   - Legacy: `!isInvalidCoO(item.country_of_origin)` ✅
+   - Migrated: `!hasInvalidCoO(item)` ❌ (double-checks NIRMS)
+
+3. **Verify test data is identical:**
+
+   ```bash
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/models/[retailer]/model[N].js \
+     test/test-data-and-results/models/[retailer]/model[N].js
+   ```
+
+4. **Check parser parameters:**
+
+   - Ensure all 6 parameters passed to `combineParser.combine()`
+   - Verify parameter order matches legacy
+
+5. **Run legacy tests to confirm baseline:**
+   ```bash
+   cd /tmp/legacy-plp
+   npm test -- test/unit/services/parsers/[retailer]/model[N].test.js
+   ```
+
+**Example Bug:**
+
+```javascript
+// ❌ WRONG - Double-checks NIRMS status
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !hasInvalidCoO(item) &&  // hasInvalidCoO internally checks isNirms again
+    // ...
+  )
+}
+
+// ✅ CORRECT - Validates only CoO value
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !isInvalidCoO(item.country_of_origin) &&  // Just validates CoO
+    // ...
+  )
+}
+```
+
 ---
 
 ## Best Practices
@@ -1131,17 +1430,23 @@ Use this checklist when importing a new Excel model:
 
 2. **Test with Real Data:** Always test with actual packing list samples from the retailer if available.
 
-3. **Document Quirks:** Add comments explaining any model-specific behaviors or edge cases.
+3. **Compare with Legacy First:** When tests fail, always check the legacy repository for differences in CODE before modifying TEST DATA.
 
-4. **Version Control:** Commit after each major step (headers, matcher, parser) to make debugging easier.
+4. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" test data - variations are intentional to test regex patterns.
 
-5. **Code Review:** Have another developer review the implementation, especially regex patterns and matching logic.
+5. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs.
 
-6. **Performance:** If a model processes very large files, consider adding performance optimizations like early returns or sheet filtering.
+6. **Document Quirks:** Add comments explaining any model-specific behaviors or edge cases.
 
-7. **Logging:** Include meaningful log messages for debugging parser discovery and matching issues.
+7. **Version Control:** Commit after each major step (headers, matcher, parser) to make debugging easier.
 
-8. **Error Handling:** Always return appropriate error codes (EMPTY_FILE, WRONG_ESTABLISHMENT_NUMBER, WRONG_HEADER, GENERIC_ERROR) for troubleshooting.
+8. **Code Review:** Have another developer review the implementation, especially regex patterns and matching logic.
+
+9. **Performance:** If a model processes very large files, consider adding performance optimizations like early returns or sheet filtering.
+
+10. **Logging:** Include meaningful log messages for debugging parser discovery and matching issues.
+
+11. **Error Handling:** Always return appropriate error codes (EMPTY_FILE, WRONG_ESTABLISHMENT_NUMBER, WRONG_HEADER, GENERIC_ERROR) for troubleshooting.
 
 ---
 

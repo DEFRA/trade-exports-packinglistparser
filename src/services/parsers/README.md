@@ -215,6 +215,8 @@ Optional fields:
 
 Create test files for each parser and matcher:
 
+### Unit Tests (Parser/Matcher Logic)
+
 ```
 test/unit/services/
   ├── parsers/
@@ -226,6 +228,25 @@ test/unit/services/
           ├── model1.test.js
           └── ...
 ```
+
+### Integration Tests (Parser Discovery Service)
+
+All parser-service integration tests should be created in:
+
+```
+test/parser-service/
+  └── retailer-name/
+      ├── model1.test.js    # Tests findParser() discovery for this model
+      └── ...
+```
+
+These tests verify the full parser discovery flow including:
+
+- File type detection
+- REMOS validation
+- Matcher selection
+- Parser execution
+- End-to-end parsing results
 
 ## See Also
 
