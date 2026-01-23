@@ -1,4 +1,9 @@
 import hapi from '@hapi/hapi'
+import { vi } from 'vitest'
+
+vi.mock('../../services/cache/ineligible-items-cache.js', () => ({
+  initializeIneligibleItemsCache: vi.fn().mockResolvedValue(undefined)
+}))
 
 describe('#startServer', () => {
   let createServerSpy

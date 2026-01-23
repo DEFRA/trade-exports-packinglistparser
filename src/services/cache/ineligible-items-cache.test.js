@@ -32,6 +32,7 @@ const { config } = await import('../../config.js')
 
 describe('ineligible-items-cache', () => {
   const mockConfig = {
+    readEnabled: true,
     s3FileName: 'ineligible-items',
     s3Schema: 'v1.0',
     maxRetries: 3,
@@ -160,6 +161,15 @@ describe('ineligible-items-cache', () => {
       expect(getFileFromS3).toHaveBeenCalledTimes(4)
       expect(getIneligibleItemsCache()).toEqual(mockIneligibleItems)
     })
+
+    it('should skip initialization when readEnabled is false', async () => {
+      config.get.mockReturnValue({ ...mockConfig, readEnabled: false })
+
+      await initializeIneligibleItemsCache()
+
+      expect(getFileFromS3).not.toHaveBeenCalled()
+      expect(getIneligibleItemsCache()).toBeNull()
+    })
   })
 
   describe('getIneligibleItemsCache', () => {
@@ -232,6 +242,7 @@ describe('ineligible-items-cache', () => {
   describe('configuration', () => {
     it('should use configuration values from config', async () => {
       const customConfig = {
+        readEnabled: true,
         s3FileName: 'custom-file',
         s3Schema: 'v2.0',
         maxRetries: 5,
