@@ -20,6 +20,10 @@ import { parse as parseAsda3 } from './parsers/asda/model3.js'
 import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
 import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 
+// M&S PDF parsers
+import { matches as matchesMands1 } from './matchers/mands/model1.js'
+import { parse as parseMands1 } from './parsers/mands/model1.js'
+
 // No-match matchers and parsers
 import {
   noRemosMatch,
@@ -77,19 +81,6 @@ const parsersCsv = {
 }
 
 /**
- * PDF AI-based parsers collection.
- * Uses Document Intelligence for parsing.
- */
-const parsersPdf = {
-  // TODO: Add PDF AI parser implementations
-  // Example:
-  // MANDS1: {
-  //   matches: (packingList, filename) => mandsMatcher.matches(packingList, filename),
-  //   parse: (packingList, filename) => mandsParser.parse(packingList, filename)
-  // }
-}
-
-/**
  * PDF non-AI parsers collection.
  * Uses coordinate-based text extraction without AI.
  */
@@ -97,13 +88,11 @@ const parsersPdfNonAi = {
   GIOVANNI3: {
     matches: matchesGiovanni3,
     parse: parseGiovanni3
+  },
+  MANDS1: {
+    matches: matchesMands1,
+    parse: parseMands1
   }
-  // TODO: Add PDF non-AI parser implementations
-  // Example:
-  // BOOKER1: {
-  //   matches: (packingList, filename) => bookerMatcher.matches(packingList, filename),
-  //   parse: (packingList, filename) => bookerParser.parse(packingList, filename)
-  // }
 }
 
 /**
@@ -134,4 +123,4 @@ const noMatchParsers = {
   }
 }
 
-export { parsersExcel, parsersCsv, parsersPdf, parsersPdfNonAi, noMatchParsers }
+export { parsersExcel, parsersCsv, parsersPdfNonAi, noMatchParsers }

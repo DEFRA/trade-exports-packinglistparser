@@ -11,7 +11,7 @@ import {
 } from '../../../utilities/regex.js'
 import { extractPdf } from '../../../utilities/pdf-helper.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
-//import headersPdf from '../../model-headers-pdf.js'
+import headersPdf from '../../model-headers-pdf.js'
 const logger = createLogger()
 
 /**
@@ -93,17 +93,16 @@ async function noRemosMatchPdf(packingList) {
     const pdfJson = await extractPdf(packingList)
 
     for (const page of pdfJson.pages) {
-      const result = findMatch(standardRemosRegex, page.content) /*||
+      const result =
+        findMatch(standardRemosRegex, page.content) ||
+        findMatch(headersPdf.MANDS1.establishmentNumber.regex, page.content)
+      /* ||
               findMatch(
                 headersPdf.ICELAND1.establishmentNumber.regex,
                 page.content
               ) ||
               findMatch(
                 headersPdf.GREGGS1.establishmentNumber.regex,
-                page.content
-              ) ||
-              findMatch(
-                headersPdf.MANDS1.establishmentNumber.regex,
                 page.content
               ) */
       if (result) {

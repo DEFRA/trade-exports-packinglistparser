@@ -8,7 +8,6 @@
 import {
   parsersExcel,
   parsersCsv,
-  parsersPdf,
   parsersPdfNonAi,
   noMatchParsers
 } from '../model-parsers.js'
@@ -97,44 +96,6 @@ function getParser(
 }
 
 /**
- * Get PDF parser with AI-based Document Intelligence.
- *
- * @param {Buffer} sanitisedPackingList - PDF buffer
- * @param {string} filename - Original filename
- * @returns {Promise<Object>} Matched parser or empty object
- */
-async function getPdfParser(sanitisedPackingList, filename) {
-  let parser = {}
-
-  // REMOS Validation for PDF
-  const remos = await noMatchParsers.NOREMOSPDF.matches(sanitisedPackingList)
-
-  if (remos) {
-    let result = {}
-
-    // Retailer Matcher Selection
-    for (const pdfModel in parsersPdf) {
-      if (headersPdf[pdfModel]?.establishmentNumber?.regex?.test(remos)) {
-        result = await parsersPdf[pdfModel].matches(
-          sanitisedPackingList,
-          filename
-        )
-      }
-
-      if (result.isMatched === matcherResult.CORRECT) {
-        parser.parser = parsersPdf[pdfModel]
-        parser.result = result
-        break
-      }
-    }
-  } else {
-    parser = noMatchParsers.NOREMOS
-  }
-
-  return parser
-}
-
-/**
  * Get non-AI PDF parser.
  *
  * @param {Buffer} sanitisedPackingList - PDF buffer
@@ -162,4 +123,4 @@ async function getPdfNonAiParser(sanitisedPackingList, filename) {
   return parser
 }
 
-export { getExcelParser, getCsvParser, getPdfParser, getPdfNonAiParser }
+export { getExcelParser, getCsvParser, getPdfNonAiParser }

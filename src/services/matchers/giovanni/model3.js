@@ -5,10 +5,13 @@
  * Validates establishment number and header positions.
  */
 
+import { createLogger } from '../../../common/helpers/logging/logger.js'
 import matcherResult from '../../matcher-result.js'
 import headers from '../../model-headers-pdf.js'
 import * as regex from '../../../utilities/regex.js'
 import * as pdfHelper from '../../../utilities/pdf-helper.js'
+
+const logger = createLogger()
 
 /**
  * Check if packing list matches Giovanni Model 3 format.
@@ -41,14 +44,12 @@ export async function matches(packingList, filename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      console.log(
-        `Packing list matches Giovanni Model 3 with filename: ${filename}`
-      )
+      logger.info(`${filename} Packing list matches Giovanni Model 3`)
     }
 
     return result
   } catch (err) {
-    console.error('Giovanni Model 3 matcher error:', err)
+    logger.error(`Error in matches() for file ${filename}`, { err })
     return matcherResult.GENERIC_ERROR
   }
 }

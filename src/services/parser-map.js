@@ -258,9 +258,17 @@ export function mapParser(
  * @param {Object} packingListJson - PDF page with content coordinates
  * @param {string} model - Parser model identifier
  * @param {Array<number>} ys - Y-coordinates of data rows
+ * @param {boolean} nirmsHeaderExists - Flag indicating if NIRMS header exists
+ * @param {boolean} coHeaderExists - Flag indicating if Country of Origin header exists
  * @returns {Array<Object>} Mapped packing list items
  */
-export function mapPdfNonAiParser(packingListJson, model, ys) {
+export function mapPdfNonAiParser(
+  packingListJson,
+  model,
+  ys,
+  nirmsHeaderExists = false,
+  coHeaderExists = false
+) {
   let netWeightUnit
   if (headers[model].findUnitInHeader) {
     const pageHeader = pdfHelper.getHeaders(packingListJson.content, model)
@@ -291,6 +299,19 @@ export function mapPdfNonAiParser(packingListJson, model, ys) {
         y
       )
     }
+
+    if (headers[model].nirms && nirmsHeaderExists) {
+      plRow.nirms = findItemContent(packingListJson, headers[model].nirms, y)
+    }
+
+    if (headers[model].country_of_origin && coHeaderExists) {
+      plRow.country_of_origin = findItemContent(
+        packingListJson,
+        headers[model].country_of_origin,
+        y
+      )
+    }
+
     plRow.row_location = {
       rowNumber: row + 1,
       pageNumber: packingListJson.pageInfo.num

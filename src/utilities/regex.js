@@ -9,6 +9,10 @@
 
 const remosRegex = /^RMS-GB-\d{6}-\d{3}$/i
 
+// Regex pattern for finding kg/weight units with capture group
+// Used by parsers that need to check unit position (e.g., MANDS1)
+const kgRegex = /(KGS?|KILOGRAMS?|KILOS?)/i
+
 /**
  * Create case-insensitive global regex pattern.
  * @param {RegExp|string} regex - Regex to convert
@@ -185,6 +189,7 @@ function positionFinder(json, regex) {
 
 export {
   remosRegex,
+  kgRegex,
   test,
   findMatch,
   testAllPatterns,
