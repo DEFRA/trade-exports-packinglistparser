@@ -13,9 +13,15 @@ let ineligibleItemsCache = null
  * @throws {Error} If unable to fetch data after all retry attempts
  */
 export async function initializeIneligibleItemsCache() {
-  const { s3FileName, s3Schema, maxRetries, retryDelayMs } = config.get(
-    'ineligibleItemsCache'
-  )
+  const { readEnabled, s3FileName, s3Schema, maxRetries, retryDelayMs } =
+    config.get('ineligibleItemsCache')
+
+  if (!readEnabled) {
+    logger.info(
+      'Ineligible items S3 read is disabled, skipping cache initialization'
+    )
+    return
+  }
 
   const location = {
     filename: s3FileName,

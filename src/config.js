@@ -309,6 +309,12 @@ const config = convict({
     }
   },
   ineligibleItemsCache: {
+    readEnabled: {
+      doc: 'Enable or disable reading ineligible items from S3',
+      format: Boolean,
+      default: true,
+      env: 'INELIGIBLE_ITEMS_READ_ENABLED'
+    },
     s3FileName: {
       doc: 'S3 file name for ineligible items data (without extension)',
       format: String,
