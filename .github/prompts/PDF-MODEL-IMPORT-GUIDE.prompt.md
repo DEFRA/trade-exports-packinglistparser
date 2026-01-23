@@ -1,12 +1,41 @@
 # PDF-Based Model Import Guide
 
+## Your Role
+
+You are an expert software engineer tasked with importing a PDF-based packing list parser model from a legacy repository into the current project. PDF parsers use Azure Form Recognizer AI to extract structured data. You will gather requirements, locate source files (including coordinate data), transform code to match the new architecture, create tests, and verify the integration works correctly.
+
+## Task Objective
+
+**Import a specific PDF parser model while preserving exact legacy data structures, coordinate mappings, and Azure Form Recognizer integration.**
+
+**Success Criteria:**
+
+- All source files migrated including PDF headers with coordinates
+- Parser constant added to `parser-model.js`
+- Matcher and parser implemented with correct imports
+- Model registered in `model-parsers.js` under `parsersPdf`
+- Coordinate-based extraction logic preserved exactly
+- Unit tests created and passing with Form Recognizer output
+- Integration tests verify parser discovery works
+- No modifications to legacy data structures or validation logic
+
+**When to Ask for Clarification:**
+
+- If retailer or model name is ambiguous
+- If Azure Form Recognizer model ID is required but not provided
+- If coordinate data is missing or unclear
+- If legacy repository structure differs from expected patterns
+- If test data is missing or incomplete
+
+---
+
 ## Overview
 
 This guide provides step-by-step instructions for importing a specific PDF-based packing list parser model from the legacy `trade-exportscore-plp` repository into the new `trade-exports-packinglistparser` project structure.
 
 **PDF parsers use Azure Form Recognizer (AI) to extract structured data from PDF documents.** They differ significantly from Excel/CSV parsers in their data structures and processing logic.
 
-**Reference Document:** [find-parser-to-use.md](./find-parser-to-use.md) describes the 5-step parser discovery process that all imported models must follow.
+**Reference Document:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md) describes the 5-step parser discovery process that all imported models must follow.
 
 ---
 
@@ -67,6 +96,46 @@ When importing models, you MUST maintain:
 
 5. **Models:**
    - PDF models often have variants (e.g., BOOKER1, BOOKER1L) for different page layouts
+
+---
+
+## Step 0: Gather Required Information
+
+**Before beginning the import, you MUST gather this information from the user:**
+
+### Required Information:
+
+1. **Model Identifier**
+
+   - Ask: "What PDF model are you importing? (e.g., ICELAND1, BOOKER1L, GIOVANNI3)"
+   - Parse into: `RETAILER`, `MODEL_NUMBER`, and `VARIANT` (if present)
+   - Example: "BOOKER1L" → Retailer: "BOOKER", Model: "1", Variant: "L" (landscape)
+
+2. **Legacy Repository Location**
+
+   - Ask: "What is the legacy repository URL?"
+   - Default: `https://github.com/DEFRA/trade-exportscore-plp`
+   - Ask: "Are you using a specific branch? (default: main)"
+
+3. **Azure Form Recognizer Details** (Optional)
+   - Ask: "Does this model use a trained Azure Form Recognizer model? If so, what is the model ID?"
+   - Only required if model uses custom-trained Form Recognizer
+
+### Verification Steps:
+
+**Before proceeding to Step 1, YOU MUST verify these files exist:**
+
+1. Check legacy repository for:
+
+   - `app/services/model-headers/[retailer].js` (should contain PDF headers with coordinates)
+   - `app/services/matchers/[retailer]/model[N].js` OR `model[N]-pdf.js`
+   - `app/services/parsers/[retailer]/model[N].js` OR `model[N]-pdf.js`
+
+2. Verify the headers file contains PDF-specific data (coordinate values like `x1`, `x2`, `minHeadersY`)
+
+3. If files are NOT in expected locations, search the repository and ask user to confirm correct paths
+
+4. Inform user which files you found and their locations
 
 ---
 
@@ -1761,8 +1830,8 @@ function hasIneligibleItems(item) {
 
 - **Legacy Repository:** https://github.com/DEFRA/trade-exportscore-plp
 - **Azure Form Recognizer Docs:** https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/
-- **Parser Discovery Process:** [find-parser-to-use.md](./find-parser-to-use.md)
-- **Model Headers Structure:** [MODEL-HEADERS-STRUCTURE.md](./MODEL-HEADERS-STRUCTURE.md)
+- **Parser Discovery Process:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md)
+- **Model Headers Structure:** [MODEL-HEADERS-STRUCTURE.prompt.md](./MODEL-HEADERS-STRUCTURE.prompt.md)
 
 ---
 
@@ -1783,7 +1852,7 @@ function hasIneligibleItems(item) {
 
 For questions or issues during PDF model migration:
 
-1. Review the [MODEL-HEADERS-STRUCTURE.md](./MODEL-HEADERS-STRUCTURE.md) document
+1. Review the [MODEL-HEADERS-STRUCTURE.prompt.md](./MODEL-HEADERS-STRUCTURE.prompt.md) document
 2. Check existing PDF implementations for similar patterns
 3. Review Azure Form Recognizer documentation for output format changes
 4. Consult with the development team for coordinate calibration

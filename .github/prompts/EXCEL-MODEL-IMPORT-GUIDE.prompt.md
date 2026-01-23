@@ -1,10 +1,37 @@
 # Excel-Based Model Import Guide
 
+## Your Role
+
+You are an expert software engineer tasked with importing an Excel-based packing list parser model from a legacy repository into the current project. You will gather requirements, locate source files, transform code to match the new architecture, create tests, and verify the integration works correctly.
+
+## Task Objective
+
+**Import a specific Excel parser model while preserving exact legacy data structures and logic.**
+
+**Success Criteria:**
+
+- All source files migrated and adapted to new project structure
+- Parser constant added to `parser-model.js`
+- Matcher and parser implemented with correct imports
+- Model registered in `model-parsers.js` under `parsersExcel`
+- Unit tests created and passing
+- Integration tests verify parser discovery works
+- No modifications to legacy data structures or validation logic
+
+**When to Ask for Clarification:**
+
+- If retailer or model name is ambiguous
+- If legacy repository structure differs from expected patterns
+- If test data is missing or incomplete
+- If validation logic conflicts with documented patterns
+
+---
+
 ## Overview
 
 This guide provides step-by-step instructions for importing a specific Excel-based packing list parser model from the legacy `trade-exportscore-plp` repository into the new `trade-exports-packinglistparser` project structure.
 
-**Reference Document:** [find-parser-to-use.md](./find-parser-to-use.md) describes the 5-step parser discovery process that all imported models must follow.
+**Reference Document:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md) describes the 5-step parser discovery process that all imported models must follow.
 
 ---
 
@@ -36,6 +63,39 @@ When importing models, you MUST maintain:
    - Validation flags at root level
 
 **DO NOT** attempt to "modernize" or "simplify" these structures. The entire system depends on the legacy format for compatibility with downstream services.
+
+---
+
+## Step 0: Gather Required Information
+
+**Before beginning the import, you MUST gather this information from the user:**
+
+### Required Information:
+
+1. **Model Identifier**
+
+   - Ask: "What Excel model are you importing? (e.g., ASDA3, SAINSBURYS1, GIOVANNI3)"
+   - Parse into: `RETAILER` and `MODEL_NUMBER`
+   - Example: "ASDA3" → Retailer: "ASDA", Model: "3"
+
+2. **Legacy Repository Location**
+   - Ask: "What is the legacy repository URL?"
+   - Default: `https://github.com/DEFRA/trade-exportscore-plp`
+   - Ask: "Are you using a specific branch? (default: main)"
+
+### Verification Steps:
+
+**Before proceeding to Step 1, YOU MUST verify these files exist:**
+
+1. Check legacy repository for:
+
+   - `app/services/model-headers/[retailer].js`
+   - `app/services/matchers/[retailer]/model[N].js`
+   - `app/services/parsers/[retailer]/model[N].js`
+
+2. If files are NOT in expected locations, search the repository and ask user to confirm correct paths
+
+3. Inform user which files you found and their locations
 
 ---
 
@@ -1453,7 +1513,7 @@ function hasIneligibleItems(item) {
 ## Reference Links
 
 - **Legacy Repository:** https://github.com/DEFRA/trade-exportscore-plp
-- **Parser Discovery Process:** [find-parser-to-use.md](./find-parser-to-use.md)
+- **Parser Discovery Process:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md)
 - **Model Headers README:** `src/services/model-headers/README.md`
 - **Parsers README:** `src/services/parsers/README.md`
 - **Matchers README:** `src/services/matchers/README.md`
@@ -1517,7 +1577,7 @@ This is a complete walkthrough of importing ASDA Model 3:
 
 For questions or issues during migration:
 
-1. Review the [find-parser-to-use.md](./find-parser-to-use.md) document
+1. Review the [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md) document
 2. Check existing implementations for similar patterns
 3. Review unit tests in the legacy repo for expected behavior
 4. Consult with the development team for architecture decisions
