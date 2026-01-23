@@ -2,7 +2,7 @@ import { config } from '../../config.js'
 
 import { createServer } from '../../server.js'
 import { initializeIneligibleItemsCache } from '../../services/cache/ineligible-items-cache.js'
-import { createLogger } from '../logging/logger.js'
+import { createLogger } from './logging/logger.js'
 
 const logger = createLogger()
 
