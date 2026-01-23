@@ -2,11 +2,11 @@
 
 ## Your Role
 
-You are an expert software engineer tasked with importing a PDF-based packing list parser model from a legacy repository into the current project. PDF parsers use Azure Form Recognizer AI to extract structured data. You will gather requirements, locate source files (including coordinate data), transform code to match the new architecture, create tests, and verify the integration works correctly.
+You are an expert software engineer tasked with importing a PDF-based packing list parser model from a legacy repository into the current project. PDF parsers use coordinate-based extraction to extract structured data. You will gather requirements, locate source files (including coordinate data), transform code to match the new architecture, create tests, and verify the integration works correctly.
 
 ## Task Objective
 
-**Import a specific PDF parser model while preserving exact legacy data structures, coordinate mappings, and Azure Form Recognizer integration.**
+**Import a specific PDF parser model while preserving exact legacy data structures and coordinate mappings.**
 
 **Success Criteria:**
 
@@ -15,14 +15,13 @@ You are an expert software engineer tasked with importing a PDF-based packing li
 - Matcher and parser implemented with correct imports
 - Model registered in `model-parsers.js` under `parsersPdf`
 - Coordinate-based extraction logic preserved exactly
-- Unit tests created and passing with Form Recognizer output
+- Unit tests created and passing with PDF data
 - Integration tests verify parser discovery works
 - No modifications to legacy data structures or validation logic
 
 **When to Ask for Clarification:**
 
 - If retailer or model name is ambiguous
-- If Azure Form Recognizer model ID is required but not provided
 - If coordinate data is missing or unclear
 - If legacy repository structure differs from expected patterns
 - If test data is missing or incomplete
@@ -33,7 +32,7 @@ You are an expert software engineer tasked with importing a PDF-based packing li
 
 This guide provides step-by-step instructions for importing a specific PDF-based packing list parser model from the legacy `trade-exportscore-plp` repository into the new `trade-exports-packinglistparser` project structure.
 
-**PDF parsers use Azure Form Recognizer (AI) to extract structured data from PDF documents.** They differ significantly from Excel/CSV parsers in their data structures and processing logic.
+**PDF parsers use coordinate-based extraction to extract structured data from PDF documents.** They differ significantly from Excel/CSV parsers in their data structures and processing logic.
 
 **Reference Document:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md) describes the 5-step parser discovery process that all imported models must follow.
 
@@ -77,7 +76,7 @@ When importing models, you MUST maintain:
 1. **Data Structure:**
 
    - Excel/CSV: Array of arrays or object with sheet keys
-   - PDF: Azure Form Recognizer output with `fields` and coordinate data
+   - PDF: Structured data with coordinate-based field positioning
 
 2. **Header Matching:**
 
@@ -107,7 +106,7 @@ When importing models, you MUST maintain:
 
 1. **Model Identifier**
 
-   - Ask: "What PDF model are you importing? (e.g., ICELAND1, BOOKER1L, GIOVANNI3)"
+   - Ask: "What PDF model are you importing? (e.g., MANDS1, BOOKER1L, GIOVANNI3)"
    - Parse into: `RETAILER`, `MODEL_NUMBER`, and `VARIANT` (if present)
    - Example: "BOOKER1L" → Retailer: "BOOKER", Model: "1", Variant: "L" (landscape)
 
@@ -116,10 +115,6 @@ When importing models, you MUST maintain:
    - Ask: "What is the legacy repository URL?"
    - Default: `https://github.com/DEFRA/trade-exportscore-plp`
    - Ask: "Are you using a specific branch? (default: main)"
-
-3. **Azure Form Recognizer Details** (Optional)
-   - Ask: "Does this model use a trained Azure Form Recognizer model? If so, what is the model ID?"
-   - Only required if model uses custom-trained Form Recognizer
 
 ### Verification Steps:
 
@@ -153,36 +148,29 @@ Before starting the migration, gather the following information:
 
 2. **PDF Retailer Model to Import**
 
-   - Identify the specific retailer (e.g., ICELAND, BOOKER, GIOVANNI)
+   - Identify the specific retailer (e.g., MANDS, BOOKER, GIOVANNI)
    - Identify the model variant (e.g., Model 1, Model 1 Landscape)
-   - Examples: ICELAND1, BOOKER1, BOOKER1L, GIOVANNI1
+   - Examples: MANDS1, BOOKER1, BOOKER1L, GIOVANNI1
    - Note: PDF models often have layout variants (portrait vs landscape)
 
 3. **Parser Identifier**
 
-   - The exact PDF parser model name used in code (e.g., `ICELAND1`, `BOOKER1`, `BOOKER1L`)
+   - The exact PDF parser model name used in code (e.g., `MANDS1`, `BOOKER1`, `BOOKER1L`)
    - This is typically `[RETAILER][NUMBER]` or `[RETAILER][NUMBER]L` format
    - Check legacy repository to confirm exact naming
-
-4. **Azure Form Recognizer Details**
-   - Model ID (if using custom trained models)
-   - Understanding of Form Recognizer output format
-   - Coordinate system used (if coordinate-based headers)
 
 ### Access Requirements
 
 - Read access to the legacy repository
 - Ability to clone or download files from the repository
-- Understanding of Azure Form Recognizer output structure
-- Sample PDF files and Form Recognizer output for testing (recommended)
-- Access to Azure Form Recognizer service (for testing with real PDFs)
+- Sample PDF files for testing (recommended)
 
 **💡 Tip:** If you don't have this information, browse the legacy repository structure:
 
 - PDF model headers: `app/services/model-headers/` (look for coordinate definitions)
-- PDF matchers: `app/services/matchers/[retailer]/model[N]-pdf.js` or `model[N].js`
-- PDF parsers: `app/services/parsers/[retailer]/model[N]-pdf.js` or AI-specific directory
-- Test data: `test/unit/test-data-and-results/models-pdf/`
+- PDF matchers: `app/services/matchers/[retailer]/model[N].js`
+- PDF parsers: `app/services/parsers/[retailer]/model[N].js`
+- Test data: `test/unit/test-data-and-results/models/[retailer]/model[N].js`
 
 ---
 
@@ -195,71 +183,52 @@ For each PDF retailer model, you'll need to collect the following files from the
 #### 1.1 Model Headers Configuration
 
 **Old Location:** `app/services/model-headers/[retailer].js`  
-**Example:** `app/services/model-headers/iceland.js`
+**Example:** `app/services/model-headers/mands.js`
 
 This file contains PDF-specific header configurations with coordinate data.
 
 **What to extract:**
 
 ```javascript
-// Example from ICELAND1
-const pdfIcelandHeaders = {
-  ICELAND1: {
+// Example from MANDS1
+const pdfMandsHeaders = {
+  MANDS1: {
     establishmentNumber: {
-      regex: /RMS-GB-000040/i,
-      value: 'RMS-GB-000040',
-      establishmentRegex: /RMS-GB-\d{6}-(?:\s)?\d{3}/gi
-    },
-    headers: {
-      description: 'Part Description',
-      commodity_code: 'Tariff Code',
-      number_of_packages: 'Unit Qty',
-      total_net_weight_kg: 'Net Weight (KG)'
-    },
-    findUnitInHeader: true,
-    modelId: 'iceland1-v4' // Azure Form Recognizer model ID
-  }
-}
-```
-
-**Advanced Example with Coordinates (Booker):**
-
-```javascript
-const pdfBookerHeaders = {
-  BOOKER1: {
-    establishmentNumber: {
-      regex: /^RMS-GB-000077-\d{3}$/i
+      regex: /RMS-GB-000008-\d{3}/i,
+      establishmentRegex: /RMS-GB-000008-\d{3}/i
     },
     headers: {
       description: {
-        x: /Description/i,
-        x1: 160, // Left boundary
-        x2: 340, // Right boundary
-        regex: /Description/i
+        x1: 75,
+        x2: 200,
+        regex: /Description of Goods/i
       },
       commodity_code: {
-        x: /Commodity Code/i,
-        x1: 500,
-        x2: 540,
-        regex: /Commodity Code/i
+        x1: 255,
+        x2: 330,
+        regex: /EU Commodity Code/i
+      },
+      type_of_treatment: {
+        x1: 335,
+        x2: 395,
+        regex: /Treatment Type/i
       },
       number_of_packages: {
-        x: /Quantity/i,
-        x1: 340,
-        x2: 360,
-        regex: /Unit Quantity/i
+        x1: 440,
+        x2: 480,
+        regex: /Trays\/Ctns/i
       },
       total_net_weight_kg: {
-        x: /Net/i,
-        x1: 430,
-        x2: 455,
-        regex: /Net Weight/i
+        x1: 550,
+        x2: 600,
+        regex: /Tot Net Weight/i
       }
     },
-    totals: /^0 Boxes/i, // Pattern to identify total rows (skip these)
-    minHeadersY: 192, // Minimum Y coordinate for headers
-    maxHeadersY: 212, // Maximum Y coordinate for headers
-    findUnitInHeader: true
+    minHeadersY: 214,
+    maxHeadersY: 225,
+    validateCountryOfOrigin: true,
+    findUnitInHeader: true,
+    footer: /Delivery IDs|\* see certification/
   }
 }
 ```
@@ -267,7 +236,7 @@ const pdfBookerHeaders = {
 #### 1.2 Matcher Implementation
 
 **Old Location:** `app/services/matchers/[retailer]/model[N].js`  
-**Example:** `app/services/matchers/iceland/model1.js` (if exists)
+**Example:** `app/services/matchers/mands/model1.js` (if exists)
 
 **Note:** Many PDF parsers may not have separate matcher files in the legacy repo. The matching logic is often integrated into the parser itself or uses a generic PDF matcher.
 
@@ -276,21 +245,21 @@ const pdfBookerHeaders = {
 ```javascript
 function matches(packingList, filename) {
   try {
-    // Check for Azure Form Recognizer output structure
-    if (!packingList || !packingList.fields) {
+    // Check for valid PDF data structure
+    if (!packingList || !packingList.data) {
       return matcherResult.EMPTY_FILE
     }
 
     // Validate establishment number in PDF text
-    const text = extractTextFromFields(packingList.fields)
-    if (!regex.test(headers.ICELAND1.establishmentNumber.regex, text)) {
+    const text = extractTextFromData(packingList.data)
+    if (!regex.test(headers.MANDS1.establishmentNumber.regex, text)) {
       return matcherResult.WRONG_ESTABLISHMENT_NUMBER
     }
 
     // Validate required fields exist
-    const requiredFields = Object.keys(headers.ICELAND1.headers)
+    const requiredFields = Object.keys(headers.MANDS1.headers)
     const hasRequiredFields = validatePdfFields(
-      packingList.fields,
+      packingList.data,
       requiredFields
     )
 
@@ -309,36 +278,36 @@ function matches(packingList, filename) {
 #### 1.3 Parser Implementation
 
 **Old Location:** `app/services/parsers/[retailer]/model[N].js` or AI-specific directory  
-**Example:** `app/services/parsers/iceland/model1-pdf.js`
+**Example:** `app/services/parsers/mands/model1.js`
 
-PDF parsers extract data from Azure Form Recognizer output and map it to the legacy structure.
+PDF parsers extract data from PDF output and map it to the legacy structure.
 
 **What to extract:**
 
 ```javascript
-function parse(formRecognizerOutput) {
+function parse(pdfData) {
   try {
-    if (!formRecognizerOutput || !formRecognizerOutput.fields) {
+    if (!pdfData || !pdfData.data) {
       return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
     }
 
-    const fields = formRecognizerOutput.fields
+    const data = pdfData.data
     let packingListContents = []
     let establishmentNumbers = []
 
     // Extract establishment number
     const establishmentNumber = extractEstablishmentNumber(
-      fields,
-      headers.ICELAND1.establishmentNumber
+      data,
+      headers.MANDS1.establishmentNumber
     )
 
-    // Extract items from table fields
-    const items = extractTableItems(fields, headers.ICELAND1.headers)
+    // Extract items from table data
+    const items = extractTableItems(data, headers.MANDS1.headers)
 
     // Filter out total rows if configured
-    if (headers.ICELAND1.totals) {
+    if (headers.MANDS1.totals) {
       packingListContents = items.filter(
-        (item) => !regex.test(headers.ICELAND1.totals, item.description)
+        (item) => !regex.test(headers.MANDS1.totals, item.description)
       )
     } else {
       packingListContents = items
@@ -346,17 +315,17 @@ function parse(formRecognizerOutput) {
 
     // Find all establishment numbers
     establishmentNumbers = extractAllEstablishments(
-      fields,
-      headers.ICELAND1.establishmentNumber.establishmentRegex
+      data,
+      headers.MANDS1.establishmentNumber.establishmentRegex
     )
 
     return combineParser.combine(
       establishmentNumber,
       packingListContents,
       true,
-      parserModel.ICELAND1,
+      parserModel.MANDS1,
       establishmentNumbers,
-      headers.ICELAND1
+      headers.MANDS1
     )
   } catch (err) {
     logger.logError(filenameForLogging, 'parse()', err)
@@ -368,14 +337,14 @@ function parse(formRecognizerOutput) {
 #### 1.4 Test Data (Optional but Recommended)
 
 **Old Location:** `test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js`  
-**Example:** `test/unit/test-data-and-results/models-pdf/iceland/model1.js`
+**Example:** `test/unit/test-data-and-results/models-pdf/mands/model1.js`
 
-Contains sample Azure Form Recognizer output for testing. This is typically a large JSON object with field coordinates and values.
+Contains sample PDF data for testing. This is typically a structured object with coordinate and field information.
 
 #### 1.5 Expected Test Results (Optional but Recommended)
 
 **Old Location:** `test/unit/test-data-and-results/results-pdf/[retailer]/model[N].js`  
-**Example:** `test/unit/test-data-and-results/results-pdf/iceland/model1.js`
+**Example:** `test/unit/test-data-and-results/results-pdf/mands/model1.js`
 
 Contains expected parser output for validation.
 
@@ -390,7 +359,7 @@ Contains expected parser output for validation.
 If the retailer doesn't exist yet, create a new file:
 
 ```bash
-touch src/services/model-headers/iceland.js
+touch src/services/model-headers/mands.js
 ```
 
 If the retailer already has Excel/CSV headers, add PDF headers to the same file.
@@ -399,113 +368,74 @@ If the retailer already has Excel/CSV headers, add PDF headers to the same file.
 
 Transform the old format to match the new project's structure:
 
-**Simple PDF Headers (String-based):**
+**PDF Headers Example:**
 
 ```javascript
 /**
- * Iceland model headers
+ * M&S model headers
  *
  * Provides establishment number patterns and field mappings
- * for Iceland packing list variants.
+ * for M&S packing list variants.
  */
 
-// CSV headers (if any)
-const csvIcelandHeaders = {
-  // ... existing CSV configs
-}
-
 // PDF headers
-const pdfIcelandHeaders = {
-  ICELAND1: {
+const pdfMandsHeaders = {
+  MANDS1: {
     establishmentNumber: {
-      regex: /RMS-GB-000040/i,
-      value: 'RMS-GB-000040',
-      establishmentRegex: /RMS-GB-\d{6}-(?:\s)?\d{3}/gi
+      regex: /RMS-GB-000008-\d{3}/i,
+      establishmentRegex: /RMS-GB-000008-\d{3}/i
     },
     headers: {
-      description: 'Part Description',
-      commodity_code: 'Tariff Code',
-      number_of_packages: 'Unit Qty',
-      total_net_weight_kg: 'Net Weight (KG)'
+      description: {
+        x1: 75,
+        x2: 200,
+        regex: /Description of Goods/i
+      },
+      commodity_code: {
+        x1: 255,
+        x2: 330,
+        regex: /EU Commodity Code/i
+      },
+      type_of_treatment: {
+        x1: 335,
+        x2: 395,
+        regex: /Treatment Type/i
+      },
+      number_of_packages: {
+        x1: 440,
+        x2: 480,
+        regex: /Trays\/Ctns/i
+      },
+      total_net_weight_kg: {
+        x1: 550,
+        x2: 600,
+        regex: /Tot Net Weight/i
+      }
     },
     // Required fields list
     required: [
       'description',
       'commodity_code',
+      'type_of_treatment',
       'number_of_packages',
       'total_net_weight_kg'
     ],
     // Optional fields
-    optional: [],
+    optional: ['country_of_origin', 'nirms'],
+    // Y-coordinate range for header row
+    minHeadersY: 214,
+    maxHeadersY: 225,
     // Validation flags
+    validateCountryOfOrigin: true,
     findUnitInHeader: true,
-    validateCountryOfOrigin: false,
-    // Azure Form Recognizer model ID
-    modelId: 'iceland1-v4',
+    // Footer pattern to identify end of data
+    footer: /Delivery IDs|\* see certification/,
     // Deprecated flag (if applicable)
     deprecated: false
   }
 }
 
-export { csvIcelandHeaders, pdfIcelandHeaders }
-```
-
-**Advanced PDF Headers (Coordinate-based):**
-
-```javascript
-const pdfBookerHeaders = {
-  BOOKER1: {
-    establishmentNumber: {
-      regex: /^RMS-GB-000077-\d{3}$/i
-    },
-    headers: {
-      description: {
-        x: /Description/i, // Header column title pattern
-        x1: 160, // Left boundary for field extraction
-        x2: 340, // Right boundary for field extraction
-        regex: /Description/i // Validation regex for field content
-      },
-      commodity_code: {
-        x: /Commodity Code/i,
-        x1: 500,
-        x2: 540,
-        regex: /Commodity Code/i
-      },
-      number_of_packages: {
-        x: /Quantity/i,
-        x1: 340,
-        x2: 360,
-        regex: /Unit Quantity/i
-      },
-      total_net_weight_kg: {
-        x: /Net/i,
-        x1: 430,
-        x2: 455,
-        regex: /Net Weight/i
-      }
-    },
-    // Required fields
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg'
-    ],
-    // Optional fields
-    optional: [],
-    // Pattern to identify total rows (these will be filtered out)
-    totals: /^0 Boxes/i,
-    // Y-coordinate range for header row
-    minHeadersY: 192,
-    maxHeadersY: 212,
-    // Validation flags
-    findUnitInHeader: true,
-    validateCountryOfOrigin: false,
-    deprecated: false
-  }
-}
-
-export { bookerHeaders, pdfBookerHeaders }
+export { pdfMandsHeaders }
 ```
 
 **Key Changes:**
@@ -514,7 +444,6 @@ export { bookerHeaders, pdfBookerHeaders }
 - **PRESERVE the exact same structure and coordinate values from legacy**
 - Add `required` and `optional` arrays listing field names
 - Keep coordinate data (`x1`, `x2`, `minHeadersY`, `maxHeadersY`) exactly as in legacy
-- Document the Azure Form Recognizer model ID if applicable
 
 **PDF Header Structure Rules:**
 
@@ -522,7 +451,6 @@ export { bookerHeaders, pdfBookerHeaders }
 2. **Coordinate headers:** Field name → Object with `x`, `x1`, `x2`, `regex` properties
 3. **Totals filtering:** Add `totals` regex if summary rows need to be excluded
 4. **Y-position validation:** Add `minHeadersY` and `maxHeadersY` if header position varies
-5. **Azure model ID:** Include `modelId` if using trained Form Recognizer models
 
 #### 2.3 Export Headers in PDF Registry
 
@@ -533,13 +461,13 @@ Update `src/services/model-headers-pdf.js`:
  * PDF model headers registry
  *
  * Aggregates PDF-specific header configurations from individual retailer modules.
- * Used by PDF AI parsers to map Azure Form Recognizer fields.
+ * Used by PDF parsers to map extracted fields.
  */
-import { pdfIcelandHeaders } from './model-headers/iceland.js'
+import { pdfMandsHeaders } from './model-headers/mands.js'
 import { pdfBookerHeaders } from './model-headers/booker.js'
 
 const headers = {
-  ...pdfIcelandHeaders,
+  ...pdfMandsHeaders,
   ...pdfBookerHeaders
   // Add new PDF retailers here
 }
@@ -558,8 +486,8 @@ export default headers
 #### 3.1 Create Directory Structure
 
 ```bash
-mkdir -p src/services/matchers/iceland
-touch src/services/matchers/iceland/model1-pdf.js
+mkdir -p src/services/matchers/mands
+touch src/services/matchers/mands/model1.js
 ```
 
 #### 3.2 Implement PDF Matcher
@@ -568,10 +496,10 @@ Adapt the matcher from the legacy repo:
 
 ```javascript
 /**
- * Iceland Model 1 PDF matcher
+ * M&S Model 1 PDF matcher
  *
- * Detects whether a provided Azure Form Recognizer output matches
- * the Iceland Model 1 PDF format by checking the establishment number
+ * Detects whether a provided PDF data matches
+ * the M&S Model 1 PDF format by checking the establishment number
  * and required field presence.
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
@@ -582,32 +510,32 @@ import headers from '../../model-headers-pdf.js' // PDF headers registry
 const logger = createLogger()
 
 /**
- * Check whether the provided Form Recognizer output matches Iceland Model 1 PDF.
- * @param {Object} formRecognizerOutput - Azure Form Recognizer JSON output
+ * Check whether the provided PDF data matches M&S Model 1 PDF.
+ * @param {Object} pdfData - PDF data object
  * @param {string} filename - Source filename for logging
  * @returns {string} - One of matcherResult codes
  */
-export function matches(formRecognizerOutput, filename) {
+export function matches(pdfData, filename) {
   try {
-    // Check for valid Form Recognizer output structure
-    if (!formRecognizerOutput || !formRecognizerOutput.fields) {
+    // Check for valid PDF data structure
+    if (!pdfData || !pdfData.data) {
       return matcherResult.EMPTY_FILE
     }
 
-    const fields = formRecognizerOutput.fields
+    const data = pdfData.data
 
     // Extract text content for establishment number validation
-    const textContent = extractAllText(fields)
+    const textContent = extractAllText(data)
 
     // Check for correct establishment number
-    if (!regex.test(headers.ICELAND1.establishmentNumber.regex, textContent)) {
+    if (!regex.test(headers.MANDS1.establishmentNumber.regex, textContent)) {
       return matcherResult.WRONG_ESTABLISHMENT_NUMBER
     }
 
     // Validate required fields are present
-    const requiredFieldNames = Object.keys(headers.ICELAND1.headers)
+    const requiredFieldNames = Object.keys(headers.MANDS1.headers)
     const hasRequiredFields = validateRequiredPdfFields(
-      fields,
+      data,
       requiredFieldNames
     )
 
@@ -615,7 +543,7 @@ export function matches(formRecognizerOutput, filename) {
       return matcherResult.WRONG_HEADER
     }
 
-    logger.info({ filename }, 'Packing list matches Iceland Model 1 PDF')
+    logger.info({ filename }, 'Packing list matches M&S Model 1 PDF')
 
     return matcherResult.CORRECT
   } catch (err) {
@@ -634,17 +562,17 @@ export function matches(formRecognizerOutput, filename) {
 }
 
 /**
- * Extract all text content from Form Recognizer fields
- * @param {Object} fields - Form Recognizer fields object
+ * Extract all text content from PDF data
+ * @param {Object} data - PDF data object
  * @returns {string} - Concatenated text content
  */
-function extractAllText(fields) {
-  // Implementation depends on Form Recognizer output structure
+function extractAllText(data) {
+  // Implementation depends on PDF data structure
   // This is a simplified example
   let text = ''
 
-  if (fields.tables && Array.isArray(fields.tables)) {
-    fields.tables.forEach((table) => {
+  if (data.tables && Array.isArray(data.tables)) {
+    data.tables.forEach((table) => {
       if (table.cells) {
         table.cells.forEach((cell) => {
           text += (cell.text || '') + ' '
@@ -658,16 +586,16 @@ function extractAllText(fields) {
 
 /**
  * Validate that required PDF fields are present
- * @param {Object} fields - Form Recognizer fields object
+ * @param {Object} data - PDF data object
  * @param {Array<string>} requiredFields - List of required field names
  * @returns {boolean} - True if all required fields present
  */
-function validateRequiredPdfFields(fields, requiredFields) {
+function validateRequiredPdfFields(data, requiredFields) {
   // Implementation depends on how fields are structured
   // This is a simplified example
   return requiredFields.every((fieldName) => {
-    // Check if field exists in Form Recognizer output
-    return fields[fieldName] !== undefined
+    // Check if field exists in PDF data
+    return data[fieldName] !== undefined
   })
 }
 ```
@@ -678,38 +606,38 @@ function validateRequiredPdfFields(fields, requiredFields) {
 - Import from `model-headers-pdf.js` (not `model-headers.js`)
 - Import and use Pino logger via `createLogger()`
 - Use structured logging
-- Adapt validation logic for Azure Form Recognizer output structure
+- Adapt validation logic for PDF data structure
 
 **PDF-Specific Considerations:**
 
-- Form Recognizer output has different structure than Excel/CSV (fields, tables, pages)
+- PDF data has different structure than Excel/CSV (tables, cells, coordinates)
 - May need to extract text from multiple pages
 - Coordinate-based validation if using advanced headers
-- Field confidence scores can be checked for quality validation
+- Field confidence scores can be checked for quality validation (if available)
 
 ---
 
 ### Step 4: Create Parser Implementation
 
-**New Location:** `src/services/parsers/[retailer]/model[N]-pdf.js`
+**New Location:** `src/services/parsers/[retailer]/model[N].js`
 
 #### 4.1 Create Directory Structure
 
 ```bash
-mkdir -p src/services/parsers/iceland
-touch src/services/parsers/iceland/model1-pdf.js
+mkdir -p src/services/parsers/mands
+touch src/services/parsers/mands/model1.js
 ```
 
 #### 4.2 Implement PDF Parser
 
 Adapt the parser from the legacy repo:
 
-**Simple PDF Parser (String-based headers):**
+**PDF Parser Example:**
 
 ```javascript
 /**
- * Iceland PDF parser - Model 1
- * @module parsers/iceland/model1-pdf
+ * M&S PDF parser - Model 1
+ * @module parsers/mands/model1
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import combineParser from '../../parser-combine.js'
@@ -720,43 +648,43 @@ import * as regex from '../../../utilities/regex.js'
 const logger = createLogger()
 
 /**
- * Parse the provided Form Recognizer output for Iceland PDF model 1.
- * @param {Object} formRecognizerOutput - Azure Form Recognizer JSON output
+ * Parse the provided PDF data for M&S PDF model 1.
+ * @param {Object} pdfData - PDF data object
  * @returns {Object} Combined parser result.
  */
-export function parse(formRecognizerOutput) {
+export function parse(pdfData) {
   try {
-    if (!formRecognizerOutput || !formRecognizerOutput.fields) {
+    if (!pdfData || !pdfData.data) {
       return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
     }
 
-    const fields = formRecognizerOutput.fields
+    const data = pdfData.data
     let packingListContents = []
     let establishmentNumbers = []
 
     // Extract primary establishment number
     const establishmentNumber = extractEstablishmentNumber(
-      fields,
-      headers.ICELAND1.establishmentNumber
+      data,
+      headers.MANDS1.establishmentNumber
     )
 
     // Extract all establishment numbers
     establishmentNumbers = extractAllEstablishments(
-      fields,
-      headers.ICELAND1.establishmentNumber.establishmentRegex
+      data,
+      headers.MANDS1.establishmentNumber.establishmentRegex
     )
 
-    // Extract items from table fields
-    packingListContents = extractTableItems(fields, headers.ICELAND1.headers)
+    // Extract items from table data
+    packingListContents = extractTableItems(data, headers.MANDS1.headers)
 
     // CRITICAL: Include headers parameter (6th parameter)
     return combineParser.combine(
       establishmentNumber,
       packingListContents,
       true,
-      parserModel.ICELAND1,
+      parserModel.MANDS1,
       establishmentNumbers,
-      headers.ICELAND1
+      headers.MANDS1
     )
   } catch (err) {
     logger.error({ err }, 'Error in parse()')
@@ -765,42 +693,42 @@ export function parse(formRecognizerOutput) {
 }
 
 /**
- * Extract establishment number from Form Recognizer fields
- * @param {Object} fields - Form Recognizer fields
+ * Extract establishment number from PDF data
+ * @param {Object} data - PDF data
  * @param {Object} config - Establishment number configuration
  * @returns {string|null} - Establishment number or null
  */
-function extractEstablishmentNumber(fields, config) {
+function extractEstablishmentNumber(data, config) {
   // Extract text and search for establishment number
-  const text = extractAllText(fields)
+  const text = extractAllText(data)
   const match = text.match(config.regex)
   return match ? match[0] : config.value || null
 }
 
 /**
- * Extract all establishment numbers from fields
- * @param {Object} fields - Form Recognizer fields
+ * Extract all establishment numbers from data
+ * @param {Object} data - PDF data
  * @param {RegExp} regex - Establishment number pattern
  * @returns {Array<string>} - Array of establishment numbers
  */
-function extractAllEstablishments(fields, regex) {
-  const text = extractAllText(fields)
+function extractAllEstablishments(data, regex) {
+  const text = extractAllText(data)
   const matches = text.match(regex)
   return matches ? [...new Set(matches)] : []
 }
 
 /**
- * Extract table items from Form Recognizer fields
- * @param {Object} fields - Form Recognizer fields
+ * Extract table items from PDF data
+ * @param {Object} data - PDF data
  * @param {Object} headerConfig - Header field configuration
  * @returns {Array<Object>} - Array of packing list items
  */
-function extractTableItems(fields, headerConfig) {
+function extractTableItems(data, headerConfig) {
   const items = []
 
-  // Process tables from Form Recognizer output
-  if (fields.tables && Array.isArray(fields.tables)) {
-    fields.tables.forEach((table) => {
+  // Process tables from PDF data
+  if (data.tables && Array.isArray(data.tables)) {
+    data.tables.forEach((table) => {
       if (table.cells) {
         // Group cells by row
         const rows = groupCellsByRow(table.cells)
@@ -825,15 +753,15 @@ function extractTableItems(fields, headerConfig) {
 }
 
 /**
- * Extract all text from Form Recognizer fields
- * @param {Object} fields - Form Recognizer fields
+ * Extract all text from PDF data
+ * @param {Object} data - PDF data
  * @returns {string} - Concatenated text
  */
-function extractAllText(fields) {
+function extractAllText(data) {
   let text = ''
 
-  if (fields.tables && Array.isArray(fields.tables)) {
-    fields.tables.forEach((table) => {
+  if (data.tables && Array.isArray(data.tables)) {
+    data.tables.forEach((table) => {
       if (table.cells) {
         table.cells.forEach((cell) => {
           text += (cell.text || '') + ' '
@@ -898,7 +826,7 @@ function extractItemFromRow(row, headerConfig) {
 
   // Map header config field names to cell positions
   // This is simplified - actual implementation depends on
-  // how Form Recognizer structures the output
+  // how the PDF data structures the output
 
   Object.entries(headerConfig).forEach(([fieldName, headerText]) => {
     const cell = row.find(
@@ -931,199 +859,13 @@ function isValidItem(item) {
 }
 ```
 
-**Advanced PDF Parser (Coordinate-based headers):**
-
-```javascript
-/**
- * Booker PDF parser - Model 1
- * Uses coordinate-based field extraction
- */
-import { createLogger } from '../../../common/helpers/logging/logger.js'
-import combineParser from '../../parser-combine.js'
-import parserModel from '../../parser-model.js'
-import headers from '../../model-headers-pdf.js'
-import * as regex from '../../../utilities/regex.js'
-
-const logger = createLogger()
-
-export function parse(formRecognizerOutput) {
-  try {
-    if (!formRecognizerOutput || !formRecognizerOutput.fields) {
-      return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
-    }
-
-    const fields = formRecognizerOutput.fields
-    let packingListContents = []
-    let establishmentNumbers = []
-
-    const establishmentNumber = extractEstablishmentNumber(
-      fields,
-      headers.BOOKER1.establishmentNumber
-    )
-
-    establishmentNumbers = extractAllEstablishments(
-      fields,
-      /RMS-GB-\d{6}-\d{3}/gi
-    )
-
-    // Extract items using coordinate-based extraction
-    packingListContents = extractItemsWithCoordinates(fields, headers.BOOKER1)
-
-    // Filter out total rows if configured
-    if (headers.BOOKER1.totals) {
-      packingListContents = packingListContents.filter(
-        (item) => !regex.test(headers.BOOKER1.totals, item.description || '')
-      )
-    }
-
-    return combineParser.combine(
-      establishmentNumber,
-      packingListContents,
-      true,
-      parserModel.BOOKER1,
-      establishmentNumbers,
-      headers.BOOKER1
-    )
-  } catch (err) {
-    logger.error({ err }, 'Error in parse()')
-    return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
-  }
-}
-
-/**
- * Extract items using coordinate-based field definitions
- * @param {Object} fields - Form Recognizer fields
- * @param {Object} modelConfig - Model configuration with coordinates
- * @returns {Array<Object>} - Array of items
- */
-function extractItemsWithCoordinates(fields, modelConfig) {
-  const items = []
-
-  if (!fields.tables || !Array.isArray(fields.tables)) {
-    return items
-  }
-
-  fields.tables.forEach((table) => {
-    if (!table.cells) return
-
-    // Find header row by Y-coordinate
-    const headerCells = table.cells.filter((cell) => {
-      const y = cell.boundingBox ? cell.boundingBox[1] : 0
-      return y >= modelConfig.minHeadersY && y <= modelConfig.maxHeadersY
-    })
-
-    // Extract data rows (cells below header)
-    const dataCells = table.cells.filter((cell) => {
-      const y = cell.boundingBox ? cell.boundingBox[1] : 0
-      return y > modelConfig.maxHeadersY
-    })
-
-    // Group data cells by row
-    const rows = groupCellsByRow(dataCells)
-
-    // Extract item from each row using coordinate boundaries
-    rows.forEach((row) => {
-      const item = extractItemWithCoordinates(row, modelConfig.headers)
-      if (item && isValidItem(item)) {
-        items.push(item)
-      }
-    })
-  })
-
-  return items
-}
-
-/**
- * Extract item data using coordinate boundaries
- * @param {Array} rowCells - Cells in the row
- * @param {Object} headerConfig - Header configuration with x1/x2 boundaries
- * @returns {Object|null} - Extracted item
- */
-function extractItemWithCoordinates(rowCells, headerConfig) {
-  const item = {}
-
-  Object.entries(headerConfig).forEach(([fieldName, fieldConfig]) => {
-    if (!fieldConfig.x1 || !fieldConfig.x2) {
-      // Simple string-based extraction
-      const cell = rowCells.find((c) => c.text && c.text.trim().length > 0)
-      item[fieldName] = cell ? cell.text : null
-      return
-    }
-
-    // Find cell within coordinate boundaries
-    const matchingCells = rowCells.filter((cell) => {
-      if (!cell.boundingBox) return false
-      const x = cell.boundingBox[0] // Left X coordinate
-      return x >= fieldConfig.x1 && x <= fieldConfig.x2
-    })
-
-    // Combine text from all matching cells
-    item[fieldName] =
-      matchingCells
-        .map((c) => c.text)
-        .filter((t) => t && t.trim())
-        .join(' ')
-        .trim() || null
-  })
-
-  return item
-}
-
-function groupCellsByRow(cells) {
-  const rowMap = new Map()
-
-  cells.forEach((cell) => {
-    const rowIndex = cell.rowIndex
-    if (!rowMap.has(rowIndex)) {
-      rowMap.set(rowIndex, [])
-    }
-    rowMap.get(rowIndex).push(cell)
-  })
-
-  return Array.from(rowMap.values())
-}
-
-function extractEstablishmentNumber(fields, config) {
-  const text = extractAllText(fields)
-  const match = text.match(config.regex)
-  return match ? match[0] : null
-}
-
-function extractAllEstablishments(fields, regex) {
-  const text = extractAllText(fields)
-  const matches = text.match(regex)
-  return matches ? [...new Set(matches)] : []
-}
-
-function extractAllText(fields) {
-  let text = ''
-
-  if (fields.tables && Array.isArray(fields.tables)) {
-    fields.tables.forEach((table) => {
-      if (table.cells) {
-        table.cells.forEach((cell) => {
-          text += (cell.text || '') + ' '
-        })
-      }
-    })
-  }
-
-  return text
-}
-
-function isValidItem(item) {
-  return item.description && item.description.trim().length > 0
-}
-```
-
 **Key Changes:**
 
 - Use ES6 imports instead of `require()`
 - Import from `model-headers-pdf.js`
 - Import and use Pino logger
 - **CRITICAL:** Pass headers as 6th parameter to `combineParser.combine()`
-- Implement coordinate-based extraction if using advanced headers
-- Handle Azure Form Recognizer output structure (fields, tables, cells, boundingBox)
+- Handle PDF data structure (tables, cells, boundingBox)
 
 #### 4.3 Verify Validator Logic
 
@@ -1179,7 +921,7 @@ Add the new PDF model to `src/services/parser-model.js`:
 ```javascript
 export default {
   // Existing models...
-  ICELAND1: 'ICELAND1' // PDF model
+  MANDS1: 'MANDS1' // PDF model
   // ...
 }
 ```
@@ -1190,16 +932,16 @@ Add the new PDF parser:
 
 ```javascript
 // Import new PDF parser
-import { parse as parseIceland1Pdf } from './iceland/model1-pdf.js'
-import { matches as matchesIceland1Pdf } from '../matchers/iceland/model1-pdf.js'
+import { parse as parseMands1 } from './mands/model1.js'
+import { matches as matchesMands1 } from '../matchers/mands/model1.js'
 
 // In the parsersPdf object (or create if doesn't exist):
 const parsersPdf = {
-  ICELAND1: {
-    parse: parseIceland1Pdf,
-    matches: matchesIceland1Pdf,
+  MANDS1: {
+    parse: parseMands1,
+    matches: matchesMands1,
     type: 'pdf',
-    parserModel: 'ICELAND1'
+    parserModel: 'MANDS1'
   }
   // ... other PDF parsers
 }
@@ -1207,31 +949,49 @@ const parsersPdf = {
 
 ---
 
-### Step 6: Add Test Data (Strongly Recommended)
+### Step 6: Copy Test Data and Results (Required)
 
 ⚠️ **Test data is critical for validation** - Without it, you cannot verify the migration is correct.
 
 #### 6.1 Create Test Data Directory
 
 ```bash
-mkdir -p test/test-data-and-results/models-pdf/iceland
-mkdir -p test/test-data-and-results/results-pdf/iceland
+mkdir -p test/test-data-and-results/models-pdf/mands
+mkdir -p test/test-data-and-results/results-pdf/mands
 ```
 
-#### 6.2 Copy Test Data Without Modifications
+#### 6.2 Copy Test Data and Results WITHOUT ANY Modifications
 
-⚠️ **CRITICAL:** Test data variations are intentional - do not "normalize" or "clean up" them.
+🚫 **CRITICAL: DO NOT MODIFY TEST DATA OR EXPECTED RESULTS**
+
+The test data (`models-pdf/`) and expected results (`results-pdf/`) files must be copied **exactly** from the legacy repository. These files represent real-world packing list data and the validated expected outputs - any modification would invalidate the tests.
+
+**What NOT to do:**
+
+- ❌ Do not "clean up" or "normalize" test data
+- ❌ Do not fix apparent "typos" in test data (they may be intentional variations)
+- ❌ Do not modify expected result values
+- ❌ Do not add new test cases to these files
+- ❌ Do not remove test cases from these files
+- ❌ Do not reformat or restructure the data
+
+**What TO do:**
+
+- ✅ Copy test data files exactly as they are in legacy
+- ✅ Copy expected results files exactly as they are in legacy
+- ✅ Only update import paths if the directory structure differs
 
 **Rules for copying PDF test data:**
 
-1. **Copy EXACTLY from legacy** - No modifications to Form Recognizer output structure
+1. **Copy EXACTLY from legacy** - No modifications to PDF data structure or expected results
 2. **Preserve all variations** - Field value variations test regex pattern matching:
    - NIRMS variations: `'yes'`, `'nirms'`, `'green'`, `'y'`, `'g'`
    - Non-NIRMS variations: `'no'`, `'non-nirms'`, `'non nirms'`, `'red'`, `'r'`, `'n'`
 3. **Keep exact item counts** - Don't add/remove items to "standardize" tests
 4. **Maintain coordinate data** - Preserve boundingBox values exactly
-5. **Preserve confidence scores** - These may be used for validation
-6. **Keep Form Recognizer structure** - Don't simplify the JSON structure
+5. **Preserve confidence scores** - These may be used for validation (if available)
+6. **Keep PDF data structure** - Don't simplify the JSON structure
+7. **Preserve expected results exactly** - The results files define what correct parsing looks like
 
 **Verification:**
 
@@ -1243,39 +1003,39 @@ git diff --no-index \
   /path/to/new-repo/test/test-data-and-results/models-pdf/[retailer]/model[N].js
 ```
 
-**Note:** Azure Form Recognizer output is typically very large. Consider using abbreviated/simplified versions for tests.
+**Note:** PDF data may be quite large. Consider using abbreviated/simplified versions for tests.
 
 ```javascript
-// test/test-data-and-results/models-pdf/iceland/model1.js
+// test/test-data-and-results/models-pdf/mands/model1.js
 export default {
   validModel: {
-    fields: {
+    data: {
       tables: [
         {
           cells: [
             {
               rowIndex: 0,
               columnIndex: 0,
-              text: 'Part Description',
-              boundingBox: [160, 195, 340, 195, 340, 210, 160, 210]
+              text: 'Description of Goods',
+              boundingBox: [75, 214, 200, 214, 200, 225, 75, 225]
             },
             {
               rowIndex: 0,
               columnIndex: 1,
-              text: 'Tariff Code',
-              boundingBox: [350, 195, 450, 195, 450, 210, 350, 210]
+              text: 'EU Commodity Code',
+              boundingBox: [255, 214, 330, 214, 330, 225, 255, 225]
             },
             {
               rowIndex: 1,
               columnIndex: 0,
               text: 'Test Product',
-              boundingBox: [160, 215, 340, 215, 340, 230, 160, 230]
+              boundingBox: [75, 230, 200, 230, 200, 245, 75, 245]
             },
             {
               rowIndex: 1,
               columnIndex: 1,
               text: '0201100000',
-              boundingBox: [350, 215, 450, 215, 450, 230, 350, 230]
+              boundingBox: [255, 230, 330, 230, 330, 245, 255, 245]
             }
             // ... more cells
           ]
@@ -1290,7 +1050,7 @@ export default {
 Copy expected results:
 
 ```javascript
-// test/test-data-and-results/results-pdf/iceland/model1.js
+// test/test-data-and-results/results-pdf/mands/model1.js
 import parserModel from '../../../../src/services/parser-model.js'
 
 export default {
@@ -1307,35 +1067,70 @@ export default {
         total_net_weight_kg: 100.5
       }
     ],
-    establishment_numbers: ['RMS-GB-000040-001'],
-    registration_approval_number: 'RMS-GB-000040-001',
-    parserModel: parserModel.ICELAND1
+    establishment_numbers: ['RMS-GB-000008-001'],
+    registration_approval_number: 'RMS-GB-000008-001',
+    parserModel: parserModel.MANDS1
   }
 }
 ```
 
 ---
 
-### Step 7: Create Unit Tests
+### Step 7: Migrate Unit Tests from Legacy Repository
 
-Create comprehensive unit tests:
+🚫 **CRITICAL: DO NOT CREATE NEW TESTS - MIGRATE ALL EXISTING TESTS**
+
+The unit tests in the legacy repository are designed to validate the specific behaviour of each parser model. You must migrate these tests to Vitest format, preserving all test logic and assertions.
+
+**What NOT to do:**
+
+- ❌ Do not write new tests from scratch
+- ❌ Do not modify test assertions or expected values
+- ❌ Do not add new test cases
+- ❌ Do not remove test cases
+- ❌ Do not change test names or descriptions
+- ❌ Do not "improve" or "simplify" test logic
+
+**What TO do:**
+
+- ✅ Migrate all test files from the legacy repository
+- ✅ Convert Jest syntax to Vitest (imports from 'vitest' instead of Jest globals)
+- ✅ Update import paths to match the new directory structure
+- ✅ Convert CommonJS (`require`/`module.exports`) to ES6 (`import`/`export`)
+- ✅ Verify all tests pass after migration
+
+**Jest to Vitest Migration:**
 
 ```javascript
-// src/services/matchers/iceland/model1-pdf.test.js
+// Legacy Jest (before)
+const { matches } = require('./model1')
+
+// New Vitest (after)
 import { describe, test, expect } from 'vitest'
-import { matches } from './model1-pdf.js'
+import { matches } from './model1.js'
+```
+
+#### 7.1 Migrate Matcher Tests
+
+Migrate the matcher tests from the legacy repository. Update imports and syntax, but preserve test logic:
+
+```javascript
+// src/services/matchers/mands/model1.test.js
+// MIGRATED FROM LEGACY - DO NOT MODIFY TEST LOGIC
+import { describe, test, expect } from 'vitest'
+import { matches } from './model1.js'
 import matcherResult from '../../matcher-result.js'
-import model from '../../../../test/test-data-and-results/models-pdf/iceland/model1.js'
+import model from '../../../../test/test-data-and-results/models-pdf/mands/model1.js'
 
 const filename = 'packinglist.pdf'
 
-describe('Iceland Model 1 PDF Matcher', () => {
-  test('matches valid Iceland Model 1 PDF', () => {
+describe('M&S Model 1 PDF Matcher', () => {
+  test('matches valid M&S Model 1 PDF', () => {
     const result = matches(model.validModel, filename)
     expect(result).toBe(matcherResult.CORRECT)
   })
 
-  test('returns EMPTY_FILE for empty Form Recognizer output', () => {
+  test('returns EMPTY_FILE for empty PDF data', () => {
     const result = matches({}, filename)
     expect(result).toBe(matcherResult.EMPTY_FILE)
   })
@@ -1357,15 +1152,20 @@ describe('Iceland Model 1 PDF Matcher', () => {
 })
 ```
 
-```javascript
-// src/services/parsers/iceland/model1-pdf.test.js
-import { describe, test, expect } from 'vitest'
-import { parse } from './model1-pdf.js'
-import model from '../../../../test/test-data-and-results/models-pdf/iceland/model1.js'
-import expectedResults from '../../../../test/test-data-and-results/results-pdf/iceland/model1.js'
+#### 7.2 Migrate Parser Tests
 
-describe('Iceland Model 1 PDF Parser', () => {
-  test('parses valid Iceland Model 1 PDF correctly', () => {
+Migrate the parser tests from the legacy repository. Update imports and syntax, but preserve test logic:
+
+```javascript
+// src/services/parsers/mands/model1.test.js
+// MIGRATED FROM LEGACY - DO NOT MODIFY TEST LOGIC
+import { describe, test, expect } from 'vitest'
+import { parse } from './model1.js'
+import model from '../../../../test/test-data-and-results/models-pdf/mands/model1.js'
+import expectedResults from '../../../../test/test-data-and-results/results-pdf/mands/model1.js'
+
+describe('M&S Model 1 PDF Parser', () => {
+  test('parses valid M&S Model 1 PDF correctly', () => {
     const result = parse(model.validModel)
     expect(result).toMatchObject(expectedResults.validTestResult)
     expect(result.items).toHaveLength(
@@ -1373,7 +1173,7 @@ describe('Iceland Model 1 PDF Parser', () => {
     )
   })
 
-  test('returns NOMATCH for empty Form Recognizer output', () => {
+  test('returns NOMATCH for empty PDF data', () => {
     const result = parse({})
     expect(result.parserModel).toBe('NOMATCH')
     expect(result.business_checks.all_required_fields_present).toBe(false)
@@ -1384,12 +1184,12 @@ describe('Iceland Model 1 PDF Parser', () => {
     expect(result.business_checks.all_required_fields_present).toBe(false)
   })
 
-  test('filters out total rows when configured', () => {
-    const result = parse(model.modelWithTotals)
-    const hasTotals = result.items.some(
-      (item) => item.description && item.description.includes('0 Boxes')
+  test('filters out footer rows when configured', () => {
+    const result = parse(model.modelWithFooter)
+    const hasFooter = result.items.some(
+      (item) => item.description && item.description.includes('Delivery IDs')
     )
-    expect(hasTotals).toBe(false)
+    expect(hasFooter).toBe(false)
   })
 })
 ```
@@ -1401,31 +1201,31 @@ describe('Iceland Model 1 PDF Parser', () => {
 #### 8.1 Run Tests
 
 ```bash
-npm test -- --grep "Iceland Model 1 PDF"
+npm test -- --grep "M&S Model 1 PDF"
 ```
 
 #### 8.2 Test with Sample PDF
 
-If you have access to sample PDFs and Azure Form Recognizer:
+If you have access to sample PDFs:
 
 ```javascript
 // test/integration/pdf-parsing.test.js
 import { describe, test, expect } from 'vitest'
-import { parse } from '../../src/services/parsers/iceland/model1-pdf.js'
-import { matches } from '../../src/services/matchers/iceland/model1-pdf.js'
+import { parse } from '../../src/services/parsers/mands/model1.js'
+import { matches } from '../../src/services/matchers/mands/model1.js'
 
-describe('PDF Parser Integration - Iceland Model 1', () => {
-  test('processes Form Recognizer output correctly', async () => {
-    // Load Form Recognizer output from test file
-    const formRecognizerOutput = await loadTestPdfOutput()
+describe('PDF Parser Integration - M&S Model 1', () => {
+  test('processes PDF data correctly', async () => {
+    // Load PDF data from test file
+    const pdfData = await loadTestPdfOutput()
 
     // Verify matching
-    const matchResult = matches(formRecognizerOutput, 'test.pdf')
+    const matchResult = matches(pdfData, 'test.pdf')
     expect(matchResult).toBe('CORRECT')
 
     // Verify parsing
-    const parseResult = parse(formRecognizerOutput)
-    expect(parseResult.parserModel).toBe('ICELAND1')
+    const parseResult = parse(pdfData)
+    expect(parseResult.parserModel).toBe('MANDS1')
     expect(parseResult.items.length).toBeGreaterThan(0)
   })
 })
@@ -1437,19 +1237,19 @@ describe('PDF Parser Integration - Iceland Model 1', () => {
 
 ### Pattern 1: Simple String-based Headers
 
-**Examples:** ICELAND1, GREGGS1
+**Examples:** GREGGS1, SIMPLERETAILER1
 
 **Characteristics:**
 
-- Headers map field names to Form Recognizer field names directly
+- Headers map field names to PDF field names directly
 - No coordinate validation
 - Simpler extraction logic
 
 **Template:**
 
 ```javascript
-const pdfIcelandHeaders = {
-  ICELAND1: {
+const pdfSimpleHeaders = {
+  SIMPLERETAILER1: {
     establishmentNumber: {
       regex: /RMS-GB-000040/i,
       value: 'RMS-GB-000040',
@@ -1461,15 +1261,14 @@ const pdfIcelandHeaders = {
       number_of_packages: 'Unit Qty',
       total_net_weight_kg: 'Net Weight (KG)'
     },
-    findUnitInHeader: true,
-    modelId: 'iceland1-v4'
+    findUnitInHeader: true
   }
 }
 ```
 
 ### Pattern 2: Coordinate-based Headers
 
-**Examples:** BOOKER1, BOOKER1L, GIOVANNI1
+**Examples:** MANDS1, BOOKER1, BOOKER1L, GIOVANNI1
 
 **Characteristics:**
 
@@ -1481,28 +1280,26 @@ const pdfIcelandHeaders = {
 **Template:**
 
 ```javascript
-const pdfBookerHeaders = {
-  BOOKER1: {
+const pdfMandsHeaders = {
+  MANDS1: {
     establishmentNumber: {
-      regex: /^RMS-GB-000077-\d{3}$/i
+      regex: /RMS-GB-000008-\d{3}/i
     },
     headers: {
       description: {
-        x: /Description/i,
-        x1: 160,
-        x2: 340,
-        regex: /Description/i
+        x1: 75,
+        x2: 200,
+        regex: /Description of Goods/i
       },
       commodity_code: {
-        x: /Commodity Code/i,
-        x1: 500,
-        x2: 540,
-        regex: /Commodity Code/i
+        x1: 255,
+        x2: 330,
+        regex: /EU Commodity Code/i
       }
     },
-    totals: /^0 Boxes/i,
-    minHeadersY: 192,
-    maxHeadersY: 212,
+    footer: /Delivery IDs|\* see certification/,
+    minHeadersY: 214,
+    maxHeadersY: 225,
     findUnitInHeader: true
   }
 }
@@ -1572,15 +1369,15 @@ if (headers.BOOKER1.totals) {
 
 ---
 
-## Azure Form Recognizer Integration
+## PDF Data Structure
 
-### Form Recognizer Output Structure
+### PDF Data Format
 
-Azure Form Recognizer returns JSON with this typical structure:
+PDF parsers work with structured data extracted from PDFs, typically in this format:
 
 ```javascript
 {
-  "fields": {
+  "data": {
     "tables": [
       {
         "cells": [
@@ -1604,15 +1401,6 @@ Azure Form Recognizer returns JSON with this typical structure:
 }
 ```
 
-### Model Training
-
-If using custom trained models:
-
-1. **Model ID:** Include in headers config (`modelId: "iceland1-v4"`)
-2. **Training Data:** Requires sample PDFs with labeled fields
-3. **Confidence Scores:** Can be used to filter low-quality extractions
-4. **Retraining:** May need periodic retraining as PDF formats evolve
-
 ### Coordinate Systems
 
 - **Origin:** Top-left corner (0, 0)
@@ -1631,7 +1419,7 @@ Use this checklist when importing a new PDF model:
   - [ ] Model headers configuration with PDF headers
   - [ ] Matcher implementation (if exists)
   - [ ] Parser implementation
-  - [ ] Test data (Form Recognizer output)
+  - [ ] Test data (PDF data samples)
   - [ ] Expected results
 
 - [ ] **Step 2:** Created/updated model headers
@@ -1653,7 +1441,7 @@ Use this checklist when importing a new PDF model:
   - [ ] Created directory structure
   - [ ] Implemented parse() function
   - [ ] Updated imports to ES6 format
-  - [ ] Implemented Form Recognizer output processing
+  - [ ] Implemented PDF data processing
   - [ ] Implemented coordinate-based extraction (if applicable)
   - [ ] Added totals filtering (if configured)
   - [ ] **Verified 6th parameter (headers) passed to combineParser.combine()**
@@ -1664,23 +1452,29 @@ Use this checklist when importing a new PDF model:
   - [ ] Updated parsers.js or model-parsers.js
   - [ ] Added to PDF parsers collection
 
-- [ ] **Step 6:** Added test data
+- [ ] **Step 6:** Copied test data (NOT MODIFIED)
 
   - [ ] Created test data directory structure
-  - [ ] Created simplified Form Recognizer output for tests
-  - [ ] Created expected results
+  - [ ] Copied PDF data samples from legacy repo EXACTLY (no modifications)
+  - [ ] Copied expected results from legacy repo EXACTLY (no modifications)
+  - [ ] Verified no changes to test data values
+  - [ ] Only import paths updated if needed
 
-- [ ] **Step 7:** Created unit tests
+- [ ] **Step 7:** Migrated unit tests (NOT CREATED NEW)
 
-  - [ ] Created matcher tests
-  - [ ] Created parser tests
-  - [ ] Tests cover all matcher result codes
-  - [ ] Tests verify coordinate-based extraction (if applicable)
+  - [ ] Migrated matcher tests from legacy repo
+  - [ ] Migrated parser tests from legacy repo
+  - [ ] Converted Jest to Vitest syntax
+  - [ ] Converted CommonJS to ES6 imports
+  - [ ] Updated import paths for new directory structure
+  - [ ] No test logic or assertions modified
+  - [ ] No new tests added
+  - [ ] No tests removed
 
 - [ ] **Step 8:** Verified integration
   - [ ] All unit tests pass
   - [ ] Parser discovery works
-  - [ ] Tested with Form Recognizer output samples
+  - [ ] Tested with PDF data samples
 
 ---
 
@@ -1688,13 +1482,13 @@ Use this checklist when importing a new PDF model:
 
 ### PDF-Specific Issues
 
-#### Issue: Form Recognizer output structure doesn't match
+#### Issue: PDF data structure doesn't match
 
 **Symptoms:** Parser fails with undefined fields
 
 **Solutions:**
 
-1. Verify Form Recognizer API version matches expectations
+1. Verify PDF extraction format matches expectations
 2. Check if output structure has changed
 3. Log the actual output structure to understand format
 4. Update parser to handle new structure
@@ -1708,7 +1502,7 @@ Use this checklist when importing a new PDF model:
 1. Verify coordinate values against actual PDF layout
 2. Check if PDF has different page size or margins
 3. Use layout variant (e.g., BOOKER1L for landscape)
-4. Retrain Form Recognizer model if layout has changed
+4. Re-calibrate coordinates if layout has changed
 
 #### Issue: Total rows not being filtered
 
@@ -1727,14 +1521,13 @@ Use this checklist when importing a new PDF model:
 
 **Solutions:**
 
-1. Check Form Recognizer confidence scores
-2. Retrain custom model with more samples
-3. Improve PDF quality (resolution, clarity)
-4. Add confidence score validation in parser
+1. Check PDF data confidence scores (if available)
+2. Improve PDF quality (resolution, clarity)
+3. Add confidence score validation in parser (if supported)
 
 #### Issue: Tests pass in legacy but fail after migration
 
-**Symptoms:** Legacy tests pass with same Form Recognizer data, but migrated PDF tests fail
+**Symptoms:** Legacy tests pass with same PDF data, but migrated PDF tests fail
 
 **Root Cause:** Usually a code migration bug in validator utilities, not PDF-specific issue
 
@@ -1804,11 +1597,11 @@ function hasIneligibleItems(item) {
 
 1. **Compare with Legacy First:** When tests fail, always check the legacy repository for differences in CODE before modifying TEST DATA. Validator bugs affect all parser types (Excel, CSV, PDF).
 
-2. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" Form Recognizer test data - variations are intentional to test regex patterns.
+2. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" PDF test data - variations are intentional to test regex patterns.
 
 3. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
 
-4. **Test with Real PDFs:** Always test with actual Form Recognizer output from real PDFs, not just hand-crafted test data.
+4. **Test with Real PDFs:** Always test with actual PDF data, not just hand-crafted test data.
 
 5. **Coordinate Precision:** When using coordinate-based extraction, verify boundaries with multiple PDF samples to ensure consistency.
 
@@ -1816,20 +1609,17 @@ function hasIneligibleItems(item) {
 
 7. **Confidence Scores:** Consider adding minimum confidence thresholds to filter unreliable extractions.
 
-8. **Error Logging:** Include detailed error logging for Form Recognizer output processing to aid debugging.
+8. **Error Logging:** Include detailed error logging for PDF data processing to aid debugging.
 
-9. **Performance:** Form Recognizer processing is slower than Excel/CSV. Consider caching or async processing for production.
+9. **Performance:** PDF processing may be slower than Excel/CSV. Consider caching or async processing for production.
 
-10. **Model Versioning:** Track Form Recognizer model versions in headers config (`modelId`) for reproducibility.
-
-11. **Totals Filtering:** Always implement totals filtering if PDFs include summary rows - these should not appear in parsed items.
+10. **Totals Filtering:** Always implement totals filtering if PDFs include summary rows - these should not appear in parsed items.
 
 ---
 
 ## Reference Links
 
 - **Legacy Repository:** https://github.com/DEFRA/trade-exportscore-plp
-- **Azure Form Recognizer Docs:** https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/
 - **Parser Discovery Process:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md)
 - **Model Headers Structure:** [MODEL-HEADERS-STRUCTURE.prompt.md](./MODEL-HEADERS-STRUCTURE.prompt.md)
 
@@ -1842,7 +1632,7 @@ function hasIneligibleItems(item) {
 | `app/services/model-headers/[retailer].js`                           | `src/services/model-headers/[retailer].js`                      | PDF header configurations  |
 | `app/services/matchers/[retailer]/model[N]-pdf.js`                   | `src/services/matchers/[retailer]/model[N]-pdf.js`              | PDF matcher implementation |
 | `app/services/parsers/[retailer]/model[N]-pdf.js`                    | `src/services/parsers/[retailer]/model[N]-pdf.js`               | PDF parser implementation  |
-| `test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js`  | `test/test-data-and-results/models-pdf/[retailer]/model[N].js`  | Form Recognizer test data  |
+| `test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js`  | `test/test-data-and-results/models-pdf/[retailer]/model[N].js`  | PDF test data              |
 | `test/unit/test-data-and-results/results-pdf/[retailer]/model[N].js` | `test/test-data-and-results/results-pdf/[retailer]/model[N].js` | Expected results           |
 | `app/services/model-headers-pdf.js`                                  | `src/services/model-headers-pdf.js`                             | PDF headers registry       |
 
@@ -1854,5 +1644,4 @@ For questions or issues during PDF model migration:
 
 1. Review the [MODEL-HEADERS-STRUCTURE.prompt.md](./MODEL-HEADERS-STRUCTURE.prompt.md) document
 2. Check existing PDF implementations for similar patterns
-3. Review Azure Form Recognizer documentation for output format changes
-4. Consult with the development team for coordinate calibration
+3. Consult with the development team for coordinate calibration
