@@ -15,7 +15,6 @@ import {
 import matcherResult from '../matcher-result.js'
 import headers from '../model-headers.js'
 import headersCsv from '../model-headers-csv.js'
-import headersPdf from '../model-headers-pdf.js'
 
 /**
  * Get Excel parser based on REMOS validation and header matching.

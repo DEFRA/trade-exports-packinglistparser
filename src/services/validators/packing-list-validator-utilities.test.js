@@ -20,7 +20,7 @@ import {
   isNotNirms,
   getItemFailureMessage
 } from './packing-list-validator-utilities.js'
-import failureReasons from './packing-list-failure-reasons.js' 
+import failureReasons from './packing-list-failure-reasons.js'
 
 // Mock the data files
 vi.mock('../data/data-iso-codes.json', () => ({

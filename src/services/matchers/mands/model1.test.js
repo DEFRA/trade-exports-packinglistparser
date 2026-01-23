@@ -4,12 +4,11 @@
  * Tests the matcher logic for M&S packing list PDFs.
  * ALL test cases copied from legacy repository without modification.
  */
-import { describe, test, expect, afterEach } from 'vitest'
+import { describe, test, expect, afterEach, vi } from 'vitest'
 import { matches } from './model1.js'
 import matcherResult from '../../matcher-result.js'
 import model from '../../../../test/test-data-and-results/models-pdf/mands/model1.js'
 import { extractPdf } from '../../../utilities/pdf-helper.js'
-import { vi } from 'vitest'
 
 vi.mock('../../../utilities/pdf-helper.js', () => {
   const actual = vi.importActual('../../../utilities/pdf-helper.js')

@@ -339,30 +339,30 @@ function isIneligibleItem(countryOfOrigin, commodityCode, typeOfTreatment) {
  */
 function isCountryOfOriginMatching(
   countryOfOrigin,
-  ineligibleItemCountryOfOrigin,
+  ineligibleItemCountryOfOrigin
 ) {
   if (
     isNullOrEmptyString(countryOfOrigin) ||
     isNullOrEmptyString(ineligibleItemCountryOfOrigin)
   ) {
-    return false;
+    return false
   }
 
-  const normalizedCountry = countryOfOrigin.toLowerCase();
+  const normalizedCountry = countryOfOrigin.toLowerCase()
   const normalizedIneligibleItemCountry =
-    ineligibleItemCountryOfOrigin.toLowerCase();
+    ineligibleItemCountryOfOrigin.toLowerCase()
 
   // Check if countryOfOrigin contains comma-separated values
-  if (normalizedCountry.includes(",")) {
-    const countryCodes = normalizedCountry.split(",");
+  if (normalizedCountry.includes(',')) {
+    const countryCodes = normalizedCountry.split(',')
     // Check if any of the country codes matches the ineligible item country
     return countryCodes.some(
-      (code) => code.trim() === normalizedIneligibleItemCountry,
-    );
+      (code) => code.trim() === normalizedIneligibleItemCountry
+    )
   }
 
   // Single value case
-  return normalizedCountry === normalizedIneligibleItemCountry;
+  return normalizedCountry === normalizedIneligibleItemCountry
 }
 
 /**
