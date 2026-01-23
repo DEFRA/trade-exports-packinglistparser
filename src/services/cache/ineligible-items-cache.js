@@ -23,9 +23,9 @@ export async function initializeIneligibleItemsCache() {
     return
   }
 
-  const location = {
-    filename: s3FileName,
-    ...(s3Schema && { schema: s3Schema })
+  const location = { filename: s3FileName }
+  if (s3Schema) {
+    location.schema = s3Schema
   }
 
   let lastError = null
