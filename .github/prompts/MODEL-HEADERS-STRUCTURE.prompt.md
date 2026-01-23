@@ -296,5 +296,5 @@ All 275 tests should pass across 31 test files.
 
 ## Related Documentation
 
-- [CSV Model Import Guide](./CSV-MODEL-IMPORT-GUIDE.md) - Complete guide for CSV parsers
-- [Excel Model Import Guide](./EXCEL-MODEL-IMPORT-GUIDE.md) - Complete guide for Excel parsers
+- [CSV Model Import Guide](./CSV-MODEL-IMPORT-GUIDE.prompt.md) - Complete guide for CSV parsers
+- [Excel Model Import Guide](./EXCEL-MODEL-IMPORT-GUIDE.prompt.md) - Complete guide for Excel parsers

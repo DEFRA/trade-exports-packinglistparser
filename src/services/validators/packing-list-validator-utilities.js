@@ -222,7 +222,7 @@ function hasIneligibleItems(item) {
   return (
     isNirms(item.nirms) &&
     !isNullOrEmptyString(item.country_of_origin) &&
-    !hasInvalidCoO(item) &&
+    !isInvalidCoO(item.country_of_origin) &&
     !isNullOrEmptyString(item.commodity_code) &&
     isIneligibleItem(
       item.country_of_origin,
@@ -325,16 +325,39 @@ function isIneligibleItem(countryOfOrigin, commodityCode, typeOfTreatment) {
 
 /**
  * Check if country of origin matches the rule.
+ * Handles comma-separated COO values by testing any match.
  *
- * @param {string} itemCountry - Item's country of origin
- * @param {string} ruleCountry - Rule's country of origin
- * @returns {boolean} True when countries match
+ * @param {string} countryOfOrigin - Item's country of origin (may be comma-separated)
+ * @param {string} ineligibleItemCountryOfOrigin - Rule's country of origin
+ * @returns {boolean} True when any COO code matches the ineligible country
  */
-function isCountryOfOriginMatching(itemCountry, ruleCountry) {
-  if (!itemCountry || !ruleCountry) {
+function isCountryOfOriginMatching(
+  countryOfOrigin,
+  ineligibleItemCountryOfOrigin
+) {
+  if (
+    isNullOrEmptyString(countryOfOrigin) ||
+    isNullOrEmptyString(ineligibleItemCountryOfOrigin)
+  ) {
     return false
   }
-  return itemCountry.toLowerCase().trim() === ruleCountry.toLowerCase().trim()
+
+  const normalizedCountry = countryOfOrigin.trim().toLowerCase()
+  const normalizedIneligibleItemCountry = ineligibleItemCountryOfOrigin
+    .trim()
+    .toLowerCase()
+
+  // Check if countryOfOrigin contains comma-separated values
+  if (normalizedCountry.includes(',')) {
+    const countryCodes = normalizedCountry.split(',')
+    // Check if any of the country codes matches the ineligible item country
+    return countryCodes.some(
+      (code) => code.trim() === normalizedIneligibleItemCountry
+    )
+  }
+
+  // Single value case
+  return normalizedCountry === normalizedIneligibleItemCountry
 }
 
 /**
