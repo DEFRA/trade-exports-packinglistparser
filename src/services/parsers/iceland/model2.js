@@ -88,7 +88,7 @@ export function parse(packingListCsv) {
           stack_trace: err.stack
         }
       },
-      'Error in parse()'
+      'Error in Iceland 2 parser'
     )
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }

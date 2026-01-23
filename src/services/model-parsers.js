@@ -16,6 +16,10 @@ import { parse as parseIceland2 } from './parsers/iceland/model2.js'
 import { matches as matchesAsda3 } from './matchers/asda/model3.js'
 import { parse as parseAsda3 } from './parsers/asda/model3.js'
 
+// Sainsburys Excel parsers
+import { matches as matchesSainsburys1 } from './matchers/sainsburys/model1.js'
+import { parse as parseSainsburys1 } from './parsers/sainsburys/model1.js'
+
 // Giovanni PDF parsers
 import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
 import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
@@ -54,6 +58,10 @@ const parsersExcel = {
   ASDA3: {
     matches: matchesAsda3,
     parse: parseAsda3
+  },
+  SAINSBURYS1: {
+    matches: matchesSainsburys1,
+    parse: parseSainsburys1
   }
   // TODO: Add Excel parser implementations
   // Example:

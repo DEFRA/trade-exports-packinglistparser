@@ -1,10 +1,97 @@
 # CSV-Based Model Import Guide
 
+## Your Role
+
+You are an expert software engineer tasked with importing a CSV-based packing list parser model from a legacy repository into the current project. You will gather requirements, locate source files, transform code to match the new architecture, create tests, and verify the integration works correctly.
+
+## Task Objective
+
+**Import a specific CSV parser model while preserving exact legacy data structures and logic.**
+
+**Success Criteria:**
+
+- All source files migrated and adapted to new project structure
+- Parser constant added to `parser-model.js`
+- Matcher and parser implemented with correct imports
+- Model registered in `model-parsers.js` under `parsersCsv`
+- Unit tests created and passing
+- Integration tests verify parser discovery works
+- No modifications to legacy data structures or validation logic
+
+**When to Ask for Clarification:**
+
+- If retailer or model name is ambiguous
+- If legacy repository structure differs from expected patterns
+- If test data is missing or incomplete
+- If validation logic conflicts with documented patterns
+
+---
+
+## Quick Start Checklist
+
+Before diving into the detailed guide, use this checklist to ensure you have everything ready:
+
+- [ ] **Identify the model** - Know retailer name and model number (e.g., ASDA4, ICELAND2)
+- [ ] **Check headers exist** - Verify if headers already defined in `src/services/model-headers/[retailer].js`
+- [ ] **Gather legacy files** - Locate matcher, parser, and test data from legacy repo
+- [ ] **Correct import paths** - Use `/logger.js` for logging, `model-headers-csv.js` for CSV
+- [ ] **Add parser constant** - Update `src/services/parser-model.js` with new constant
+- [ ] **Create matcher** - Implement in `src/services/matchers/[retailer]/model[N].js`
+- [ ] **Create parser** - Implement in `src/services/parsers/[retailer]/model[N].js`
+- [ ] **Register in model-parsers** - Add imports and register in `parsersCsv` object
+- [ ] **Create test files** - Matcher test and parser test (`.test.js` files)
+- [ ] **Copy test data** - To `test/test-data-and-results/models-csv/` and `results-csv/`
+- [ ] **Run tests** - Execute `npm test -- matchers/[retailer]/model[N]` and parsers
+- [ ] **Verify integration** - Check parser is discovered by system
+
+**Common Mistakes to Avoid:**
+
+- ❌ Using `logging.js` instead of `logging/logger.js`
+- ❌ Putting test data in `test/parser-service/` instead of `test/test-data-and-results/`
+- ❌ Forgetting to pass headers (6th parameter) to `combineParser.combine()`
+- ❌ Not registering parser in `model-parsers.js`
+- ❌ Using `[packingList[0]]` with `matchesHeader()` for CSV
+
+---
+
 ## Overview
 
 This guide provides step-by-step instructions for importing a specific CSV-based packing list parser model from the legacy `trade-exportscore-plp` repository into the new `trade-exports-packinglistparser` project structure.
 
-**Reference Document:** [find-parser-to-use.md](./find-parser-to-use.md) describes the 5-step parser discovery process that all imported models must follow.
+**Reference Document:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md) describes the 5-step parser discovery process that all imported models must follow.
+
+---
+
+## Step 0: Gather Required Information
+
+**Before beginning the import, you MUST gather this information from the user:**
+
+### Required Information:
+
+1. **Model Identifier**
+
+   - Ask: "What CSV model are you importing? (e.g., ASDA4, LIDL1, ICELAND2)"
+   - Parse into: `RETAILER` and `MODEL_NUMBER`
+   - Example: "ASDA4" → Retailer: "ASDA", Model: "4"
+
+2. **Legacy Repository Location**
+   - Ask: "What is the legacy repository URL?"
+   - Default: `https://github.com/DEFRA/trade-exportscore-plp`
+   - Ask: "Are you using a specific branch? (default: main)"
+
+### Verification Steps:
+
+**Before proceeding to Step 1, YOU MUST verify these files exist:**
+
+1. Check legacy repository for:
+
+   - `app/services/model-headers-csv/[retailer].js` OR `app/services/model-headers/[retailer].js`
+   - `app/services/matchers-csv/[retailer]/model[N].js` OR `app/services/matchers/[retailer]/model[N].js`
+   - `app/services/parsers-csv/[retailer]/model[N].js` OR `app/services/parsers/[retailer]/model[N].js`
+
+2. If files are NOT in expected locations, search the repository and ask user to confirm correct paths
+
+3. Inform user which files you found and their locations
 
 ---
 
@@ -55,11 +142,92 @@ CSV packing lists differ from Excel in several important ways:
 
 ---
 
+## Critical Import Paths
+
+⚠️ **IMPORTANT:** Use the correct import paths to avoid errors:
+
+### Logging
+
+```javascript
+// ✓ CORRECT
+import { createLogger } from '../../../common/helpers/logging/logger.js'
+const logger = createLogger()
+
+// ✗ INCORRECT
+import { createLogger } from '../../../common/helpers/logging.js' // Missing /logger.js
+```
+
+### Model Headers (CSV)
+
+```javascript
+// For CSV matchers and parsers
+import csvHeaders from '../../model-headers-csv.js'
+
+// Access like:
+csvHeaders.ASDA4.establishmentNumber.regex
+csvHeaders.ASDA4.regex.classification_code
+```
+
+### Common Imports Pattern
+
+```javascript
+// Matcher imports
+import { createLogger } from '../../../common/helpers/logging/logger.js'
+import matcherResult from '../../matcher-result.js'
+import { matchesHeader } from '../../matches-header.js'
+import * as regex from '../../../utilities/regex.js'
+import csvHeaders from '../../model-headers-csv.js'
+
+// Parser imports
+import { createLogger } from '../../../common/helpers/logging/logger.js'
+import combineParser from '../../parser-combine.js'
+import parserModel from '../../parser-model.js'
+import csvHeaders from '../../model-headers-csv.js'
+import { rowFinder } from '../../../utilities/row-finder.js'
+import { mapParser } from '../../parser-map.js'
+import { matchesHeader } from '../../matches-header.js'
+import MatcherResult from '../../matcher-result.js'
+import * as regex from '../../../utilities/regex.js'
+```
+
+---
+
 ## Prerequisites
 
-1. Access to the legacy repository: https://github.com/DEFRA/trade-exportscore-plp
-2. Identify the specific retailer CSV model you want to import (e.g., LIDL1)
-3. Know the model's parser identifier (e.g., `LIDL1`, `KEPAK2`)
+### Required Information
+
+Before starting the migration, gather the following information:
+
+1. **Legacy Repository URL**
+
+   - Default: `https://github.com/DEFRA/trade-exportscore-plp`
+   - If using a different repository or branch, note the full URL
+   - Example: `https://github.com/DEFRA/trade-exportscore-plp/tree/main`
+
+2. **CSV Retailer Model to Import**
+
+   - Identify the specific retailer (e.g., LIDL, KEPAK, ICELAND)
+   - Identify the model variant (e.g., Model 1, Model 2)
+   - Examples: LIDL1, KEPAK2, ICELAND1_CSV
+
+3. **Parser Identifier**
+   - The exact CSV parser model name used in code (e.g., `LIDL1`, `KEPAK2`)
+   - This is typically `[RETAILER][NUMBER]` format
+   - Check legacy repository to confirm exact naming
+   - Note: CSV parsers may be in `model-headers-csv` or `model-headers` directory
+
+### Access Requirements
+
+- Read access to the legacy repository
+- Ability to clone or download files from the repository
+- Understanding of the retailer's CSV packing list format
+- Sample CSV files for testing (recommended)
+
+**💡 Tip:** If you don't have this information, browse the legacy repository structure:
+
+- CSV model headers: `app/services/model-headers-csv/` or `app/services/model-headers/`
+- CSV matchers: `app/services/matchers-csv/[retailer]/` or `app/services/matchers/[retailer]/`
+- CSV parsers: `app/services/parsers-csv/[retailer]/` or `app/services/parsers/[retailer]/`
 
 ---
 
@@ -116,35 +284,38 @@ This file implements the `matches()` function that:
 **What to extract:**
 
 ```javascript
-function matches(packingList, filename) {
+export function matches(packingList, filename) {
   try {
     if (!packingList || packingList.length === 0) {
       return matcherResult.EMPTY_FILE
     }
 
     // Check for correct establishment number
-    if (!regex.test(headers.LIDL1.establishmentNumber.regex, packingList)) {
+    if (!regex.test(csvHeaders.LIDL1.establishmentNumber.regex, packingList)) {
       return matcherResult.WRONG_ESTABLISHMENT_NUMBER
     }
 
     // Check header values (first row)
     const result = matchesHeader(
-      Object.values(headers.LIDL1.regex),
-      [packingList[0]] // CSV header is first row
+      Object.values(csvHeaders.LIDL1.regex),
+      packingList // Pass entire packingList, not [packingList[0]]
     )
 
-    if (result === matcherResult.CORRECT) {
-      logger.logInfo(
-        filenameForLogging,
-        'matches()',
-        `Packing list matches LIDL Model 1 with filename: ${filename}`
-      )
+    if (result === matcherResult.WRONG_HEADER) {
+      return result
     }
 
-    return result
-  } catch (err) {
-    logger.logError(filenameForLogging, 'matches()', err)
-    return matcherResult.GENERIC_ERROR
+    if (result === matcherResult.CORRECT) {
+      logger.info(
+        `Packing list matches LIDL Model 1 with filename: ${filename}`
+      )
+      return matcherResult.CORRECT
+    }
+
+    return matcherResult.EMPTY_FILE
+  } catch (error) {
+    logger.error(`Error in LIDL Model 1 matcher: ${error.message}`)
+    return matcherResult.EMPTY_FILE
   }
 }
 ```
@@ -152,7 +323,7 @@ function matches(packingList, filename) {
 **Key CSV-Specific Differences:**
 
 - `packingList` is an array of rows, not an object with sheets
-- Header check uses `packingList[0]` directly
+- Header check uses `packingList` directly (matchesHeader handles CSV arrays)
 - No sheet iteration needed
 - Simpler structure overall
 
@@ -229,35 +400,149 @@ function parse(packingListCsv) {
 - `mapParser` receives `null` for sheet name parameter
 - Simpler overall structure
 
-#### 1.4 Test Data (Optional but Recommended)
+#### 1.3 Test Data Structure
 
-**Old Location:** `test/test-data-and-results/models-csv/[retailer]/model[N].js` or similar  
-**Example:** `test/test-data-and-results/models-csv/lidl/model1.js`
+**IMPORTANT:** Test data for CSV models has a specific structure:
 
-Contains sample CSV data (as array of arrays) for testing:
+**Location Pattern:**
+
+- Test data models: `test/test-data-and-results/models-csv/[retailer]/model[N].js`
+- Expected results: `test/test-data-and-results/results-csv/[retailer]/model[N].js`
+
+**Example for ASDA4:**
+
+```
+test/
+  test-data-and-results/
+    models-csv/
+      asda/
+        model4.js      # Test data arrays
+    results-csv/
+      asda/
+        model4.js      # Expected parser output
+```
+
+**Test Data Format:**
 
 ```javascript
+// test/test-data-and-results/models-csv/asda/model4.js
+const validModel = [
+  ['', 'classification_code', 'article_description', ...],  // Header row
+  [attestationText, '1234567890', 'Test Product 1', ...],   // Data row 1
+  ['', '9876543210', 'Test Product 2', ...]                 // Data row 2
+]
+
 export default {
-  validModel: [
-    [
-      'Description',
-      'Commodity Code',
-      'Number of Packages',
-      'Net Weight',
-      'Country of Origin'
-    ],
-    ['Beef Products', '0201100000', '10', '250.5', 'GB'],
-    ['Pork Products', '0203190000', '5', '120.0', 'IE']
-  ]
+  validModel,
+  emptyModel,
+  wrongEstablishmentNumber,
+  wrongHeaders,
+  invalidModel_MissingColumnCells
 }
 ```
 
-#### 1.5 Expected Test Results (Optional but Recommended)
+**Expected Results Format:**
 
-**Old Location:** `test/test-data-and-results/results-csv/[retailer]/model[N].js` or similar  
-**Example:** `test/test-data-and-results/results-csv/lidl/model1.js`
+```javascript
+// test/test-data-and-results/results-csv/asda/model4.js
+import parserModel from '../../../src/services/parser-model.js'
 
-Contains expected parser output for validation.
+const validTestResult = {
+  business_checks: {
+    all_required_fields_present: true,
+    failure_reasons: null
+  },
+  items: [
+    /* parsed items */
+  ],
+  registration_approval_number: 'RMS-GB-000015-001',
+  parserModel: parserModel.ASDA4
+}
+
+export default { validTestResult }
+```
+
+#### 1.4 Parser Implementation
+
+**Old Location:** `app/services/parsers-csv/[retailer]/model[N].js` or `app/services/parsers/[retailer]/model[N].js`  
+**Example:** `app/services/parsers-csv/lidl/model1.js`
+
+This file implements the `parse()` function that:
+
+- Finds establishment numbers
+- Identifies header row (usually index 0)
+- Extracts item data using mapParser
+- Combines results
+
+**What to extract:**
+
+```javascript
+export function parse(packingListCsv) {
+  try {
+    // Find primary establishment number
+    const establishmentNumber = regex.findMatch(
+      csvHeaders.LIDL1.establishmentNumber.regex,
+      packingListCsv
+    )
+
+    // Find all establishment numbers
+    const establishmentNumbers = regex.findAllMatches(
+      regex.remosRegex,
+      packingListCsv,
+      []
+    )
+
+    // Setup header callback
+    const headerTitles = Object.values(csvHeaders.LIDL1.regex)
+    const headerCallback = function (x) {
+      return matchesHeader(headerTitles, [x]) === MatcherResult.CORRECT
+    }
+
+    // Find header row (typically 0 for CSV, but use rowFinder for flexibility)
+    const headerRow = rowFinder(packingListCsv, headerCallback)
+    const dataRow = headerRow + 1
+
+    // Map data rows (null for sheet name since CSV has no sheets)
+    const packingListContents = mapParser(
+      packingListCsv,
+      headerRow,
+      dataRow,
+      csvHeaders.LIDL1,
+      null
+    )
+
+    // CRITICAL: Include headers parameter (6th parameter) for CoO validation
+    return combineParser.combine(
+      establishmentNumber,
+      packingListContents,
+      true,
+      parserModel.LIDL1,
+      establishmentNumbers,
+      csvHeaders.LIDL1 // Required for Country of Origin validation
+    )
+  } catch (err) {
+    logger.error(`Error parsing LIDL Model 1: ${err.message}`, {
+      stack: err.stack
+    })
+    return {
+      business_checks: {
+        all_required_fields_present: false
+      },
+      items: [],
+      registration_approval_number: null,
+      parserModel: parserModel.NOMATCH
+    }
+  }
+}
+```
+
+**Key CSV-Specific Differences:**
+
+- No sheet iteration
+- Header row is typically `0` (first row)
+- Data row is typically `1` (second row)
+- `mapParser` receives `null` for sheet name parameter
+- Simpler overall structure
 
 ---
 
@@ -543,6 +828,51 @@ export function parse(packingListCsv) {
 - `mapParser` receives `null` for sheet name (5th parameter)
 - **CRITICAL:** Still pass headers as 6th parameter to `combineParser.combine()`
 
+#### 4.3 Verify Validator Logic
+
+**CRITICAL:** CSV parsers depend on the same validator utilities as Excel parsers. Validator bugs affect ALL parser types.
+
+**Compare validator implementations:**
+
+```bash
+# Fetch legacy validator
+curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+# Compare with current implementation
+diff /tmp/legacy-validator.js src/services/validators/packing-list-validator-utilities.js
+```
+
+**Check for common migration bugs:**
+
+1. **Function call mismatches** - Verify helper functions are called correctly:
+
+   - ✅ Correct: `isInvalidCoO(item.country_of_origin)` - validates CoO value only
+   - ❌ Wrong: `hasInvalidCoO(item)` - checks NIRMS AND CoO, causing double-checks
+
+2. **Parameter differences** - Ensure function signatures match:
+
+   ```javascript
+   // Legacy
+   function hasIneligibleItems(item) {
+     return (
+       isNirms(item.nirms) &&
+       !isInvalidCoO(item.country_of_origin) &&  // ← Note: direct CoO validation
+       // ...
+     )
+   }
+   ```
+
+3. **Regex pattern changes** - Verify patterns match exactly:
+
+   - NIRMS patterns: `/^(yes|nirms|green|y|g)$/i` or `/^green lane/i`
+   - Non-NIRMS patterns: `/^(no|red|n|r)$/i`, `/^red lane/i`, or `/^non[- ]?nirms/i`
+
+4. **Logic flow changes** - Check conditional statements haven't been reordered or modified
+
+**If tests pass in legacy but fail after migration, validator bugs are the likely cause.**
+
+---
+
 **CSV-Specific Edge Cases:**
 
 Some CSV models may need to:
@@ -651,7 +981,9 @@ export function getCsvParser(packingList, filename) {
 
 ---
 
-### Step 6: Add Test Data (Optional but Recommended)
+### Step 6: Add Test Data (Strongly Recommended)
+
+⚠️ **Test data is critical for validation** - Without it, you cannot verify the migration is correct.
 
 #### 6.1 Create Test Data Directory
 
@@ -660,9 +992,32 @@ mkdir -p test/test-data-and-results/models-csv/lidl
 mkdir -p test/test-data-and-results/results-csv/lidl
 ```
 
-#### 6.2 Copy and Adapt Test Data
+#### 6.2 Copy Test Data Without Modifications
 
-Copy test models from legacy repo:
+⚠️ **CRITICAL:** Test data variations are intentional - do not "normalize" or "clean up" them.
+
+**Rules for copying CSV test data:**
+
+1. **Copy EXACTLY from legacy** - No modifications to values, row counts, or structure
+2. **Preserve all variations** - NIRMS value variations test regex pattern matching:
+   - NIRMS variations: `'yes'`, `'nirms'`, `'green'`, `'y'`, `'g'`
+   - Non-NIRMS variations: `'no'`, `'non-nirms'`, `'non nirms'`, `'red'`, `'r'`, `'n'`
+3. **Keep exact row counts** - Don't add/remove rows to "standardize" tests
+4. **Maintain row order** - Row positions may be significant for test expectations
+5. **Preserve empty/missing fields** - These test validation logic
+6. **Keep array structure** - CSV test data is array of arrays, not objects
+
+**Verification:**
+
+```bash
+# After copying, verify no unintended changes
+cd /path/to/legacy-repo
+git diff --no-index \
+  test/unit/test-data-and-results/models-csv/[retailer]/model[N].js \
+  /path/to/new-repo/test/test-data-and-results/models-csv/[retailer]/model[N].js
+```
+
+**Copy test models from legacy repo:**
 
 ```javascript
 // test/test-data-and-results/models-csv/lidl/model1.js
@@ -860,6 +1215,101 @@ test('rejects CSV packing list without REMOS', () => {
   expect(parser.parserModel).toBe('NOREMOSCSV')
 })
 ```
+
+#### 8.4 Compare with Legacy Repository on Test Failures
+
+⚠️ **If migrated tests fail but legacy tests pass, check CODE first, then DATA.**
+
+**Step-by-step debugging process:**
+
+1. **Fetch and run legacy tests:**
+
+   ```bash
+   # Clone legacy repo if not already available
+   git clone https://github.com/DEFRA/trade-exportscore-plp.git /tmp/legacy-plp
+   cd /tmp/legacy-plp
+
+   # Install and run tests for the specific model
+   npm install
+   npm test -- test/unit/services/parsers-csv/[retailer]/model[N].test.js
+   ```
+
+2. **Compare test data files:**
+
+   ```bash
+   # Check CSV test data differences
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/models-csv/[retailer]/model[N].js \
+     test/test-data-and-results/models-csv/[retailer]/model[N].js
+
+   # Check expected results differences
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/results-csv/[retailer]/model[N].js \
+     test/test-data-and-results/results-csv/[retailer]/model[N].js
+   ```
+
+3. **Compare validator implementations:**
+
+   ```bash
+   # Fetch legacy validator
+   curl -o /tmp/legacy-validator.js \
+     https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+   # Compare with migrated version
+   diff -u /tmp/legacy-validator.js \
+     src/services/validators/packing-list-validator-utilities.js | less
+   ```
+
+4. **Check for common migration bugs:**
+
+   - **Validator function calls:** Search for function name mismatches
+     ```bash
+     # Check for hasInvalidCoO vs isInvalidCoO usage
+     grep -n "hasInvalidCoO\|isInvalidCoO" src/services/validators/*.js
+     ```
+   - **Missing parameters:** Verify 6th parameter in combineParser.combine() calls
+     ```bash
+     grep -A 7 "combineParser.combine" src/services/parsers/[retailer]/*.js
+     ```
+   - **Regex pattern changes:** Compare header regex patterns
+     ```bash
+     diff -u \
+       /tmp/legacy-plp/app/services/model-headers-csv/[retailer].js \
+       src/services/model-headers/[retailer].js
+     ```
+
+5. **Document findings:**
+
+   Create a migration issues log:
+
+   ```markdown
+   # Migration Issues - [Retailer] CSV Model [N]
+
+   ## Test Failures
+
+   - Test: [test name]
+   - Expected: [expected result]
+   - Actual: [actual result]
+
+   ## Root Cause
+
+   - [ ] Test data mismatch (copied incorrectly)
+   - [ ] Validator logic bug (function call mismatch)
+   - [ ] Parser logic bug (missing parameters)
+   - [ ] Regex pattern change (header mismatch)
+
+   ## Resolution
+
+   [Describe fix applied]
+   ```
+
+**Priority order for investigation:**
+
+1. ✅ Validator utilities logic (most common cause)
+2. ✅ Test data exact match with legacy
+3. ✅ Parser combineParser.combine() parameters
+4. ✅ Header regex patterns and validation flags
+5. ✅ Helper function parameter signatures
 
 ---
 
@@ -1288,13 +1738,310 @@ Use this checklist when importing a new CSV model:
 3. Verify REMOS regex pattern is correct
 4. Check if REMOS numbers are in different columns
 
+#### Issue: Tests pass in legacy but fail after migration
+
+**Symptoms:** Legacy tests pass with same data, but migrated CSV tests fail
+
+**Root Cause:** Usually a code migration bug in validator utilities, not CSV-specific issue
+
+**Debugging Steps:**
+
+1. **Compare validator logic first:**
+
+   ```bash
+   # Fetch legacy validator
+   curl -o /tmp/legacy-validator.js https://raw.githubusercontent.com/DEFRA/trade-exportscore-plp/main/app/services/validators/packing-list-validator-utilities.js
+
+   # Search for the specific validation function
+   grep -A 20 "function hasIneligibleItems" /tmp/legacy-validator.js
+   grep -A 20 "function hasIneligibleItems" src/services/validators/packing-list-validator-utilities.js
+   ```
+
+2. **Check for function call mismatches:**
+
+   - Legacy: `!isInvalidCoO(item.country_of_origin)` ✅
+   - Migrated: `!hasInvalidCoO(item)` ❌ (double-checks NIRMS)
+
+3. **Verify CSV test data is identical:**
+
+   ```bash
+   diff -u \
+     /tmp/legacy-plp/test/unit/test-data-and-results/models-csv/[retailer]/model[N].js \
+     test/test-data-and-results/models-csv/[retailer]/model[N].js
+   ```
+
+4. **Check parser parameters:**
+
+   - Ensure all 6 parameters passed to `combineParser.combine()`
+   - Verify `null` passed for sheet name (5th parameter)
+   - Verify header config passed as 6th parameter
+
+5. **Run legacy tests to confirm baseline:**
+   ```bash
+   cd /tmp/legacy-plp
+   npm test -- test/unit/services/parsers-csv/[retailer]/model[N].test.js
+   ```
+
+**Example Bug:**
+
+```javascript
+// ❌ WRONG - Double-checks NIRMS status
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !hasInvalidCoO(item) &&  // hasInvalidCoO internally checks isNirms again
+    // ...
+  )
+}
+
+// ✅ CORRECT - Validates only CoO value
+function hasIneligibleItems(item) {
+  return (
+    isNirms(item.nirms) &&
+    !isInvalidCoO(item.country_of_origin) &&  // Just validates CoO
+    // ...
+  )
+}
+```
+
+---
+
+## Common Pitfalls and Solutions
+
+Based on actual import experience (e.g., ASDA4), here are the most common issues and how to avoid them:
+
+### 1. Incorrect Import Paths
+
+**Problem:** Using wrong paths causes "module not found" errors
+**Symptoms:**
+
+- `Cannot find module '../../../common/helpers/logging.js'`
+- `Cannot find module '../../model-headers.js'` (when you need `model-headers-csv.js`)
+
+**Solution:** Use exact paths from existing CSV implementations:
+
+```javascript
+// ✓ CORRECT
+import { createLogger } from '../../../common/helpers/logging/logger.js' // Note: /logger.js at end
+import csvHeaders from '../../model-headers-csv.js' // For CSV models
+
+// ✗ WRONG
+import { createLogger } from '../../../common/helpers/logging.js' // Missing /logger.js
+import headers from '../../model-headers.js' // Wrong file for CSV
+```
+
+### 2. Test Data Location Mismatch
+
+**Problem:** Tests fail because data is in wrong folder
+**Symptoms:**
+
+- `Cannot find module '../../../../test/parser-service/asda/model4.data.js'`
+
+**Solution:** CSV test data goes in `test/test-data-and-results/`, not `test/parser-service/`:
+
+```javascript
+// ✓ CORRECT - Test data location
+test / test - data - and - results / models - csv / asda / model4.js
+test / test - data - and - results / results - csv / asda / model4.js
+
+// ✗ WRONG - Parser service folder is for integration tests
+test / parser - service / asda / model4.data.js
+test / parser - service / asda / model4.results.js
+```
+
+**Test imports should be:**
+
+```javascript
+// ✓ CORRECT
+import model from '../../../../test/test-data-and-results/models-csv/asda/model4.js'
+import expectedResults from '../../../../test/test-data-and-results/results-csv/asda/model4.js'
+```
+
+### 3. Using Object.freeze() Instead of export default
+
+**Problem:** Parser model constants not accessible
+**Symptoms:** `Cannot read property 'ASDA4' of undefined`
+
+**Solution:** Check `parser-model.js` exports properly:
+
+```javascript
+// ✓ CORRECT
+export default Object.freeze({
+  ASDA4: 'ASDA4'
+})
+
+// ✗ WRONG
+const parserModel = Object.freeze({
+  ASDA4: 'ASDA4'
+})
+// Missing: export default parserModel
+```
+
+### 4. Incorrect matchesHeader Usage for CSV
+
+**Problem:** Matcher returns WRONG_HEADER for valid files
+**Symptoms:** Tests fail even though headers look correct
+
+**Solution:** CSV uses different matchesHeader pattern:
+
+```javascript
+// ✓ CORRECT - Pass entire packingList array
+const result = matchesHeader(Object.values(csvHeaders.ASDA4.regex), packingList)
+
+// ✗ WRONG - Don't wrap in extra array
+const result = matchesHeader(Object.values(csvHeaders.ASDA4.regex), [
+  packingList[0]
+])
+```
+
+### 5. Missing CRITICAL Headers Parameter in combineParser
+
+**Problem:** Country of Origin validation doesn't work
+**Symptoms:** Tests pass but validation logic fails in production
+
+**Solution:** Always pass headers as 6th parameter to combineParser.combine():
+
+```javascript
+// ✓ CORRECT - Includes headers parameter
+return combineParser.combine(
+  establishmentNumber,
+  packingListContents,
+  true,
+  parserModel.ASDA4,
+  establishmentNumbers,
+  csvHeaders.ASDA4 // CRITICAL: Required for CoO validation
+)
+
+// ✗ WRONG - Missing headers
+return combineParser.combine(
+  establishmentNumber,
+  packingListContents,
+  true,
+  parserModel.ASDA4,
+  establishmentNumbers
+)
+```
+
+### 6. Test Expectations Too Strict
+
+**Problem:** Parser works but tests fail on minor differences
+**Symptoms:**
+
+- Expected 2 items but got 3 (empty row at end)
+- Missing `total_net_weight_unit` field
+
+**Solution:** Use flexible assertions or adjust expectations:
+
+```javascript
+// ✓ BETTER - Test key behaviors, not exact structure
+expect(result.business_checks.all_required_fields_present).toBe(true)
+expect(result.registration_approval_number).toBe('RMS-GB-000015-001')
+expect(result.parserModel).toBe('ASDA4')
+expect(result.items.length).toBeGreaterThan(0)
+expect(result.items[0]).toMatchObject({
+  commodity_code: '1234567890',
+  description: 'Test Product 1'
+})
+
+// ✗ TOO STRICT - Fails on minor variations
+expect(result).toEqual(exactExpectedObject) // Breaks if any field differs
+```
+
+### 7. Wrong Logging Pattern
+
+**Problem:** Logger calls fail
+**Symptoms:** `logger.logInfo is not a function`
+
+**Solution:** Use pino-style logging (new pattern), not legacy pattern:
+
+```javascript
+// ✓ CORRECT - Pino logger style
+logger.info(`Packing list matches ASDA Model 4 with filename: ${filename}`)
+logger.error(`Error in matcher: ${error.message}`, { stack: error.stack })
+
+// ✗ WRONG - Legacy logger style
+logger.logInfo(filename, 'matches()', 'message')
+logger.logError(filename, 'matches()', error)
+```
+
+### 8. Forgetting to Export Functions
+
+**Problem:** Tests can't import matcher/parser functions
+**Symptoms:** `matches is not a function`, `parse is not a function`
+
+**Solution:** Always export functions:
+
+```javascript
+// ✓ CORRECT
+export function matches(packingList, filename) {
+  // ...
+}
+
+export function parse(packingListCsv) {
+  // ...
+}
+
+// ✗ WRONG
+function matches(packingList, filename) {
+  // ...
+}
+// Missing: export
+```
+
+### 9. Not Registering in model-parsers.js
+
+**Problem:** Parser never discovered by system
+**Symptoms:** Always falls back to NOREMOSCSV or UNRECOGNISED
+
+**Solution:** Register in BOTH places:
+
+```javascript
+// 1. Import at top of model-parsers.js
+import { matches as matchesAsda4 } from './matchers/asda/model4.js'
+import { parse as parseAsda4 } from './parsers/asda/model4.js'
+
+// 2. Add to parsersCsv object
+const parsersCsv = {
+  // ... existing parsers
+  ASDA4: {
+    matches: matchesAsda4,
+    parse: parseAsda4
+  }
+}
+```
+
+### 10. Using rowFinder Incorrectly
+
+**Problem:** Headers not found even though they exist
+**Symptoms:** Parser returns NOMATCH
+
+**Solution:** For CSV, header is usually row 0, but use rowFinder for consistency:
+
+```javascript
+// ✓ CORRECT - Use rowFinder with proper callback
+const headerTitles = Object.values(csvHeaders.ASDA4.regex)
+const headerCallback = function (x) {
+  return matchesHeader(headerTitles, [x]) === MatcherResult.CORRECT
+}
+const headerRow = rowFinder(packingListCsv, headerCallback)
+
+// ✗ RISKY - Hardcoding may fail on variant formats
+const headerRow = 0 // What if there's a title row first?
+```
+
 ---
 
 ## CSV-Specific Best Practices
 
-1. **Header Detection:** Most CSVs have header at index 0, but always verify. Some may have metadata rows first.
+1. **Compare with Legacy First:** When tests fail, always check the legacy repository for differences in CODE before modifying TEST DATA. Validator bugs affect all parser types (Excel, CSV, PDF).
 
-2. **Empty Row Handling:** CSVs often have trailing empty rows. Filter these before processing:
+2. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" CSV test data - variations are intentional to test regex patterns.
+
+3. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
+
+4. **Header Detection:** Most CSVs have header at index 0, but always verify. Some may have metadata rows first.
+
+5. **Empty Row Handling:** CSVs often have trailing empty rows. Filter these before processing:
 
 ```javascript
 const validRows = csv.filter((row) =>
@@ -1302,13 +2049,13 @@ const validRows = csv.filter((row) =>
 )
 ```
 
-3. **Cell Value Sanitization:** CSV cells may have extra whitespace:
+6. **Cell Value Sanitization:** CSV cells may have extra whitespace:
 
 ```javascript
 const cleanValue = cell?.toString().trim()
 ```
 
-4. **Array Bounds Checking:** Always verify row exists before accessing:
+7. **Array Bounds Checking:** Always verify row exists before accessing:
 
 ```javascript
 if (headerRow >= 0 && headerRow < csv.length) {
@@ -1316,11 +2063,11 @@ if (headerRow >= 0 && headerRow < csv.length) {
 }
 ```
 
-5. **REMOS Format:** Verify REMOS follows `RMS-GB-XXXXXX-XXX` pattern
+8. **REMOS Format:** Verify REMOS follows `RMS-GB-XXXXXX-XXX` pattern
 
-6. **Sheet Name:** Always pass `null` for sheet name in CSV parsers (5th parameter to mapParser)
+9. **Sheet Name:** Always pass `null` for sheet name in CSV parsers (5th parameter to mapParser)
 
-7. **Test Data Format:** CSV test data should be array of arrays, not objects:
+10. **Test Data Format:** CSV test data should be array of arrays, not objects:
 
 ```javascript
 // Correct
@@ -1335,20 +2082,20 @@ if (headerRow >= 0 && headerRow < csv.length) {
 }
 ```
 
-8. **Performance:** CSVs are typically smaller than Excel files, but still validate input size
+11. **Performance:** CSVs are typically smaller than Excel files, but still validate input size
 
-9. **Encoding:** Be aware of CSV encoding issues (UTF-8, BOM markers, etc.)
+12. **Encoding:** Be aware of CSV encoding issues (UTF-8, BOM markers, etc.)
 
-10. **Delimiter Handling:** Verify CSV uses standard comma delimiter
+13. **Delimiter Handling:** Verify CSV uses standard comma delimiter
 
 ---
 
 ## Reference Links
 
 - **Legacy Repository:** https://github.com/DEFRA/trade-exportscore-plp
-- **Parser Discovery Process:** [find-parser-to-use.md](./find-parser-to-use.md)
-- **Detailed Flow:** [parser-discovery-extraction-detailed.md](./parser-discovery-extraction-detailed.md)
-- **Excel Import Guide:** [EXCEL-MODEL-IMPORT-GUIDE.md](./EXCEL-MODEL-IMPORT-GUIDE.md)
+- **Parser Discovery Process:** [parser-discovery-extraction-generic.md](../../docs/flow/parser-discovery-extraction-generic.md)
+- **Detailed Flow:** [parser-discovery-extraction-detailed.md](../../docs/flow/parser-discovery-extraction-detailed.md)
+- **Excel Import Guide:** [EXCEL-MODEL-IMPORT-GUIDE.prompt.md](./EXCEL-MODEL-IMPORT-GUIDE.prompt.md)
 - **Model Headers README:** `src/services/model-headers/README.md`
 - **Parsers README:** `src/services/parsers/README.md`
 - **Matchers README:** `src/services/matchers/README.md`
@@ -1416,8 +2163,8 @@ This is a complete walkthrough of importing a CSV model:
 
 For questions or issues during CSV migration:
 
-1. Review this guide and the [Excel Import Guide](./EXCEL-MODEL-IMPORT-GUIDE.md)
-2. Check [parser-discovery-extraction-detailed.md](./parser-discovery-extraction-detailed.md) for CSV flow
+1. Review this guide and the [Excel Import Guide](./EXCEL-MODEL-IMPORT-GUIDE.prompt.md)
+2. Check [parser-discovery-extraction-detailed.md](../../docs/flow/parser-discovery-extraction-detailed.md) for CSV flow
 3. Review existing CSV implementations for patterns
 4. Check unit tests in the legacy repo for expected behavior
 5. Consult with the development team for architecture decisions

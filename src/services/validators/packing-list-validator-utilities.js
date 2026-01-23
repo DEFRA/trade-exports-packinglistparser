@@ -226,7 +226,7 @@ function hasIneligibleItems(item) {
   return (
     isNirms(item.nirms) &&
     !isNullOrEmptyString(item.country_of_origin) &&
-    !hasInvalidCoO(item) &&
+    !isInvalidCoO(item.country_of_origin) &&
     !isNullOrEmptyString(item.commodity_code) &&
     isIneligibleItem(
       item.country_of_origin,

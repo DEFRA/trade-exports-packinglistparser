@@ -52,22 +52,29 @@ Don't forget to update commented-out require statements to use import syntax:
 Replace any migrated logger with the project's existing logger:
 
 ```javascript
-// Remove any imported logger utility
-// import logger from '../utilities/logger.js'  ❌
-
-// Use project logger instead
-import { createLogger } from '../common/helpers/logging/logger.js'  ✓
+// ✓ CORRECT - Use project logger with full path
+import { createLogger } from '../common/helpers/logging/logger.js' // Note: /logger.js at end
 const logger = createLogger()
+
+// ✗ WRONG - Missing /logger.js or wrong path
+import { createLogger } from '../common/helpers/logging.js' // Missing /logger.js
+import logger from '../utilities/logger.js' // Wrong file entirely
 ```
+
+**Critical Path Note:** The logger is at `logging/logger.js`, not just `logging.js`. This is a common source of import errors.
 
 **Update logging calls:**
 
 ```javascript
-// Old style
+// Old style (legacy)
 logger.logInfo(filename, 'functionName', 'message')
 logger.logError(filename, 'functionName', error)
 
-// New style (pino)
+// New style (pino) - Simple version
+logger.info('message')
+logger.error(`Error occurred: ${error.message}`)
+
+// New style (pino) - With metadata
 logger.info({ filename, function: 'functionName' }, 'message')
 logger.error(
   {
@@ -78,7 +85,7 @@ logger.error(
       stack_trace: error.stack
     }
   },
-  'message'
+  'Error message'
 )
 ```
 

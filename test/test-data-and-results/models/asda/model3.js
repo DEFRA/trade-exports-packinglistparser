@@ -1107,5 +1107,207 @@ export default {
         N: 'PROHIBITED_ITEM_ISO'
       }
     ]
+  },
+
+  ineligibleItemsWithTreatmentModel: {
+    Page1_1: [
+      {
+        B: 'Description Of All Retail Goods',
+        C: 'Nature of Product',
+        D: 'Treatment Type',
+        E: 'Number Of Establishment',
+        F: 'Destination Store Establishment Number',
+        G: 'Number of Packages',
+        H: 'Net Weight',
+        I: 'kilograms/grams',
+        J: 'NIRMs/Non-NIRMs',
+        M: 'Commodity Code',
+        N: 'Country of Origin'
+      },
+      {
+        B: 'Ineligible ITEM WITH TREATMENT',
+        C: 'Bakery Bought In',
+        D: 'Processed',
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      }
+    ]
+  },
+
+  ineligibleItemsNoTreatmentModel: {
+    Page1_1: [
+      {
+        B: 'Description Of All Retail Goods',
+        C: 'Nature of Product',
+        D: 'Treatment Type',
+        E: 'Number Of Establishment',
+        F: 'Destination Store Establishment Number',
+        G: 'Number of Packages',
+        H: 'Net Weight',
+        I: 'kilograms/grams',
+        J: 'NIRMs/Non-NIRMs',
+        M: 'Commodity Code',
+        N: 'Country of Origin'
+      },
+      {
+        B: 'Ineligible ITEM NO TREATMENT',
+        C: 'Bakery Bought In',
+        D: null,
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      }
+    ]
+  },
+
+  ineligibleItemsMultipleWithTreatmentModel: {
+    Page1_1: [
+      {
+        B: 'Description Of All Retail Goods',
+        C: 'Nature of Product',
+        D: 'Treatment Type',
+        E: 'Number Of Establishment',
+        F: 'Destination Store Establishment Number',
+        G: 'Number of Packages',
+        H: 'Net Weight',
+        I: 'kilograms/grams',
+        J: 'NIRMs/Non-NIRMs',
+        M: 'Commodity Code',
+        N: 'Country of Origin'
+      },
+      {
+        B: 'Ineligible ITEM 1 WITH TREATMENT',
+        C: 'Bakery Bought In',
+        D: 'Processed',
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      },
+      {
+        B: 'Ineligible ITEM 2 WITH TREATMENT',
+        C: 'Bakery Bought In',
+        D: 'Processed',
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      },
+      {
+        B: 'Ineligible ITEM 3 WITH TREATMENT',
+        C: 'Bakery Bought In',
+        D: 'Processed',
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      },
+      {
+        B: 'Ineligible ITEM 4 WITH TREATMENT',
+        C: 'Bakery Bought In',
+        D: 'Processed',
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      }
+    ]
+  },
+
+  ineligibleItemsMultipleNoTreatmentModel: {
+    Page1_1: [
+      {
+        B: 'Description Of All Retail Goods',
+        C: 'Nature of Product',
+        D: 'Treatment Type',
+        E: 'Number Of Establishment',
+        F: 'Destination Store Establishment Number',
+        G: 'Number of Packages',
+        H: 'Net Weight',
+        I: 'kilograms/grams',
+        J: 'NIRMs/Non-NIRMs',
+        M: 'Commodity Code',
+        N: 'Country of Origin'
+      },
+      {
+        B: 'Ineligible ITEM 1 NO TREATMENT',
+        C: 'Bakery Bought In',
+        D: null,
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      },
+      {
+        B: 'Ineligible ITEM 2 NO TREATMENT',
+        C: 'Bakery Bought In',
+        D: null,
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      },
+      {
+        B: 'Ineligible ITEM 3 NO TREATMENT',
+        C: 'Bakery Bought In',
+        D: null,
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      },
+      {
+        B: 'Ineligible ITEM 4 NO TREATMENT',
+        C: 'Bakery Bought In',
+        D: null,
+        E: 'RMS-GB-000015-006',
+        F: 'RMS-NI-000008-017',
+        G: 1,
+        H: 0.059,
+        I: 'kgs',
+        J: 'NIRMS',
+        M: '1234',
+        N: 'INELIGIBLE_ITEM_ISO'
+      }
+    ]
   }
 }

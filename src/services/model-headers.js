@@ -5,9 +5,11 @@
  * Each retailer provides establishment number patterns and field mapping regex.
  */
 import { asdaHeaders } from './model-headers/asda.js'
+import { sainsburysHeaders } from './model-headers/sainsburys.js'
 
 const headers = {
-  ...asdaHeaders
+  ...asdaHeaders,
+  ...sainsburysHeaders
   // TODO: Add other Excel model headers as they are migrated
 }
 
