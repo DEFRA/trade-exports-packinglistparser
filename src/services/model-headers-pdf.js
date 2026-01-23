@@ -6,12 +6,13 @@
  */
 
 import { pdfGiovanniHeaders } from './model-headers/giovanni.js'
+import { pdfMandsHeaders } from './model-headers/mands.js'
 
 const headers = {
-  ...pdfGiovanniHeaders
+  ...pdfGiovanniHeaders,
+  ...pdfMandsHeaders
   // TODO: Add PDF model headers as they are migrated
   // ...pdfBookerHeaders,
-  // ...pdfMandsHeaders,
   // ...pdfGreggsHeaders,
 }
 

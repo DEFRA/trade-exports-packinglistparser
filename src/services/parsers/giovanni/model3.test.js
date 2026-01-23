@@ -9,23 +9,18 @@ import expectedResults from '../../../../test/test-data-and-results/results-pdf/
 import parserModel from '../../parser-model.js'
 import * as pdfHelper from '../../../utilities/pdf-helper.js'
 
-// Mock the pdf-helper module - only mock extractPdf and extractEstablishmentNumbers
+// Mock the pdf-helper module - only mock extractPdf
 vi.mock('../../../utilities/pdf-helper.js', async () => {
   const actual = await vi.importActual('../../../utilities/pdf-helper.js')
   return {
     ...actual,
-    extractPdf: vi.fn(),
-    extractEstablishmentNumbers: vi.fn()
+    extractPdf: vi.fn()
   }
 })
 
 describe('Giovanni Model 3 PDF Parser', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Mock extractEstablishmentNumbers to return default value
-    vi.mocked(pdfHelper.extractEstablishmentNumbers).mockReturnValue([
-      'RMS-GB-000149-002'
-    ])
   })
 
   test('parses valid Giovanni Model 3 PDF correctly', async () => {
