@@ -26,7 +26,9 @@ function getCacheHandler(_request, h) {
       .code(STATUS_CODES.OK)
   }
 
-  const itemCount = Array.isArray(cachedData) ? cachedData.length : 0
+  const itemCount =
+    cachedData?.ineligibleItems?.length ||
+    (Array.isArray(cachedData) ? cachedData.length : 0)
   console.log(`Ineligible items cache contains ${itemCount} items`)
   console.log('Cache data:', JSON.stringify(cachedData, null, 2))
 

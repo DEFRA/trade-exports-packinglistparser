@@ -1,0 +1,41 @@
+{
+  "ineligibleItems": [
+    {
+      "id": "001",
+      "itemName": "Prohibited Chemicals",
+      "category": "Chemicals",
+      "reason": "Export restricted due to safety regulations",
+      "regulationReference": "EC-1234/2024"
+    },
+    {
+      "id": "002",
+      "itemName": "Endangered Wildlife Products",
+      "category": "Wildlife",
+      "reason": "Protected under CITES Convention",
+      "regulationReference": "CITES-APP-I"
+    },
+    {
+      "id": "003",
+      "itemName": "Weapons and Ammunition",
+      "category": "Arms",
+      "reason": "Requires special export license",
+      "regulationReference": "ARMS-REG-2025"
+    },
+    {
+      "id": "004",
+      "itemName": "Counterfeit Goods",
+      "category": "Intellectual Property",
+      "reason": "Violates trademark and copyright laws",
+      "regulationReference": "IP-ACT-2023"
+    },
+    {
+      "id": "005",
+      "itemName": "Certain Pharmaceuticals",
+      "category": "Controlled Substances",
+      "reason": "Requires health authority approval",
+      "regulationReference": "PHARMA-REG-567"
+    }
+  ],
+  "lastUpdated": "2026-01-22",
+  "version": "1.0"
+}
