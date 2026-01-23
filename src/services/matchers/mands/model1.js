@@ -16,7 +16,7 @@ const logger = createLogger()
  * Check if packing list matches M&S Model 1 format.
  * @param {Buffer} packingList - PDF file buffer
  * @param {string} filename - Original filename
- * @returns {Promise<string>} Match result code
+ * @returns {Promise<number>} Match result code
  */
 export async function matches(packingList, filename) {
   try {
@@ -54,7 +54,7 @@ export async function matches(packingList, filename) {
  * Locate and validate headers for M&S Model 1 within page content.
  * Validates that each model header regex matches at least one extracted header text.
  * @param {Array} pageContent - Extracted page content
- * @returns {string} matcherResult - `CORRECT` if all headers match, otherwise `WRONG_HEADER`
+ * @returns {number} matcherResult - `CORRECT` if all headers match, otherwise `WRONG_HEADER`
  */
 function findHeader(pageContent) {
   const y1 = headers.MANDS1.minHeadersY

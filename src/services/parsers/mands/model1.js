@@ -220,6 +220,15 @@ function getYsForRows(pageContent, model) {
 
     return ys
   } catch (err) {
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in getYsForRows()'
+    )
     return []
   }
 }

@@ -17,7 +17,7 @@ const logger = createLogger()
  * Check whether the provided packing list matches ASDA Model 3.
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 export function matches(packingList, filename) {
   try {

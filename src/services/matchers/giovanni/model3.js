@@ -17,7 +17,7 @@ const logger = createLogger()
  * Check if packing list matches Giovanni Model 3 format.
  * @param {Buffer} packingList - PDF file buffer
  * @param {string} filename - Original filename
- * @returns {Promise<string>} Match result code
+ * @returns {Promise<number>} Match result code
  */
 export async function matches(packingList, filename) {
   try {
@@ -57,7 +57,7 @@ export async function matches(packingList, filename) {
 /**
  * Check page content for Giovanni Model 3 headers.
  * @param {Array} pageContent - Extracted page content
- * @returns {string} matcherResult - `CORRECT` or `WRONG_HEADER`
+ * @returns {number} matcherResult - `CORRECT` or `WRONG_HEADER`
  */
 function matchHeaders(pageContent) {
   const isHeader = findHeader('GIOVANNI3', pageContent)
@@ -72,7 +72,7 @@ function matchHeaders(pageContent) {
  * Locate a header for a specific model within page content.
  * @param {string} model - Header model key (e.g., 'GIOVANNI3')
  * @param {Array} pageContent - Extracted page content
- * @returns {string} matcherResult - `CORRECT` or `WRONG_HEADER`
+ * @returns {number} matcherResult - `CORRECT` or `WRONG_HEADER`
  */
 function findHeader(model, pageContent) {
   const header = pdfHelper.getHeaders(pageContent, model)
