@@ -1,4 +1,11 @@
 import hapi from '@hapi/hapi'
+import { vi } from 'vitest'
+
+const mockInitializeCache = vi.fn().mockResolvedValue(undefined)
+
+vi.mock('../../services/cache/ineligible-items-cache.js', () => ({
+  initializeIneligibleItemsCache: mockInitializeCache
+}))
 
 describe('#startServer', () => {
   let createServerSpy
@@ -23,8 +30,11 @@ describe('#startServer', () => {
   describe('When server starts', () => {
     let server
 
-    afterAll(async () => {
-      await server.stop({ timeout: 0 })
+    afterEach(async () => {
+      if (server) {
+        await server.stop({ timeout: 0 })
+        server = null
+      }
     })
 
     test('Should start up server as expected', async () => {
@@ -33,11 +43,40 @@ describe('#startServer', () => {
       expect(createServerSpy).toHaveBeenCalled()
       expect(hapiServerSpy).toHaveBeenCalled()
     })
+
+    test('Should initialize ineligible items cache', async () => {
+      mockInitializeCache.mockClear()
+      server = await startServerImport.startServer()
+
+      expect(mockInitializeCache).toHaveBeenCalled()
+    })
+  })
+
+  describe('When cache initialization fails', () => {
+    let server
+
+    afterEach(async () => {
+      if (server) {
+        await server.stop({ timeout: 0 })
+        server = null
+      }
+    })
+
+    test('Should continue server startup when cache initialization fails', async () => {
+      mockInitializeCache.mockRejectedValueOnce(
+        new Error('Cache initialization failed')
+      )
+
+      server = await startServerImport.startServer()
+
+      expect(server).toBeDefined()
+      expect(createServerSpy).toHaveBeenCalled()
+    })
   })
 
   describe('When server start fails', () => {
     test('Should log failed startup message', async () => {
-      createServerSpy.mockRejectedValue(new Error('Server failed to start'))
+      createServerSpy.mockRejectedValueOnce(new Error('Server failed to start'))
 
       await expect(startServerImport.startServer()).rejects.toThrow(
         'Server failed to start'
