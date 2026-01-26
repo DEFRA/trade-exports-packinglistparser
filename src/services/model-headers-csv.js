@@ -10,7 +10,6 @@ import { csvAsdaHeaders } from './model-headers/asda.js'
 const headers = {
   ...csvIcelandHeaders,
   ...csvAsdaHeaders
-  // TODO: Add other CSV model headers as they are migrated
 }
 
 export default headers
