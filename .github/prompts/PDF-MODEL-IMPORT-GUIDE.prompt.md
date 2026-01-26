@@ -15,8 +15,10 @@ You are an expert software engineer tasked with importing a PDF-based packing li
 - Matcher and parser implemented with correct imports
 - Model registered in `model-parsers.js` under `parsersPdf`
 - Coordinate-based extraction logic preserved exactly
-- Unit tests created and passing with PDF data
+- Unit tests created and passing (matcher and parser)
+- Parser-service integration tests created and passing
 - Integration tests verify parser discovery works
+- **No modifications to legacy test data or expected results**
 - No modifications to legacy data structures or validation logic
 
 **When to Ask for Clarification:**
@@ -125,6 +127,9 @@ When importing models, you MUST maintain:
    - `app/services/model-headers/[retailer].js` (should contain PDF headers with coordinates)
    - `app/services/matchers/[retailer]/model[N].js` OR `model[N]-pdf.js`
    - `app/services/parsers/[retailer]/model[N].js` OR `model[N]-pdf.js`
+   - `test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js` (test data)
+   - `test/unit/test-data-and-results/results-pdf/[retailer]/model[N].js` (expected results)
+   - `test/unit/services/parser-service/[retailer]/model[N].test.js` (parser-service tests)
 
 2. Verify the headers file contains PDF-specific data (coordinate values like `x1`, `x2`, `minHeadersY`)
 
@@ -1196,12 +1201,123 @@ describe('M&S Model 1 PDF Parser', () => {
 
 ---
 
-### Step 8: Verify Integration
+### Step 7.5: Create Parser-Service Integration Tests (Required)
 
-#### 8.1 Run Tests
+**New Location:** `test/parser-service/[retailer]/model[N].test.js`
+
+#### 7.5.1 Copy Parser-Service Test from Legacy
+
+**Old Location:** `test/unit/services/parser-service/[retailer]/model[N].test.js`
+
+⚠️ **CRITICAL:** Copy the parser-service test file EXACTLY from legacy with only these changes:
+
+1. Convert `require()` to ES6 `import`
+2. Update import paths to match new project structure
+3. Convert `module.exports` to `export default` if applicable
+
+**DO NOT modify:**
+
+- Mock data entries (e.g., `vi.mock` for ineligible items)
+- Test data references
+- Expected results or assertions
+- Test case names or describe blocks
+
+#### 7.5.2 Mock Data Must Match Legacy Exactly
+
+If the legacy test mocks `data-ineligible-items.json`, copy the mock EXACTLY:
+
+```javascript
+// ❌ WRONG - Adding entries that don't exist in legacy
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '012',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    },
+    { commodity_code: '1234', type_of_treatment: 'Processed' } // ← DON'T ADD THIS
+  ]
+}))
+
+// ✅ CORRECT - Exact copy from legacy
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '012',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    }
+  ]
+}))
+```
+
+#### 7.5.3 Parser-Service Test Template
+
+```javascript
+// test/parser-service/mands/model1.test.js
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
+import parserService from '../../../src/services/parser-service.js'
+import parserModel from '../../../src/services/parser-model.js'
+import model from '../../test-data-and-results/models-pdf/mands/model1.js'
+import expectedResults from '../../test-data-and-results/results-pdf/mands/model1.js'
+
+// Mock ineligible items - COPY EXACTLY FROM LEGACY
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    // Copy exact entries from legacy test file
+  ]
+}))
+
+describe('Parser Service - M&S Model 1 PDF', () => {
+  const filename = 'packinglist.pdf'
+
+  describe('Valid packing lists', () => {
+    test('should return correct parser model', () => {
+      const result = parserService.findParser(model.validModel, filename)
+      expect(result.parserModel).toBe(parserModel.MANDS1)
+    })
+
+    test('should parse items correctly', () => {
+      const result = parserService.findParser(model.validModel, filename)
+      expect(result.items).toEqual(expectedResults.validTestResult.items)
+    })
+  })
+
+  describe('Country of Origin validation', () => {
+    // Copy all CoO validation tests from legacy
+  })
+
+  describe('Error handling', () => {
+    // Copy all error handling tests from legacy
+  })
+})
+```
+
+#### 7.5.4 Verify Test Data Matches Mock
+
+If the test uses ineligible items validation, ensure test data matches the mock:
+
+```javascript
+// If mock has: { commodity_code: '012', type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT' }
+// Then test data must use these exact values:
+{
+  commodity_code: '0123456789',  // Must START with '012' to match
+  type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'  // Must match exactly
+}
+```
+
+---
+
+### Step 9: Verify Integration
+
+#### 9.1 Run Tests
 
 ```bash
+# Run all tests for the model
 npm test -- --grep "M&S Model 1 PDF"
+
+# Run parser-service tests specifically
+npm test -- test/parser-service/mands/model1.test.js
 ```
 
 #### 8.2 Test with Sample PDF
@@ -1419,8 +1535,9 @@ Use this checklist when importing a new PDF model:
   - [ ] Model headers configuration with PDF headers
   - [ ] Matcher implementation (if exists)
   - [ ] Parser implementation
-  - [ ] Test data (PDF data samples)
-  - [ ] Expected results
+  - [ ] Test data (**copy exactly, no modifications**)
+  - [ ] Expected results (**copy exactly, no modifications**)
+  - [ ] Parser-service tests (**copy exactly, no modifications**)
 
 - [ ] **Step 2:** Created/updated model headers
 
@@ -1452,13 +1569,12 @@ Use this checklist when importing a new PDF model:
   - [ ] Updated parsers.js or model-parsers.js
   - [ ] Added to PDF parsers collection
 
-- [ ] **Step 6:** Copied test data (NOT MODIFIED)
+- [ ] **Step 6:** Copied test data (**no modifications allowed**)
 
   - [ ] Created test data directory structure
-  - [ ] Copied PDF data samples from legacy repo EXACTLY (no modifications)
-  - [ ] Copied expected results from legacy repo EXACTLY (no modifications)
-  - [ ] Verified no changes to test data values
-  - [ ] Only import paths updated if needed
+  - [ ] Copied PDF data samples exactly from legacy (only import path changes)
+  - [ ] Copied expected results exactly from legacy (only import path changes)
+  - [ ] Verified test data matches legacy using diff
 
 - [ ] **Step 7:** Migrated unit tests (NOT CREATED NEW)
 
@@ -1471,8 +1587,17 @@ Use this checklist when importing a new PDF model:
   - [ ] No new tests added
   - [ ] No tests removed
 
-- [ ] **Step 8:** Verified integration
+- [ ] **Step 7.5:** Created parser-service tests (**no modifications allowed**)
+
+  - [ ] Created test directory structure (`test/parser-service/[retailer]/`)
+  - [ ] Copied parser-service test exactly from legacy
+  - [ ] Mock data matches legacy exactly (no added entries)
+  - [ ] Test data values match mock requirements
+  - [ ] All parser-service tests pass
+
+- [ ] **Step 9:** Verified integration
   - [ ] All unit tests pass
+  - [ ] All parser-service tests pass
   - [ ] Parser discovery works
   - [ ] Tested with PDF data samples
 
@@ -1481,6 +1606,35 @@ Use this checklist when importing a new PDF model:
 ## Troubleshooting
 
 ### PDF-Specific Issues
+
+#### Issue: Parser-service tests fail with ineligible items validation
+
+**Symptoms:** Tests expecting ineligible items to be detected fail
+
+**Solutions:**
+
+1. **Verify mock data matches legacy exactly** - Do not add extra mock entries
+2. **Check test data uses correct values** - commodity_code and type_of_treatment must match mock
+3. **Ensure mock is placed correctly** - `vi.mock()` must be before imports that use the data
+
+**Example:**
+
+```javascript
+// Mock from legacy - copy EXACTLY, don't add entries
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '012',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    }
+  ]
+}))
+
+// Test data must use values that match the mock
+// commodity_code: '0123456789' starts with '012' ✓
+// type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT' matches exactly ✓
+```
 
 #### Issue: PDF data structure doesn't match
 
@@ -1597,23 +1751,32 @@ function hasIneligibleItems(item) {
 
 1. **Compare with Legacy First:** When tests fail, always check the legacy repository for differences in CODE before modifying TEST DATA. Validator bugs affect all parser types (Excel, CSV, PDF).
 
-2. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" PDF test data - variations are intentional to test regex patterns.
+2. **NEVER Modify Test Data or Expected Results:** Test data and expected results must be copied exactly from legacy. If tests fail, fix the code (matcher, parser, or validator), not the test data. The only allowed changes are:
 
-3. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
+   - Converting `module.exports` to `export default`
+   - Updating import paths
 
-4. **Test with Real PDFs:** Always test with actual PDF data, not just hand-crafted test data.
+3. **NEVER Add Mock Entries That Don't Exist in Legacy:** When copying parser-service tests, copy mock data exactly. Do not add "convenience" entries that weren't in the original test.
 
-5. **Coordinate Precision:** When using coordinate-based extraction, verify boundaries with multiple PDF samples to ensure consistency.
+4. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" PDF test data - variations are intentional to test regex patterns.
 
-6. **Layout Variants:** Create separate models for significantly different layouts (portrait vs landscape, different retailers).
+5. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
 
-7. **Confidence Scores:** Consider adding minimum confidence thresholds to filter unreliable extractions.
+6. **Test with Real PDFs:** Always test with actual PDF data, not just hand-crafted test data.
 
-8. **Error Logging:** Include detailed error logging for PDF data processing to aid debugging.
+7. **Coordinate Precision:** When using coordinate-based extraction, verify boundaries with multiple PDF samples to ensure consistency.
 
-9. **Performance:** PDF processing may be slower than Excel/CSV. Consider caching or async processing for production.
+8. **Layout Variants:** Create separate models for significantly different layouts (portrait vs landscape, different retailers).
 
-10. **Totals Filtering:** Always implement totals filtering if PDFs include summary rows - these should not appear in parsed items.
+9. **Confidence Scores:** Consider adding minimum confidence thresholds to filter unreliable extractions.
+
+10. **Error Logging:** Include detailed error logging for PDF data processing to aid debugging.
+
+11. **Performance:** PDF processing may be slower than Excel/CSV. Consider caching or async processing for production.
+
+12. **Totals Filtering:** Always implement totals filtering if PDFs include summary rows - these should not appear in parsed items.
+
+13. **Include Parser-Service Tests:** Always copy and include the parser-service integration tests from legacy - these validate the complete parsing workflow including CoO validation.
 
 ---
 
@@ -1627,14 +1790,15 @@ function hasIneligibleItems(item) {
 
 ## Quick Reference: File Mapping
 
-| Legacy Location                                                      | New Location                                                    | Purpose                    |
-| -------------------------------------------------------------------- | --------------------------------------------------------------- | -------------------------- |
-| `app/services/model-headers/[retailer].js`                           | `src/services/model-headers/[retailer].js`                      | PDF header configurations  |
-| `app/services/matchers/[retailer]/model[N]-pdf.js`                   | `src/services/matchers/[retailer]/model[N]-pdf.js`              | PDF matcher implementation |
-| `app/services/parsers/[retailer]/model[N]-pdf.js`                    | `src/services/parsers/[retailer]/model[N]-pdf.js`               | PDF parser implementation  |
-| `test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js`  | `test/test-data-and-results/models-pdf/[retailer]/model[N].js`  | PDF test data              |
-| `test/unit/test-data-and-results/results-pdf/[retailer]/model[N].js` | `test/test-data-and-results/results-pdf/[retailer]/model[N].js` | Expected results           |
-| `app/services/model-headers-pdf.js`                                  | `src/services/model-headers-pdf.js`                             | PDF headers registry       |
+| Legacy Location                                                      | New Location                                                    | Purpose                             |
+| -------------------------------------------------------------------- | --------------------------------------------------------------- | ----------------------------------- |
+| `app/services/model-headers/[retailer].js`                           | `src/services/model-headers/[retailer].js`                      | PDF header configurations           |
+| `app/services/matchers/[retailer]/model[N]-pdf.js`                   | `src/services/matchers/[retailer]/model[N]-pdf.js`              | PDF matcher implementation          |
+| `app/services/parsers/[retailer]/model[N]-pdf.js`                    | `src/services/parsers/[retailer]/model[N]-pdf.js`               | PDF parser implementation           |
+| `test/unit/test-data-and-results/models-pdf/[retailer]/model[N].js`  | `test/test-data-and-results/models-pdf/[retailer]/model[N].js`  | PDF test data (copy exactly)        |
+| `test/unit/test-data-and-results/results-pdf/[retailer]/model[N].js` | `test/test-data-and-results/results-pdf/[retailer]/model[N].js` | Expected results (copy exactly)     |
+| `test/unit/services/parser-service/[retailer]/model[N].test.js`      | `test/parser-service/[retailer]/model[N].test.js`               | Parser-service tests (copy exactly) |
+| `app/services/model-headers-pdf.js`                                  | `src/services/model-headers-pdf.js`                             | PDF headers registry                |
 
 ---
 
