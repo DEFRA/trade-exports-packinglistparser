@@ -5,6 +5,7 @@
  * Extracts data from specific X/Y positions on the page.
  */
 
+import { createLogger } from '../../../common/helpers/logging/logger.js'
 import * as combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers-pdf.js'
@@ -14,6 +15,8 @@ import {
   extractPdf,
   extractEstablishmentNumbers
 } from '../../../utilities/pdf-helper.js'
+
+const logger = createLogger()
 
 /**
  * Parse Giovanni Model 3 PDF document using coordinate-based extraction.
@@ -50,7 +53,15 @@ export async function parse(packingList) {
       headers.GIOVANNI3
     )
   } catch (err) {
-    console.error('Giovanni Model 3 parser error:', err)
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in parse()'
+    )
     return combineParser.combine(null, [], false, parserModel.NOMATCH)
   }
 }
@@ -99,7 +110,15 @@ function getYsForRows(pageContent, model) {
 
     return ysInRange
   } catch (err) {
-    console.error('Giovanni Model 3 getYsForRows error:', err)
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack_trace: err.stack
+        }
+      },
+      'Error in getYsForRows()'
+    )
     return []
   }
 }

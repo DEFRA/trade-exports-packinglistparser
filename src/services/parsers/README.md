@@ -215,6 +215,8 @@ Optional fields:
 
 Create test files for each parser and matcher:
 
+### Unit Tests (Parser/Matcher Logic)
+
 ```
 test/unit/services/
   ├── parsers/
@@ -227,8 +229,27 @@ test/unit/services/
           └── ...
 ```
 
+### Integration Tests (Parser Discovery Service)
+
+All parser-service integration tests should be created in:
+
+```
+test/parser-service/
+  └── retailer-name/
+      ├── model1.test.js    # Tests findParser() discovery for this model
+      └── ...
+```
+
+These tests verify the full parser discovery flow including:
+
+- File type detection
+- REMOS validation
+- Matcher selection
+- Parser execution
+- End-to-end parsing results
+
 ## See Also
 
 - [Original ADP Packing List Processing Flow](../../docs/migration/original-adp-packing-list-processing-flow.md)
-- [Parser Discovery Extraction Detailed](../../docs/migration/parser-discovery-extraction-detailed.md)
+- [Parser Discovery Extraction Detailed](../../../docs/flow/parser-discovery-extraction-detailed.md)
 - [Find Parser to Use](../../docs/migration/find-parser-to-use.md)

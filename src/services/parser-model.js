@@ -22,6 +22,9 @@ export default Object.freeze({
   // Giovanni models
   GIOVANNI3: 'GIOVANNI3',
 
+  // M&S models
+  MANDS1: 'MANDS1',
+
   // TJ Morris models
   TJMORRIS2: 'TJMORRIS2'
 })

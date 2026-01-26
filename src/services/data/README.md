@@ -198,5 +198,5 @@ These data files were migrated from the legacy `trade-exportscore-plp` repositor
 For questions about:
 
 - **Data content/business rules**: Contact policy/business teams
-- **Data format/structure**: See migration guide in `docs/migration/CODE_MIGRATION_GUIDE.md`
+- **Data format/structure**: See migration guide in `.github/prompts/CODE_MIGRATION_GUIDE.prompt.md`
 - **Usage in code**: See validator utilities and tests

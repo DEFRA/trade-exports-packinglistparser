@@ -289,6 +289,6 @@ Update `src/services/parser-factory.js` to include the new parser in the appropr
 ## References
 
 - [Original ADP Packing List Processing Flow](docs/migration/original-adp-packing-list-processing-flow.md)
-- [Parser Discovery Extraction Detailed](docs/migration/parser-discovery-extraction-detailed.md)
+- [Parser Discovery Extraction Detailed](docs/flow/parser-discovery-extraction-detailed.md)
 - [Find Parser to Use](docs/migration/find-parser-to-use.md)
 - [Parsers README](src/services/parsers/README.md) - Detailed implementation guide

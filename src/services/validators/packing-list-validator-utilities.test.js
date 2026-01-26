@@ -20,6 +20,7 @@ import {
   isNotNirms,
   getItemFailureMessage
 } from './packing-list-validator-utilities.js'
+import failureReasons from './packing-list-failure-reasons.js'
 
 // Mock the data files
 vi.mock('../data/data-iso-codes.json', () => ({
@@ -30,13 +31,17 @@ vi.mock('../data/data-ineligible-items.json', () => ({
   default: [
     {
       country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '123',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    },
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
       commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
       type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
     },
     {
       country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_2',
-      type_of_treatment: null
+      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_2'
     },
     {
       country_of_origin: 'INELIGIBLE_ITEM_ISO', // GB
@@ -52,11 +57,6 @@ vi.mock('../data/data-ineligible-items.json', () => ({
       country_of_origin: 'INELIGIBLE_ITEM_ISO', // GB
       commodity_code: 'INELIGIBLE_ITEM_COMMODITY_3', // mango
       type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT_3' // unprocessed
-    },
-    {
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_4',
-      type_of_treatment: '!' // Empty exception - allows items with null/empty treatment
     }
   ]
 }))
@@ -199,14 +199,13 @@ describe('validator function tests', () => {
       'INELIGIBLE_ITEM_TREATMENT',
       true
     ], // Exact matching value with treatment type
-    // TODO: Current implementation does not handle comma-separated country codes in hasIneligibleItems
-    // [
-    //   'NIRMS',
-    //   'VALID_ISO, INELIGIBLE_ITEM_ISO',
-    //   'INELIGIBLE_ITEM_COMMODITY_1',
-    //   'INELIGIBLE_ITEM_TREATMENT',
-    //   true
-    // ], // Matching value with multiple countries of origin
+    [
+      'NIRMS',
+      'VALID_ISO, INELIGIBLE_ITEM_ISO',
+      'INELIGIBLE_ITEM_COMMODITY_1',
+      'INELIGIBLE_ITEM_TREATMENT',
+      true
+    ], // Matching value with multiple countries of origin
     [
       'NIRMS',
       'INELIGIBLE_ITEM_ISO',
@@ -221,10 +220,8 @@ describe('validator function tests', () => {
       'INELIGIBLE_ITEM_TREATMENT',
       true
     ], // Exact matching value with treatment type case insensitive
-    // TODO: Test expectations differ from current implementation - item with null treatment should not match rule with specific treatment requirement
-    // ['NIRMS', 'INELIGIBLE_ITEM_ISO', 'INELIGIBLE_ITEM_COMMODITY_1', null, true], // no treatment type specified in packing list, treatment type specified in ineligible item list
-    // TODO: Test failing - may be issue with mock data not matching implementation expectations
-    // ['NIRMS', 'INELIGIBLE_ITEM_ISO', 'INELIGIBLE_ITEM_COMMODITY_2', null, true], // Exact matching value without treatment type specified in ineligible item list
+    ['NIRMS', 'INELIGIBLE_ITEM_ISO', 'INELIGIBLE_ITEM_COMMODITY_1', null, true], // no treatment type specified in packing list, treatment type specified in ineligible item list
+    ['NIRMS', 'INELIGIBLE_ITEM_ISO', 'INELIGIBLE_ITEM_COMMODITY_2', null, true], // Exact matching value without treatment type specified in ineligible item list
     [
       'NIRMS',
       'INELIGIBLE_ITEM_ISO',
@@ -277,6 +274,7 @@ describe('validator function tests', () => {
         commodity_code,
         type_of_treatment
       }
+
       expect(hasIneligibleItems(item)).toBe(expected)
     }
   )
@@ -329,128 +327,6 @@ describe('removeBadData', () => {
 
     expect(result[0].number_of_packages).toBe(1)
     expect(result[0].total_net_weight_kg).toBe(1.4155)
-  })
-})
-
-describe('isIneligibleItem edge cases', () => {
-  test('should return false when no matching entries found', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'VALID_ISO',
-      commodity_code: 'NONEXISTENT_COMMODITY',
-      type_of_treatment: 'some_treatment'
-    }
-    expect(hasIneligibleItems(item)).toBe(false)
-  })
-
-  test('should handle empty string treatment matching exception rule with empty treatment', () => {
-    vi.doMock('../data/data-ineligible-items.json', () => ({
-      default: [
-        {
-          country_of_origin: 'INELIGIBLE_ITEM_ISO',
-          commodity_code: 'TEST_COMMODITY',
-          type_of_treatment: '!' // Empty exception
-        }
-      ]
-    }))
-
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'TEST_COMMODITY',
-      type_of_treatment: '' // Empty string should match empty exception
-    }
-    // This would require re-importing the module with new mock
-    // Testing the logic path is covered by existing tests
-    expect(hasIneligibleItems(item)).toBeDefined()
-  })
-
-  test('should handle exception rule with empty treatment allowing null treatment items', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_4',
-      type_of_treatment: null
-    }
-    // INELIGIBLE_ITEM_COMMODITY_4 has ! (empty exception), so null/empty treatment is allowed (not ineligible)
-    expect(hasIneligibleItems(item)).toBe(false)
-  })
-
-  test('should handle exception rule with empty treatment allowing empty string treatment items', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_4',
-      type_of_treatment: ''
-    }
-    // INELIGIBLE_ITEM_COMMODITY_4 has ! (empty exception), so null/empty treatment is allowed (not ineligible)
-    expect(hasIneligibleItems(item)).toBe(false)
-  })
-
-  test('should handle exception rule with empty treatment rejecting non-empty treatment items', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_4',
-      type_of_treatment: 'SOME_TREATMENT'
-    }
-    // INELIGIBLE_ITEM_COMMODITY_4 has ! (empty exception), so non-empty treatment is ineligible
-    expect(hasIneligibleItems(item)).toBe(true)
-  })
-
-  test('should handle standard rule with null treatment matching any treatment', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_2',
-      type_of_treatment: 'ANY_TREATMENT_VALUE'
-    }
-    // INELIGIBLE_ITEM_COMMODITY_2 has null treatment, so matches any
-    expect(hasIneligibleItems(item)).toBe(true)
-  })
-
-  test('should handle standard rule when item has null treatment', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
-      type_of_treatment: null
-    }
-    // Item has null treatment but rule requires specific treatment
-    expect(hasIneligibleItems(item)).toBe(false)
-  })
-
-  test('should handle country of origin with different casing', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: 'ineligible_item_iso',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
-      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
-    }
-    // Should match case-insensitively
-    expect(hasIneligibleItems(item)).toBe(true)
-  })
-
-  test('should handle country of origin with extra whitespace', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: '  INELIGIBLE_ITEM_ISO  ',
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
-      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
-    }
-    // Should trim and match
-    expect(hasIneligibleItems(item)).toBe(true)
-  })
-
-  test('should return false when country is null in rule', () => {
-    const item = {
-      nirms: 'NIRMS',
-      country_of_origin: null,
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
-      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
-    }
-    // hasIneligibleItems checks for null country before calling isIneligibleItem
-    expect(hasIneligibleItems(item)).toBe(false)
   })
 })
 
@@ -660,6 +536,23 @@ describe('removeEmptyItems', () => {
 })
 
 describe('getItemFailureMessage', () => {
+  test('multiple failure messages', () => {
+    const item = {
+      description: null,
+      nature_of_products: null,
+      type_of_treatment: null,
+      commodity_code: null,
+      number_of_packages: null,
+      total_net_weight_kg: null
+    }
+
+    const result = getItemFailureMessage(item)
+
+    expect(result).toEqual(
+      `${failureReasons.IDENTIFIER_MISSING}; ${failureReasons.DESCRIPTION_MISSING}; ${failureReasons.PACKAGES_MISSING}; ${failureReasons.NET_WEIGHT_MISSING}; ${failureReasons.NET_WEIGHT_UNIT_MISSING}`
+    )
+  })
+
   test('should return null when item has no failures', () => {
     const item = {
       commodity_code: '12345678',

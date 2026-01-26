@@ -4,6 +4,7 @@
  * Exports a set of predicate functions used by the packing-list validator pipeline.
  */
 
+import { findUnit } from '../../utilities/regex.js'
 import isoCodesData from '../data/data-iso-codes.json' with { type: 'json' }
 import ineligibleItemsData from '../data/data-ineligible-items.json' with { type: 'json' }
 import failureReasonsDescriptions from './packing-list-failure-reasons.js'
@@ -116,7 +117,10 @@ function wrongTypeNetWeight(item) {
  * @returns {boolean} True when net weight unit is missing
  */
 function hasMissingNetWeightUnit(item) {
-  return isNullOrEmptyString(item.total_net_weight_unit)
+  return (
+    isNullOrEmptyString(item.total_net_weight_unit) ||
+    !findUnit(item.total_net_weight_unit)
+  )
 }
 
 /**
@@ -222,7 +226,7 @@ function hasIneligibleItems(item) {
   return (
     isNirms(item.nirms) &&
     !isNullOrEmptyString(item.country_of_origin) &&
-    !hasInvalidCoO(item) &&
+    !isInvalidCoO(item.country_of_origin) &&
     !isNullOrEmptyString(item.commodity_code) &&
     isIneligibleItem(
       item.country_of_origin,
@@ -271,7 +275,10 @@ function isNotNirms(nirms) {
  * @returns {boolean} True when value matches any pattern
  */
 function stringMatchesPattern(value, ...patterns) {
-  const normalized = String(value).trim()
+  if (typeof value !== 'string') {
+    return false
+  }
+  const normalized = value.trim().toLowerCase()
   return patterns.some((pattern) => pattern.test(normalized))
 }
 
@@ -324,17 +331,38 @@ function isIneligibleItem(countryOfOrigin, commodityCode, typeOfTreatment) {
 }
 
 /**
- * Check if country of origin matches the rule.
- *
- * @param {string} itemCountry - Item's country of origin
- * @param {string} ruleCountry - Rule's country of origin
- * @returns {boolean} True when countries match
+ * Compare a country_of_origin value against an ineligible-item country which may
+ * be a single code. Handles comma-separated COO values by testing any match.
+ * @param {string} countryOfOrigin - Item's COO (may be comma separated).
+ * @param {string} ineligibleItemCountryOfOrigin - Ineligible item COO from dataset.
+ * @returns {boolean} True when any COO code matches the ineligible country.
  */
-function isCountryOfOriginMatching(itemCountry, ruleCountry) {
-  if (!itemCountry || !ruleCountry) {
+function isCountryOfOriginMatching(
+  countryOfOrigin,
+  ineligibleItemCountryOfOrigin
+) {
+  if (
+    isNullOrEmptyString(countryOfOrigin) ||
+    isNullOrEmptyString(ineligibleItemCountryOfOrigin)
+  ) {
     return false
   }
-  return itemCountry.toLowerCase().trim() === ruleCountry.toLowerCase().trim()
+
+  const normalizedCountry = countryOfOrigin.toLowerCase()
+  const normalizedIneligibleItemCountry =
+    ineligibleItemCountryOfOrigin.toLowerCase()
+
+  // Check if countryOfOrigin contains comma-separated values
+  if (normalizedCountry.includes(',')) {
+    const countryCodes = normalizedCountry.split(',')
+    // Check if any of the country codes matches the ineligible item country
+    return countryCodes.some(
+      (code) => code.trim() === normalizedIneligibleItemCountry
+    )
+  }
+
+  // Single value case
+  return normalizedCountry === normalizedIneligibleItemCountry
 }
 
 /**
@@ -345,15 +373,12 @@ function isCountryOfOriginMatching(itemCountry, ruleCountry) {
  * @returns {boolean} True when item matches an exception
  */
 function matchesExceptionRule(exceptionRules, typeOfTreatment) {
+  if (!typeOfTreatment) {
+    return false
+  }
   return exceptionRules.some((rule) => {
-    const exceptionTreatment = rule.type_of_treatment.substring(1) // Remove ! prefix
-    if (exceptionTreatment === '' || exceptionTreatment === null) {
-      return typeOfTreatment === null || typeOfTreatment === ''
-    }
-    return (
-      typeOfTreatment &&
-      typeOfTreatment.toLowerCase() === exceptionTreatment.toLowerCase()
-    )
+    const exceptionTreatment = rule.type_of_treatment.substring(1)
+    return typeOfTreatment.toLowerCase() === exceptionTreatment.toLowerCase()
   })
 }
 
@@ -364,18 +389,14 @@ function matchesExceptionRule(exceptionRules, typeOfTreatment) {
  * @param {string|null} typeOfTreatment - Type of treatment to check
  * @returns {boolean} True when item matches a standard rule
  */
-function matchesStandardRule(standardRules, typeOfTreatment) {
+function matchesStandardRule(standardRules, normalizedTypeOfTreatment) {
   return standardRules.some((rule) => {
-    // null in rule means match any treatment
-    if (rule.type_of_treatment === null) {
+    if (!rule.type_of_treatment || !normalizedTypeOfTreatment) {
       return true
     }
-    // Match specific treatment
-    if (typeOfTreatment === null) {
-      return false
-    }
     return (
-      typeOfTreatment.toLowerCase() === rule.type_of_treatment.toLowerCase()
+      normalizedTypeOfTreatment.toLowerCase() ===
+      rule.type_of_treatment.toLowerCase()
     )
   })
 }

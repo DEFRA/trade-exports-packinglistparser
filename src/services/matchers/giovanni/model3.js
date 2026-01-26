@@ -5,16 +5,19 @@
  * Validates establishment number and header positions.
  */
 
+import { createLogger } from '../../../common/helpers/logging/logger.js'
 import matcherResult from '../../matcher-result.js'
 import headers from '../../model-headers-pdf.js'
 import * as regex from '../../../utilities/regex.js'
 import * as pdfHelper from '../../../utilities/pdf-helper.js'
 
+const logger = createLogger()
+
 /**
  * Check if packing list matches Giovanni Model 3 format.
  * @param {Buffer} packingList - PDF file buffer
  * @param {string} filename - Original filename
- * @returns {Promise<string>} Match result code
+ * @returns {Promise<number>} Match result code
  */
 export async function matches(packingList, filename) {
   try {
@@ -41,14 +44,12 @@ export async function matches(packingList, filename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      console.log(
-        `Packing list matches Giovanni Model 3 with filename: ${filename}`
-      )
+      logger.info(`${filename} Packing list matches Giovanni Model 3`)
     }
 
     return result
   } catch (err) {
-    console.error('Giovanni Model 3 matcher error:', err)
+    logger.error(`Error in matches() for file ${filename}`, { err })
     return matcherResult.GENERIC_ERROR
   }
 }
@@ -56,7 +57,7 @@ export async function matches(packingList, filename) {
 /**
  * Check page content for Giovanni Model 3 headers.
  * @param {Array} pageContent - Extracted page content
- * @returns {string} matcherResult - `CORRECT` or `WRONG_HEADER`
+ * @returns {number} matcherResult - `CORRECT` or `WRONG_HEADER`
  */
 function matchHeaders(pageContent) {
   const isHeader = findHeader('GIOVANNI3', pageContent)
@@ -71,7 +72,7 @@ function matchHeaders(pageContent) {
  * Locate a header for a specific model within page content.
  * @param {string} model - Header model key (e.g., 'GIOVANNI3')
  * @param {Array} pageContent - Extracted page content
- * @returns {string} matcherResult - `CORRECT` or `WRONG_HEADER`
+ * @returns {number} matcherResult - `CORRECT` or `WRONG_HEADER`
  */
 function findHeader(model, pageContent) {
   const header = pdfHelper.getHeaders(pageContent, model)

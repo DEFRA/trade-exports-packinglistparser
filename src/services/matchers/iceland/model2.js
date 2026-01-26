@@ -17,7 +17,7 @@ const logger = createLogger()
  * Check whether the provided CSV packing list matches Iceland Model 2.
  * @param {Array<Array>} packingList - CSV data as array of row arrays
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 export function matches(packingList, filename) {
   try {
