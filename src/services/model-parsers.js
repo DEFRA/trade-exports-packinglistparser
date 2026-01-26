@@ -20,6 +20,10 @@ import { parse as parseAsda3 } from './parsers/asda/model3.js'
 import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
 import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 
+// TJ Morris Excel parsers
+import { matches as matchesTjmorris2 } from './matchers/tjmorris/model2.js'
+import { parse as parseTjmorris2 } from './parsers/tjmorris/model2.js'
+
 // No-match matchers and parsers
 import {
   noRemosMatch,
@@ -50,6 +54,10 @@ const parsersExcel = {
   ASDA3: {
     matches: matchesAsda3,
     parse: parseAsda3
+  },
+  TJMORRIS2: {
+    matches: matchesTjmorris2,
+    parse: parseTjmorris2
   }
   // TODO: Add Excel parser implementations
   // Example:

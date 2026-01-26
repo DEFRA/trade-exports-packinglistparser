@@ -20,5 +20,8 @@ export default Object.freeze({
   ASDA3: 'ASDA3',
 
   // Giovanni models
-  GIOVANNI3: 'GIOVANNI3'
+  GIOVANNI3: 'GIOVANNI3',
+
+  // TJ Morris models
+  TJMORRIS2: 'TJMORRIS2'
 })
