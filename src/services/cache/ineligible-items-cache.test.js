@@ -82,7 +82,8 @@ describe('ineligible-items-cache', () => {
       await initializeIneligibleItemsCache()
 
       expect(getFileFromS3).toHaveBeenCalledWith({
-        filename: 'ineligible-items'
+        filename: 'ineligible-items',
+        schema: null
       })
       expect(getIneligibleItemsCache()).toEqual(mockIneligibleItems)
     })
