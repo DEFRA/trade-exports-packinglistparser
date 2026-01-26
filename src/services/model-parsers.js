@@ -20,6 +20,10 @@ import { parse as parseAsda3 } from './parsers/asda/model3.js'
 import { matches as matchesSainsburys1 } from './matchers/sainsburys/model1.js'
 import { parse as parseSainsburys1 } from './parsers/sainsburys/model1.js'
 
+// Tesco Excel parsers
+import { matches as matchesTesco3 } from './matchers/tesco/model3.js'
+import { parse as parseTesco3 } from './parsers/tesco/model3.js'
+
 // Giovanni PDF parsers
 import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
 import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
@@ -35,12 +39,6 @@ import {
   noRemosMatchPdf
 } from './matchers/no-match/model1.js'
 import { noRemosParse, unrecognisedParse } from './parsers/no-match/model1.js'
-
-// TODO: Import retailer-specific matchers and parsers
-// Example structure:
-// import * as coopMatcher from './matchers/co-op/model1.js'
-// import * as coopParser from './parsers/co-op/model1.js'
-// ... etc for all retailers
 
 /**
  * Excel parsers collection.
@@ -62,13 +60,11 @@ const parsersExcel = {
   SAINSBURYS1: {
     matches: matchesSainsburys1,
     parse: parseSainsburys1
+  },
+  TESCO3: {
+    matches: matchesTesco3,
+    parse: parseTesco3
   }
-  // TODO: Add Excel parser implementations
-  // Example:
-  // COOP1: {
-  //   matches: (packingList, filename) => coopMatcher.matches(packingList, filename),
-  //   parse: (packingList, filename) => coopParser.parse(packingList, filename)
-  // }
 }
 
 /**
@@ -80,12 +76,6 @@ const parsersCsv = {
     matches: matchesIceland2,
     parse: parseIceland2
   }
-  // TODO: Add more CSV parser implementations
-  // Example:
-  // ASDA4: {
-  //   matches: (packingList, filename) => asdaMatcher4.matches(packingList, filename),
-  //   parse: (packingList, filename) => asdaParser4.parse(packingList, filename)
-  // }
 }
 
 /**

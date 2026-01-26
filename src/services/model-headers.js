@@ -6,11 +6,12 @@
  */
 import { asdaHeaders } from './model-headers/asda.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
+import { tescoHeaders } from './model-headers/tesco.js'
 
 const headers = {
   ...asdaHeaders,
-  ...sainsburysHeaders
-  // TODO: Add other Excel model headers as they are migrated
+  ...sainsburysHeaders,
+  ...tescoHeaders
 }
 
 export default headers

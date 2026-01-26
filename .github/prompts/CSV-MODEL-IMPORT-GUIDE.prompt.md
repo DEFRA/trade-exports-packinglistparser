@@ -14,8 +14,10 @@ You are an expert software engineer tasked with importing a CSV-based packing li
 - Parser constant added to `parser-model.js`
 - Matcher and parser implemented with correct imports
 - Model registered in `model-parsers.js` under `parsersCsv`
-- Unit tests created and passing
+- Unit tests created and passing (matcher and parser)
+- Parser-service integration tests created and passing
 - Integration tests verify parser discovery works
+- **No modifications to legacy test data or expected results**
 - No modifications to legacy data structures or validation logic
 
 **When to Ask for Clarification:**
@@ -41,6 +43,7 @@ Before diving into the detailed guide, use this checklist to ensure you have eve
 - [ ] **Register in model-parsers** - Add imports and register in `parsersCsv` object
 - [ ] **Create test files** - Matcher test and parser test (`.test.js` files)
 - [ ] **Copy test data** - To `test/test-data-and-results/models-csv/` and `results-csv/`
+- [ ] **Copy parser-service tests** - To `test/parser-service/[retailer]/` (copy exactly from legacy)
 - [ ] **Run tests** - Execute `npm test -- matchers/[retailer]/model[N]` and parsers
 - [ ] **Verify integration** - Check parser is discovered by system
 
@@ -88,6 +91,9 @@ This guide provides step-by-step instructions for importing a specific CSV-based
    - `app/services/model-headers-csv/[retailer].js` OR `app/services/model-headers/[retailer].js`
    - `app/services/matchers-csv/[retailer]/model[N].js` OR `app/services/matchers/[retailer]/model[N].js`
    - `app/services/parsers-csv/[retailer]/model[N].js` OR `app/services/parsers/[retailer]/model[N].js`
+   - `test/unit/test-data-and-results/models-csv/[retailer]/model[N].js` (test data)
+   - `test/unit/test-data-and-results/results-csv/[retailer]/model[N].js` (expected results)
+   - `test/unit/services/parser-service/[retailer]/model[N].test.js` (parser-service tests)
 
 2. If files are NOT in expected locations, search the repository and ask user to confirm correct paths
 
@@ -981,9 +987,26 @@ export function getCsvParser(packingList, filename) {
 
 ---
 
-### Step 6: Add Test Data (Strongly Recommended)
+### Step 6: Add Test Data (Required)
 
 ⚠️ **Test data is critical for validation** - Without it, you cannot verify the migration is correct.
+
+⚠️ **CRITICAL: DO NOT MODIFY TEST DATA OR EXPECTED RESULTS**
+
+Test data and expected results MUST be copied exactly from the legacy repository with only the following changes allowed:
+
+- Converting `module.exports` to `export default`
+- Updating import paths to match new project structure
+
+**DO NOT:**
+
+- Add, remove, or modify any test data values
+- Change mock data entries
+- "Clean up" or "normalize" values
+- Add convenience entries that don't exist in legacy
+- Modify expected results to match different behavior
+
+If tests fail after migration, fix the CODE (matcher, parser, or service), not the test data.
 
 #### 6.1 Create Test Data Directory
 
@@ -1175,15 +1198,126 @@ describe('LIDL Model 1 CSV Parser', () => {
 
 ---
 
-### Step 8: Verify Integration
+### Step 7.5: Create Parser-Service Integration Tests (Required)
 
-#### 8.1 Run Tests
+**New Location:** `test/parser-service/[retailer]/model[N].test.js`
 
-```bash
-npm test -- --grep "LIDL Model 1"
+#### 7.5.1 Copy Parser-Service Test from Legacy
+
+**Old Location:** `test/unit/services/parser-service/[retailer]/model[N].test.js`
+
+⚠️ **CRITICAL:** Copy the parser-service test file EXACTLY from legacy with only these changes:
+
+1. Convert `require()` to ES6 `import`
+2. Update import paths to match new project structure
+3. Convert `module.exports` to `export default` if applicable
+
+**DO NOT modify:**
+
+- Mock data entries (e.g., `vi.mock` for ineligible items)
+- Test data references
+- Expected results or assertions
+- Test case names or describe blocks
+
+#### 7.5.2 Mock Data Must Match Legacy Exactly
+
+If the legacy test mocks `data-ineligible-items.json`, copy the mock EXACTLY:
+
+```javascript
+// ❌ WRONG - Adding entries that don't exist in legacy
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '012',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    },
+    { commodity_code: '1234', type_of_treatment: 'Processed' } // ← DON'T ADD THIS
+  ]
+}))
+
+// ✅ CORRECT - Exact copy from legacy
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '012',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    }
+  ]
+}))
 ```
 
-#### 8.2 Test Parser Discovery
+#### 7.5.3 Parser-Service Test Template
+
+```javascript
+// test/parser-service/lidl/model1.test.js
+import { describe, test, expect, vi, beforeEach, afterEach } from 'vitest'
+import parserService from '../../../src/services/parser-service.js'
+import parserModel from '../../../src/services/parser-model.js'
+import model from '../../test-data-and-results/models-csv/lidl/model1.js'
+import expectedResults from '../../test-data-and-results/results-csv/lidl/model1.js'
+
+// Mock ineligible items - COPY EXACTLY FROM LEGACY
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    // Copy exact entries from legacy test file
+  ]
+}))
+
+describe('Parser Service - LIDL Model 1 CSV', () => {
+  const filename = 'packinglist.csv'
+
+  describe('Valid packing lists', () => {
+    test('should return correct parser model', () => {
+      const result = parserService.findParser(model.validModel, filename)
+      expect(result.parserModel).toBe(parserModel.LIDL1)
+    })
+
+    test('should parse items correctly', () => {
+      const result = parserService.findParser(model.validModel, filename)
+      expect(result.items).toEqual(expectedResults.validTestResult.items)
+    })
+  })
+
+  describe('Country of Origin validation', () => {
+    // Copy all CoO validation tests from legacy
+  })
+
+  describe('Error handling', () => {
+    // Copy all error handling tests from legacy
+  })
+})
+```
+
+#### 7.5.4 Verify Test Data Matches Mock
+
+If the test uses ineligible items validation, ensure test data matches the mock:
+
+```javascript
+// If mock has: { commodity_code: '012', type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT' }
+// Then test data must use these exact values:
+{
+  commodity_code: '0123456789',  // Must START with '012' to match
+  type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'  // Must match exactly
+}
+```
+
+---
+
+### Step 9: Verify Integration
+
+#### 9.1 Run Tests
+
+```bash
+# Run all tests for the model
+npm test -- --grep "LIDL Model 1"
+
+# Run parser-service tests specifically
+npm test -- test/parser-service/lidl/model1.test.js
+```
+
+#### 9.2 Test Parser Discovery
 
 Create an integration test to verify the parser is correctly discovered:
 
@@ -1201,7 +1335,7 @@ describe('CSV Parser Discovery - LIDL Model 1', () => {
 })
 ```
 
-#### 8.3 Verify REMOS Validation
+#### 9.3 Verify REMOS Validation
 
 Ensure the parser correctly rejects CSVs without REMOS:
 
@@ -1216,7 +1350,7 @@ test('rejects CSV packing list without REMOS', () => {
 })
 ```
 
-#### 8.4 Compare with Legacy Repository on Test Failures
+#### 9.4 Compare with Legacy Repository on Test Failures
 
 ⚠️ **If migrated tests fail but legacy tests pass, check CODE first, then DATA.**
 
@@ -1618,8 +1752,9 @@ Use this checklist when importing a new CSV model:
   - [ ] Model headers configuration (model-headers-csv or model-headers)
   - [ ] Matcher implementation (matchers-csv or matchers)
   - [ ] Parser implementation (parsers-csv or parsers)
-  - [ ] Test data (optional)
-  - [ ] Expected results (optional)
+  - [ ] Test data (**copy exactly, no modifications**)
+  - [ ] Expected results (**copy exactly, no modifications**)
+  - [ ] Parser-service tests (**copy exactly, no modifications**)
 
 - [ ] **Step 2:** Created model headers
 
@@ -1654,11 +1789,12 @@ Use this checklist when importing a new CSV model:
   - [ ] Updated parsers.js (parsersCsv object)
   - [ ] Verified getCsvParser() includes new parser
 
-- [ ] **Step 6:** Added test data
+- [ ] **Step 6:** Added test data (**no modifications allowed**)
 
   - [ ] Created test data directory structure
-  - [ ] Copied and adapted CSV test models (array of arrays)
-  - [ ] Copied and adapted expected results
+  - [ ] Copied CSV test models exactly from legacy (only import path changes)
+  - [ ] Copied expected results exactly from legacy (only import path changes)
+  - [ ] Verified test data matches legacy using diff
 
 - [ ] **Step 7:** Created unit tests
 
@@ -1668,8 +1804,17 @@ Use this checklist when importing a new CSV model:
   - [ ] Tests verify correct parsing output
   - [ ] Tests handle empty/null input
 
-- [ ] **Step 8:** Verified integration
+- [ ] **Step 7.5:** Created parser-service tests (**no modifications allowed**)
+
+  - [ ] Created test directory structure (`test/parser-service/[retailer]/`)
+  - [ ] Copied parser-service test exactly from legacy
+  - [ ] Mock data matches legacy exactly (no added entries)
+  - [ ] Test data values match mock requirements
+  - [ ] All parser-service tests pass
+
+- [ ] **Step 9:** Verified integration
   - [ ] All unit tests pass
+  - [ ] All parser-service tests pass
   - [ ] CSV parser discovery test passes
   - [ ] REMOS validation test passes (NOREMOSCSV)
   - [ ] Tested with real CSV samples (if available)
@@ -1679,6 +1824,35 @@ Use this checklist when importing a new CSV model:
 ## Troubleshooting
 
 ### Common CSV-Specific Issues
+
+#### Issue: Parser-service tests fail with ineligible items validation
+
+**Symptoms:** Tests expecting ineligible items to be detected fail
+
+**Solutions:**
+
+1. **Verify mock data matches legacy exactly** - Do not add extra mock entries
+2. **Check test data uses correct values** - commodity_code and type_of_treatment must match mock
+3. **Ensure mock is placed correctly** - `vi.mock()` must be before imports that use the data
+
+**Example:**
+
+```javascript
+// Mock from legacy - copy EXACTLY, don't add entries
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '012',
+      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+    }
+  ]
+}))
+
+// Test data must use values that match the mock
+// commodity_code: '0123456789' starts with '012' ✓
+// type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT' matches exactly ✓
+```
 
 #### Issue: Parser not discovering CSV model
 
@@ -2035,13 +2209,20 @@ const headerRow = 0 // What if there's a title row first?
 
 1. **Compare with Legacy First:** When tests fail, always check the legacy repository for differences in CODE before modifying TEST DATA. Validator bugs affect all parser types (Excel, CSV, PDF).
 
-2. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" CSV test data - variations are intentional to test regex patterns.
+2. **NEVER Modify Test Data or Expected Results:** Test data and expected results must be copied exactly from legacy. If tests fail, fix the code (matcher, parser, or validator), not the test data. The only allowed changes are:
 
-3. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
+   - Converting `module.exports` to `export default`
+   - Updating import paths
 
-4. **Header Detection:** Most CSVs have header at index 0, but always verify. Some may have metadata rows first.
+3. **NEVER Add Mock Entries That Don't Exist in Legacy:** When copying parser-service tests, copy mock data exactly. Do not add "convenience" entries that weren't in the original test.
 
-5. **Empty Row Handling:** CSVs often have trailing empty rows. Filter these before processing:
+4. **Preserve Test Data Exactly:** Don't "normalize" or "clean up" CSV test data - variations are intentional to test regex patterns.
+
+5. **Verify Validator Logic:** Compare validator utility functions line-by-line with legacy - subtle function call differences cause bugs across all parsers.
+
+6. **Header Detection:** Most CSVs have header at index 0, but always verify. Some may have metadata rows first.
+
+7. **Empty Row Handling:** CSVs often have trailing empty rows. Filter these before processing:
 
 ```javascript
 const validRows = csv.filter((row) =>
@@ -2049,13 +2230,13 @@ const validRows = csv.filter((row) =>
 )
 ```
 
-6. **Cell Value Sanitization:** CSV cells may have extra whitespace:
+8. **Cell Value Sanitization:** CSV cells may have extra whitespace:
 
 ```javascript
 const cleanValue = cell?.toString().trim()
 ```
 
-7. **Array Bounds Checking:** Always verify row exists before accessing:
+9. **Array Bounds Checking:** Always verify row exists before accessing:
 
 ```javascript
 if (headerRow >= 0 && headerRow < csv.length) {
@@ -2063,11 +2244,11 @@ if (headerRow >= 0 && headerRow < csv.length) {
 }
 ```
 
-8. **REMOS Format:** Verify REMOS follows `RMS-GB-XXXXXX-XXX` pattern
+10. **REMOS Format:** Verify REMOS follows `RMS-GB-XXXXXX-XXX` pattern
 
-9. **Sheet Name:** Always pass `null` for sheet name in CSV parsers (5th parameter to mapParser)
+11. **Sheet Name:** Always pass `null` for sheet name in CSV parsers (5th parameter to mapParser)
 
-10. **Test Data Format:** CSV test data should be array of arrays, not objects:
+12. **Test Data Format:** CSV test data should be array of arrays, not objects:
 
 ```javascript
 // Correct
@@ -2082,11 +2263,13 @@ if (headerRow >= 0 && headerRow < csv.length) {
 }
 ```
 
-11. **Performance:** CSVs are typically smaller than Excel files, but still validate input size
+13. **Performance:** CSVs are typically smaller than Excel files, but still validate input size
 
-12. **Encoding:** Be aware of CSV encoding issues (UTF-8, BOM markers, etc.)
+14. **Encoding:** Be aware of CSV encoding issues (UTF-8, BOM markers, etc.)
 
-13. **Delimiter Handling:** Verify CSV uses standard comma delimiter
+15. **Delimiter Handling:** Verify CSV uses standard comma delimiter
+
+16. **Include Parser-Service Tests:** Always copy and include the parser-service integration tests from legacy - these validate the complete parsing workflow including CoO validation.
 
 ---
 

@@ -23,5 +23,11 @@ export default Object.freeze({
   GIOVANNI3: 'GIOVANNI3',
 
   // M&S models
-  MANDS1: 'MANDS1'
+  MANDS1: 'MANDS1',
+
+  // Tesco models
+  TESCO3: 'TESCO3',
+
+  // Sainsburys models
+  SAINSBURYS1: 'SAINSBURYS1'
 })
