@@ -4,7 +4,6 @@
  * Central registry mapping all retailer matchers and parsers for Excel, CSV, PDF AI,
  * and PDF non-AI formats. Exports grouped collections for parser factory selection.
  *
- * TODO: Import actual parser and matcher implementations when available.
  * This file provides the structure and placeholders for where models will be added.
  */
 

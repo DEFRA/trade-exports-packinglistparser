@@ -11,9 +11,6 @@ import { pdfMandsHeaders } from './model-headers/mands.js'
 const headers = {
   ...pdfGiovanniHeaders,
   ...pdfMandsHeaders
-  // TODO: Add PDF model headers as they are migrated
-  // ...pdfBookerHeaders,
-  // ...pdfGreggsHeaders,
 }
 
 export default headers
