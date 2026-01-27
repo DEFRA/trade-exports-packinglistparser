@@ -28,4 +28,4 @@ const buffaloadHeaders = {
   }
 }
 
-export default buffaloadHeaders
+export { buffaloadHeaders }

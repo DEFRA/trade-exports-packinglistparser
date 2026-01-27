@@ -5,7 +5,7 @@
  * Each retailer provides establishment number patterns and field mapping regex.
  */
 import { asdaHeaders } from './model-headers/asda.js'
-import buffaloadHeaders from './model-headers/buffaload.js'
+import { buffaloadHeaders } from './model-headers/buffaload.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
 import { tescoHeaders } from './model-headers/tesco.js'
 
