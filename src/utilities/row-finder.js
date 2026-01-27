@@ -14,7 +14,7 @@
  * @returns {number} Index of first matching row or -1 when not found
  */
 function rowFinder(packingList, callback) {
-  return packingList.findIndex(callback)
+  return packingList.findIndex((element) => callback(element))
 }
 
 export { rowFinder }

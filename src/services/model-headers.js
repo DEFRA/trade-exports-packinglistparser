@@ -5,13 +5,15 @@
  * Each retailer provides establishment number patterns and field mapping regex.
  */
 import { asdaHeaders } from './model-headers/asda.js'
+import { coopHeaders } from './model-headers/coop.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
 import { tescoHeaders } from './model-headers/tesco.js'
 
-const headers = {
+const modelHeaders = {
   ...asdaHeaders,
+  ...coopHeaders,
   ...sainsburysHeaders,
   ...tescoHeaders
 }
 
-export default headers
+export default modelHeaders

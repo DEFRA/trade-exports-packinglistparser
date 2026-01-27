@@ -1,6 +1,6 @@
 /**
- * SAINSBURYS Excel parser - Model 1
- * @module parsers/sainsburys/model1
+ * CO-OP Excel parser - Model 1
+ * @module parsers/coop/model1
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import combineParser from '../../parser-combine.js'
@@ -15,7 +15,7 @@ import * as regex from '../../../utilities/regex.js'
 const logger = createLogger()
 
 /**
- * Parse the provided packing list JSON for SAINSBURYS model 1.
+ * Parse the provided packing list JSON for CO-OP model 1.
  * @param {Object} packingListJson - Workbook JSON keyed by sheet name.
  * @returns {Object} Combined parser result.
  */
@@ -25,44 +25,52 @@ export function parse(packingListJson) {
     let packingListContents = []
     let packingListContentsTemp = []
     let establishmentNumbers = []
-    const establishmentNumber =
-      regex
-        .findMatch(
-          headers.SAINSBURYS1.establishmentNumber.regex,
-          packingListJson[sheets[0]]
-        )
-        ?.replaceAll('\u200B', '') ?? null
 
-    const headerTitles = Object.values(headers.SAINSBURYS1.regex)
+    // Find primary establishment number
+    const establishmentNumber = regex.findMatch(
+      headers.COOP1.establishmentNumber.regex,
+      packingListJson[sheets[0]]
+    )
+
+    // Setup header callback
+    const headerTitles = Object.values(headers.COOP1.regex)
     const headerCallback = function (x) {
       return matchesHeader(headerTitles, [x]) === MatcherResult.CORRECT
     }
 
+    // Process each sheet
     for (const sheet of sheets) {
-      establishmentNumbers = appendDistinctEstablishmentNumbers(
-        establishmentNumbers,
-        packingListJson[sheet]
+      // Find all establishment numbers
+      establishmentNumbers = regex.findAllMatches(
+        regex.remosRegex,
+        packingListJson[sheet],
+        establishmentNumbers
       )
 
+      // Find header row
       const headerRow = rowFinder(packingListJson[sheet], headerCallback)
       const dataRow = headerRow + 1
+
+      // Map data rows
       packingListContentsTemp = mapParser(
         packingListJson[sheet],
         headerRow,
         dataRow,
-        headers.SAINSBURYS1,
+        headers.COOP1,
         sheet
       )
+
       packingListContents = packingListContents.concat(packingListContentsTemp)
     }
 
+    // CRITICAL: Include headers parameter (6th parameter) for CoO validation
     return combineParser.combine(
       establishmentNumber,
       packingListContents,
       true,
-      parserModel.SAINSBURYS1,
+      parserModel.COOP1,
       establishmentNumbers,
-      headers.SAINSBURYS1
+      headers.COOP1 // Required for Country of Origin validation
     )
   } catch (err) {
     logger.error(
@@ -72,28 +80,8 @@ export function parse(packingListJson) {
           stack_trace: err.stack
         }
       },
-      'Error in Sainsburys 1 parser'
+      'Error in Co-op 1 parser'
     )
-    return combineParser.combine(null, [], false, parserModel.NOMATCH)
+    return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
-}
-
-/**
- * Find and normalise distinct establishment numbers from a page.
- * Removes zero-width spaces and deduplicates.
- * @param {Array<string>} establishmentNumbers - Existing establishment numbers
- * @param {Array<Object>} page - Page rows to scan for establishment numbers
- * @returns {Array<string>} Updated list of establishment numbers
- */
-function appendDistinctEstablishmentNumbers(establishmentNumbers, page) {
-  establishmentNumbers = regex.findAllMatches(
-    /^(RMS-GB-\d{6}-\d{3})(?:\u200B)?$/,
-    page,
-    establishmentNumbers
-  )
-
-  establishmentNumbers = establishmentNumbers.map((rms) =>
-    rms.replaceAll('\u200B', '')
-  )
-  return [...new Set(establishmentNumbers)]
 }
