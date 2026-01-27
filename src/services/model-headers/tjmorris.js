@@ -38,4 +38,4 @@ const tjmorrisHeaders = {
   }
 }
 
-export default tjmorrisHeaders
+export { tjmorrisHeaders }
