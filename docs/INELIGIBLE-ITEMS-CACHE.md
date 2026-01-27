@@ -14,7 +14,7 @@ The following environment variables control the ineligible items cache behavior:
 | --------------------------------- | ------------------------------------------ | ------------------ | ----------------------- |
 | `INELIGIBLE_ITEMS_READ_ENABLED`   | Enable/disable reading from S3             | `true`             | `true` or `false`       |
 | `INELIGIBLE_ITEMS_S3_FILE_NAME`   | S3 file name (without extension)           | `ineligible-items` | `ineligible-items`      |
-| `INELIGIBLE_ITEMS_S3_SCHEMA`      | S3 schema/prefix for the file              | `null`             | `v1`                    |
+| `INELIGIBLE_ITEMS_S3_SCHEMA`      | S3 schema/prefix for the file              | `null`             | `cache`                 |
 | `INELIGIBLE_ITEMS_MAX_RETRIES`    | Max retry attempts on S3 failure           | `3`                | `3`                     |
 | `INELIGIBLE_ITEMS_RETRY_DELAY_MS` | Delay between retries (ms)                 | `2000`             | `2000`                  |
 | `AWS_ENDPOINT_URL`                | AWS S3 endpoint (LocalStack for local dev) | `null`             | `http://localhost:4566` |
