@@ -2,20 +2,16 @@
  * TJMORRIS Excel parser - Model 2
  * @module parsers/tjmorris/model2
  */
-import { combine } from '../../parser-combine.js'
+import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js'
 import * as regex from '../../../utilities/regex.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { matchesHeader } from '../../matches-header.js'
 import matcherResult from '../../matcher-result.js'
 import { mapParser } from '../../parser-map.js'
 
-const currentFilename = fileURLToPath(import.meta.url)
-const filename = path.join('src', currentFilename.split('src')[1])
 const logger = createLogger()
 
 /**
@@ -59,7 +55,7 @@ export function parse(packingListJson) {
       packingListContents = packingListContents.concat(packingListContentsTemp)
     }
 
-    return combine(
+    return combineParser.combine(
       establishmentNumber,
       packingListContents,
       true,
@@ -70,8 +66,6 @@ export function parse(packingListJson) {
   } catch (err) {
     logger.error(
       {
-        filename,
-        function: 'parse()',
         error: {
           message: err.message,
           stack_trace: err.stack
@@ -79,6 +73,6 @@ export function parse(packingListJson) {
       },
       'TJ Morris Model 2 parser error'
     )
-    return combine(null, [], false, parserModel.NOMATCH)
+    return combineParser.combine(null, [], false, parserModel.NOMATCH)
   }
 }

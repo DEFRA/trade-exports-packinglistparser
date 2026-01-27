@@ -8,11 +8,7 @@ import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
 import headers from '../../model-headers.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 
-const currentFilename = fileURLToPath(import.meta.url)
-const loggerFilename = path.join('src', currentFilename.split('src')[1])
 const logger = createLogger()
 
 /**
@@ -51,27 +47,11 @@ export function matches(packingList, filename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info(
-        {
-          filename: loggerFilename,
-          function: 'matches()'
-        },
-        `Packing list matches Tjmorris Model 2 with filename: ${filename}`
-      )
+      logger.info(`${filename} Packing list matches Tjmorris Model 2`)
     }
     return result
   } catch (err) {
-    logger.error(
-      {
-        filename: loggerFilename,
-        function: 'matches()',
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'TJ Morris Model 2 matcher error'
-    )
+    logger.error(`Error in matches() for file ${filename}`, { err })
     return matcherResult.GENERIC_ERROR
   }
 }
