@@ -36,4 +36,3 @@ const coopHeaders = {
 }
 
 export { coopHeaders }
-export default coopHeaders
