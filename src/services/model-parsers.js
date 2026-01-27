@@ -35,6 +35,10 @@ import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 import { matches as matchesMands1 } from './matchers/mands/model1.js'
 import { parse as parseMands1 } from './parsers/mands/model1.js'
 
+// TJ Morris Excel parsers
+import { matches as matchesTjmorris2 } from './matchers/tjmorris/model2.js'
+import { parse as parseTjmorris2 } from './parsers/tjmorris/model2.js'
+
 // No-match matchers and parsers
 import {
   noRemosMatch,
@@ -63,6 +67,10 @@ const parsersExcel = {
   SAINSBURYS1: {
     matches: matchesSainsburys1,
     parse: parseSainsburys1
+  },
+  TJMORRIS2: {
+    matches: matchesTjmorris2,
+    parse: parseTjmorris2
   },
   TESCO3: {
     matches: matchesTesco3,

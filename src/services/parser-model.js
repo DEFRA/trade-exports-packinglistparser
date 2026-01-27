@@ -30,5 +30,8 @@ export default Object.freeze({
   TESCO3: 'TESCO3',
 
   // Sainsburys models
-  SAINSBURYS1: 'SAINSBURYS1'
+  SAINSBURYS1: 'SAINSBURYS1',
+
+  // TJ Morris models
+  TJMORRIS2: 'TJMORRIS2'
 })

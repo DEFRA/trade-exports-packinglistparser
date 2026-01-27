@@ -7,11 +7,13 @@
 import { asdaHeaders } from './model-headers/asda.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
 import { tescoHeaders } from './model-headers/tesco.js'
+import { tjmorrisHeaders } from './model-headers/tjmorris.js'
 
 const headers = {
   ...asdaHeaders,
   ...sainsburysHeaders,
-  ...tescoHeaders
+  ...tescoHeaders,
+  ...tjmorrisHeaders
 }
 
 export default headers
