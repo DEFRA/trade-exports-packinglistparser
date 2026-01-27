@@ -49,7 +49,10 @@ describe('Parser Service - Co-op Model 1', () => {
       parserModel: parserModel.NOMATCH
     }
 
-    const result = await parserService.findParser(model.validModel, wrongFilename)
+    const result = await parserService.findParser(
+      model.validModel,
+      wrongFilename
+    )
 
     expect(result).toMatchObject(invalidTestResult_NoMatch)
   })
@@ -113,7 +116,10 @@ describe('Parser Service - Co-op Model 1', () => {
   })
 
   test('matches valid Co-op Model 1 file, calls parser and returns all_required_fields_present as false for ineligible items', async () => {
-    const result = await parserService.findParser(model.ineligibleItems, filename)
+    const result = await parserService.findParser(
+      model.ineligibleItems,
+      filename
+    )
 
     expect(result.business_checks.failure_reasons).toBe(
       failureReasons.PROHIBITED_ITEM +

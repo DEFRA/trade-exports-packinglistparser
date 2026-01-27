@@ -25,7 +25,10 @@ function sanitise(jsonString) {
     return JSON.stringify(sanitized)
   } catch (err) {
     // If parsing fails, return null
-    logger.warn({ error: err.message }, `Failed to parse JSON string: ${jsonString}`)
+    logger.warn(
+      { error: err.message },
+      `Failed to parse JSON string: ${jsonString}`
+    )
     return null
   }
 }
