@@ -47,8 +47,11 @@ export async function initializeIneligibleItemsCache() {
       const parsedData = JSON.parse(fileContent)
 
       ineligibleItemsCache = parsedData
+      const itemCount =
+        parsedData?.ineligibleItems?.length ||
+        (Array.isArray(parsedData) ? parsedData.length : 0)
       logger.info(
-        { itemCount: Array.isArray(parsedData) ? parsedData.length : 0 },
+        { itemCount },
         'Successfully loaded ineligible items data into cache'
       )
       return

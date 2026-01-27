@@ -325,7 +325,7 @@ const config = convict({
       doc: 'S3 schema/prefix for ineligible items file',
       format: String,
       nullable: true,
-      default: null,
+      default: 'cache',
       env: 'INELIGIBLE_ITEMS_S3_SCHEMA'
     },
     maxRetries: {
