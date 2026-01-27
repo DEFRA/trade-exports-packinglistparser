@@ -17,7 +17,7 @@ const logger = createLogger()
  * Check whether the provided packing list matches ASDA Model 4 (CSV).
  * @param {Array<Array>} packingList - CSV data as array of row arrays
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 export function matches(packingList, filename) {
   try {
