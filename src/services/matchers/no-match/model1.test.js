@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest'
-import { noRemosMatchCsv, noRemosMatch } from './model1.js'
+import { noRemosMatchCsv, noRemosMatch, noRemosMatchPdf } from './model1.js'
 
 describe('no-match model1 - noRemosMatchCsv', () => {
   test.each([
@@ -31,5 +31,23 @@ describe('matchesNoMatch', () => {
     }
     const result = noRemosMatch(model)
     expect(result).toBe(expected)
+  })
+})
+
+describe('noRemosMatchPdf', () => {
+  test('returns false when PDF extraction throws an error', async () => {
+    // Pass invalid data that will cause extractPdf to throw
+    const invalidPdfBuffer = Buffer.from('not a valid PDF')
+
+    const result = await noRemosMatchPdf(invalidPdfBuffer)
+
+    // Should catch error and return false
+    expect(result).toBe(false)
+  })
+
+  test('handles null or undefined input gracefully', async () => {
+    const result = await noRemosMatchPdf(null)
+
+    expect(result).toBe(false)
   })
 })
