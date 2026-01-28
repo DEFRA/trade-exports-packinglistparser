@@ -5,7 +5,7 @@
  * Keys are intentionally short identifiers used throughout the validation pipeline.
  */
 
-const failureReasons = {
+const packingListFailureReasons = {
   IDENTIFIER_MISSING: 'Identifier is missing',
   PRODUCT_CODE_INVALID: 'Product code is invalid',
   DESCRIPTION_MISSING: 'Product description is missing',
@@ -25,4 +25,4 @@ const failureReasons = {
     'Multiple GB Place of Dispatch (Establishment) numbers found on packing list.\n'
 }
 
-export default failureReasons
+export default packingListFailureReasons
