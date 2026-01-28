@@ -15,7 +15,7 @@ const mockConfig = {
   secretAccessKey: 'test-secret-key'
 }
 
-const mockPackingList = { schemaVersion: 'v1' }
+const mockPackingList = { schemaVersion: 'cache' }
 
 const getConfigByName = (name) => {
   if (name === 'aws') return mockConfig

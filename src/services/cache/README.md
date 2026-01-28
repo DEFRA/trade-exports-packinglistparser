@@ -29,7 +29,7 @@ The cache is configured through environment variables:
 ```bash
 # .env file
 INELIGIBLE_ITEMS_S3_FILE_NAME=ineligible-items
-INELIGIBLE_ITEMS_S3_SCHEMA=v1.0
+INELIGIBLE_ITEMS_S3_SCHEMA=cache
 INELIGIBLE_ITEMS_MAX_RETRIES=3
 INELIGIBLE_ITEMS_RETRY_DELAY_MS=2000
 ```
