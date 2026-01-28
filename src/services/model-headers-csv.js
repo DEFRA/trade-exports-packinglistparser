@@ -7,9 +7,9 @@
 import { csvIcelandHeaders } from './model-headers/iceland.js'
 import { csvAsdaHeaders } from './model-headers/asda.js'
 
-const headers = {
+const modelHeadersCsv = {
   ...csvIcelandHeaders,
   ...csvAsdaHeaders
 }
 
-export default headers
+export default modelHeadersCsv
