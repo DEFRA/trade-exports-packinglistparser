@@ -70,6 +70,14 @@ function findHeaderCols(header, packingListHeader) {
     )
   }
 
+  if (header.regex?.header_net_weight_unit) {
+    headerCols.header_net_weight_unit = Object.keys(packingListHeader).find(
+      (key) => {
+        return header.regex.header_net_weight_unit.test(packingListHeader[key])
+      }
+    )
+  }
+
   return headerCols
 }
 
@@ -83,7 +91,12 @@ function findHeaderCols(header, packingListHeader) {
  */
 function extractBlanketValues(header, packingListJson, headerCols, headerRow) {
   const netWeightUnit = header.findUnitInHeader
-    ? regex.findUnit(packingListJson[headerRow][headerCols.total_net_weight_kg])
+    ? (regex.findUnit(
+        packingListJson[headerRow][headerCols.total_net_weight_kg]
+      ) ??
+      regex.findUnit(
+        packingListJson[headerRow][headerCols.header_net_weight_unit]
+      ))
     : null
 
   const blanketNirms = regex.test(header.blanketNirms?.regex, packingListJson)
