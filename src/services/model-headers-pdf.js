@@ -8,9 +8,9 @@
 import { pdfGiovanniHeaders } from './model-headers/giovanni.js'
 import { pdfMandsHeaders } from './model-headers/mands.js'
 
-const headers = {
+const modelHeadersPdf = {
   ...pdfGiovanniHeaders,
   ...pdfMandsHeaders
 }
 
-export default headers
+export default modelHeadersPdf

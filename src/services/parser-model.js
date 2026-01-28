@@ -18,6 +18,7 @@ export default Object.freeze({
 
   // ASDA models
   ASDA3: 'ASDA3',
+  ASDA4: 'ASDA4',
 
   // Buffaload Logistics models
   BUFFALOAD1: 'BUFFALOAD1',
@@ -28,9 +29,18 @@ export default Object.freeze({
   // M&S models
   MANDS1: 'MANDS1',
 
+  // Nisa models
+  NISA1: 'NISA1',
+
   // Tesco models
   TESCO3: 'TESCO3',
 
   // Sainsburys models
-  SAINSBURYS1: 'SAINSBURYS1'
+  SAINSBURYS1: 'SAINSBURYS1',
+
+  // TJ Morris models
+  TJMORRIS2: 'TJMORRIS2',
+
+  // Co-op models
+  COOP1: 'COOP1'
 })

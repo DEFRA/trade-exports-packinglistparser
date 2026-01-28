@@ -11,6 +11,10 @@
 import { matches as matchesIceland2 } from './matchers/iceland/model2.js'
 import { parse as parseIceland2 } from './parsers/iceland/model2.js'
 
+// ASDA CSV parsers
+import { matches as matchesAsda4 } from './matchers/asda/model4.js'
+import { parse as parseAsda4 } from './parsers/asda/model4.js'
+
 // ASDA Excel parsers
 import { matches as matchesAsda3 } from './matchers/asda/model3.js'
 import { parse as parseAsda3 } from './parsers/asda/model3.js'
@@ -18,6 +22,13 @@ import { parse as parseAsda3 } from './parsers/asda/model3.js'
 // Buffaload Logistics Excel parsers
 import { matches as matchesBuffaload1 } from './matchers/buffaload-logistics/model1.js'
 import { parse as parseBuffaload1 } from './parsers/buffaload-logistics/model1.js'
+// Co-op Excel parsers
+import { matches as matchesCoop1 } from './matchers/coop/model1.js'
+import { parse as parseCoop1 } from './parsers/coop/model1.js'
+
+// Nisa Excel parsers
+import { matches as matchesNisa1 } from './matchers/nisa/model1.js'
+import { parse as parseNisa1 } from './parsers/nisa/model1.js'
 
 // Sainsburys Excel parsers
 import { matches as matchesSainsburys1 } from './matchers/sainsburys/model1.js'
@@ -34,6 +45,10 @@ import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 // M&S PDF parsers
 import { matches as matchesMands1 } from './matchers/mands/model1.js'
 import { parse as parseMands1 } from './parsers/mands/model1.js'
+
+// TJ Morris Excel parsers
+import { matches as matchesTjmorris2 } from './matchers/tjmorris/model2.js'
+import { parse as parseTjmorris2 } from './parsers/tjmorris/model2.js'
 
 // No-match matchers and parsers
 import {
@@ -64,9 +79,21 @@ const parsersExcel = {
     matches: matchesBuffaload1,
     parse: parseBuffaload1
   },
+  COOP1: {
+    matches: matchesCoop1,
+    parse: parseCoop1
+  },
+  NISA1: {
+    matches: matchesNisa1,
+    parse: parseNisa1
+  },
   SAINSBURYS1: {
     matches: matchesSainsburys1,
     parse: parseSainsburys1
+  },
+  TJMORRIS2: {
+    matches: matchesTjmorris2,
+    parse: parseTjmorris2
   },
   TESCO3: {
     matches: matchesTesco3,
@@ -79,6 +106,10 @@ const parsersExcel = {
  * Maps parser model names to their matcher and parser implementations.
  */
 const parsersCsv = {
+  ASDA4: {
+    matches: matchesAsda4,
+    parse: parseAsda4
+  },
   ICELAND2: {
     matches: matchesIceland2,
     parse: parseIceland2
