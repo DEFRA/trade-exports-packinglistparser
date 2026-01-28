@@ -18,7 +18,7 @@ const filename = path.join('src', currentFilename.split('src')[1])
  * Check whether the provided packing list matches Buffaload Logistics Model 1.
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} sourceFilename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 function matches(packingList, sourceFilename) {
   try {
