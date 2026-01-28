@@ -19,6 +19,9 @@ import { parse as parseAsda4 } from './parsers/asda/model4.js'
 import { matches as matchesAsda3 } from './matchers/asda/model3.js'
 import { parse as parseAsda3 } from './parsers/asda/model3.js'
 
+// Buffaload Logistics Excel parsers
+import { matches as matchesBuffaload1 } from './matchers/buffaload-logistics/model1.js'
+import { parse as parseBuffaload1 } from './parsers/buffaload-logistics/model1.js'
 // Co-op Excel parsers
 import { matches as matchesCoop1 } from './matchers/coop/model1.js'
 import { parse as parseCoop1 } from './parsers/coop/model1.js'
@@ -71,6 +74,10 @@ const parsersExcel = {
   ASDA3: {
     matches: matchesAsda3,
     parse: parseAsda3
+  },
+  BUFFALOAD1: {
+    matches: matchesBuffaload1,
+    parse: parseBuffaload1
   },
   COOP1: {
     matches: matchesCoop1,
