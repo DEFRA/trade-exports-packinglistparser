@@ -65,4 +65,17 @@ describe('Co-op Model 1 Matcher', () => {
 
     expect(result).toBe(matcherResult.CORRECT)
   })
+
+  test('returns GENERIC_ERROR when an error is thrown during processing', () => {
+    // Create a malformed object that will cause an error when accessed
+    const malformedPackingList = {
+      get sheet1() {
+        throw new Error('Test error')
+      }
+    }
+
+    const result = matches(malformedPackingList, filename)
+
+    expect(result).toBe(matcherResult.GENERIC_ERROR)
+  })
 })

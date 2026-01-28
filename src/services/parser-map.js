@@ -70,6 +70,14 @@ function findHeaderCols(header, packingListHeader) {
     )
   }
 
+  if (header.regex?.header_net_weight_unit) {
+    headerCols.header_net_weight_unit = Object.keys(packingListHeader).find(
+      (key) => {
+        return header.regex.header_net_weight_unit.test(packingListHeader[key])
+      }
+    )
+  }
+
   return headerCols
 }
 
