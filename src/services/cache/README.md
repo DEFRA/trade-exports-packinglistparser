@@ -29,7 +29,7 @@ The cache is configured through environment variables:
 ```bash
 # .env file
 INELIGIBLE_ITEMS_S3_FILE_NAME=ineligible-items
-INELIGIBLE_ITEMS_S3_SCHEMA=v1.0
+INELIGIBLE_ITEMS_S3_SCHEMA=cache
 INELIGIBLE_ITEMS_MAX_RETRIES=3
 INELIGIBLE_ITEMS_RETRY_DELAY_MS=2000
 ```
@@ -225,6 +225,93 @@ The test suite covers:
 
 - [ineligible-items-cache.js](./ineligible-items-cache.js) - Main cache service
 - [ineligible-items-cache.test.js](./ineligible-items-cache.test.js) - Test suite
+- [mdm-s3-sync.js](./mdm-s3-sync.js) - MDM to S3 synchronization service
+- [mdm-s3-sync.test.js](./mdm-s3-sync.test.js) - Sync test suite
+- [sync-scheduler.js](./sync-scheduler.js) - Hourly sync scheduler
+- [sync-scheduler.test.js](./sync-scheduler.test.js) - Scheduler test suite
 - [start-server.js](../common/helpers/start-server.js) - Server startup integration
 - [config.js](../../config.js) - Configuration definitions
 - [s3-service.js](../s3-service.js) - S3 interaction utilities
+
+## MDM to S3 Synchronization
+
+### Overview
+
+The system includes automated hourly synchronization from MDM (Master Data Management) to S3. This ensures the ineligible items cache stays up-to-date with the latest master data.
+
+### Configuration
+
+```bash
+# .env file
+INELIGIBLE_ITEMS_SYNC_ENABLED=true
+INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE=0 * * * *
+```
+
+| Variable                              | Description                              | Default     | Required |
+| ------------------------------------- | ---------------------------------------- | ----------- | -------- |
+| `INELIGIBLE_ITEMS_SYNC_ENABLED`       | Enable/disable hourly MDM to S3 sync     | `true`      | No       |
+| `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE` | Cron schedule for sync (default: hourly) | `0 * * * *` | No       |
+
+### Sync Process
+
+1. **Retrieve** latest data from MDM via `getIneligibleItems()`
+2. **Write** data to S3 via `uploadJsonFileToS3()`
+3. **Update** in-memory cache with fresh data via `setIneligibleItemsCache(mdmData)`
+4. **Log** operation with success status and timestamp
+
+### Usage
+
+The sync scheduler starts automatically when the server starts:
+
+```javascript
+import { startSyncScheduler } from './services/cache/sync-scheduler.js'
+
+// Started during server initialization
+startSyncScheduler()
+```
+
+### Manual Sync
+
+You can trigger a manual sync programmatically:
+
+```javascript
+import { syncMdmToS3 } from './services/cache/mdm-s3-sync.js'
+
+// Trigger manual sync
+const result = await syncMdmToS3()
+
+if (result.success) {
+  console.log(`Synced ${result.itemCount} items`)
+  console.log(`Duration: ${result.duration}ms`)
+} else {
+  console.error(`Sync failed: ${result.error}`)
+}
+```
+
+### Monitoring
+
+Check logs for sync operations:
+
+```
+[INFO] Starting MDM to S3 synchronization
+[INFO] Retrieving ineligible items from MDM
+[INFO] Writing ineligible items to S3
+[INFO] Invalidating in-memory cache
+[INFO] Successfully completed MDM to S3 synchronization {
+  success: true,
+  timestamp: "2026-01-29T10:00:00.123Z",
+  duration: 1234,
+  itemCount: 150,
+  s3Location: { filename: "ineligible-items", schema: "cache" },
+  etag: "..."
+}
+```
+
+### Testing
+
+Run sync tests:
+
+```bash
+npx vitest run src/services/cache/mdm-s3-sync.test.js
+npx vitest run src/services/cache/sync-scheduler.test.js
+```

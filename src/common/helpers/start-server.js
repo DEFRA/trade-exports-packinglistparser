@@ -2,6 +2,7 @@ import { config } from '../../config.js'
 
 import { createServer } from '../../server.js'
 import { initializeIneligibleItemsCache } from '../../services/cache/ineligible-items-cache.js'
+import { startSyncScheduler } from '../../services/cache/sync-scheduler.js'
 import { createLogger } from './logging/logger.js'
 
 const logger = createLogger()
@@ -20,6 +21,17 @@ async function startServer() {
     )
     // Continue with server startup even if cache initialization fails
     // This allows the service to remain operational
+  }
+
+  // Start MDM to S3 synchronization scheduler
+  try {
+    logger.info('Starting MDM to S3 synchronization scheduler')
+    startSyncScheduler()
+  } catch (error) {
+    logger.error(
+      { error: error.message },
+      'Failed to start MDM to S3 sync scheduler - manual sync will still be available'
+    )
   }
 
   await server.start()

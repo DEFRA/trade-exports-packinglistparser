@@ -150,6 +150,31 @@ describe('ineligible-items-cache', () => {
       expect(getIneligibleItemsCache()).toEqual([])
     })
 
+    it('should handle data with ineligibleItems array property', async () => {
+      const dataWithProperty = {
+        ineligibleItems: mockIneligibleItems,
+        version: '1.0',
+        lastUpdated: '2026-01-27'
+      }
+      getFileFromS3.mockResolvedValue(JSON.stringify(dataWithProperty))
+
+      await initializeIneligibleItemsCache()
+
+      expect(getIneligibleItemsCache()).toEqual(dataWithProperty)
+    })
+
+    it('should handle object without ineligibleItems or array structure', async () => {
+      const objectData = {
+        someKey: 'someValue',
+        anotherKey: 123
+      }
+      getFileFromS3.mockResolvedValue(JSON.stringify(objectData))
+
+      await initializeIneligibleItemsCache()
+
+      expect(getIneligibleItemsCache()).toEqual(objectData)
+    })
+
     it('should succeed on final retry attempt', async () => {
       getFileFromS3
         .mockRejectedValueOnce(new Error('Fail 1'))
