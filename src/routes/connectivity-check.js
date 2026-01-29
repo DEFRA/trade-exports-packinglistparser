@@ -19,19 +19,35 @@ const connectivityCheck = {
 
 /**
  * Handler for connectivity check endpoint
- * Tests connections to all external services (S3, Dynamics, EHCO Blob Storage)
+ * Tests connections to all external services (S3, Dynamics, EHCO Blob Storage) in parallel
  * @param {Object} _request - Hapi request object (unused)
  * @param {Object} h - Hapi response toolkit
  * @returns {Promise<Object>} Response with connectivity status and details
  */
 async function connectivityCheckHandler(_request, h) {
+  const [
+    s3,
+    dynamicsLogin,
+    dynamicsData,
+    ehcoBlobStorage,
+    mdmIneligibleItems,
+    tradeServiceBus
+  ] = await Promise.all([
+    canS3Connect(),
+    canDynamicsLoginConnect(),
+    canWeReceiveDispatchLocationsFromDynamics(),
+    canWeConnectToEhcoBlobStorage(),
+    canWeConnectToMdmService(),
+    canWeConnectToTradeServiceBus()
+  ])
+
   const connectionChecks = {
-    s3: await canS3Connect(),
-    dynamicsLogin: await canDynamicsLoginConnect(),
-    dynamicsData: await canWeReceiveDispatchLocationsFromDynamics(),
-    ehcoBlobStorage: await canWeConnectToEhcoBlobStorage(),
-    mdmIneligibleItems: await canWeConnectToMdmService(),
-    tradeServiceBus: await canWeConnectToTradeServiceBus()
+    s3,
+    dynamicsLogin,
+    dynamicsData,
+    ehcoBlobStorage,
+    mdmIneligibleItems,
+    tradeServiceBus
   }
   const allConnected = Object.values(connectionChecks).every((v) => v === true)
 
@@ -106,11 +122,21 @@ async function canWeConnectToMdmService() {
  * Generic function to test connectivity by executing a function
  * @param {Function} func - Function to execute for connectivity test
  * @param {string} name - Name of the service being tested (for logging)
- * @returns {Promise<boolean>} True if connected, false otherwise
+ * @returns {Promise<boolean>} True if connected, false otherwise (including timeout)
  */
 async function canConnect(func, name) {
+  const timeout = new Promise((resolve) => {
+    setTimeout(() => resolve({ timedOut: true }), 10000)
+  })
+
   try {
-    await func()
+    const result = await Promise.race([func(), timeout])
+
+    if (result?.timedOut) {
+      logger.error(`${name} connection timeout: exceeded 10 seconds`)
+      return false
+    }
+
     return true
   } catch (err) {
     logger.error(

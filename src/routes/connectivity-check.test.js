@@ -343,4 +343,155 @@ describe('Connectivity Check Route', () => {
       STATUS_CODES.SERVICE_UNAVAILABLE
     )
   })
+
+  it('should return failure when a service times out after 10 seconds', async () => {
+    vi.useFakeTimers()
+
+    // Mock a service that takes longer than 10 seconds
+    listS3Objects.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve([]), 15000)
+        })
+    )
+    bearerTokenRequest.mockResolvedValue({})
+    checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockResolvedValue([])
+    checkTradeServiceBusConnection.mockResolvedValue(true)
+
+    const handlerPromise = connectivityCheck.handler({}, mockH)
+
+    // Fast-forward time to trigger timeout
+    await vi.advanceTimersByTimeAsync(10000)
+
+    await handlerPromise
+
+    expect(mockH.response).toHaveBeenCalledWith({
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: false,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
+      }
+    })
+    expect(mockResponse.code).toHaveBeenCalledWith(
+      STATUS_CODES.SERVICE_UNAVAILABLE
+    )
+
+    vi.useRealTimers()
+  })
+
+  it('should return failure when multiple services time out', async () => {
+    vi.useFakeTimers()
+
+    // Mock multiple services that take longer than 10 seconds
+    listS3Objects.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve([]), 15000)
+        })
+    )
+    bearerTokenRequest.mockResolvedValue({})
+    checkDynamicsDispatchLocationConnection.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve({}), 20000)
+        })
+    )
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
+    getIneligibleItems.mockResolvedValue([])
+    checkTradeServiceBusConnection.mockResolvedValue(true)
+
+    const handlerPromise = connectivityCheck.handler({}, mockH)
+
+    // Fast-forward time to trigger timeout
+    await vi.advanceTimersByTimeAsync(10000)
+
+    await handlerPromise
+
+    expect(mockH.response).toHaveBeenCalledWith({
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: false,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: false,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
+      }
+    })
+    expect(mockResponse.code).toHaveBeenCalledWith(
+      STATUS_CODES.SERVICE_UNAVAILABLE
+    )
+
+    vi.useRealTimers()
+  })
+
+  it('should return success when all services respond within 10 seconds', async () => {
+    vi.useFakeTimers()
+
+    // Mock services that respond within the timeout
+    listS3Objects.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve([]), 5000)
+        })
+    )
+    bearerTokenRequest.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve({}), 3000)
+        })
+    )
+    checkDynamicsDispatchLocationConnection.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve({}), 4000)
+        })
+    )
+    checkApplicationFormsContainerExists.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve(true), 2000)
+        })
+    )
+    getIneligibleItems.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve([]), 1000)
+        })
+    )
+    checkTradeServiceBusConnection.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve(true), 3000)
+        })
+    )
+
+    const handlerPromise = connectivityCheck.handler({}, mockH)
+
+    // Fast-forward time but not enough to trigger timeout
+    await vi.advanceTimersByTimeAsync(5000)
+
+    await handlerPromise
+
+    expect(mockH.response).toHaveBeenCalledWith({
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.PASSED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: true,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
+      }
+    })
+    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+
+    vi.useRealTimers()
+  })
 })
