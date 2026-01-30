@@ -1,9 +1,13 @@
 import { describe, test, expect, vi } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models/sainsburys/model1.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results/sainsburys/model1.js'
 import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
+import {
+  INVALID_FILENAME,
+  NO_MATCH_RESULT,
+  ERROR_SUMMARY_TEXT
+} from '../../test-constants.js'
 
 vi.mock('../../../src/services/data/data-iso-codes.json', () => ({
   default: ['VALID_ISO', 'INELIGIBLE_ITEM_ISO']
@@ -20,6 +24,10 @@ vi.mock('../../../../../src/services/data/data-ineligible-items.json', () => ({
 }))
 
 const filename = 'packinglist-sainsburys-model1.xlsx'
+
+// Expected row numbers for multi-sheet test
+const EXPECTED_FIRST_DATA_ROW = 2
+const EXPECTED_SECOND_DATA_ROW = 3
 
 describe('matchesSainsburysModel1', () => {
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
@@ -38,20 +46,12 @@ describe('matchesSainsburysModel1', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
+    const result = await parserService.findParser(
+      model.validModel,
+      INVALID_FILENAME
+    )
 
-    const result = await parserService.findParser(model.validModel, filename)
-
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
@@ -70,7 +70,7 @@ describe('matchesSainsburysModel1', () => {
     const result = await parserService.findParser(model.invalidNirms, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_INVALID + ' in sheet "Sheet1" row 2.\n'
+      `${failureReasons.NIRMS_INVALID} in sheet "Sheet1" row 2.\n`
     )
   })
 
@@ -84,7 +84,7 @@ describe('matchesSainsburysModel1', () => {
     const result = await parserService.findParser(model.missingNirms, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_MISSING + ' in sheet "Sheet1" row 2.\n'
+      `${failureReasons.NIRMS_MISSING} in sheet "Sheet1" row 2.\n`
     )
   })
 
@@ -92,8 +92,7 @@ describe('matchesSainsburysModel1', () => {
     const result = await parserService.findParser(model.missingCoO, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.COO_MISSING +
-        ' in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 in addition to 2 other locations.\n'
+      `${failureReasons.COO_MISSING} in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
     )
   })
 
@@ -101,8 +100,7 @@ describe('matchesSainsburysModel1', () => {
     const result = await parserService.findParser(model.invalidCoO, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.COO_INVALID +
-        ' in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 in addition to 2 other locations.\n'
+      `${failureReasons.COO_INVALID} in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
     )
   })
 
@@ -119,7 +117,9 @@ describe('matchesSainsburysModel1', () => {
     )
 
     expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.items[0].row_location.rowNumber).toBe(2)
-    expect(result.items[1].row_location.rowNumber).toBe(3)
+    expect(result.items[0].row_location.rowNumber).toBe(EXPECTED_FIRST_DATA_ROW)
+    expect(result.items[1].row_location.rowNumber).toBe(
+      EXPECTED_SECOND_DATA_ROW
+    )
   })
 })

@@ -1,9 +1,13 @@
 import { describe, test, expect, vi } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models/tjmorris/model2.js'
-import parserModel from '../../../src/services/parser-model.js'
 import testResults from '../../test-data-and-results/results/tjmorris/model2.js'
 import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
+import {
+  INVALID_FILENAME,
+  NO_MATCH_RESULT,
+  ERROR_SUMMARY_TEXT
+} from '../../test-constants.js'
 
 vi.mock('../../../src/services/data/data-iso-codes.json', () => ({
   default: ['VALID_ISO', 'INELIGIBLE_ITEM_ISO']
@@ -19,6 +23,10 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 }))
 
 const filename = 'packinglist-tjmorris-model2.xls'
+
+// Expected row numbers for multi-sheet test
+const EXPECTED_FIRST_DATA_ROW = 2
+const EXPECTED_SECOND_DATA_ROW = 3
 
 describe('matchesTJMorrisModel2', () => {
   test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as true', async () => {
@@ -37,20 +45,12 @@ describe('matchesTJMorrisModel2', () => {
   })
 
   test('returns No Match for incorrect file extension', async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
+    const result = await parserService.findParser(
+      model.validModel,
+      INVALID_FILENAME
+    )
 
-    const result = await parserService.findParser(model.validModel, filename)
-
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
@@ -65,53 +65,70 @@ describe('matchesTJMorrisModel2', () => {
     expect(result).toMatchObject(testResults.missingKgunit)
   })
 
-  test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as false for invalid NIRMS', async () => {
-    const result = await parserService.findParser(model.invalidNirms, filename)
+  test('matches valid TJMorris Model 2 file with multiple sheets where headers are on different rows', async () => {
+    const result = await parserService.findParser(
+      model.validModelMultipleSheetsHeadersOnDifferentRows,
+      filename
+    )
 
-    expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_INVALID + ' in sheet "Sheet1" row 2.\n'
+    expect(result.business_checks.all_required_fields_present).toBe(true)
+    expect(result.items[0].row_location.rowNumber).toBe(EXPECTED_FIRST_DATA_ROW)
+    expect(result.items[1].row_location.rowNumber).toBe(
+      EXPECTED_SECOND_DATA_ROW
     )
   })
+})
 
-  test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as true for valid NIRMS', async () => {
+describe('TJMORRIS2 CoO Validation Tests - Type 1 - Nirms', () => {
+  test('NOT within NIRMS Scheme - passes validation', async () => {
     const result = await parserService.findParser(model.nonNirms, filename)
 
     expect(result.business_checks.all_required_fields_present).toBeTruthy()
   })
 
-  test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as false for missing NIRMS', async () => {
+  test('Invalid NIRMS value - validation errors', async () => {
+    const result = await parserService.findParser(model.invalidNirms, filename)
+
+    expect(result.business_checks.failure_reasons).toBe(
+      `${failureReasons.NIRMS_INVALID} in sheet "Sheet1" row 2.\n`
+    )
+  })
+
+  test('Null NIRMS value - validation errors', async () => {
     const result = await parserService.findParser(model.missingNirms, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_MISSING + ' in sheet "Sheet1" row 2.\n'
+      `${failureReasons.NIRMS_MISSING} in sheet "Sheet1" row 2.\n`
     )
   })
+})
 
-  test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as false for missing CoO', async () => {
+describe('TJMORRIS2 CoO Validation Tests - Type 1 - CoO', () => {
+  test('Null CoO Value - validation errors with summary', async () => {
     const result = await parserService.findParser(model.missingCoO, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.COO_MISSING +
-        ' in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 in addition to 2 other locations.\n'
+      `${failureReasons.COO_MISSING} in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
     )
   })
 
-  test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as false for invalid CoO', async () => {
+  test('Invalid CoO Value - validation errors with summary', async () => {
     const result = await parserService.findParser(model.invalidCoO, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.COO_INVALID +
-        ' in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 in addition to 1 other locations.\n'
+      `${failureReasons.COO_INVALID} in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 ${ERROR_SUMMARY_TEXT} 1 other locations.\n`
     )
   })
 
-  test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as true for X CoO', async () => {
+  test('CoO Value is X - passes validation', async () => {
     const result = await parserService.findParser(model.xCoO, filename)
 
     expect(result.business_checks.all_required_fields_present).toBeTruthy()
   })
+})
 
-  test('matches valid TJMorris Model 2 file, calls parser and returns all_required_fields_present as false for ineligible items', async () => {
+describe('TJMORRIS2 CoO Validation Tests - Type 1 - Ineligible Items', () => {
+  test('Ineligible items detected - validation errors', async () => {
     const result = await parserService.findParser(
       model.ineligibleItems,
       filename
@@ -121,16 +138,5 @@ describe('matchesTJMorrisModel2', () => {
       failureReasons.PROHIBITED_ITEM +
         ' in sheet "Sheet1" row 2 and sheet "Sheet1" row 4.\n'
     )
-  })
-
-  test('matches valid TJMorris Model 2 file with multiple sheets where headers are on different rows', async () => {
-    const result = await parserService.findParser(
-      model.validModelMultipleSheetsHeadersOnDifferentRows,
-      filename
-    )
-
-    expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.items[0].row_location.rowNumber).toBe(2)
-    expect(result.items[1].row_location.rowNumber).toBe(3)
   })
 })

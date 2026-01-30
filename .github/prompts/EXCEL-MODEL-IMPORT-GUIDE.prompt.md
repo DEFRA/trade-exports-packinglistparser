@@ -994,6 +994,7 @@ describe('ASDA Model 3 Parser', () => {
 1. Convert `require()` to ES6 `import`
 2. Update import paths to match new project structure
 3. Convert `module.exports` to `export default` if applicable
+4. **Replace local `'packinglist.wrong'` variables with `INVALID_FILENAME` constant**
 
 **DO NOT modify:**
 
@@ -1002,7 +1003,185 @@ describe('ASDA Model 3 Parser', () => {
 - Expected results or assertions
 - Test case names or describe blocks
 
-#### 7.5.2 Mock Data Must Match Legacy Exactly
+#### 7.5.2 Split CoO Validation Tests into Separate Describe Blocks
+
+**To avoid function length linter warnings (> 75 lines), split CoO validation tests into separate describe blocks:**
+
+```javascript
+// ❌ WRONG - All CoO tests in one describe block (81 lines → linter error)
+describe('MODEL CoO Validation Tests', () => {
+  test('NOT within NIRMS Scheme - passes validation', async () => {
+    /* ... */
+  })
+  test('Null NIRMS value - validation errors', async () => {
+    /* ... */
+  })
+  test('Invalid NIRMS value - validation errors', async () => {
+    /* ... */
+  })
+  test('Null CoO Value - validation errors', async () => {
+    /* ... */
+  })
+  test('Invalid CoO Value - validation errors', async () => {
+    /* ... */
+  })
+  test('Ineligible items detected - validation errors', async () => {
+    /* ... */
+  })
+  // ... many more tests
+})
+
+// ✅ CORRECT - Split into separate describe blocks by validation type
+describe('MODEL CoO Validation Tests - Type 1 - Nirms', () => {
+  test('NOT within NIRMS Scheme - passes validation', async () => {
+    /* ... */
+  })
+  test('Null NIRMS value - validation errors', async () => {
+    /* ... */
+  })
+  test('Invalid NIRMS value - validation errors', async () => {
+    /* ... */
+  })
+  test('Null NIRMS value, more than 3 - validation errors with summary', async () => {
+    /* ... */
+  })
+  test('Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
+    /* ... */
+  })
+})
+
+describe('MODEL CoO Validation Tests - Type 1 - CoO', () => {
+  test('Null CoO Value - validation errors', async () => {
+    /* ... */
+  })
+  test('Invalid CoO Value - validation errors', async () => {
+    /* ... */
+  })
+  test('Null CoO Value, more than 3 - validation errors with summary', async () => {
+    /* ... */
+  })
+  test('Invalid CoO Value, more than 3 - validation errors with summary', async () => {
+    /* ... */
+  })
+  test('CoO Value is X - passes validation', async () => {
+    /* ... */
+  })
+  test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
+    /* ... */
+  })
+})
+
+describe('MODEL CoO Validation Tests - Type 1 - Ineligible Items', () => {
+  test('Ineligible items detected - validation errors', async () => {
+    /* ... */
+  })
+})
+```
+
+**Split Pattern Guidelines:**
+
+- Use consistent naming: `[MODEL] CoO Validation Tests - Type 1 - [Category]`
+- Categories: `Nirms`, `CoO`, `Ineligible Items` (as applicable to the model)
+- Order tests by BAC (Business Acceptance Criteria) sequence within each block
+- Each describe block should be < 75 lines to pass linter checks
+
+**Benefits:**
+
+- Passes linter function length rules (< 75 lines per function)
+- Better test organization and readability
+- Easier to locate specific validation test failures
+- Consistent with ASDA3, ICELAND2, and COOP1 patterns
+
+#### 7.5.3 Use Test Constants
+
+Always import and use shared test constants instead of creating local variables:
+
+```javascript
+// Import test constants
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
+
+// ❌ WRONG - Creating local variables
+test("returns 'No Match' for incorrect file extension", async () => {
+  const filename = 'packinglist.wrong' // Shadows higher scope variable
+  const invalidTestResult_NoMatch = {
+    // Duplicates NO_MATCH_RESULT
+    business_checks: {
+      all_required_fields_present: false,
+      failure_reasons: null
+    },
+    items: [],
+    registration_approval_number: null,
+    parserModel: parserModel.NOMATCH
+  }
+  const result = await parserService.findParser(model.validModel, filename)
+  expect(result).toMatchObject(invalidTestResult_NoMatch)
+})
+
+// ✅ CORRECT - Using shared constants
+test("returns 'No Match' for incorrect file extension", async () => {
+  const result = await parserService.findParser(
+    model.validModel,
+    INVALID_FILENAME
+  )
+  expect(result).toMatchObject(NO_MATCH_RESULT)
+})
+```
+
+**Available Test Constants:**
+
+- `INVALID_FILENAME` - `'packinglist.wrong'` - For testing parser matching failures
+- `NO_MATCH_RESULT` - Expected result structure when no parser matches (includes `parserModel: parserModel.NOMATCH`)
+- `ERROR_SUMMARY_TEXT` - `'in addition to'` - Text fragment used in validation error summaries when more than 3 errors occur
+
+**String Formatting Best Practices:**
+
+- **Always use template literals** (backticks) instead of string concatenation with `+`
+- Template literals improve readability and avoid ESLint warnings
+- Example: `` `${variable} text` `` instead of `variable + ' text'`
+
+**Avoid Magic Numbers in Test Assertions:**
+
+Define constants for numeric values used in assertions to avoid "no magic numbers" linter warnings:
+
+```javascript
+const filename = 'packinglist-model1.xlsx'
+
+// Expected row numbers for multi-sheet test
+const EXPECTED_FIRST_DATA_ROW = 2
+const EXPECTED_SECOND_DATA_ROW = 3
+
+test('matches valid file with multiple sheets where headers are on different rows', async () => {
+  const result = await parserService.findParser(
+    model.validModelMultipleSheetsHeadersOnDifferentRows,
+    filename
+  )
+
+  expect(result.business_checks.all_required_fields_present).toBe(true)
+  // ❌ WRONG - Magic numbers
+  // expect(result.items[0].row_location.rowNumber).toBe(2)
+  // expect(result.items[1].row_location.rowNumber).toBe(3)
+
+  // ✅ CORRECT - Use constants
+  expect(result.items[0].row_location.rowNumber).toBe(EXPECTED_FIRST_DATA_ROW)
+  expect(result.items[1].row_location.rowNumber).toBe(EXPECTED_SECOND_DATA_ROW)
+})
+```
+
+**When to Define Constants:**
+
+- Row numbers in assertions (e.g., `rowNumber`, `row_location`)
+- Expected counts or indices used multiple times
+- Any numeric literal that appears in test assertions
+- Repeated string literals that trigger duplicate warnings
+
+**Benefits:**
+
+- Passes linter "no magic numbers" rule
+- Self-documenting - constant name explains the value's purpose
+- Easier to update if expected values change
+- Consistent with ASDA3, ICELAND2, COOP1 patterns
+
+#### 7.5.4 Mock Data Must Match Legacy Exactly
 
 If the legacy test mocks `data-ineligible-items.json`, copy the mock EXACTLY:
 
@@ -1031,7 +1210,7 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 }))
 ```
 
-#### 7.5.3 Parser-Service Test Template
+#### 7.5.5 Parser-Service Test Template
 
 ```javascript
 // test/parser-service/asda/model3.test.js
@@ -1040,6 +1219,7 @@ import parserService from '../../../src/services/parser-service.js'
 import parserModel from '../../../src/services/parser-model.js'
 import model from '../../test-data-and-results/models/asda/model3.js'
 import expectedResults from '../../test-data-and-results/results/asda/model3.js'
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
 
 // Mock ineligible items - COPY EXACTLY FROM LEGACY
 vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
@@ -1049,7 +1229,7 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 }))
 
 describe('Parser Service - ASDA Model 3', () => {
-  const filename = 'packinglist.xlsx'
+  const filename = 'packinglist-asda-model3.xls'
 
   describe('Valid packing lists', () => {
     test('should return correct parser model', () => {
@@ -1063,6 +1243,14 @@ describe('Parser Service - ASDA Model 3', () => {
     })
   })
 
+  test("returns 'No Match' for incorrect file extension", async () => {
+    const result = await parserService.findParser(
+      model.validModel,
+      INVALID_FILENAME
+    )
+    expect(result).toMatchObject(NO_MATCH_RESULT)
+  })
+
   describe('Country of Origin validation', () => {
     // Copy all CoO validation tests from legacy
   })
@@ -1073,7 +1261,7 @@ describe('Parser Service - ASDA Model 3', () => {
 })
 ```
 
-#### 7.5.4 Verify Test Data Matches Mock
+#### 7.5.6 Verify Test Data Matches Mock
 
 If the test uses ineligible items validation, ensure test data matches the mock:
 
