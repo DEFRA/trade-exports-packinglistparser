@@ -2,8 +2,12 @@
 import { describe, test, expect, vi } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models/asda/model3.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results/asda/model3.js'
+import {
+  INVALID_FILENAME,
+  NO_MATCH_RESULT,
+  ERROR_SUMMARY_TEXT
+} from '../../test-constants.js'
 
 vi.mock('../../../src/services/data/data-iso-codes.json', () => ({
   default: ['VALID_ISO', 'INELIGIBLE_ITEM_ISO', 'GB', 'X']
@@ -20,6 +24,10 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 }))
 
 const filename = 'packinglist-asda-model3.xls'
+
+// Expected row numbers for multi-sheet test
+const EXPECTED_FIRST_DATA_ROW = 2
+const EXPECTED_SECOND_DATA_ROW = 3
 
 describe('matchesAsdaModel3', () => {
   test('matches valid Asda Model 3 file, calls parser and returns all_required_fields_present as true', async () => {
@@ -38,19 +46,12 @@ describe('matchesAsdaModel3', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.findParser(
+      model.validModel,
+      INVALID_FILENAME
+    )
 
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid Asda Model 3 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
@@ -66,7 +67,7 @@ describe('matchesAsdaModel3', () => {
   })
 })
 
-describe('ASDA3 CoO Validation Tests - Type 1', () => {
+describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
   // Order tests by BAC sequence for maintainability
 
   test('BAC1: NOT within NIRMS Scheme - passes validation', async () => {
@@ -99,7 +100,7 @@ describe('ASDA3 CoO Validation Tests - Type 1', () => {
       model.nullNirmsMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('BAC5: Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
@@ -107,9 +108,32 @@ describe('ASDA3 CoO Validation Tests - Type 1', () => {
       model.invalidNirmsMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
+  test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
+    const result = await parserService.findParser(model.validCooModel, filename)
+    expect(result.business_checks.failure_reasons).toBeNull()
+    expect(result.items.every((item) => item.country_of_origin)).toBe(true)
+    expect(result.items.every((item) => item.commodity_code)).toBe(true)
+    expect(result.items.every((item) => item.nirms)).toBe(true)
+  })
+
+  test('matches valid Asda Model 3 file with multiple sheets where headers are on different rows', async () => {
+    const result = await parserService.findParser(
+      model.validModelMultipleSheetsHeadersOnDifferentRows,
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(true)
+    expect(result.items[0].row_location.rowNumber).toBe(EXPECTED_FIRST_DATA_ROW)
+    expect(result.items[1].row_location.rowNumber).toBe(
+      EXPECTED_SECOND_DATA_ROW
+    )
+  })
+})
+
+describe('ASDA3 CoO Validation Tests - Type 1 - CoO', () => {
   test('BAC6: Null CoO Value - validation errors', async () => {
     const result = await parserService.findParser(model.nullCooModel, filename)
     expect(result.business_checks.failure_reasons).toContain(
@@ -132,7 +156,7 @@ describe('ASDA3 CoO Validation Tests - Type 1', () => {
       model.nullCooMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('BAC9: Invalid CoO Value, more than 3 - validation errors with summary', async () => {
@@ -140,7 +164,7 @@ describe('ASDA3 CoO Validation Tests - Type 1', () => {
       model.invalidCooMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('BAC10: CoO Value is X or x - passes validation', async () => {
@@ -150,7 +174,9 @@ describe('ASDA3 CoO Validation Tests - Type 1', () => {
     )
     expect(result.business_checks.failure_reasons).toBeNull()
   })
+})
 
+describe('ASDA3 CoO Validation Tests - Type 1 - Ineligible Item', () => {
   test('BAC11: Item Present on Ineligible Item List (Treatment Type specified) - validation errors', async () => {
     const result = await parserService.findParser(
       model.ineligibleItemsWithTreatmentModel,
@@ -166,25 +192,6 @@ describe('ASDA3 CoO Validation Tests - Type 1', () => {
       model.ineligibleItemsMultipleWithTreatmentModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
-  })
-
-  test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
-    expect(result.business_checks.failure_reasons).toBeNull()
-    expect(result.items.every((item) => item.country_of_origin)).toBe(true)
-    expect(result.items.every((item) => item.commodity_code)).toBe(true)
-    expect(result.items.every((item) => item.nirms)).toBe(true)
-  })
-
-  test('matches valid Asda Model 3 file with multiple sheets where headers are on different rows', async () => {
-    const result = await parserService.findParser(
-      model.validModelMultipleSheetsHeadersOnDifferentRows,
-      filename
-    )
-
-    expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.items[0].row_location.rowNumber).toBe(2)
-    expect(result.items[1].row_location.rowNumber).toBe(3)
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 })

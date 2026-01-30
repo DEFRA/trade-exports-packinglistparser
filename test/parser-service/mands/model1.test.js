@@ -1,10 +1,14 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
 import { findParser } from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models-pdf/mands/model1.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results-pdf/mands/model1.js'
 import failureReasonsDescriptions from '../../../src/services/validators/packing-list-failure-reasons.js'
 import * as pdfHelper from '../../../src/utilities/pdf-helper.js'
+import {
+  INVALID_FILENAME,
+  NO_MATCH_RESULT,
+  ERROR_SUMMARY_TEXT
+} from '../../test-constants.js'
 
 const filename = 'mands-model1.pdf'
 
@@ -57,20 +61,9 @@ describe('findParser', () => {
   })
 
   test('wrong file extension', async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
+    const result = await findParser(model.validModel, INVALID_FILENAME)
 
-    const result = await findParser(model.validModel, filename)
-
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
@@ -81,8 +74,26 @@ describe('findParser', () => {
       'Net Weight Unit of Measure (kg) not found.\n'
     )
   })
+})
 
-  test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as false for invalid NIRMS', async () => {
+describe('MANDS1 CoO Validation Tests - Type 1 - Nirms', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('NOT within NIRMS Scheme - passes validation', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.nonNirms)
+
+    const result = await findParser({}, filename)
+
+    expect(result.business_checks.all_required_fields_present).toBeTruthy()
+  })
+
+  test('Invalid NIRMS value - validation errors', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.invalidNirms)
 
     const result = await findParser({}, filename)
@@ -92,15 +103,7 @@ describe('findParser', () => {
     )
   })
 
-  test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as true for valid NIRMS', async () => {
-    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.nonNirms)
-
-    const result = await findParser({}, filename)
-
-    expect(result.business_checks.all_required_fields_present).toBeTruthy()
-  })
-
-  test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as false for missing NIRMS', async () => {
+  test('Null NIRMS value - validation errors', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.missingNirms)
 
     const result = await findParser({}, filename)
@@ -109,38 +112,56 @@ describe('findParser', () => {
       failureReasonsDescriptions.NIRMS_MISSING + ' in page 1 row 1.\n'
     )
   })
+})
 
-  test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as false for missing CoO', async () => {
+describe('MANDS1 CoO Validation Tests - Type 1 - CoO', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('Null CoO Value - validation errors with summary', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.missingCoO)
 
     const result = await findParser({}, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasonsDescriptions.COO_MISSING +
-        ' in page 1 row 1, page 1 row 2, page 1 row 3 in addition to 2 other locations.\n'
+      `${failureReasonsDescriptions.COO_MISSING} in page 1 row 1, page 1 row 2, page 1 row 3 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
     )
   })
 
-  test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as false for invalid CoO', async () => {
+  test('Invalid CoO Value - validation errors with summary', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.invalidCoO)
 
     const result = await findParser({}, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasonsDescriptions.COO_INVALID +
-        ' in page 1 row 1, page 1 row 2, page 1 row 3 in addition to 2 other locations.\n'
+      `${failureReasonsDescriptions.COO_INVALID} in page 1 row 1, page 1 row 2, page 1 row 3 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
     )
   })
 
-  test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as true for X CoO', async () => {
+  test('CoO Value is X - passes validation', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.xCoO)
 
     const result = await findParser({}, filename)
 
     expect(result.business_checks.all_required_fields_present).toBeTruthy()
   })
+})
 
-  test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as false for ineligible items', async () => {
+describe('MANDS1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('Ineligible items detected - validation errors', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.ineligibleItems)
 
     const result = await findParser({}, filename)

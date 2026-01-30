@@ -7,8 +7,8 @@
 import { describe, test, expect, vi } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models-csv/asda/model4.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results-csv/asda/model4.js'
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
 
 // Mock deprecated to false for testing
 vi.mock('../../../src/services/model-headers-csv.js', async () => {
@@ -47,20 +47,12 @@ describe('matchesAsdaModel4', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
+    const result = await parserService.findParser(
+      model.validModel,
+      INVALID_FILENAME
+    )
 
-    const result = await parserService.findParser(model.validModel, filename)
-
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid ASDA Model 4 CSV file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {

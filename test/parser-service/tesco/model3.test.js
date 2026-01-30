@@ -2,9 +2,13 @@
 import { describe, test, expect, vi } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models/tesco/model3.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results/tesco/model3.js'
 import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
+import {
+  INVALID_FILENAME,
+  NO_MATCH_RESULT,
+  ERROR_SUMMARY_TEXT
+} from '../../test-constants.js'
 
 vi.mock('../../../src/services/data/data-iso-codes.json', () => ({
   default: ['VALID_ISO', 'INELIGIBLE_ITEM_ISO', 'GB', 'X', 'PL', 'GR']
@@ -21,6 +25,10 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 }))
 
 const filename = 'PackingListTesco3.xlsx'
+
+// Expected row numbers for multi-sheet test
+const EXPECTED_FIRST_DATA_ROW = 3
+const EXPECTED_SECOND_DATA_ROW = 6
 
 describe('matchesTescoModel3', () => {
   test('matches valid Tesco Model 3 file, calls parser and returns all_required_fields_present as true', async () => {
@@ -39,22 +47,12 @@ describe('matchesTescoModel3', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const invalidFilename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
     const result = await parserService.findParser(
       model.validModel,
-      invalidFilename
+      INVALID_FILENAME
     )
 
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid Tesco Model 3 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
@@ -79,7 +77,7 @@ describe('matchesTescoModel3', () => {
     const result = await parserService.findParser(model.missingNirms, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_MISSING + ' in sheet "Input Data Sheet" row 6.\n'
+      `${failureReasons.NIRMS_MISSING} in sheet "Input Data Sheet" row 6.\n`
     )
   })
 
@@ -87,7 +85,7 @@ describe('matchesTescoModel3', () => {
     const result = await parserService.findParser(model.invalidNirms, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_INVALID + ' in sheet "Input Data Sheet" row 6.\n'
+      `${failureReasons.NIRMS_INVALID} in sheet "Input Data Sheet" row 6.\n`
     )
   })
 
@@ -95,7 +93,7 @@ describe('matchesTescoModel3', () => {
     const result = await parserService.findParser(model.missingCoO, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.COO_MISSING + ' in sheet "Input Data Sheet" row 6.\n'
+      `${failureReasons.COO_MISSING} in sheet "Input Data Sheet" row 6.\n`
     )
   })
 
@@ -103,7 +101,7 @@ describe('matchesTescoModel3', () => {
     const result = await parserService.findParser(model.invalidCoO, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.COO_INVALID + ' in sheet "Input Data Sheet" row 6.\n'
+      `${failureReasons.COO_INVALID} in sheet "Input Data Sheet" row 6.\n`
     )
   })
 
@@ -120,7 +118,7 @@ describe('matchesTescoModel3', () => {
     )
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.PROHIBITED_ITEM + ' in sheet "Input Data Sheet" row 6.\n'
+      `${failureReasons.PROHIBITED_ITEM} in sheet "Input Data Sheet" row 6.\n`
     )
   })
 
@@ -131,12 +129,14 @@ describe('matchesTescoModel3', () => {
     )
 
     expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.items[0].row_location.rowNumber).toBe(3)
-    expect(result.items[1].row_location.rowNumber).toBe(6)
+    expect(result.items[0].row_location.rowNumber).toBe(EXPECTED_FIRST_DATA_ROW)
+    expect(result.items[1].row_location.rowNumber).toBe(
+      EXPECTED_SECOND_DATA_ROW
+    )
   })
 })
 
-describe('TESCO3 CoO Validation Tests - Type 1', () => {
+describe('TESCO3 CoO Validation Tests - Type 1 - Nirms', () => {
   // Order tests by BAC sequence for maintainability
 
   test('BAC1: NOT within NIRMS Scheme - passes validation', async () => {
@@ -169,7 +169,7 @@ describe('TESCO3 CoO Validation Tests - Type 1', () => {
       model.nullNirmsMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('BAC5: Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
@@ -177,9 +177,11 @@ describe('TESCO3 CoO Validation Tests - Type 1', () => {
       model.invalidNirmsMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
+})
 
+describe('TESCO3 CoO Validation Tests - Type 1 - CoO', () => {
   test('BAC6: Null CoO Value - validation errors', async () => {
     const result = await parserService.findParser(model.nullCooModel, filename)
     expect(result.business_checks.failure_reasons).toContain(
@@ -202,7 +204,7 @@ describe('TESCO3 CoO Validation Tests - Type 1', () => {
       model.nullCooMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('BAC9: Invalid CoO Value, more than 3 - validation errors with summary', async () => {
@@ -210,7 +212,7 @@ describe('TESCO3 CoO Validation Tests - Type 1', () => {
       model.invalidCooMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('BAC10: CoO Value is X or x - passes validation', async () => {
@@ -221,6 +223,16 @@ describe('TESCO3 CoO Validation Tests - Type 1', () => {
     expect(result.business_checks.failure_reasons).toBeNull()
   })
 
+  test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
+    const result = await parserService.findParser(model.validCooModel, filename)
+    expect(result.business_checks.failure_reasons).toBeNull()
+    expect(result.items.every((item) => item.country_of_origin)).toBe(true)
+    expect(result.items.every((item) => item.commodity_code)).toBe(true)
+    expect(result.items.every((item) => item.nirms)).toBe(true)
+  })
+})
+
+describe('TESCO3 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   test('BAC11: Item Present on Ineligible Item List (Treatment Type specified) - validation errors', async () => {
     const result = await parserService.findParser(
       model.ineligibleItemsWithTreatmentModel,
@@ -237,13 +249,5 @@ describe('TESCO3 CoO Validation Tests - Type 1', () => {
       filename
     )
     expect(result.business_checks.failure_reasons).toContain('in addition to')
-  })
-
-  test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
-    expect(result.business_checks.failure_reasons).toBeNull()
-    expect(result.items.every((item) => item.country_of_origin)).toBe(true)
-    expect(result.items.every((item) => item.commodity_code)).toBe(true)
-    expect(result.items.every((item) => item.nirms)).toBe(true)
   })
 })

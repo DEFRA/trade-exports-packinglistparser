@@ -1,7 +1,12 @@
 import * as parserService from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models-csv/iceland/model2.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results-csv/iceland/model2.js'
+import {
+  INVALID_FILENAME,
+  NO_MATCH_RESULT,
+  NO_REMOS_RESULT,
+  ERROR_SUMMARY_TEXT
+} from '../../test-constants.js'
 
 const filename = 'packinglist.csv'
 
@@ -22,20 +27,12 @@ describe('matchesIcelandModel2', () => {
   })
 
   test('returns "No Match" for incorrect file extension', async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
+    const result = await parserService.findParser(
+      model.validModel,
+      INVALID_FILENAME
+    )
 
-    const result = await parserService.findParser(model.validModel, filename)
-
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid Iceland Model 2 CSV file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
@@ -54,19 +51,9 @@ describe('matchesIcelandModel2', () => {
   })
 
   test('returns "No Match" for empty model', async () => {
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: 'Check GB Establishment RMS Number.'
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOREMOS
-    }
-
     const result = await parserService.findParser(model.emptyModel, filename)
 
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_REMOS_RESULT)
   })
 
   test('matches valid Iceland Model 2 CSV file, calls parser and returns all_required_fields_present as false for ineligible items with treatment', async () => {
@@ -114,7 +101,7 @@ describe('matchesIcelandModel2', () => {
   })
 })
 
-describe('ICELAND2 CoO Validation Tests', () => {
+describe('ICELAND2 CoO Validation Tests - Type 1 - Nirms', () => {
   test('NOT within NIRMS Scheme - passes validation', async () => {
     const result = await parserService.findParser(model.nonNirmsModel, filename)
     expect(result.business_checks.failure_reasons).toBeNull()
@@ -145,7 +132,7 @@ describe('ICELAND2 CoO Validation Tests', () => {
       model.nullNirmsMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
@@ -153,9 +140,11 @@ describe('ICELAND2 CoO Validation Tests', () => {
       model.invalidNirmsMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
+})
 
+describe('ICELAND2 CoO Validation Tests - Type 1 - CoO', () => {
   test('Null CoO Value - validation errors', async () => {
     const result = await parserService.findParser(model.nullCooModel, filename)
     expect(result.business_checks.failure_reasons).toContain(
@@ -178,7 +167,7 @@ describe('ICELAND2 CoO Validation Tests', () => {
       model.nullCooMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('Invalid CoO Value, more than 3 - validation errors with summary', async () => {
@@ -186,7 +175,7 @@ describe('ICELAND2 CoO Validation Tests', () => {
       model.invalidCooMultipleModel,
       filename
     )
-    expect(result.business_checks.failure_reasons).toContain('in addition to')
+    expect(result.business_checks.failure_reasons).toContain(ERROR_SUMMARY_TEXT)
   })
 
   test('CoO Value is X or x - passes validation', async () => {

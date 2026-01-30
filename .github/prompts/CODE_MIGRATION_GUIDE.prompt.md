@@ -134,7 +134,91 @@ Remove references to "Step X" from comments:
 - Focus on "what" and "why", not "how" (code shows how)
 - Update JSDoc to match actual implementation
 
-### 5. Post-Migration Cleanup
+### 5. Test Constants
+
+When migrating parser-service integration tests, use shared test constants instead of creating local variables:
+
+**Import Test Constants:**
+
+```javascript
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
+```
+
+**Use in Tests:**
+
+```javascript
+test("returns 'No Match' for incorrect file extension", async () => {
+  // Use both INVALID_FILENAME and NO_MATCH_RESULT constants
+  const result = await parserService.findParser(
+    model.validModel,
+    INVALID_FILENAME
+  )
+  expect(result).toMatchObject(NO_MATCH_RESULT)
+})
+```
+
+**❌ AVOID - Local variables and duplication:**
+
+```javascript
+// DON'T create local variables that duplicate test constants
+const filename = 'packinglist-model1.xlsx' // Higher scope
+test('...', async () => {
+  const filename = 'packinglist.wrong' // Shadowing - confusing!
+  const invalidTestResult_NoMatch = {
+    // Duplicates NO_MATCH_RESULT
+    business_checks: {
+      all_required_fields_present: false,
+      failure_reasons: null
+    },
+    items: [],
+    registration_approval_number: null,
+    parserModel: parserModel.NOMATCH
+  }
+  const result = await findParser(model.validModel, filename)
+  expect(result).toMatchObject(invalidTestResult_NoMatch)
+})
+```
+
+**✓ CORRECT - Use shared constants:**
+
+```javascript
+// Import and use shared constants
+import {
+  INVALID_FILENAME,
+  NO_MATCH_RESULT,
+  ERROR_SUMMARY_TEXT
+} from '../../test-constants.js'
+import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
+
+const filename = 'packinglist-model1.xlsx' // Higher scope - no shadowing
+test('...', async () => {
+  // Use constants - clear, maintainable, no duplication
+  const result = await findParser(model.validModel, INVALID_FILENAME)
+  expect(result).toMatchObject(NO_MATCH_RESULT)
+})
+
+test('validation errors with summary', async () => {
+  const result = await findParser(model.invalidModel, filename)
+  // Use template literals instead of string concatenation
+  expect(result.business_checks.failure_reasons).toBe(
+    `${failureReasons.COO_MISSING} in sheet "Sheet1" row 2, sheet "Sheet1" row 3 ${ERROR_SUMMARY_TEXT} 1 other locations.\n`
+  )
+})
+```
+
+**Available Test Constants:**
+
+- `INVALID_FILENAME` - `'packinglist.wrong'` - For testing parser matching failures
+- `NO_MATCH_RESULT` - Expected result structure when no parser matches (includes `parserModel: parserModel.NOMATCH`)
+- `ERROR_SUMMARY_TEXT` - `'in addition to'` - Text fragment used in validation error summaries when more than 3 errors occur
+
+**String Formatting Best Practices:**
+
+- **Always use template literals** (backticks) instead of string concatenation with `+`
+- Template literals improve readability and avoid ESLint warnings
+- Example: `` `${variable} text` `` instead of `variable + ' text'`
+
+### 6. Post-Migration Cleanup
 
 After migrating code, check for:
 
@@ -143,6 +227,7 @@ After migrating code, check for:
 3. **Console statements** - Remove or replace with proper logging
 4. **Hardcoded values** - Move to config where appropriate
 5. **Error handling** - Ensure proper error handling with project logger
+6. **Test constants** - Replace local test variables with shared constants from `test/test-constants.js`
 
 ### 6. Migration Command Reference
 

@@ -5,11 +5,14 @@
 import { describe, test, expect, vi, afterEach } from 'vitest'
 import { findParser } from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models-pdf/giovanni/model3.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results-pdf/giovanni/model3.js'
 import * as pdfHelper from '../../../src/utilities/pdf-helper.js'
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
 
 const filename = 'test.pdf'
+
+// Expected RMS establishment number for tests
+const EXPECTED_RMS_NUMBER = 'RMS-GB-000149-002'
 
 // Mock the pdf-helper module - partial mock to keep real functions
 vi.mock('../../../src/utilities/pdf-helper.js', async () => {
@@ -17,7 +20,7 @@ vi.mock('../../../src/utilities/pdf-helper.js', async () => {
   return {
     ...actual,
     extractPdf: vi.fn(),
-    extractEstablishmentNumbers: vi.fn(() => ['RMS-GB-000149-002'])
+    extractEstablishmentNumbers: vi.fn(() => [EXPECTED_RMS_NUMBER])
   }
 })
 
@@ -26,7 +29,7 @@ describe('findParser - Giovanni Model 3', () => {
     vi.clearAllMocks()
     // Set default mock for extractEstablishmentNumbers (single RMS)
     vi.mocked(pdfHelper.extractEstablishmentNumbers).mockReturnValue([
-      'RMS-GB-000149-002'
+      EXPECTED_RMS_NUMBER
     ])
   })
 
@@ -65,18 +68,7 @@ describe('findParser - Giovanni Model 3', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const wrongFilename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
-
-    const result = await findParser({}, wrongFilename)
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    const result = await findParser({}, INVALID_FILENAME)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 })

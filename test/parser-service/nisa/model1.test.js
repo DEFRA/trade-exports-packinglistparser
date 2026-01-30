@@ -2,9 +2,9 @@
 import { vi, describe, test, expect } from 'vitest'
 import { findParser } from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models/nisa/model1.js'
-import parserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results/nisa/model1.js'
 import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
 
 vi.mock('../../../src/services/data/data-iso-codes.json', () => ({
   default: ['VALID_ISO', 'INELIGIBLE_ITEM_ISO']
@@ -21,6 +21,10 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 }))
 
 const filename = 'packinglist-nisa-model1.xlsx'
+
+// Expected row numbers for multi-sheet test
+const EXPECTED_FIRST_DATA_ROW = 2
+const EXPECTED_SECOND_DATA_ROW = 3
 
 describe('findParser', () => {
   test('matches valid Nisa Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
@@ -39,20 +43,9 @@ describe('findParser', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: parserModel.NOMATCH
-    }
+    const result = await findParser(model.validModel, INVALID_FILENAME)
 
-    const result = await findParser(model.validModel, filename)
-
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid Nisa Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
@@ -71,7 +64,7 @@ describe('findParser', () => {
     const result = await findParser(model.invalidNirms, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_INVALID + ' in sheet "Customer Order" row 2.\n'
+      `${failureReasons.NIRMS_INVALID} in sheet "Customer Order" row 2.\n`
     )
   })
 
@@ -85,7 +78,7 @@ describe('findParser', () => {
     const result = await findParser(model.missingNirms, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
-      failureReasons.NIRMS_MISSING + ' in sheet "Customer Order" row 2.\n'
+      `${failureReasons.NIRMS_MISSING} in sheet "Customer Order" row 2.\n`
     )
   })
 
@@ -129,7 +122,9 @@ describe('findParser', () => {
     )
 
     expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.items[0].row_location.rowNumber).toBe(2)
-    expect(result.items[1].row_location.rowNumber).toBe(3)
+    expect(result.items[0].row_location.rowNumber).toBe(EXPECTED_FIRST_DATA_ROW)
+    expect(result.items[1].row_location.rowNumber).toBe(
+      EXPECTED_SECOND_DATA_ROW
+    )
   })
 })
