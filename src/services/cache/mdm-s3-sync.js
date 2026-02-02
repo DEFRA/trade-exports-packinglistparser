@@ -15,10 +15,10 @@ function checkMdmEnabled(startTime) {
   const { enabled: mdmEnabled } = config.get('mdmIntegration')
 
   if (!mdmEnabled) {
-    const endTime = new Date()
+    const endTime = Date.now()
     const result = {
       success: false,
-      timestamp: endTime.toISOString(),
+      timestamp: new Date(endTime).toISOString(),
       duration: endTime - startTime,
       skipped: true,
       reason: 'MDM integration is disabled'
@@ -87,10 +87,10 @@ async function writeMdmDataToS3(mdmData) {
  * @returns {Object} Success result
  */
 function buildSuccessResult(startTime, mdmData, location, etag) {
-  const endTime = new Date()
+  const endTime = Date.now()
   return {
     success: true,
-    timestamp: endTime.toISOString(),
+    timestamp: new Date(endTime).toISOString(),
     duration: endTime - startTime,
     itemCount:
       mdmData?.ineligibleItems?.length ||
@@ -107,10 +107,10 @@ function buildSuccessResult(startTime, mdmData, location, etag) {
  * @returns {Object} Error result
  */
 function buildErrorResult(startTime, error) {
-  const endTime = new Date()
+  const endTime = Date.now()
   return {
     success: false,
-    timestamp: endTime.toISOString(),
+    timestamp: new Date(endTime).toISOString(),
     duration: endTime - startTime,
     error: error.message,
     errorName: error.name
@@ -124,7 +124,7 @@ function buildErrorResult(startTime, error) {
  * @returns {Promise<Object>} Sync result with status and metadata
  */
 export async function syncMdmToS3() {
-  const startTime = new Date()
+  const startTime = Date.now()
 
   const disabledResult = checkMdmEnabled(startTime)
   if (disabledResult) {
@@ -154,7 +154,7 @@ export async function syncMdmToS3() {
           stack_trace: error.stack
         },
         timestamp: new Date().toISOString(),
-        duration: new Date() - startTime,
+        duration: Date.now() - startTime,
         s3DataPreserved: true,
         cacheUnchanged: true
       },
