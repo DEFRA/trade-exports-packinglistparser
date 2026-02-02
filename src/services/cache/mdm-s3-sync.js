@@ -7,15 +7,11 @@ import { setIneligibleItemsCache } from './ineligible-items-cache.js'
 const logger = createLogger()
 
 /**
- * Synchronize ineligible items from MDM to S3
- * This function retrieves the latest data from MDM, writes it to S3,
- * and updates the in-memory cache with the fresh data
- * @returns {Promise<Object>} Sync result with status and metadata
+ * Check if MDM integration is enabled
+ * @param {number} startTime - Start time of the sync operation
+ * @returns {Object|null} Result object if disabled, null if enabled
  */
-export async function syncMdmToS3() {
-  const startTime = new Date()
-
-  // Check if MDM integration is enabled
+function checkMdmEnabled(startTime) {
   const { enabled: mdmEnabled } = config.get('mdmIntegration')
 
   if (!mdmEnabled) {
@@ -36,62 +32,120 @@ export async function syncMdmToS3() {
     return result
   }
 
+  return null
+}
+
+/**
+ * Retrieve and validate MDM data
+ * @returns {Promise<Object>} MDM data
+ */
+async function retrieveMdmData() {
+  logger.info('Retrieving ineligible items from MDM')
+  const mdmData = await getIneligibleItems()
+
+  if (!mdmData) {
+    throw new Error('No data received from MDM')
+  }
+
+  return mdmData
+}
+
+/**
+ * Write MDM data to S3 and update cache
+ * @param {Object} mdmData - Data to write
+ * @returns {Promise<Object>} S3 response
+ */
+async function writeMdmDataToS3(mdmData) {
+  const { s3FileName, s3Schema } = config.get('ineligibleItemsCache')
+  const location = {
+    filename: s3FileName,
+    schema: s3Schema
+  }
+
+  logger.info(
+    {
+      location,
+      dataSize: JSON.stringify(mdmData).length
+    },
+    'Writing ineligible items to S3'
+  )
+
+  const s3Response = await uploadJsonFileToS3(location, JSON.stringify(mdmData))
+
+  logger.info('Updating in-memory cache with fresh data from MDM')
+  setIneligibleItemsCache(mdmData)
+
+  return { s3Response, location }
+}
+
+/**
+ * Build success result object
+ * @param {number} startTime - Start time
+ * @param {Object} mdmData - MDM data
+ * @param {Object} location - S3 location
+ * @param {string} etag - S3 ETag
+ * @returns {Object} Success result
+ */
+function buildSuccessResult(startTime, mdmData, location, etag) {
+  const endTime = new Date()
+  return {
+    success: true,
+    timestamp: endTime.toISOString(),
+    duration: endTime - startTime,
+    itemCount:
+      mdmData?.ineligibleItems?.length ||
+      (Array.isArray(mdmData) ? mdmData.length : 0),
+    s3Location: location,
+    etag
+  }
+}
+
+/**
+ * Build error result object
+ * @param {number} startTime - Start time
+ * @param {Error} error - Error object
+ * @returns {Object} Error result
+ */
+function buildErrorResult(startTime, error) {
+  const endTime = new Date()
+  return {
+    success: false,
+    timestamp: endTime.toISOString(),
+    duration: endTime - startTime,
+    error: error.message,
+    errorName: error.name
+  }
+}
+
+/**
+ * Synchronize ineligible items from MDM to S3
+ * This function retrieves the latest data from MDM, writes it to S3,
+ * and updates the in-memory cache with the fresh data
+ * @returns {Promise<Object>} Sync result with status and metadata
+ */
+export async function syncMdmToS3() {
+  const startTime = new Date()
+
+  const disabledResult = checkMdmEnabled(startTime)
+  if (disabledResult) {
+    return disabledResult
+  }
+
   logger.info('Starting MDM to S3 synchronization')
 
   try {
-    // Step 1: Retrieve latest data from MDM
-    logger.info('Retrieving ineligible items from MDM')
-    const mdmData = await getIneligibleItems()
-
-    if (!mdmData) {
-      throw new Error('No data received from MDM')
-    }
-
-    // Step 2: Write data to S3
-    const { s3FileName, s3Schema } = config.get('ineligibleItemsCache')
-    const location = {
-      filename: s3FileName,
-      schema: s3Schema
-    }
-
-    logger.info(
-      {
-        location,
-        dataSize: JSON.stringify(mdmData).length
-      },
-      'Writing ineligible items to S3'
-    )
-
-    const s3Response = await uploadJsonFileToS3(
+    const mdmData = await retrieveMdmData()
+    const { s3Response, location } = await writeMdmDataToS3(mdmData)
+    const result = buildSuccessResult(
+      startTime,
+      mdmData,
       location,
-      JSON.stringify(mdmData)
+      s3Response.ETag
     )
-
-    // Step 3: Update in-memory cache with fresh data
-    logger.info('Updating in-memory cache with fresh data from MDM')
-    setIneligibleItemsCache(mdmData)
-
-    const endTime = new Date()
-    const duration = endTime - startTime
-
-    const result = {
-      success: true,
-      timestamp: endTime.toISOString(),
-      duration,
-      itemCount:
-        mdmData?.ineligibleItems?.length ||
-        (Array.isArray(mdmData) ? mdmData.length : 0),
-      s3Location: location,
-      etag: s3Response.ETag
-    }
 
     logger.info(result, 'Successfully completed MDM to S3 synchronization')
-
     return result
   } catch (error) {
-    const endTime = new Date()
-    const duration = endTime - startTime
-
     logger.error(
       {
         error: {
@@ -99,20 +153,14 @@ export async function syncMdmToS3() {
           name: error.name,
           stack_trace: error.stack
         },
-        timestamp: endTime.toISOString(),
-        duration,
+        timestamp: new Date().toISOString(),
+        duration: new Date() - startTime,
         s3DataPreserved: true,
         cacheUnchanged: true
       },
       'Failed to synchronize MDM to S3 - existing S3 data remains unchanged'
     )
 
-    return {
-      success: false,
-      timestamp: endTime.toISOString(),
-      duration,
-      error: error.message,
-      errorName: error.name
-    }
+    return buildErrorResult(startTime, error)
   }
 }
