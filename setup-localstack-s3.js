@@ -1,8 +1,4 @@
-import {
-  S3Client,
-  CreateBucketCommand,
-  PutObjectCommand
-} from '@aws-sdk/client-s3'
+import { S3Client, CreateBucketCommand } from '@aws-sdk/client-s3'
 
 const s3Client = new S3Client({
   region: 'eu-west-2',
@@ -29,28 +25,5 @@ try {
   }
 }
 
-// Upload initial ineligible items file
-const initialData = {
-  ineligibleItems: [
-    { country_of_origin: 'CN', commodity_code: '0207' },
-    { country_of_origin: 'RU', commodity_code: '1234' }
-  ]
-}
-
-try {
-  await s3Client.send(
-    new PutObjectCommand({
-      Bucket: bucketName,
-      Key: 'cache/ineligible-items.json',
-      Body: JSON.stringify(initialData, null, 2),
-      ContentType: 'application/json'
-    })
-  )
-  console.log('✓ Uploaded initial ineligible-items.json to cache/ schema')
-} catch (error) {
-  console.error('Error uploading file:', error.message)
-  process.exit(1)
-}
-
 console.log('\nLocalStack S3 setup complete!')
-console.log('You can now start the server.')
+console.log('Bucket is empty - MDM sync will populate it on first run.')
