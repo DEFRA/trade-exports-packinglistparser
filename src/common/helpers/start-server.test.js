@@ -2,9 +2,14 @@ import hapi from '@hapi/hapi'
 import { vi } from 'vitest'
 
 const mockInitializeCache = vi.fn().mockResolvedValue(undefined)
+const mockStartSyncScheduler = vi.fn()
 
 vi.mock('../../services/cache/ineligible-items-cache.js', () => ({
   initializeIneligibleItemsCache: mockInitializeCache
+}))
+
+vi.mock('../../services/cache/sync-scheduler.js', () => ({
+  startSyncScheduler: mockStartSyncScheduler
 }))
 
 describe('#startServer', () => {
@@ -50,6 +55,13 @@ describe('#startServer', () => {
 
       expect(mockInitializeCache).toHaveBeenCalled()
     })
+
+    test('Should start MDM sync scheduler', async () => {
+      mockStartSyncScheduler.mockClear()
+      server = await startServerImport.startServer()
+
+      expect(mockStartSyncScheduler).toHaveBeenCalled()
+    })
   })
 
   describe('When cache initialization fails', () => {
@@ -81,6 +93,28 @@ describe('#startServer', () => {
       await expect(startServerImport.startServer()).rejects.toThrow(
         'Server failed to start'
       )
+    })
+  })
+
+  describe('When sync scheduler fails', () => {
+    let server
+
+    afterEach(async () => {
+      if (server) {
+        await server.stop({ timeout: 0 })
+        server = null
+      }
+    })
+
+    test('Should continue server startup when sync scheduler fails', async () => {
+      mockStartSyncScheduler.mockImplementationOnce(() => {
+        throw new Error('Scheduler failed to start')
+      })
+
+      server = await startServerImport.startServer()
+
+      expect(server).toBeDefined()
+      expect(createServerSpy).toHaveBeenCalled()
     })
   })
 })
