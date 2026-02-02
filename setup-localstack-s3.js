@@ -14,7 +14,7 @@ const s3Client = new S3Client({
   forcePathStyle: true
 })
 
-const bucketName = 'my-bucket'
+const bucketName = 'cache'
 
 // Create bucket
 try {

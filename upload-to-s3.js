@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 // Configuration
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'my-bucket'
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || 'cache'
 const SCHEMA = process.env.INELIGIBLE_ITEMS_S3_SCHEMA || 'cache'
 const FILENAME = 'ineligible-items.json'
 const FILE_PATH = join(__dirname, FILENAME)
