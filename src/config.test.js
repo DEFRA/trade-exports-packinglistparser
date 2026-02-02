@@ -30,7 +30,7 @@ describe('Config module', () => {
     vi.resetModules()
 
     process.env.PACKING_LIST_SCHEMA_VERSION = 'v2-test'
-    process.env.AWS_S3_BUCKET = 'my-test-bucket'
+    process.env.INELIGIBLE_ITEMS_S3_BUCKET = 'my-test-bucket'
 
     const { config } = await import('./config.js')
 

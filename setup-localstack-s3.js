@@ -10,7 +10,7 @@ const s3Client = new S3Client({
   forcePathStyle: true
 })
 
-const bucketName = 'cache'
+const bucketName = 'ineligible-items'
 
 // Create bucket
 try {
