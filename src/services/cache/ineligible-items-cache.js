@@ -15,7 +15,7 @@ function isDataEmpty(data) {
   return (
     !data ||
     (Array.isArray(data) && data.length === 0) ||
-    (data.ineligibleItems && data.ineligibleItems.length === 0)
+    data.ineligibleItems?.length === 0
   )
 }
 
