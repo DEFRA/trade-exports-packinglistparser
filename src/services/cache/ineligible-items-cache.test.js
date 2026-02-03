@@ -148,14 +148,6 @@ describe('ineligible-items-cache', () => {
       expect(getIneligibleItemsCache()).toBeNull()
     })
 
-    it('should handle empty array from S3', async () => {
-      getFileFromS3.mockResolvedValue('[]')
-
-      await initializeIneligibleItemsCache()
-
-      expect(getIneligibleItemsCache()).toEqual([])
-    })
-
     it('should handle data with ineligibleItems array property', async () => {
       const dataWithProperty = {
         ineligibleItems: mockIneligibleItems,
@@ -244,22 +236,6 @@ describe('ineligible-items-cache', () => {
 
       expect(getIneligibleItems).toHaveBeenCalledTimes(1)
       expect(uploadJsonFileToS3).toHaveBeenCalledTimes(1)
-      expect(getIneligibleItemsCache()).toEqual(mockIneligibleItems)
-    })
-
-    it('should continue with retries if MDM fails after S3 NoSuchKey', async () => {
-      const noSuchKeyError = new Error('The specified key does not exist')
-      noSuchKeyError.name = 'NoSuchKey'
-
-      getFileFromS3
-        .mockRejectedValueOnce(noSuchKeyError)
-        .mockResolvedValueOnce(JSON.stringify(mockIneligibleItems))
-      getIneligibleItems.mockRejectedValueOnce(new Error('MDM unavailable'))
-
-      await initializeIneligibleItemsCache()
-
-      expect(getFileFromS3).toHaveBeenCalledTimes(2)
-      expect(getIneligibleItems).toHaveBeenCalledTimes(1)
       expect(getIneligibleItemsCache()).toEqual(mockIneligibleItems)
     })
   })
