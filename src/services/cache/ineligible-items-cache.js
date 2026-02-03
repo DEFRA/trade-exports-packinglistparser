@@ -9,6 +9,116 @@ const logger = createLogger()
 let ineligibleItemsCache = null
 
 /**
+ * Check if data is empty (null, empty array, or empty ineligibleItems)
+ */
+function isDataEmpty(data) {
+  return (
+    !data ||
+    (Array.isArray(data) && data.length === 0) ||
+    (data.ineligibleItems && data.ineligibleItems.length === 0)
+  )
+}
+
+/**
+ * Extract item count from data
+ */
+function getItemCount(data) {
+  return (
+    data?.ineligibleItems?.length || (Array.isArray(data) ? data.length : 0)
+  )
+}
+
+/**
+ * Check if error is a NoSuchKey error
+ */
+function isNoSuchKeyError(error) {
+  return error?.name === 'NoSuchKey' || error?.Code === 'NoSuchKey'
+}
+
+/**
+ * Process successful S3 fetch
+ */
+function cacheS3Data(data) {
+  ineligibleItemsCache = data
+  const itemCount = getItemCount(data)
+  logger.info({ itemCount }, 'Ineligible items cache loaded')
+}
+
+/**
+ * Attempt to populate cache from MDM and upload to S3
+ */
+async function populateFromMDM(location, s3Error) {
+  logger.info('Attempting to populate cache from MDM')
+  try {
+    const mdmData = await getIneligibleItems()
+
+    if (mdmData) {
+      await uploadJsonFileToS3(location, JSON.stringify(mdmData))
+      cacheS3Data(mdmData)
+    }
+  } catch (mdmError) {
+    logger.error({ error: mdmError.message }, 'Failed to populate from MDM')
+    throw new Error(
+      `Unable to load ineligible items from S3 or MDM: S3 error: ${s3Error?.message}, MDM error: ${mdmError.message}`
+    )
+  }
+}
+
+/**
+ * Fetch from S3 with retry logic and handle results
+ */
+async function fetchFromS3WithRetry(location, maxRetries, retryDelayMs) {
+  let lastError = null
+  let attempt = 0
+
+  while (attempt <= maxRetries) {
+    try {
+      const fileContent = await getFileFromS3(location)
+      const parsedData = JSON.parse(fileContent)
+
+      if (isDataEmpty(parsedData)) {
+        logger.warn('S3 returned empty data, will attempt MDM fallback')
+        return {
+          success: false,
+          error: new Error('S3 data is empty'),
+          attempt: attempt + 1
+        }
+      }
+
+      cacheS3Data(parsedData)
+      return { success: true }
+    } catch (error) {
+      lastError = error
+
+      if (isNoSuchKeyError(error)) {
+        logger.warn(
+          'S3 file does not exist (NoSuchKey), will attempt MDM fallback'
+        )
+        return { success: false, error, attempt: attempt + 1 }
+      }
+
+      attempt++
+
+      logger.warn(
+        {
+          attempt,
+          maxRetries: maxRetries + 1,
+          error: error.message,
+          willRetry: attempt <= maxRetries
+        },
+        'Failed to fetch ineligible items from S3'
+      )
+
+      if (attempt <= maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
+      }
+    }
+  }
+
+  return { success: false, error: lastError, attempt }
+}
+
+/**
  * Initialize the ineligible items cache by fetching data from S3 with retry logic
  * @returns {Promise<void>}
  * @throws {Error} If unable to fetch data after all retry attempts
@@ -29,97 +139,24 @@ export async function initializeIneligibleItemsCache() {
     schema: s3Schema
   }
 
-  let lastError = null
-  let attempt = 0
+  const result = await fetchFromS3WithRetry(location, maxRetries, retryDelayMs)
 
-  while (attempt <= maxRetries) {
-    try {
-      const fileContent = await getFileFromS3(location)
-      const parsedData = JSON.parse(fileContent)
-
-      // Check if S3 returned empty data - trigger MDM fallback immediately without retries
-      if (
-        !parsedData ||
-        (Array.isArray(parsedData) && parsedData.length === 0) ||
-        (parsedData.ineligibleItems && parsedData.ineligibleItems.length === 0)
-      ) {
-        logger.warn('S3 returned empty data, will attempt MDM fallback')
-        const emptyError = new Error('S3 data is empty')
-        lastError = emptyError
-        break // Exit retry loop immediately for empty data
-      }
-
-      ineligibleItemsCache = parsedData
-      const itemCount =
-        parsedData?.ineligibleItems?.length ||
-        (Array.isArray(parsedData) ? parsedData.length : 0)
-      logger.info({ itemCount }, 'Ineligible items cache loaded')
-      return
-    } catch (error) {
-      lastError = error
-
-      // For NoSuchKey, don't retry - trigger MDM fallback immediately
-      const isNoSuchKey =
-        error?.name === 'NoSuchKey' || error?.Code === 'NoSuchKey'
-      if (isNoSuchKey) {
-        logger.warn(
-          'S3 file does not exist (NoSuchKey), will attempt MDM fallback'
-        )
-        break // Exit retry loop immediately for missing file
-      }
-
-      attempt++
-
-      logger.warn(
-        {
-          attempt,
-          maxRetries: maxRetries + 1,
-          error: error.message,
-          willRetry: attempt <= maxRetries
-        },
-        'Failed to fetch ineligible items from S3'
-      )
-
-      if (attempt <= maxRetries) {
-        // Wait before retrying
-        await new Promise((resolve) => setTimeout(resolve, retryDelayMs))
-      }
-    }
+  if (result.success) {
+    return
   }
 
-  // Try MDM as fallback for NoSuchKey or empty data
-  const isNoSuchKey =
-    lastError?.name === 'NoSuchKey' || lastError?.Code === 'NoSuchKey'
-  const isEmptyData = lastError?.message === 'S3 data is empty'
+  const isNoSuchKey = isNoSuchKeyError(result.error)
+  const isEmptyData = result.error?.message === 'S3 data is empty'
 
   if (isNoSuchKey || isEmptyData) {
-    logger.info('Attempting to populate cache from MDM')
-    try {
-      const mdmData = await getIneligibleItems()
-
-      if (mdmData) {
-        await uploadJsonFileToS3(location, JSON.stringify(mdmData))
-
-        ineligibleItemsCache = mdmData
-        const itemCount =
-          mdmData?.ineligibleItems?.length ||
-          (Array.isArray(mdmData) ? mdmData.length : 0)
-        logger.info({ itemCount }, 'Cache populated from MDM')
-        return
-      }
-    } catch (mdmError) {
-      logger.error({ error: mdmError.message }, 'Failed to populate from MDM')
-      throw new Error(
-        `Unable to load ineligible items from S3 or MDM: S3 error: ${lastError?.message}, MDM error: ${mdmError.message}`
-      )
-    }
+    await populateFromMDM(location, result.error)
+    return
   }
 
-  // All retries exhausted and MDM not applicable or unavailable
   logger.error(
     {
-      error: lastError?.message,
-      attempts: attempt,
+      error: result.error?.message,
+      attempts: result.attempt,
       s3FileName,
       s3Schema
     },
@@ -127,7 +164,7 @@ export async function initializeIneligibleItemsCache() {
   )
 
   throw new Error(
-    `Unable to load ineligible items data after ${attempt} attempts: ${lastError?.message}`
+    `Unable to load ineligible items data after ${result.attempt} attempts: ${result.error?.message}`
   )
 }
 
