@@ -28,8 +28,8 @@
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
   "dependencies": {
-    "@aws-sdk/client-cognito-identity": "3.940.0",
-    "@aws-sdk/client-s3": "3.916.0",
+    "@aws-sdk/client-cognito-identity": "3.980.0",
+    "@aws-sdk/client-s3": "3.980.0",
     "@azure/identity": "4.13.0",
     "@azure/service-bus": "7.9.5",
     "@azure/storage-blob": "12.29.1",
@@ -57,7 +57,7 @@
     "pdf.js-extract": "0.2.1",
     "pino": "9.14.0",
     "pino-pretty": "13.0.0",
-    "undici": "7.10.0",
+    "undici": "7.20.0",
     "ws": "8.18.3"
   },
   "devDependencies": {
@@ -73,5 +73,8 @@
     "prettier": "3.5.3",
     "vitest": "3.2.4",
     "vitest-fetch-mock": "0.4.5"
+  },
+  "overrides": {
+    "fast-xml-parser": "5.3.4"
   }
 }
