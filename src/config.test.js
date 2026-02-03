@@ -22,7 +22,7 @@ describe('Config module', () => {
     expect(config.get('packingList.schemaVersion')).toBe('v0.0')
 
     // aws defaults
-    expect(config.get('aws.s3Bucket')).toBe('')
+    expect(config.get('aws.s3Bucket')).toBe('trade-exports-data')
     expect(config.get('aws.region')).toBe('eu-west-2')
   })
 
@@ -30,7 +30,7 @@ describe('Config module', () => {
     vi.resetModules()
 
     process.env.PACKING_LIST_SCHEMA_VERSION = 'v2-test'
-    process.env.INELIGIBLE_ITEMS_S3_BUCKET = 'my-test-bucket'
+    process.env.AWS_S3_BUCKET = 'my-test-bucket'
 
     const { config } = await import('./config.js')
 
