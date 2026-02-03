@@ -124,10 +124,10 @@ const config = convict({
       env: 'AWS_SECRET_ACCESS_KEY'
     },
     s3Bucket: {
-      doc: 'S3 bucket name for ineligible items cache',
+      doc: 'S3 bucket name for file storage',
       format: String,
-      default: '',
-      env: 'INELIGIBLE_ITEMS_S3_BUCKET'
+      default: 'trade-exports-data',
+      env: 'AWS_S3_BUCKET'
     },
     poolId: {
       doc: 'Cognito Identity Pool ID',

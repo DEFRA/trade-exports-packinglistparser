@@ -10,7 +10,7 @@ const s3Client = new S3Client({
   forcePathStyle: true
 })
 
-const bucketName = 'ineligible-items'
+const bucketName = 'trade-exports-data'
 
 // Create bucket
 try {
@@ -27,3 +27,6 @@ try {
 
 console.log('\nLocalStack S3 setup complete!')
 console.log('Bucket is empty - MDM sync will populate it on first run.')
+console.log(
+  'Files will be stored with folder prefixes like: s3://trade-exports-data/cache/ineligible-items.json'
+)
