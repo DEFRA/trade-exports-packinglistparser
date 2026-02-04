@@ -124,9 +124,9 @@ const config = convict({
       env: 'AWS_SECRET_ACCESS_KEY'
     },
     s3Bucket: {
-      doc: 'S3 bucket name, required if S3 is enabled',
+      doc: 'S3 bucket name for file storage',
       format: String,
-      default: '',
+      default: 'trade-exports-data',
       env: 'AWS_S3_BUCKET'
     },
     poolId: {
@@ -278,6 +278,14 @@ const config = convict({
       default: null,
       env: 'AZURE_MDM_CLIENT_ID'
     },
+    clientSecret: {
+      doc: 'Azure AD Client Secret for MDM',
+      format: String,
+      nullable: true,
+      default: null,
+      sensitive: true,
+      env: 'AZURE_MDM_CLIENT_SECRET'
+    },
     subscriptionKey: {
       doc: 'Azure APIM Subscription Key',
       format: String,
@@ -308,6 +316,14 @@ const config = convict({
       env: 'AZURE_MDM_GET_INELIGIBLE_ITEMS_ENDPOINT'
     }
   },
+  mdmIntegration: {
+    enabled: {
+      doc: 'Enable or disable MDM integration for ineligible items',
+      format: Boolean,
+      default: true,
+      env: 'MDM_INTEGRATION_ENABLED'
+    }
+  },
   ineligibleItemsCache: {
     readEnabled: {
       doc: 'Enable or disable reading ineligible items from S3',
@@ -325,7 +341,7 @@ const config = convict({
       doc: 'S3 schema/prefix for ineligible items file',
       format: String,
       nullable: true,
-      default: null,
+      default: 'cache',
       env: 'INELIGIBLE_ITEMS_S3_SCHEMA'
     },
     maxRetries: {
@@ -339,6 +355,20 @@ const config = convict({
       format: 'nat',
       default: 2000,
       env: 'INELIGIBLE_ITEMS_RETRY_DELAY_MS'
+    }
+  },
+  ineligibleItemsSync: {
+    enabled: {
+      doc: 'Enable or disable hourly MDM to S3 synchronization',
+      format: Boolean,
+      default: true,
+      env: 'INELIGIBLE_ITEMS_SYNC_ENABLED'
+    },
+    cronSchedule: {
+      doc: 'Cron schedule for MDM to S3 sync (default: hourly at minute 0)',
+      format: String,
+      default: '0 * * * *',
+      env: 'INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE'
     }
   }
 })

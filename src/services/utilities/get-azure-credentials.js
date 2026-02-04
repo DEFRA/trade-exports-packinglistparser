@@ -3,7 +3,10 @@ import {
   GetOpenIdTokenForDeveloperIdentityCommand
 } from '@aws-sdk/client-cognito-identity'
 
-import { ClientAssertionCredential } from '@azure/identity'
+import {
+  ClientAssertionCredential,
+  ClientSecretCredential
+} from '@azure/identity'
 import { config } from '../../config.js'
 
 const { poolId, region } = config.get('aws')
@@ -38,10 +41,19 @@ async function getCognitoToken() {
 
 /**
  * Creates Azure ClientAssertionCredential using Cognito token for authentication
+ * Or ClientSecretCredential if client secret is available (for local dev)
  * @param {string} tenantID - Azure tenant ID
  * @param {string} clientID - Azure client ID
- * @returns {ClientAssertionCredential} Azure credential object
+ * @returns {ClientAssertionCredential|ClientSecretCredential} Azure credential object
  */
 export function getAzureCredentials(tenantID, clientID) {
+  const { clientSecret } = config.get('mdm')
+
+  // If client secret is provided, use ClientSecretCredential (local dev)
+  if (clientSecret) {
+    return new ClientSecretCredential(tenantID, clientID, clientSecret)
+  }
+
+  // Otherwise use ClientAssertionCredential with Cognito (cloud)
   return new ClientAssertionCredential(tenantID, clientID, getCognitoToken)
 }
