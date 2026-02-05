@@ -36,4 +36,4 @@ const kepakHeaders = {
   }
 }
 
-export default kepakHeaders
+export { kepakHeaders }
