@@ -25,6 +25,4 @@ const bookerHeaders = {
   }
 }
 
-
-
 export { bookerHeaders }
