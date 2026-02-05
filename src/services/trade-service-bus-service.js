@@ -57,12 +57,14 @@ export async function sendMessageToQueue(message) {
   const { queueName } = config.get('tradeServiceBus')
   const sender = client.createSender(queueName)
   try {
-    await sender.sendMessages({ body: message })
-    logger.info(`Message sent to Service Bus queue: ${queueName}`)
+    await sender.sendMessages(message)
+    logger.info(
+      `Message sent to Service Bus queue: ${queueName} for applicationId: ${message.body?.applicationId}`
+    )
   } catch (err) {
     logger.error(
       { err },
-      `Failed to send message to Service Bus queue: ${queueName}`
+      `Failed to send message to Service Bus queue: ${queueName} for applicationId: ${message.body?.applicationId}`
     )
     throw err
   } finally {

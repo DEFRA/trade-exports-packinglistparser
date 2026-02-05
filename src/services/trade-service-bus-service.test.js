@@ -101,7 +101,10 @@ describe('trade-service-bus-service', () => {
     it('should send a message to the queue successfully', async () => {
       mockSendMessages.mockResolvedValue(undefined)
 
-      const message = { text: 'Hello, Service Bus!' }
+      const message = {
+        body: { applicationId: 'test-app-123' },
+        messageId: 'msg-1'
+      }
       await sendMessageToQueue(message)
 
       expect(mockGetAzureCredentials).toHaveBeenCalledWith(
@@ -116,16 +119,16 @@ describe('trade-service-bus-service', () => {
       expect(mockCreateSender).toHaveBeenCalledWith(
         TEST_SERVICE_BUS_CONFIG.QUEUE_NAME
       )
-      expect(mockSendMessages).toHaveBeenCalledWith({ body: message })
+      expect(mockSendMessages).toHaveBeenCalledWith(message)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Message sent to Service Bus queue: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`
+        `Message sent to Service Bus queue: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME} for applicationId: test-app-123`
       )
     })
 
     it('should close sender and client after sending', async () => {
       mockSendMessages.mockResolvedValue(undefined)
 
-      await sendMessageToQueue({ test: 'message' })
+      await sendMessageToQueue({ body: { applicationId: 'test-123' } })
 
       expect(mockSenderClose).toHaveBeenCalled()
       expect(mockClose).toHaveBeenCalled()
@@ -135,13 +138,13 @@ describe('trade-service-bus-service', () => {
       const error = new Error('Send failed')
       mockSendMessages.mockRejectedValue(error)
 
-      await expect(sendMessageToQueue({ test: 'message' })).rejects.toThrow(
-        'Send failed'
-      )
+      await expect(
+        sendMessageToQueue({ body: { applicationId: 'test-123' } })
+      ).rejects.toThrow('Send failed')
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         { err: error },
-        `Failed to send message to Service Bus queue: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`
+        `Failed to send message to Service Bus queue: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME} for applicationId: test-123`
       )
     })
 
@@ -149,7 +152,7 @@ describe('trade-service-bus-service', () => {
       mockSendMessages.mockResolvedValue(undefined)
       mockSenderClose.mockRejectedValue(new Error('Close failed'))
 
-      await sendMessageToQueue({ test: 'message' })
+      await sendMessageToQueue({ body: { applicationId: 'test-123' } })
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { err: expect.any(Error) },
@@ -169,7 +172,9 @@ describe('trade-service-bus-service', () => {
         return {}
       })
 
-      await expect(sendMessageToQueue({ test: 'message' })).rejects.toThrow(
+      await expect(
+        sendMessageToQueue({ body: { applicationId: 'test-123' } })
+      ).rejects.toThrow(
         'Missing Azure Service Bus configuration (tenantId, clientId, serviceBusNamespace)'
       )
     })
@@ -177,7 +182,7 @@ describe('trade-service-bus-service', () => {
     it('should log connection details from createServiceBusClientFromConfig', async () => {
       mockSendMessages.mockResolvedValue(undefined)
 
-      await sendMessageToQueue({ test: 'message' })
+      await sendMessageToQueue({ body: { applicationId: 'test-123' } })
 
       // Verify that multiple logger.info calls were made
       // The first call is from createServiceBusClientFromConfig with connection details
