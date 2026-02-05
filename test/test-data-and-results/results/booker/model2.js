@@ -1,4 +1,4 @@
-import parserModel from '../../../../../src/services/parser-model.js'
+import parserModel from '../../../../src/services/parser-model.js'
 
 export default {
   validTestResult: {
@@ -114,7 +114,7 @@ export default {
       all_required_fields_present: true,
       failure_reasons: null
     },
-    parserModel: 'booker-2',
+    parserModel: parserModel.BOOKER2,
     establishment_numbers: ['RMS-GB-000077-001'],
     unitInHeader: true,
     validateCountryOfOrigin: true
@@ -202,7 +202,7 @@ export default {
       all_required_fields_present: true,
       failure_reasons: null
     },
-    parserModel: 'booker-2',
+    parserModel: parserModel.BOOKER2,
     establishment_numbers: ['RMS-GB-000077-001'],
     unitInHeader: true,
     validateCountryOfOrigin: true
@@ -305,7 +305,7 @@ export default {
       all_required_fields_present: true,
       failure_reasons: null
     },
-    parserModel: 'booker-2',
+    parserModel: parserModel.BOOKER2,
     establishment_numbers: ['RMS-GB-000077-001'],
     unitInHeader: true,
     validateCountryOfOrigin: true
@@ -334,7 +334,7 @@ export default {
       failure_reasons:
         'Product description is missing in sheet "Sheet1" row 19.\n'
     },
-    parserModel: 'booker-2',
+    parserModel: parserModel.BOOKER2,
     establishment_numbers: ['RMS-GB-000077-001'],
     unitInHeader: true,
     validateCountryOfOrigin: true
