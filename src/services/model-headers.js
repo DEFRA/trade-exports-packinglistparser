@@ -7,7 +7,7 @@
 import { asdaHeaders } from './model-headers/asda.js'
 import { buffaloadHeaders } from './model-headers/buffaload.js'
 import { coopHeaders } from './model-headers/coop.js'
-import kepakHeaders from './model-headers/kepak.js'
+import { kepakHeaders } from './model-headers/kepak.js'
 import { nisaHeaders } from './model-headers/nisa.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
 import { tescoHeaders } from './model-headers/tesco.js'

@@ -1,5 +1,6 @@
 import parserModel from '../../../../src/services/parser-model.js'
 import failureReasonsDescriptions from '../../../../src/services/validators/packing-list-failure-reasons.js'
+import { kepakHeaders } from '../../../../src/services/model-headers/kepak.js'
 
 export default {
   validTestResult: {
@@ -31,7 +32,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   validTestResultWithNirms: {
     business_checks: {
@@ -64,7 +68,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   validTestResultForMultipleSheets: {
     business_checks: {
@@ -95,7 +102,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   invalidTestResult_MissingCells: {
     business_checks: {
@@ -129,7 +139,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   emptyModelResult: {
     business_checks: {
@@ -150,7 +163,10 @@ export default {
     ],
     establishment_numbers: [],
     registration_approval_number: null,
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   multipleRms: {
     business_checks: {
@@ -183,7 +199,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005', 'RMS-GB-000149-006'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   missingKgunit: {
     business_checks: {
@@ -216,7 +235,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   missingNirmsStatementTestResult: {
     business_checks: {
@@ -238,7 +260,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   nullCoOTestResult: {
     business_checks: {
@@ -261,7 +286,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   invalidCoOTestResult: {
     business_checks: {
@@ -284,7 +312,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   multipleNullCoOTestResult: {
     business_checks: {
@@ -341,7 +372,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   multipleInvalidCoOTestResult: {
     business_checks: {
@@ -398,7 +432,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   xCoOTestResult: {
     business_checks: {
@@ -420,7 +457,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   ineligibleItemWithTreatmentTestResult: {
     business_checks: {
@@ -444,7 +484,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   multipleineligibleItemsWithTreatmentTestResult: {
     business_checks: {
@@ -501,7 +544,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   ineligibleItemNoTreatmentTestResult: {
     business_checks: {
@@ -525,7 +571,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   multipleineligibleItemsNoTreatmentTestResult: {
     business_checks: {
@@ -582,7 +631,10 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   },
   nullTreatmentTypeWithNullIdentifierTestResult: {
     business_checks: {
@@ -606,6 +658,9 @@ export default {
     ],
     establishment_numbers: ['RMS-GB-000149-005'],
     registration_approval_number: 'RMS-GB-000280',
-    parserModel: parserModel.KEPAK1
+    parserModel: parserModel.KEPAK1,
+    unitInHeader: kepakHeaders.KEPAK1.findUnitInHeader,
+    validateCountryOfOrigin: kepakHeaders.KEPAK1.validateCountryOfOrigin,
+    blanketNirms: kepakHeaders.KEPAK1.blanketNirms
   }
 }
