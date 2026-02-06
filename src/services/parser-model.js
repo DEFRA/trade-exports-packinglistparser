@@ -23,11 +23,17 @@ export default Object.freeze({
   // Buffaload Logistics models
   BUFFALOAD1: 'BUFFALOAD1',
 
+  // Booker models
+  BOOKER2: 'BOOKER2',
+
   // Giovanni models
   GIOVANNI3: 'GIOVANNI3',
 
   // M&S models
   MANDS1: 'MANDS1',
+
+  // Mars models
+  MARS1: 'MARS1',
 
   // Nisa models
   NISA1: 'NISA1',
