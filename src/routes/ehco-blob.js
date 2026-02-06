@@ -1,7 +1,7 @@
 import {
   downloadBlobFromApplicationForms,
   checkApplicationFormsContainerExists
-} from '../services/ehco-blob-storage-service.js'
+} from '../services/blob-storage/ehco-blob-storage-service.js'
 
 import { STATUS_CODES } from './statuscodes.js'
 

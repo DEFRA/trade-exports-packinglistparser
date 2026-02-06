@@ -21,13 +21,13 @@ vi.mock('@azure/storage-blob', () => ({
 
 // Mock getAzureCredentials
 const mockGetAzureCredentials = vi.fn(() => ({ type: 'credential' }))
-vi.mock('./utilities/get-azure-credentials.js', () => ({
+vi.mock('../utilities/get-azure-credentials.js', () => ({
   getAzureCredentials: mockGetAzureCredentials
 }))
 
 // Mock proxy helper
 const mockGetClientProxyOptions = vi.fn(() => ({}))
-vi.mock('./utilities/proxy-helper.js', () => ({
+vi.mock('../utilities/proxy-helper.js', () => ({
   getClientProxyOptions: mockGetClientProxyOptions
 }))
 
@@ -38,14 +38,14 @@ const mockLogger = {
   warn: vi.fn(),
   debug: vi.fn()
 }
-vi.mock('../common/helpers/logging/logger.js', () => ({
+vi.mock('../../common/helpers/logging/logger.js', () => ({
   createLogger: vi.fn(() => mockLogger)
 }))
 
 // Mock excel-helper
 const mockIsExcel = vi.fn()
 const mockConvertExcelToJson = vi.fn()
-vi.mock('../utilities/excel-helper.js', () => ({
+vi.mock('../../utilities/excel-helper.js', () => ({
   isExcel: mockIsExcel,
   convertExcelToJson: mockConvertExcelToJson
 }))
@@ -53,7 +53,7 @@ vi.mock('../utilities/excel-helper.js', () => ({
 // Mock csv-helper
 const mockIsCsv = vi.fn()
 const mockConvertCsvToJson = vi.fn()
-vi.mock('../utilities/csv-helper.js', () => ({
+vi.mock('../../utilities/csv-helper.js', () => ({
   isCsv: mockIsCsv,
   convertCsvToJson: mockConvertCsvToJson
 }))
@@ -76,7 +76,7 @@ const mockConfigGet = vi.fn((key) => {
   }
   return {}
 })
-vi.mock('../config.js', () => ({
+vi.mock('../../config.js', () => ({
   config: {
     get: mockConfigGet
   }
@@ -136,7 +136,7 @@ const setupDefaultConfig = () => {
       return {
         clientId: TEST_CREDENTIALS.CLIENT_ID,
         blobStorageAccount: TEST_BLOB_CONFIG.STORAGE_ACCOUNT,
-        formsContainerName: TEST_BLOB_CONFIG.CONTAINER_NAME
+        containerName: TEST_BLOB_CONFIG.CONTAINER_NAME
       }
     }
     return {}
@@ -173,7 +173,7 @@ const setupCustomConfig = (
       return {
         clientId,
         blobStorageAccount: storageAccount,
-        formsContainerName: containerName
+        containerName
       }
     }
     return {}
@@ -229,10 +229,10 @@ describe('ehco-blob-storage-service', () => {
       expect(mockDownload).toHaveBeenCalled()
       expect(result).toEqual(testData)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Downloading blob from application forms container: test-blob.txt'
+        'Downloading blob from container: test-blob.txt'
       )
       expect(mockLogger.info).toHaveBeenCalledWith(
-        'Blob downloaded from application forms container: test-blob.txt'
+        'Blob downloaded from container: test-blob.txt'
       )
     })
 
@@ -361,10 +361,10 @@ describe('ehco-blob-storage-service', () => {
       )
       expect(result).toEqual(testData)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Downloading blob from application forms container: ${fullUrl}`
+        `Downloading blob from container: ${fullUrl}`
       )
       expect(mockLogger.info).toHaveBeenCalledWith(
-        `Blob downloaded from application forms container: ${fullUrl}`
+        `Blob downloaded from container: ${fullUrl}`
       )
     })
 
@@ -385,7 +385,7 @@ describe('ehco-blob-storage-service', () => {
 
       expect(mockConfigGet).toHaveBeenCalledWith('azure')
       expect(mockConfigGet).toHaveBeenCalledWith('ehcoBlob')
-      expect(mockConfigGet).toHaveBeenCalledTimes(4) // Called once for 'azure', three times for 'ehcoBlob' (in createBlobServiceClient, createApplicationFormsBlobClient, and getBlobNameFromUrl)
+      expect(mockConfigGet).toHaveBeenCalledTimes(2) // Called once for 'ehcoBlob' (wrapper), once for 'azure' (generic service)
     })
   })
 
@@ -526,7 +526,7 @@ describe('ehco-blob-storage-service', () => {
       mockExists.mockRejectedValue(new Error('Connection failed'))
 
       await expect(checkApplicationFormsContainerExists()).rejects.toThrow(
-        'Failed to download blob: Connection failed'
+        'Failed to check container existence: Connection failed'
       )
     })
 
@@ -536,7 +536,7 @@ describe('ehco-blob-storage-service', () => {
       mockExists.mockRejectedValue(authError)
 
       await expect(checkApplicationFormsContainerExists()).rejects.toThrow(
-        'Failed to download blob: Invalid credentials'
+        'Failed to check container existence: Invalid credentials'
       )
     })
 
@@ -546,7 +546,7 @@ describe('ehco-blob-storage-service', () => {
       mockExists.mockRejectedValue(timeoutError)
 
       await expect(checkApplicationFormsContainerExists()).rejects.toThrow(
-        'Failed to download blob: Request timeout'
+        'Failed to check container existence: Request timeout'
       )
     })
 

@@ -262,12 +262,35 @@ const config = convict({
       default: null,
       env: 'AZURE_EHCO_BLOB_STORAGE_ACCOUNT'
     },
-    formsContainerName: {
-      doc: 'Azure Blob Storage Container Name for Forms',
+    containerName: {
+      doc: 'Azure Blob Storage Container Name',
       format: String,
       nullable: true,
       default: null,
       env: 'AZURE_EHCO_BLOB_FORMS_CONTAINER_NAME'
+    }
+  },
+  tdsBlob: {
+    clientId: {
+      doc: AZURE_AD_CLIENT_ID_DOC,
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TDS_BLOB_CLIENT_ID'
+    },
+    blobStorageAccount: {
+      doc: 'Azure Blob Storage Account',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TDS_BLOB_STORAGE_ACCOUNT'
+    },
+    containerName: {
+      doc: 'Azure Blob Storage Container Name',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_TDS_BLOB_CONTAINER_NAME'
     }
   },
   mdm: {

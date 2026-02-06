@@ -4,7 +4,8 @@ import {
   bearerTokenRequest,
   checkDynamicsDispatchLocationConnection
 } from '../services/dynamics-service.js'
-import { checkApplicationFormsContainerExists } from '../services/ehco-blob-storage-service.js'
+import { checkApplicationFormsContainerExists } from '../services/blob-storage/ehco-blob-storage-service.js'
+import { checkTdsContainerExists } from '../services/blob-storage/tds-blob-storage-service.js'
 import { getIneligibleItems } from '../services/mdm-service.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 import { checkTradeServiceBusConnection } from '../services/trade-service-bus-service.js'
@@ -19,7 +20,7 @@ const connectivityCheck = {
 
 /**
  * Handler for connectivity check endpoint
- * Tests connections to all external services (S3, Dynamics, EHCO Blob Storage) in parallel
+ * Tests connections to all external services (S3, Dynamics, EHCO Blob Storage, TDS Blob Storage) in parallel
  * @param {Object} _request - Hapi request object (unused)
  * @param {Object} h - Hapi response toolkit
  * @returns {Promise<Object>} Response with connectivity status and details
@@ -30,6 +31,7 @@ async function connectivityCheckHandler(_request, h) {
     dynamicsLogin,
     dynamicsData,
     ehcoBlobStorage,
+    tdsBlobStorage,
     mdmIneligibleItems,
     tradeServiceBus
   ] = await Promise.all([
@@ -37,6 +39,7 @@ async function connectivityCheckHandler(_request, h) {
     canDynamicsLoginConnect(),
     canWeReceiveDispatchLocationsFromDynamics(),
     canWeConnectToEhcoBlobStorage(),
+    canWeConnectToTdsBlobStorage(),
     canWeConnectToMdmService(),
     canWeConnectToTradeServiceBus()
   ])
@@ -46,6 +49,7 @@ async function connectivityCheckHandler(_request, h) {
     dynamicsLogin,
     dynamicsData,
     ehcoBlobStorage,
+    tdsBlobStorage,
     mdmIneligibleItems,
     tradeServiceBus
   }
@@ -108,6 +112,14 @@ async function canWeReceiveDispatchLocationsFromDynamics() {
  */
 async function canWeConnectToEhcoBlobStorage() {
   return canConnect(checkApplicationFormsContainerExists, 'EHCO Blob Storage')
+}
+
+/**
+ * Check if we can connect to TDS Blob Storage
+ * @returns {Promise<boolean>} True if connected, false otherwise
+ */
+async function canWeConnectToTdsBlobStorage() {
+  return canConnect(checkTdsContainerExists, 'TDS Blob Storage')
 }
 
 /**

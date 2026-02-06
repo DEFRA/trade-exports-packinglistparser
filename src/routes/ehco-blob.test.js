@@ -5,7 +5,7 @@ import { STATUS_CODES } from './statuscodes.js'
 const mockDownloadBlobFromApplicationForms = vi.fn()
 const mockCheckApplicationFormsContainerExists = vi.fn()
 
-vi.mock('../services/ehco-blob-storage-service.js', () => ({
+vi.mock('../services/blob-storage/ehco-blob-storage-service.js', () => ({
   downloadBlobFromApplicationForms: mockDownloadBlobFromApplicationForms,
   checkApplicationFormsContainerExists: mockCheckApplicationFormsContainerExists
 }))
