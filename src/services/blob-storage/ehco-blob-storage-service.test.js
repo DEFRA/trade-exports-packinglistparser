@@ -21,13 +21,13 @@ vi.mock('@azure/storage-blob', () => ({
 
 // Mock getAzureCredentials
 const mockGetAzureCredentials = vi.fn(() => ({ type: 'credential' }))
-vi.mock('./utilities/get-azure-credentials.js', () => ({
+vi.mock('../utilities/get-azure-credentials.js', () => ({
   getAzureCredentials: mockGetAzureCredentials
 }))
 
 // Mock proxy helper
 const mockGetClientProxyOptions = vi.fn(() => ({}))
-vi.mock('./utilities/proxy-helper.js', () => ({
+vi.mock('../utilities/proxy-helper.js', () => ({
   getClientProxyOptions: mockGetClientProxyOptions
 }))
 
@@ -38,14 +38,14 @@ const mockLogger = {
   warn: vi.fn(),
   debug: vi.fn()
 }
-vi.mock('../common/helpers/logging/logger.js', () => ({
+vi.mock('../../common/helpers/logging/logger.js', () => ({
   createLogger: vi.fn(() => mockLogger)
 }))
 
 // Mock excel-helper
 const mockIsExcel = vi.fn()
 const mockConvertExcelToJson = vi.fn()
-vi.mock('../utilities/excel-helper.js', () => ({
+vi.mock('../../utilities/excel-helper.js', () => ({
   isExcel: mockIsExcel,
   convertExcelToJson: mockConvertExcelToJson
 }))
@@ -53,7 +53,7 @@ vi.mock('../utilities/excel-helper.js', () => ({
 // Mock csv-helper
 const mockIsCsv = vi.fn()
 const mockConvertCsvToJson = vi.fn()
-vi.mock('../utilities/csv-helper.js', () => ({
+vi.mock('../../utilities/csv-helper.js', () => ({
   isCsv: mockIsCsv,
   convertCsvToJson: mockConvertCsvToJson
 }))
@@ -76,7 +76,7 @@ const mockConfigGet = vi.fn((key) => {
   }
   return {}
 })
-vi.mock('../config.js', () => ({
+vi.mock('../../config.js', () => ({
   config: {
     get: mockConfigGet
   }
@@ -136,7 +136,7 @@ const setupDefaultConfig = () => {
       return {
         clientId: TEST_CREDENTIALS.CLIENT_ID,
         blobStorageAccount: TEST_BLOB_CONFIG.STORAGE_ACCOUNT,
-        formsContainerName: TEST_BLOB_CONFIG.CONTAINER_NAME
+        containerName: TEST_BLOB_CONFIG.CONTAINER_NAME
       }
     }
     return {}
@@ -173,7 +173,7 @@ const setupCustomConfig = (
       return {
         clientId,
         blobStorageAccount: storageAccount,
-        formsContainerName: containerName
+        containerName
       }
     }
     return {}

@@ -14,7 +14,7 @@ vi.mock('./dynamics-service.js', () => ({
 
 // Mock downloadBlobFromApplicationFormsContainerAsJson
 const mockDownloadBlobFromApplicationFormsContainerAsJson = vi.fn()
-vi.mock('./ehco-blob-storage-service.js', () => ({
+vi.mock('./blob-storage/ehco-blob-storage-service.js', () => ({
   downloadBlobFromApplicationFormsContainerAsJson:
     mockDownloadBlobFromApplicationFormsContainerAsJson
 }))

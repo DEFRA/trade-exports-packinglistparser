@@ -1,5 +1,5 @@
 import { createBlobStorageService } from './blob-storage-service.js'
-import { config } from '../config.js'
+import { config } from '../../config.js'
 
 /**
  * EHCO Blob Storage Service
@@ -12,13 +12,12 @@ import { config } from '../config.js'
  */
 function getEhcoBlobStorageService() {
   const { defraTenantId } = config.get('azure') || {}
-  const { clientId, blobStorageAccount, formsContainerName } =
-    config.get('ehcoBlob')
+  const { clientId, blobStorageAccount, containerName } = config.get('ehcoBlob')
   return createBlobStorageService({
     tenantId: defraTenantId,
     clientId,
     blobStorageAccount,
-    containerName: formsContainerName
+    containerName
   })
 }
 

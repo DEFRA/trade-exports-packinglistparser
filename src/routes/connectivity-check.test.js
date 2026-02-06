@@ -5,7 +5,8 @@ import {
   bearerTokenRequest,
   checkDynamicsDispatchLocationConnection
 } from '../services/dynamics-service.js'
-import { checkApplicationFormsContainerExists } from '../services/ehco-blob-storage-service.js'
+import { checkApplicationFormsContainerExists } from '../services/blob-storage/ehco-blob-storage-service.js'
+import { checkTdsContainerExists } from '../services/blob-storage/tds-blob-storage-service.js'
 import { getIneligibleItems } from '../services/mdm-service.js'
 import { STATUS_CODES } from './statuscodes.js'
 import { checkTradeServiceBusConnection } from '../services/trade-service-bus-service.js'
@@ -24,8 +25,12 @@ vi.mock('../services/dynamics-service.js', () => ({
   checkDynamicsDispatchLocationConnection: vi.fn()
 }))
 
-vi.mock('../services/ehco-blob-storage-service.js', () => ({
+vi.mock('../services/blob-storage/ehco-blob-storage-service.js', () => ({
   checkApplicationFormsContainerExists: vi.fn()
+}))
+
+vi.mock('../services/blob-storage/tds-blob-storage-service.js', () => ({
+  checkTdsContainerExists: vi.fn()
 }))
 
 vi.mock('../services/mdm-service.js', () => ({
@@ -54,6 +59,7 @@ const SERVICE_NAMES = {
   DYNAMICS_LOGIN: 'dynamicsLogin',
   DYNAMICS_DATA: 'dynamicsData',
   EHCO_BLOB_STORAGE: 'ehcoBlobStorage',
+  TDS_BLOB_STORAGE: 'tdsBlobStorage',
   MDM_INELIGIBLE_ITEMS: 'mdmIneligibleItems',
   TRADE_SERVICE_BUS: 'tradeServiceBus'
 }
@@ -99,6 +105,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -108,6 +115,7 @@ describe('Connectivity Check Route', () => {
     expect(bearerTokenRequest).toHaveBeenCalledTimes(1)
     expect(checkDynamicsDispatchLocationConnection).toHaveBeenCalledTimes(1)
     expect(checkApplicationFormsContainerExists).toHaveBeenCalledTimes(1)
+    expect(checkTdsContainerExists).toHaveBeenCalledTimes(1)
     expect(getIneligibleItems).toHaveBeenCalledTimes(1)
     expect(checkTradeServiceBusConnection).toHaveBeenCalledTimes(1)
     expect(mockH.response).toHaveBeenCalledWith({
@@ -117,6 +125,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -130,6 +139,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -142,6 +152,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -157,6 +168,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockRejectedValue(mockError)
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -169,6 +181,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -184,6 +197,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockRejectedValue(mockError)
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -196,6 +210,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: false,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -210,6 +225,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockRejectedValue(new Error(ERROR_MESSAGES.AUTH_FAILED))
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -222,6 +238,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -237,6 +254,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockRejectedValue(mockError)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -249,6 +267,36 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
+        [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
+      }
+    })
+    expect(mockResponse.code).toHaveBeenCalledWith(
+      STATUS_CODES.SERVICE_UNAVAILABLE
+    )
+  })
+
+  it('should return failure when TDS Blob Storage fails', async () => {
+    const mockError = new Error(ERROR_MESSAGES.BLOB_STORAGE_UNAVAILABLE)
+    listS3Objects.mockResolvedValue([])
+    bearerTokenRequest.mockResolvedValue({})
+    checkDynamicsDispatchLocationConnection.mockResolvedValue({})
+    checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockRejectedValue(mockError)
+    getIneligibleItems.mockResolvedValue([])
+    checkTradeServiceBusConnection.mockResolvedValue(true)
+
+    await connectivityCheck.handler({}, mockH)
+
+    expect(mockH.response).toHaveBeenCalledWith({
+      [RESPONSE_PROPERTIES.MESSAGE]: RESPONSE_MESSAGES.FAILED,
+      [RESPONSE_PROPERTIES.DETAILS]: {
+        [SERVICE_NAMES.S3]: true,
+        [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
+        [SERVICE_NAMES.DYNAMICS_DATA]: true,
+        [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: false,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -264,6 +312,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockRejectedValue(mockError)
 
@@ -276,6 +325,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: false
       }
@@ -294,6 +344,9 @@ describe('Connectivity Check Route', () => {
     checkApplicationFormsContainerExists.mockRejectedValue(
       new Error(ERROR_MESSAGES.BLOB_ERROR)
     )
+    checkTdsContainerExists.mockRejectedValue(
+      new Error(ERROR_MESSAGES.BLOB_ERROR)
+    )
     getIneligibleItems.mockRejectedValue(new Error(ERROR_MESSAGES.MDM_ERROR))
     checkTradeServiceBusConnection.mockRejectedValue(
       new Error(ERROR_MESSAGES.TRADE_SERVICE_BUS_ERROR)
@@ -308,6 +361,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: false,
         [SERVICE_NAMES.DYNAMICS_DATA]: false,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: false,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: false,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: false,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: false
       }
@@ -323,6 +377,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockRejectedValue(mockError)
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -335,6 +390,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: false,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -357,6 +413,7 @@ describe('Connectivity Check Route', () => {
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockResolvedValue({})
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -374,6 +431,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -403,6 +461,7 @@ describe('Connectivity Check Route', () => {
         })
     )
     checkApplicationFormsContainerExists.mockResolvedValue(true)
+    checkTdsContainerExists.mockResolvedValue(true)
     getIneligibleItems.mockResolvedValue([])
     checkTradeServiceBusConnection.mockResolvedValue(true)
 
@@ -420,6 +479,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: false,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }
@@ -459,6 +519,12 @@ describe('Connectivity Check Route', () => {
           setTimeout(() => resolve(true), 2000)
         })
     )
+    checkTdsContainerExists.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          setTimeout(() => resolve(true), 2500)
+        })
+    )
     getIneligibleItems.mockImplementation(
       () =>
         new Promise((resolve) => {
@@ -486,6 +552,7 @@ describe('Connectivity Check Route', () => {
         [SERVICE_NAMES.DYNAMICS_LOGIN]: true,
         [SERVICE_NAMES.DYNAMICS_DATA]: true,
         [SERVICE_NAMES.EHCO_BLOB_STORAGE]: true,
+        [SERVICE_NAMES.TDS_BLOB_STORAGE]: true,
         [SERVICE_NAMES.MDM_INELIGIBLE_ITEMS]: true,
         [SERVICE_NAMES.TRADE_SERVICE_BUS]: true
       }

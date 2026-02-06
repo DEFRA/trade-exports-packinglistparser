@@ -1,6 +1,6 @@
 import { parsePackingList } from './parser-service.js'
 import { getDispatchLocation } from './dynamics-service.js'
-import { downloadBlobFromApplicationFormsContainerAsJson } from './ehco-blob-storage-service.js'
+import { downloadBlobFromApplicationFormsContainerAsJson } from './blob-storage/ehco-blob-storage-service.js'
 import { uploadJsonFileToS3 } from './s3-service.js'
 import { sendMessageToQueue } from './trade-service-bus-service.js'
 import {
