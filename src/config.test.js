@@ -22,7 +22,7 @@ describe('Config module', () => {
     expect(config.get('packingList.schemaVersion')).toBe('v0.0')
 
     // aws defaults
-    expect(config.get('aws.s3Bucket')).toBe('')
+    expect(config.get('aws.s3Bucket')).toBe('trade-exports-data')
     expect(config.get('aws.region')).toBe('eu-west-2')
   })
 
