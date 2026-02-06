@@ -34,4 +34,12 @@ describe('parseMarsModel1', () => {
     expect(result.items[0].row_location.rowNumber).toBe(3)
     expect(result.items[1].row_location.rowNumber).toBe(4)
   })
+
+  it('should return NOMATCH when an error occurs during parsing', () => {
+    const result = parse(null)
+
+    expect(result.parserModel).toBe('NOMATCH')
+    expect(result.business_checks.all_required_fields_present).toBe(false)
+    expect(result.items).toEqual([])
+  })
 })
