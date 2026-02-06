@@ -12,6 +12,7 @@ import { kepakHeaders } from './model-headers/kepak.js'
 import { marsHeaders } from './model-headers/mars.js'
 import { nisaHeaders } from './model-headers/nisa.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
+import { saversHeaders } from './model-headers/savers.js'
 import { tescoHeaders } from './model-headers/tesco.js'
 import { tjmorrisHeaders } from './model-headers/tjmorris.js'
 
@@ -24,6 +25,7 @@ const modelHeaders = {
   ...marsHeaders,
   ...nisaHeaders,
   ...sainsburysHeaders,
+  ...saversHeaders,
   ...tescoHeaders,
   ...tjmorrisHeaders
 }

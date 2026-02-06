@@ -51,5 +51,8 @@ export default Object.freeze({
   COOP1: 'COOP1',
 
   // Kepak models
-  KEPAK1: 'KEPAK1'
+  KEPAK1: 'KEPAK1',
+
+  // Savers models
+  SAVERS1: 'SAVERS1'
 })
