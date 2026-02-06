@@ -29,6 +29,9 @@ export default Object.freeze({
   // M&S models
   MANDS1: 'MANDS1',
 
+  // Mars models
+  MARS1: 'MARS1',
+
   // Nisa models
   NISA1: 'NISA1',
 
