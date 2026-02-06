@@ -48,5 +48,8 @@ export default Object.freeze({
   TJMORRIS2: 'TJMORRIS2',
 
   // Co-op models
-  COOP1: 'COOP1'
+  COOP1: 'COOP1',
+
+  // Kepak models
+  KEPAK1: 'KEPAK1'
 })

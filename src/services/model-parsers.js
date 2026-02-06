@@ -31,6 +31,10 @@ import { parse as parseBooker2 } from './parsers/booker/model2.js'
 import { matches as matchesCoop1 } from './matchers/coop/model1.js'
 import { parse as parseCoop1 } from './parsers/coop/model1.js'
 
+// Kepak Excel parsers
+import { matches as matchesKepak1 } from './matchers/kepak/model1.js'
+import { parse as parseKepak1 } from './parsers/kepak/model1.js'
+
 // Nisa Excel parsers
 import { matches as matchesNisa1 } from './matchers/nisa/model1.js'
 import { parse as parseNisa1 } from './parsers/nisa/model1.js'
@@ -95,6 +99,10 @@ const parsersExcel = {
   COOP1: {
     matches: matchesCoop1,
     parse: parseCoop1
+  },
+  KEPAK1: {
+    matches: matchesKepak1,
+    parse: parseKepak1
   },
   MARS1: {
     matches: matchesMars1,
