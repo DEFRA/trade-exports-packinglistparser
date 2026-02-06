@@ -43,6 +43,10 @@ import { parse as parseNisa1 } from './parsers/nisa/model1.js'
 import { matches as matchesSainsburys1 } from './matchers/sainsburys/model1.js'
 import { parse as parseSainsburys1 } from './parsers/sainsburys/model1.js'
 
+// Savers Excel parsers
+import { matches as matchesSavers1 } from './matchers/savers/model1.js'
+import { parse as parseSavers1 } from './parsers/savers/model1.js'
+
 // Tesco Excel parsers
 import { matches as matchesTesco3 } from './matchers/tesco/model3.js'
 import { parse as parseTesco3 } from './parsers/tesco/model3.js'
@@ -115,6 +119,10 @@ const parsersExcel = {
   SAINSBURYS1: {
     matches: matchesSainsburys1,
     parse: parseSainsburys1
+  },
+  SAVERS1: {
+    matches: matchesSavers1,
+    parse: parseSavers1
   },
   TJMORRIS2: {
     matches: matchesTjmorris2,
