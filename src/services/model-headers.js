@@ -8,6 +8,7 @@ import { asdaHeaders } from './model-headers/asda.js'
 import { buffaloadHeaders } from './model-headers/buffaload.js'
 import { bookerHeaders } from './model-headers/booker.js'
 import { coopHeaders } from './model-headers/coop.js'
+import { marsHeaders } from './model-headers/mars.js'
 import { nisaHeaders } from './model-headers/nisa.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
 import { tescoHeaders } from './model-headers/tesco.js'
@@ -18,6 +19,7 @@ const modelHeaders = {
   ...buffaloadHeaders,
   ...bookerHeaders,
   ...coopHeaders,
+  ...marsHeaders,
   ...nisaHeaders,
   ...sainsburysHeaders,
   ...tescoHeaders,

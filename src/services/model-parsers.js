@@ -51,6 +51,10 @@ import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 import { matches as matchesMands1 } from './matchers/mands/model1.js'
 import { parse as parseMands1 } from './parsers/mands/model1.js'
 
+// Mars Excel parsers
+import { matches as matchesMars1 } from './matchers/mars/model1.js'
+import { parse as parseMars1 } from './parsers/mars/model1.js'
+
 // TJ Morris Excel parsers
 import { matches as matchesTjmorris2 } from './matchers/tjmorris/model2.js'
 import { parse as parseTjmorris2 } from './parsers/tjmorris/model2.js'
@@ -91,6 +95,10 @@ const parsersExcel = {
   COOP1: {
     matches: matchesCoop1,
     parse: parseCoop1
+  },
+  MARS1: {
+    matches: matchesMars1,
+    parse: parseMars1
   },
   NISA1: {
     matches: matchesNisa1,
