@@ -67,6 +67,10 @@ import { parse as parseMars1 } from './parsers/mars/model1.js'
 import { matches as matchesTjmorris2 } from './matchers/tjmorris/model2.js'
 import { parse as parseTjmorris2 } from './parsers/tjmorris/model2.js'
 
+// Turners Excel parsers
+import { matches as matchesTurners1 } from './matchers/turners/model1.js'
+import { parse as parseTurners1 } from './parsers/turners/model1.js'
+
 // No-match matchers and parsers
 import {
   noRemosMatch,
@@ -127,6 +131,10 @@ const parsersExcel = {
   TJMORRIS2: {
     matches: matchesTjmorris2,
     parse: parseTjmorris2
+  },
+  TURNERS1: {
+    matches: matchesTurners1,
+    parse: parseTurners1
   },
   TESCO3: {
     matches: matchesTesco3,
