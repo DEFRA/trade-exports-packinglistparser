@@ -27,17 +27,16 @@ export function matches(packingList, filename) {
     }
 
     for (const sheet of sheets) {
-      // check for correct establishment number
-      if (
-        !regex.test(
-          headers.BANDM1.establishmentNumber.regex,
-          packingList[sheet]
-        )
-      ) {
-        // If no establishment number found but result is still EMPTY_FILE, keep it as EMPTY_FILE
-        if (result === matcherResult.EMPTY_FILE) {
-          continue
-        }
+      const hasEstablishmentNumber = regex.test(
+        headers.BANDM1.establishmentNumber.regex,
+        packingList[sheet]
+      )
+
+      // If no establishment number found, skip empty sheets or return error
+      if (!hasEstablishmentNumber && result === matcherResult.EMPTY_FILE) {
+        continue
+      }
+      if (!hasEstablishmentNumber) {
         return matcherResult.WRONG_ESTABLISHMENT_NUMBER
       }
 
