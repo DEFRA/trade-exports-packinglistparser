@@ -5,6 +5,7 @@
  * Each retailer provides establishment number patterns and field mapping regex.
  */
 import { asdaHeaders } from './model-headers/asda.js'
+import { bandmHeaders } from './model-headers/bandm.js'
 import { buffaloadHeaders } from './model-headers/buffaload.js'
 import { bookerHeaders } from './model-headers/booker.js'
 import { coopHeaders } from './model-headers/coop.js'
@@ -18,6 +19,7 @@ import { tjmorrisHeaders } from './model-headers/tjmorris.js'
 
 const modelHeaders = {
   ...asdaHeaders,
+  ...bandmHeaders,
   ...buffaloadHeaders,
   ...bookerHeaders,
   ...coopHeaders,
