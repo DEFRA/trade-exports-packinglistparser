@@ -31,6 +31,10 @@ import { parse as parseBooker2 } from './parsers/booker/model2.js'
 import { matches as matchesCoop1 } from './matchers/coop/model1.js'
 import { parse as parseCoop1 } from './parsers/coop/model1.js'
 
+// Fowler-Welch Excel parsers
+import { matches as matchesFowlerwelch2 } from './matchers/fowlerwelch/model2.js'
+import { parse as parseFowlerwelch2 } from './parsers/fowlerwelch/model2.js'
+
 // Kepak Excel parsers
 import { matches as matchesKepak1 } from './matchers/kepak/model1.js'
 import { parse as parseKepak1 } from './parsers/kepak/model1.js'
@@ -99,6 +103,10 @@ const parsersExcel = {
   COOP1: {
     matches: matchesCoop1,
     parse: parseCoop1
+  },
+  FOWLERWELCH2: {
+    matches: matchesFowlerwelch2,
+    parse: parseFowlerwelch2
   },
   KEPAK1: {
     matches: matchesKepak1,
