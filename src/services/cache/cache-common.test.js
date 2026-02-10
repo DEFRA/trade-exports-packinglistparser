@@ -215,12 +215,10 @@ describe('cache-common', () => {
       const getMdmData = vi.fn().mockResolvedValue(null)
       const cacheS3Data = vi.fn()
 
-      await populateFromMDM(
-        location,
-        s3Error,
-        getMdmData,
-        cacheS3Data,
-        'test data'
+      await expect(
+        populateFromMDM(location, s3Error, getMdmData, cacheS3Data, 'test data')
+      ).rejects.toThrow(
+        'Unable to load test data from S3 or MDM: S3 error: S3 failed, MDM error: No data returned from MDM for test data'
       )
 
       expect(getMdmData).toHaveBeenCalledTimes(1)
@@ -243,7 +241,7 @@ describe('cache-common', () => {
       expect(cacheS3Data).not.toHaveBeenCalled()
     })
 
-    it('should throw error when S3 upload fails', async () => {
+    it('should succeed even when S3 upload fails (data cached in memory)', async () => {
       const mockData = [{ id: 1, name: 'Test' }]
       const getMdmData = vi.fn().mockResolvedValue(mockData)
       const cacheS3Data = vi.fn()
@@ -251,13 +249,16 @@ describe('cache-common', () => {
 
       mockUploadJsonFileToS3.mockRejectedValue(uploadError)
 
-      await expect(
-        populateFromMDM(location, s3Error, getMdmData, cacheS3Data, 'test data')
-      ).rejects.toThrow(
-        'Unable to load test data from S3 or MDM: S3 error: S3 failed, MDM error: S3 upload failed'
+      // Should succeed because data is cached in memory even if S3 upload fails
+      await populateFromMDM(
+        location,
+        s3Error,
+        getMdmData,
+        cacheS3Data,
+        'test data'
       )
 
-      expect(cacheS3Data).not.toHaveBeenCalled()
+      expect(cacheS3Data).toHaveBeenCalledWith(mockData)
     })
   })
 
@@ -367,6 +368,9 @@ describe('cache-common', () => {
         .mockRejectedValueOnce(error)
         .mockRejectedValueOnce(error)
 
+      // Mock MDM to return null (simulating failure)
+      getMdmData.mockResolvedValue(null)
+
       await expect(
         initializeCache(
           configKey,
@@ -375,7 +379,9 @@ describe('cache-common', () => {
           getMdmData,
           cacheType
         )
-      ).rejects.toThrow('Unable to load test data data after 3 attempts')
+      ).rejects.toThrow(
+        /Unable to load test data data after 3 S3 attempts and MDM fallback/
+      )
 
       expect(mockGetFileFromS3).toHaveBeenCalledTimes(3)
     })

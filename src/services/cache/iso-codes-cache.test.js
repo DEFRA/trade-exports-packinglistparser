@@ -110,7 +110,7 @@ describe('iso-codes-cache', () => {
       getFileFromS3.mockRejectedValue(error)
 
       await expect(initializeIsoCodesCache()).rejects.toThrow(
-        /Unable to load ISO codes data after 4 attempts/
+        /Unable to load ISO codes data after 4 S3 attempts and MDM fallback/
       )
 
       // maxRetries = 3, so total attempts = 4 (initial + 3 retries)

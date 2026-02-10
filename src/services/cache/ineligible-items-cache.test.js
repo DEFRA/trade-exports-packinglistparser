@@ -125,7 +125,7 @@ describe('ineligible-items-cache', () => {
       getFileFromS3.mockRejectedValue(error)
 
       await expect(initializeIneligibleItemsCache()).rejects.toThrow(
-        /Unable to load ineligible items data after 4 attempts/
+        /Unable to load ineligible items data after 4 S3 attempts and MDM fallback/
       )
 
       // maxRetries = 3, so total attempts = 4 (initial + 3 retries)
