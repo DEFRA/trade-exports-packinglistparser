@@ -4,11 +4,16 @@ import { Readable } from 'node:stream'
 // Mock BlobServiceClient - must be declared before vi.mock
 const mockDownload = vi.fn()
 const mockExists = vi.fn()
+const mockUpload = vi.fn()
 const mockGetBlobClient = vi.fn(() => ({
   download: mockDownload
 }))
+const mockGetBlockBlobClient = vi.fn(() => ({
+  upload: mockUpload
+}))
 const mockGetContainerClient = vi.fn(() => ({
   getBlobClient: mockGetBlobClient,
+  getBlockBlobClient: mockGetBlockBlobClient,
   exists: mockExists
 }))
 const mockBlobServiceClient = vi.fn(() => ({
@@ -146,10 +151,12 @@ describe('blob-storage-service', () => {
       expect(service).toHaveProperty('downloadBlobAsJson')
       expect(service).toHaveProperty('checkContainerExists')
       expect(service).toHaveProperty('getBlobNameFromUrl')
+      expect(service).toHaveProperty('uploadBlob')
       expect(typeof service.downloadBlob).toBe('function')
       expect(typeof service.downloadBlobAsJson).toBe('function')
       expect(typeof service.checkContainerExists).toBe('function')
       expect(typeof service.getBlobNameFromUrl).toBe('function')
+      expect(typeof service.uploadBlob).toBe('function')
     })
   })
 
@@ -319,6 +326,201 @@ describe('blob-storage-service', () => {
           'https://other.blob.core.windows.net/container/blob.xlsx'
         )
       ).toThrow('Invalid blob URL')
+    })
+  })
+
+  describe('uploadBlob', () => {
+    it('should upload blob successfully with default content type', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'test-upload.txt'
+      const data = 'test data content'
+      const mockUploadResponse = {
+        etag: '"0x8D9A1B2C3D4E5F6"',
+        lastModified: new Date('2026-02-10T10:00:00Z'),
+        requestId: 'abc-123-def'
+      }
+
+      mockUpload.mockResolvedValue(mockUploadResponse)
+
+      const result = await service.uploadBlob(blobName, data)
+
+      expect(result).toEqual({
+        ETag: mockUploadResponse.etag,
+        lastModified: mockUploadResponse.lastModified,
+        requestId: mockUploadResponse.requestId
+      })
+      expect(mockGetContainerClient).toHaveBeenCalledWith('test-container')
+      expect(mockGetBlockBlobClient).toHaveBeenCalledWith(blobName)
+      expect(mockUpload).toHaveBeenCalledWith(data, Buffer.byteLength(data), {
+        blobHTTPHeaders: {
+          blobContentType: 'application/octet-stream'
+        }
+      })
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Uploading blob to container: ${blobName}`
+      )
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Blob uploaded successfully: ${blobName}`
+      )
+    })
+
+    it('should upload blob with custom content type', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'document.json'
+      const data = JSON.stringify({ key: 'value' })
+      const mockUploadResponse = {
+        etag: '"0x8D9A1B2C3D4E5F7"',
+        lastModified: new Date('2026-02-10T11:00:00Z'),
+        requestId: 'xyz-789-ghi'
+      }
+
+      mockUpload.mockResolvedValue(mockUploadResponse)
+
+      const result = await service.uploadBlob(blobName, data, {
+        contentType: 'application/json'
+      })
+
+      expect(result).toEqual({
+        ETag: mockUploadResponse.etag,
+        lastModified: mockUploadResponse.lastModified,
+        requestId: mockUploadResponse.requestId
+      })
+      expect(mockUpload).toHaveBeenCalledWith(data, Buffer.byteLength(data), {
+        blobHTTPHeaders: {
+          blobContentType: 'application/json'
+        }
+      })
+    })
+
+    it('should upload buffer data successfully', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'binary-file.bin'
+      const data = Buffer.from([0x01, 0x02, 0x03, 0x04])
+      const mockUploadResponse = {
+        etag: '"0x8D9A1B2C3D4E5F8"',
+        lastModified: new Date('2026-02-10T12:00:00Z'),
+        requestId: 'buf-456-jkl'
+      }
+
+      mockUpload.mockResolvedValue(mockUploadResponse)
+
+      const result = await service.uploadBlob(blobName, data, {
+        contentType: 'application/octet-stream'
+      })
+
+      expect(result).toEqual({
+        ETag: mockUploadResponse.etag,
+        lastModified: mockUploadResponse.lastModified,
+        requestId: mockUploadResponse.requestId
+      })
+      expect(mockUpload).toHaveBeenCalledWith(data, Buffer.byteLength(data), {
+        blobHTTPHeaders: {
+          blobContentType: 'application/octet-stream'
+        }
+      })
+    })
+
+    it('should upload blob with nested path', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'folder/subfolder/document.pdf'
+      const data = Buffer.from('pdf content')
+      const mockUploadResponse = {
+        etag: '"0x8D9A1B2C3D4E5F9"',
+        lastModified: new Date('2026-02-10T13:00:00Z'),
+        requestId: 'pdf-789-mno'
+      }
+
+      mockUpload.mockResolvedValue(mockUploadResponse)
+
+      const result = await service.uploadBlob(blobName, data, {
+        contentType: 'application/pdf'
+      })
+
+      expect(result).toEqual({
+        ETag: mockUploadResponse.etag,
+        lastModified: mockUploadResponse.lastModified,
+        requestId: mockUploadResponse.requestId
+      })
+      expect(mockGetBlockBlobClient).toHaveBeenCalledWith(blobName)
+    })
+
+    it('should upload empty string data', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'empty-file.txt'
+      const data = ''
+      const mockUploadResponse = {
+        etag: '"0x8D9A1B2C3D4E5FA"',
+        lastModified: new Date('2026-02-10T14:00:00Z'),
+        requestId: 'emp-000-pqr'
+      }
+
+      mockUpload.mockResolvedValue(mockUploadResponse)
+
+      const result = await service.uploadBlob(blobName, data)
+
+      expect(result).toBeDefined()
+      expect(mockUpload).toHaveBeenCalledWith(data, 0, expect.any(Object))
+    })
+
+    it('should throw error when upload fails', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'failed-upload.txt'
+      const data = 'test data'
+
+      mockUpload.mockRejectedValue(new Error('Storage account unavailable'))
+
+      await expect(service.uploadBlob(blobName, data)).rejects.toThrow(
+        'Failed to upload blob: Storage account unavailable'
+      )
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Uploading blob to container: ${blobName}`
+      )
+    })
+
+    it('should throw error with network timeout', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'timeout-upload.txt'
+      const data = 'test data'
+
+      mockUpload.mockRejectedValue(new Error('Request timeout'))
+
+      await expect(service.uploadBlob(blobName, data)).rejects.toThrow(
+        'Failed to upload blob: Request timeout'
+      )
+    })
+
+    it('should throw error with authentication failure', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'auth-fail-upload.txt'
+      const data = 'test data'
+
+      mockUpload.mockRejectedValue(new Error('Authentication failed'))
+
+      await expect(service.uploadBlob(blobName, data)).rejects.toThrow(
+        'Failed to upload blob: Authentication failed'
+      )
+    })
+
+    it('should handle options with no contentType property', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const blobName = 'options-test.txt'
+      const data = 'test data'
+      const mockUploadResponse = {
+        etag: '"0x8D9A1B2C3D4E5FB"',
+        lastModified: new Date('2026-02-10T15:00:00Z'),
+        requestId: 'opt-111-stu'
+      }
+
+      mockUpload.mockResolvedValue(mockUploadResponse)
+
+      const result = await service.uploadBlob(blobName, data, {})
+
+      expect(result).toBeDefined()
+      expect(mockUpload).toHaveBeenCalledWith(data, Buffer.byteLength(data), {
+        blobHTTPHeaders: {
+          blobContentType: 'application/octet-stream'
+        }
+      })
     })
   })
 
