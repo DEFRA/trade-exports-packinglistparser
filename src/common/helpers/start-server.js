@@ -3,6 +3,7 @@ import { config } from '../../config.js'
 import { createServer } from '../../server.js'
 import { initializeIneligibleItemsCache } from '../../services/cache/ineligible-items-cache.js'
 import { startSyncScheduler } from '../../services/cache/sync-scheduler.js'
+import { startTdsSyncScheduler } from '../../services/tds-sync/sync-scheduler.js'
 import { createLogger } from './logging/logger.js'
 
 const logger = createLogger()
@@ -31,6 +32,17 @@ async function startServer() {
     logger.error(
       { error: error.message },
       'Failed to start MDM to S3 sync scheduler - manual sync will still be available'
+    )
+  }
+
+  // Start TDS synchronization scheduler
+  try {
+    logger.info('Starting TDS synchronization scheduler')
+    startTdsSyncScheduler()
+  } catch (error) {
+    logger.error(
+      { error: error.message },
+      'Failed to start TDS sync scheduler - manual sync will still be available'
     )
   }
 

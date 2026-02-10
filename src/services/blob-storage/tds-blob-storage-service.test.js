@@ -46,6 +46,16 @@ const { checkTdsContainerExists, uploadJsonToTdsBlob, uploadToTdsBlob } =
 describe('tds-blob-storage-service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Reset mock config to default values
+    mockConfigGet.mockImplementation((key) => {
+      if (key === 'tdsBlob') {
+        return mockTdsConfig
+      }
+      if (key === 'azure') {
+        return mockAzureConfig
+      }
+      return {}
+    })
   })
 
   describe('checkTdsContainerExists', () => {
@@ -78,6 +88,52 @@ describe('tds-blob-storage-service', () => {
       await expect(checkTdsContainerExists()).rejects.toThrow(
         'Connection failed'
       )
+    })
+
+    it('should handle when azure config returns null', async () => {
+      mockConfigGet.mockImplementation((key) => {
+        if (key === 'tdsBlob') {
+          return mockTdsConfig
+        }
+        if (key === 'azure') {
+          return null
+        }
+        return {}
+      })
+      mockCheckContainerExists.mockResolvedValue(true)
+
+      const result = await checkTdsContainerExists()
+
+      expect(mockCreateBlobStorageService).toHaveBeenCalledWith({
+        tenantId: undefined,
+        clientId: mockTdsConfig.clientId,
+        blobStorageAccount: mockTdsConfig.blobStorageAccount,
+        containerName: mockTdsConfig.containerName
+      })
+      expect(result).toBe(true)
+    })
+
+    it('should handle when azure config returns undefined', async () => {
+      mockConfigGet.mockImplementation((key) => {
+        if (key === 'tdsBlob') {
+          return mockTdsConfig
+        }
+        if (key === 'azure') {
+          return undefined
+        }
+        return {}
+      })
+      mockCheckContainerExists.mockResolvedValue(true)
+
+      const result = await checkTdsContainerExists()
+
+      expect(mockCreateBlobStorageService).toHaveBeenCalledWith({
+        tenantId: undefined,
+        clientId: mockTdsConfig.clientId,
+        blobStorageAccount: mockTdsConfig.blobStorageAccount,
+        containerName: mockTdsConfig.containerName
+      })
+      expect(result).toBe(true)
     })
   })
 

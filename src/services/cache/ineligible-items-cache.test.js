@@ -265,6 +265,40 @@ describe('ineligible-items-cache', () => {
       expect(uploadJsonFileToS3).toHaveBeenCalledTimes(1)
       expect(getIneligibleItemsCache()).toEqual(mockIneligibleItems)
     })
+
+    it('should throw error when both S3 and MDM fail (NoSuchKey scenario)', async () => {
+      const s3Error = new Error('The specified key does not exist')
+      s3Error.name = 'NoSuchKey'
+      const mdmError = new Error('MDM connection failed')
+
+      getFileFromS3.mockRejectedValueOnce(s3Error)
+      getIneligibleItems.mockRejectedValueOnce(mdmError)
+
+      await expect(initializeIneligibleItemsCache()).rejects.toThrow(
+        'Unable to load ineligible items from S3 or MDM: S3 error: The specified key does not exist, MDM error: MDM connection failed'
+      )
+
+      expect(getFileFromS3).toHaveBeenCalledTimes(1)
+      expect(getIneligibleItems).toHaveBeenCalledTimes(1)
+      expect(uploadJsonFileToS3).not.toHaveBeenCalled()
+      expect(getIneligibleItemsCache()).toBeNull()
+    })
+
+    it('should throw error when both S3 returns empty data and MDM fails', async () => {
+      const mdmError = new Error('MDM service unavailable')
+
+      getFileFromS3.mockResolvedValueOnce('[]')
+      getIneligibleItems.mockRejectedValueOnce(mdmError)
+
+      await expect(initializeIneligibleItemsCache()).rejects.toThrow(
+        'Unable to load ineligible items from S3 or MDM: S3 error: S3 data is empty, MDM error: MDM service unavailable'
+      )
+
+      expect(getFileFromS3).toHaveBeenCalledTimes(1)
+      expect(getIneligibleItems).toHaveBeenCalledTimes(1)
+      expect(uploadJsonFileToS3).not.toHaveBeenCalled()
+      expect(getIneligibleItemsCache()).toBeNull()
+    })
   })
 
   describe('getIneligibleItemsCache', () => {

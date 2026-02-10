@@ -212,6 +212,22 @@ the [.github/example.dependabot.yml](.github/example.dependabot.yml) to `.github
 
 Instructions for setting up SonarCloud can be found in [sonar-project.properties](./sonar-project.properties)
 
+## Documentation
+
+📚 **[Developer Guide](./docs/DEVELOPER-GUIDE.md)** - Comprehensive documentation for developers including:
+
+- Service architecture and parser models
+- Data files and validation rules
+- Cache system and synchronization services
+- Testing guidelines and best practices
+
+📋 **[Packing List Processing Flow](./docs/flow/to-be-cdp-packing-list-processing-flow.md)** - Complete processing workflow including:
+
+- HTTP request handling and parsing pipeline
+- Parser discovery and data extraction
+- Background synchronization services (MDM and TDS)
+- API contracts and error handling
+
 ## Licence
 
 THIS INFORMATION IS LICENSED UNDER THE CONDITIONS OF THE OPEN GOVERNMENT LICENCE found at:

@@ -581,5 +581,81 @@ describe('ehco-blob-storage-service', () => {
       expect(mockConfigGet).toHaveBeenCalledWith('azure')
       expect(mockConfigGet).toHaveBeenCalledWith('ehcoBlob')
     })
+
+    it('should handle when azure config returns null', async () => {
+      mockConfigGet.mockImplementation((key) => {
+        if (key === 'log') {
+          return {
+            isEnabled: false,
+            level: 'silent',
+            format: 'pino-pretty',
+            redact: []
+          }
+        }
+        if (key === 'serviceName') {
+          return 'test-service'
+        }
+        if (key === 'serviceVersion') {
+          return '1.0.0'
+        }
+        if (key === 'azure') {
+          return null
+        }
+        if (key === 'ehcoBlob') {
+          return {
+            clientId: TEST_CREDENTIALS.CLIENT_ID,
+            blobStorageAccount: TEST_BLOB_CONFIG.STORAGE_ACCOUNT,
+            containerName: TEST_BLOB_CONFIG.CONTAINER_NAME
+          }
+        }
+        return {}
+      })
+      mockExists.mockResolvedValue(true)
+
+      await checkApplicationFormsContainerExists()
+
+      expect(mockGetAzureCredentials).toHaveBeenCalledWith(
+        undefined,
+        TEST_CREDENTIALS.CLIENT_ID
+      )
+    })
+
+    it('should handle when azure config returns undefined', async () => {
+      mockConfigGet.mockImplementation((key) => {
+        if (key === 'log') {
+          return {
+            isEnabled: false,
+            level: 'silent',
+            format: 'pino-pretty',
+            redact: []
+          }
+        }
+        if (key === 'serviceName') {
+          return 'test-service'
+        }
+        if (key === 'serviceVersion') {
+          return '1.0.0'
+        }
+        if (key === 'azure') {
+          return undefined
+        }
+        if (key === 'ehcoBlob') {
+          return {
+            clientId: TEST_CREDENTIALS.CLIENT_ID,
+            blobStorageAccount: TEST_BLOB_CONFIG.STORAGE_ACCOUNT,
+            containerName: TEST_BLOB_CONFIG.CONTAINER_NAME
+          }
+        }
+        return {}
+      })
+      mockExists.mockResolvedValue(true)
+
+      await checkApplicationFormsContainerExists()
+
+      expect(mockGetAzureCredentials).toHaveBeenCalledWith(
+        undefined,
+        TEST_CREDENTIALS.CLIENT_ID
+      )
+    })
   })
 })

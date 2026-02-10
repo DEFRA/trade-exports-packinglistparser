@@ -10,10 +10,12 @@ const mockCreateSender = vi.fn(() => ({
 }))
 const mockReceiveMessages = vi.fn()
 const mockCompleteMessage = vi.fn()
+const mockPeekMessages = vi.fn()
 const mockReceiverClose = vi.fn()
 const mockCreateReceiver = vi.fn(() => ({
   receiveMessages: mockReceiveMessages,
   completeMessage: mockCompleteMessage,
+  peekMessages: mockPeekMessages,
   close: mockReceiverClose
 }))
 
@@ -59,9 +61,11 @@ vi.mock('./utilities/proxy-helper.js', () => ({
 }))
 
 // Import after all mocks
-const { sendMessageToQueue, receiveMessagesFromQueue } = await import(
-  './trade-service-bus-service.js'
-)
+const {
+  sendMessageToQueue,
+  receiveMessagesFromQueue,
+  checkTradeServiceBusConnection
+} = await import('./trade-service-bus-service.js')
 const { ServiceBusClient } = await import('@azure/service-bus')
 
 // Test constants for repeated literals
@@ -287,6 +291,94 @@ describe('trade-service-bus-service', () => {
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
         { err: expect.any(Error) },
+        'Failed to close Service Bus receiver'
+      )
+      expect(mockClose).toHaveBeenCalled()
+    })
+  })
+
+  describe('checkTradeServiceBusConnection', () => {
+    it('should return true when connection is successful', async () => {
+      mockPeekMessages.mockResolvedValue([])
+
+      const result = await checkTradeServiceBusConnection()
+
+      expect(result).toBe(true)
+      expect(mockGetAzureCredentials).toHaveBeenCalledWith(
+        TEST_CREDENTIALS.TENANT_ID,
+        TEST_CREDENTIALS.CLIENT_ID
+      )
+      expect(ServiceBusClient).toHaveBeenCalledWith(
+        TEST_SERVICE_BUS_CONFIG.NAMESPACE,
+        { type: 'credential' },
+        { webSocketOptions: { webSocket: {} } }
+      )
+      expect(mockCreateReceiver).toHaveBeenCalledWith(
+        TEST_SERVICE_BUS_CONFIG.QUEUE_NAME
+      )
+      expect(mockPeekMessages).toHaveBeenCalledWith(1)
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Successfully connected to Service Bus: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`
+      )
+    })
+
+    it('should return false when connection fails', async () => {
+      const error = new Error('Connection failed')
+      mockPeekMessages.mockRejectedValue(error)
+
+      const result = await checkTradeServiceBusConnection()
+
+      expect(result).toBe(false)
+      expect(mockPeekMessages).toHaveBeenCalledWith(1)
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        `Failed to connect to Service Bus: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`,
+        { err: error }
+      )
+    })
+
+    it('should close receiver and client after successful check', async () => {
+      mockPeekMessages.mockResolvedValue([])
+
+      await checkTradeServiceBusConnection()
+
+      expect(mockReceiverClose).toHaveBeenCalled()
+      expect(mockClose).toHaveBeenCalled()
+    })
+
+    it('should close receiver and client even when connection fails', async () => {
+      const error = new Error('Connection failed')
+      mockPeekMessages.mockRejectedValue(error)
+
+      await checkTradeServiceBusConnection()
+
+      expect(mockReceiverClose).toHaveBeenCalled()
+      expect(mockClose).toHaveBeenCalled()
+    })
+
+    it('should still close client even if receiver close fails', async () => {
+      mockPeekMessages.mockResolvedValue([])
+      mockReceiverClose.mockRejectedValue(new Error('Close failed'))
+
+      await checkTradeServiceBusConnection()
+
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { err: expect.any(Error) },
+        'Failed to close Service Bus receiver'
+      )
+      expect(mockClose).toHaveBeenCalled()
+    })
+
+    it('should log warning if receiver close fails during error scenario', async () => {
+      const connectionError = new Error('Connection failed')
+      const closeError = new Error('Close failed')
+      mockPeekMessages.mockRejectedValue(connectionError)
+      mockReceiverClose.mockRejectedValue(closeError)
+
+      const result = await checkTradeServiceBusConnection()
+
+      expect(result).toBe(false)
+      expect(mockLogger.warn).toHaveBeenCalledWith(
+        { err: closeError },
         'Failed to close Service Bus receiver'
       )
       expect(mockClose).toHaveBeenCalled()

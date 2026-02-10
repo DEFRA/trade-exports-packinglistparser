@@ -18,13 +18,13 @@ flowchart TD
 
     Step4 --> CheckMatch{Parse<br/>Successful?}
 
-    CheckMatch -->|No| Return400[Return HTTP 400<br/>No match result in response body]
+    CheckMatch -->|No Match| Return200NoMatch[Return HTTP 200<br/>No match result in response body]
 
-    CheckMatch -->|Yes| Step8[8. S3 Persistence<br/>- Write parsed data to S3<br/>- Store as JSON with application_id key<br/>- Include parser model and validation results]
+    CheckMatch -->|Matched| Step8[8. S3 Persistence<br/>- Write parsed data to S3<br/>- Store as JSON with application_id key<br/>- Include parser model and validation results]
 
     Step8 --> Step9[9. Downstream Notification<br/>- Send parsed/approval message<br/>- Include business_checks status<br/>- Include failure_reasons if present]
 
-    Step9 --> Return200[Return HTTP 200<br/>Success response with parsed data summary]
+    Step9 --> Return200[Return HTTP 200<br/>Success response with parsed data]
 
     Step1 -.->|Error| Return500[Return HTTP 500<br/>Internal server error]
     Step2 -.->|Error| Return500
@@ -34,7 +34,7 @@ flowchart TD
     Step9 -.->|Error| Return500
 
     Return200 --> Success([Completion - Success])
-    Return400 --> NoMatch([Completion - No Match])
+    Return200NoMatch --> NoMatch([Completion - No Match])
     Return500 --> Failed([Completion - Error])
 
     style Start fill:#e1f5ff
@@ -43,7 +43,7 @@ flowchart TD
     style Failed fill:#f8d7da
     style CheckMatch fill:#ffeaa7
     style Return200 fill:#d4edda
-    style Return400 fill:#fff3cd
+    style Return200NoMatch fill:#fff3cd
     style Return500 fill:#f8d7da
 ```
 
@@ -110,7 +110,8 @@ Using the blob URI from the request, the service:
 
 **Implementation:**
 
-- `src/services/ehco-blob-storage-service.js` - `createStorageAccountClient()`, `getPackingListFromBlob()`
+- `src/services/blob-storage/ehco-blob-storage-service.js` - `downloadBlobFromApplicationFormsContainerAsJson()`
+- `src/services/blob-storage/blob-storage-service.js` - `createBlobStorageService()`
 - Excel to JSON conversion utilities
 - CSV to JSON conversion utilities
 
@@ -136,7 +137,7 @@ PDF files pass through unchanged as they require different processing.
 
 **Implementation:**
 
-- `src/services/packing-list-process-service.js` - `sanitizeInput()`
+- `src/services/parser-service.js` - `sanitizeInput()`
 - JSON sanitization utilities
 
 ### 5. Parser Discovery
@@ -177,7 +178,7 @@ If no match is found, returns `UNRECOGNISED`.
 
 **Implementation:**
 
-- `src/services/parsers/parsers.js` - `getExcelParser()`, `getCsvParser()`, `getPdfParser()`
+- `src/services/parsers/parsers.js` - `getExcelParser()`, `getCsvParser()`, `getPdfNonAiParser()`
 - `src/services/model-headers.js` - Retailer header definitions
 - `src/services/matchers/` - Retailer-specific matchers
 
@@ -233,7 +234,7 @@ The extracted data undergoes validation and cleanup:
 
 ### 8. S3 Persistence
 
-If a parser successfully matched the document (not `NOMATCH`), the parsed data is saved to S3:
+If a parser successfully matched and extracted data from the document, the parsed data is saved to S3:
 
 - Write parsed data as JSON to S3 bucket
 - Use `application_id` as the object key (or part of the key structure)
@@ -248,58 +249,61 @@ If a parser successfully matched the document (not `NOMATCH`), the parsed data i
 
 ### 9. Downstream Notification
 
-For successfully matched documents, the service sends a parsed/approval message to downstream services:
+For successfully matched and extracted documents, the service sends a message to downstream services:
 
-- Message includes `application_id`
-- Includes `business_checks.all_required_fields_present` status
+- Message includes `application_id` and parsed data details
+- Includes approval status based on business checks
 - Includes `failure_reasons` if validation issues were found
 - Enables downstream approval workflow to proceed
 
-**Implementation:** `src/services/trade-service-bus-service.js` - `sendParsed()`
+Note: No notification is sent when parser result is NOREMOS, NOREMOSCSV, NOREMOSPDF, UNRECOGNISED, or NOMATCH.
+
+**Implementation:** `src/services/trade-service-bus-service.js` - `sendMessageToQueue()`
 
 ### 10. HTTP Response
 
 The process completes by returning an appropriate HTTP response:
 
-**Success (HTTP 200):**
+**Success - Matched Parser (HTTP 200):**
 
 - Parsed data has been processed and stored
 - Response body includes:
-  - `application_id`
-  - `parser_model` used
-  - `item_count`
-  - `business_checks` summary
-  - `s3_location` where data was stored
+  - `result`: "success"
+  - `data.approvalStatus`
+  - `data.reasonsForFailure`
+  - `data.parserModel` (e.g., "ASDA1", "TESCO2")
 
-**No Match (HTTP 400):**
+**Success - No Match (HTTP 200):**
 
-- Parser could not match the document format
+- Parser could not match the document format, but processing completed
 - Response body includes:
-  - `application_id`
-  - `error`: "No matching parser found"
-  - `parser_result`: (NOREMOS, UNRECOGNISED, etc.)
+  - `result`: "success"
+  - `data.parserModel`: (NOREMOS, NOREMOSCSV, NOREMOSPDF, UNRECOGNISED, NOMATCH)
   - No data persisted to S3
+  - No downstream notification sent
 
 **Error (HTTP 500):**
 
 - An exception occurred during processing
 - Response body includes:
+  - `result`: "failure"
   - `error`: Error message
-  - `application_id` (if available)
-  - Error is logged with context for investigation
+- Error is logged with context for investigation
 
 **Implementation:** `src/routes/packing-list-process.js` - Response handling
 
 ## Parser Result Types
 
+All successful parsing operations return HTTP 200 OK with the parser result in the response body. Only exceptions during processing return HTTP 500.
+
 | Result Type      | Description                                             | HTTP Status               | Action Taken                                     |
 | ---------------- | ------------------------------------------------------- | ------------------------- | ------------------------------------------------ |
 | **MATCHED**      | Retailer format identified, data extracted successfully | 200 OK                    | Persist to S3, send notification, return success |
-| **NOREMOS**      | No valid RMS establishment number found in Excel file   | 400 Bad Request           | No persistence, no notification, return error    |
-| **NOREMOSCSV**   | No valid RMS establishment number found in CSV file     | 400 Bad Request           | No persistence, no notification, return error    |
-| **NOREMOSPDF**   | No valid RMS establishment number found in PDF file     | 400 Bad Request           | No persistence, no notification, return error    |
-| **UNRECOGNISED** | File format not supported or header structure unknown   | 400 Bad Request           | No persistence, no notification, return error    |
-| **NOMATCH**      | Generic catch-all for unmatched documents               | 400 Bad Request           | No persistence, no notification, return error    |
+| **NOREMOS**      | No valid RMS establishment number found in Excel file   | 200 OK                    | No persistence, no notification, return result   |
+| **NOREMOSCSV**   | No valid RMS establishment number found in CSV file     | 200 OK                    | No persistence, no notification, return result   |
+| **NOREMOSPDF**   | No valid RMS establishment number found in PDF file     | 200 OK                    | No persistence, no notification, return result   |
+| **UNRECOGNISED** | File format not supported or header structure unknown   | 200 OK                    | No persistence, no notification, return result   |
+| **NOMATCH**      | Generic catch-all for unmatched documents               | 200 OK                    | No persistence, no notification, return result   |
 | **ERROR**        | Processing exception occurred                           | 500 Internal Server Error | No persistence, no notification, return error    |
 
 ## Error Handling Strategy
@@ -315,29 +319,36 @@ The service implements a robust error handling approach:
 
 ## Key Implementation Files
 
-| Component            | File Path                                      |
-| -------------------- | ---------------------------------------------- |
-| HTTP Route           | `src/routes/packing-list-process.js`           |
-| Processing Service   | `src/services/packing-list-process-service.js` |
-| Parser Service       | `src/services/parser-service.js`               |
-| Parser Factory       | `src/services/parsers/parser-factory.js`       |
-| Parser Selection     | `src/services/parsers/parsers.js`              |
-| Model Headers        | `src/services/model-headers.js`                |
-| Parser Mapping       | `src/services/parser-map.js`                   |
-| Matchers             | `src/services/matchers/`                       |
-| Parsers              | `src/services/parsers/`                        |
-| Validators           | `src/services/validators/`                     |
-| Blob Storage Service | `src/services/ehco-blob-storage-service.js`    |
-| S3 Service           | `src/services/s3-service.js`                   |
-| Dynamics Service     | `src/services/dynamics-service.js`             |
-| Service Bus Service  | `src/services/trade-service-bus-service.js`    |
+| Component                | File Path                                                |
+| ------------------------ | -------------------------------------------------------- |
+| HTTP Route               | `src/routes/packing-list-process.js`                     |
+| Processing Service       | `src/services/packing-list-process-service.js`           |
+| Parser Service           | `src/services/parser-service.js`                         |
+| Parser Factory           | `src/services/parsers/parser-factory.js`                 |
+| Parser Selection         | `src/services/parsers/parsers.js`                        |
+| Model Headers            | `src/services/model-headers.js`                          |
+| Parser Mapping           | `src/services/parser-map.js`                             |
+| Matchers                 | `src/services/matchers/`                                 |
+| Parsers                  | `src/services/parsers/`                                  |
+| Validators               | `src/services/validators/`                               |
+| Blob Storage Service     | `src/services/blob-storage/ehco-blob-storage-service.js` |
+| TDS Blob Storage Service | `src/services/blob-storage/tds-blob-storage-service.js`  |
+| S3 Service               | `src/services/s3-service.js`                             |
+| Dynamics Service         | `src/services/dynamics-service.js`                       |
+| Service Bus Service      | `src/services/trade-service-bus-service.js`              |
+| Ineligible Items Cache   | `src/services/cache/ineligible-items-cache.js`           |
+| MDM to S3 Sync           | `src/services/cache/mdm-s3-sync.js`                      |
+| Cache Sync Scheduler     | `src/services/cache/sync-scheduler.js`                   |
+| TDS Sync Service         | `src/services/tds-sync/tds-sync.js`                      |
+| TDS Sync Scheduler       | `src/services/tds-sync/sync-scheduler.js`                |
+| Server Startup           | `src/common/helpers/start-server.js`                     |
 
 ## HTTP API Contract
 
 ### Request
 
 ```http
-POST /packing-list-process
+POST /process-packing-list
 Content-Type: application/json
 
 {
@@ -353,30 +364,29 @@ Content-Type: application/json
 }
 ```
 
-### Response - Success (200 OK)
+### Response - Success with Match (200 OK)
 
 ```json
 {
-  "application_id": "string",
-  "parser_model": "ASDA1",
-  "item_count": 25,
-  "business_checks": {
-    "all_required_fields_present": true,
-    "failure_reasons": []
-  },
-  "s3_location": "s3://bucket/application_id.json",
-  "dispatch_location": "string"
+  "result": "success",
+  "data": {
+    "approvalStatus": "approved",
+    "reasonsForFailure": [],
+    "parserModel": "ASDA1"
+  }
 }
 ```
 
-### Response - No Match (400 Bad Request)
+### Response - Success with No Match (200 OK)
 
 ```json
 {
-  "application_id": "string",
-  "error": "No matching parser found",
-  "parser_result": "NOREMOS",
-  "details": "No valid RMS establishment number found in document"
+  "result": "success",
+  "data": {
+    "approvalStatus": "conditional",
+    "reasonsForFailure": ["No valid RMS establishment number found"],
+    "parserModel": "NOREMOS"
+  }
 }
 ```
 
@@ -384,9 +394,8 @@ Content-Type: application/json
 
 ```json
 {
-  "error": "Internal server error",
-  "message": "Failed to download blob from storage",
-  "application_id": "string"
+  "result": "failure",
+  "error": "Failed to download blob from storage"
 }
 ```
 
@@ -428,6 +437,83 @@ For information on testing the packing list processing flow, see:
 - Integration tests: `test/integration/`
 - API tests: Test HTTP endpoints with various request payloads
 
+### Testing Sync Services
+
+**MDM to S3 Sync:**
+
+- Unit tests: `src/services/cache/mdm-s3-sync.test.js`
+- Scheduler tests: `src/services/cache/sync-scheduler.test.js`
+- Manual trigger: Call `syncMdmToS3()` function directly
+
+**TDS Sync:**
+
+- Unit tests: `src/services/tds-sync/tds-sync.test.js`
+- Scheduler tests: `src/services/tds-sync/sync-scheduler.test.js`
+- Manual trigger: Call `syncToTds()` function directly
+- Monitor logs for scheduled sync operations
+
+## Background Synchronization Services
+
+The application runs two scheduled synchronization services that operate independently of the main packing list processing flow:
+
+### MDM to S3 Synchronization
+
+**Purpose:** Keep ineligible items cache up-to-date with Master Data Management (MDM)
+
+**Schedule:** Hourly (configurable via `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE`, default: `0 * * * *`)
+
+**Process Flow:**
+
+1. Retrieve latest ineligible items data from MDM API
+2. Write data to S3 bucket (configurable schema/filename)
+3. Update in-memory cache with fresh data
+4. Log operation results
+
+**Configuration:**
+
+- `INELIGIBLE_ITEMS_SYNC_ENABLED` - Enable/disable sync (default: `true`)
+- `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE` - Cron schedule (default: hourly)
+- `MDM_INTEGRATION_ENABLED` - Feature flag for MDM integration
+
+**Implementation:** `src/services/cache/mdm-s3-sync.js`, `src/services/cache/sync-scheduler.js`
+
+**Error Handling:** Failures are logged but do not affect service operation. Existing S3 data and cache remain unchanged on errors.
+
+### TDS Synchronization
+
+**Purpose:** Transfer parsed packing list documents from S3 to Azure Blob Storage (TDS container)
+
+**Schedule:** Hourly (configurable via `TDS_SYNC_CRON_SCHEDULE`, default: `0 * * * *`)
+
+**Process Flow:**
+
+1. List all files in S3 schema folder (e.g., `v0.0/`)
+2. For each file:
+   - Download from S3
+   - Upload to TDS Blob Storage
+   - Delete from S3 (only if upload successful)
+3. Return detailed results with success/failure counts
+
+**Configuration:**
+
+- `TDS_SYNC_ENABLED` - Enable/disable sync (default: `true`)
+- `TDS_SYNC_CRON_SCHEDULE` - Cron schedule (default: hourly)
+- `PACKING_LIST_SCHEMA_VERSION` - S3 folder to monitor (default: `v0.0`)
+
+**Implementation:** `src/services/tds-sync/tds-sync.js`, `src/services/tds-sync/sync-scheduler.js`
+
+**Error Handling:** Individual file failures don't stop batch processing. Failed files remain in S3 for retry on next sync. Detailed error logging per file.
+
+**Startup Integration:** Both schedulers are started automatically in `src/common/helpers/start-server.js`
+
+## Related Documentation
+
+- [TDS Sync README](../src/services/tds-sync/README.md) - Complete TDS synchronization documentation
+- [Cache README](../src/services/cache/README.md) - Ineligible items cache and MDM sync documentation
+- [Ineligible Items Cache](../INELIGIBLE-ITEMS-CACHE.md) - Cache setup and troubleshooting guide
+- [MDM S3 Sync Implementation](../MDM-S3-SYNC-IMPLEMENTATION.md) - MDM synchronization details
+- [Developer Guide](../DEVELOPER-GUIDE.md) - Complete developer documentation
+
 ## Migration Notes
 
 ### Key Differences from Azure Service Bus Version
@@ -450,6 +536,14 @@ For information on testing the packing list processing flow, see:
 - ⚠️ Service Bus notification (keep but add HTTP response)
 - ❌ Message handling infrastructure (not needed)
 - ❌ Database models (not needed with S3)
+
+### New Components
+
+- ✅ **MDM to S3 Sync**: Hourly synchronization of ineligible items from MDM
+- ✅ **TDS Sync**: Hourly transfer of parsed documents from S3 to Azure Blob Storage
+- ✅ **Ineligible Items Cache**: In-memory cache loaded on startup with retry logic
+- ✅ **Sync Schedulers**: Cron-based scheduling for automated data synchronization
+- ✅ **Server Startup Integration**: Automated initialization of caches and schedulers
 
 ### Implementation Priorities
 
