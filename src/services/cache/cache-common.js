@@ -102,9 +102,23 @@ export async function populateFromMDM(
   try {
     const mdmData = await getMdmData()
 
-    if (mdmData) {
+    if (!mdmData) {
+      throw new Error(`No data returned from MDM for ${cacheType}`)
+    }
+
+    // Cache the data in memory first
+    cacheS3Data(mdmData)
+    logger.info(`Successfully cached ${cacheType} data in memory from MDM`)
+
+    // Try to upload to S3, but don't fail if S3 is unavailable
+    try {
       await uploadJsonFileToS3(location, JSON.stringify(mdmData))
-      cacheS3Data(mdmData)
+      logger.info(`Successfully uploaded ${cacheType} data to S3`)
+    } catch (s3UploadError) {
+      logger.warn(
+        { error: s3UploadError.message },
+        `Failed to upload ${cacheType} to S3, but data is cached in memory`
+      )
     }
   } catch (mdmError) {
     logger.error(
@@ -164,10 +178,14 @@ export async function initializeCache(
     return
   }
 
-  const isNoSuchKey = isNoSuchKeyError(result.error)
-  const isEmptyData = result.error?.message === 'S3 data is empty'
+  // Fall back to MDM on any S3 error
+  // This includes NoSuchKey (file doesn't exist), empty data, and connection errors
+  logger.info(
+    { s3Error: result.error?.message },
+    `S3 fetch failed, falling back to MDM for ${cacheType}`
+  )
 
-  if (isNoSuchKey || isEmptyData) {
+  try {
     await populateFromMDM(
       location,
       result.error,
@@ -175,20 +193,20 @@ export async function initializeCache(
       cacheS3Data,
       cacheType
     )
-    return
+  } catch (mdmError) {
+    logger.error(
+      {
+        s3Error: result.error?.message,
+        mdmError: mdmError.message,
+        attempts: result.attempt,
+        s3FileName,
+        s3Schema
+      },
+      `Unable to load ${cacheType} data from both S3 and MDM`
+    )
+
+    throw new Error(
+      `Unable to load ${cacheType} data after ${result.attempt} S3 attempts and MDM fallback: S3 error: ${result.error?.message}, MDM error: ${mdmError.message}`
+    )
   }
-
-  logger.error(
-    {
-      error: result.error?.message,
-      attempts: result.attempt,
-      s3FileName,
-      s3Schema
-    },
-    `Unable to load ${cacheType} data`
-  )
-
-  throw new Error(
-    `Unable to load ${cacheType} data after ${result.attempt} attempts: ${result.error?.message}`
-  )
 }
