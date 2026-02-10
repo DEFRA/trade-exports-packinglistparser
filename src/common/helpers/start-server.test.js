@@ -1,11 +1,16 @@
 import hapi from '@hapi/hapi'
 import { vi } from 'vitest'
 
-const mockInitializeCache = vi.fn().mockResolvedValue(undefined)
+const mockInitializeIneligibleItemsCache = vi.fn().mockResolvedValue(undefined)
+const mockInitializeIsoCodesCache = vi.fn().mockResolvedValue(undefined)
 const mockStartSyncScheduler = vi.fn()
 
 vi.mock('../../services/cache/ineligible-items-cache.js', () => ({
-  initializeIneligibleItemsCache: mockInitializeCache
+  initializeIneligibleItemsCache: mockInitializeIneligibleItemsCache
+}))
+
+vi.mock('../../services/cache/iso-codes-cache.js', () => ({
+  initializeIsoCodesCache: mockInitializeIsoCodesCache
 }))
 
 vi.mock('../../services/cache/sync-scheduler.js', () => ({
@@ -50,10 +55,17 @@ describe('#startServer', () => {
     })
 
     test('Should initialize ineligible items cache', async () => {
-      mockInitializeCache.mockClear()
+      mockInitializeIneligibleItemsCache.mockClear()
       server = await startServerImport.startServer()
 
-      expect(mockInitializeCache).toHaveBeenCalled()
+      expect(mockInitializeIneligibleItemsCache).toHaveBeenCalled()
+    })
+
+    test('Should initialize ISO codes cache', async () => {
+      mockInitializeIsoCodesCache.mockClear()
+      server = await startServerImport.startServer()
+
+      expect(mockInitializeIsoCodesCache).toHaveBeenCalled()
     })
 
     test('Should start MDM sync scheduler', async () => {
@@ -74,9 +86,20 @@ describe('#startServer', () => {
       }
     })
 
-    test('Should continue server startup when cache initialization fails', async () => {
-      mockInitializeCache.mockRejectedValueOnce(
+    test('Should continue server startup when ineligible items cache initialization fails', async () => {
+      mockInitializeIneligibleItemsCache.mockRejectedValueOnce(
         new Error('Cache initialization failed')
+      )
+
+      server = await startServerImport.startServer()
+
+      expect(server).toBeDefined()
+      expect(createServerSpy).toHaveBeenCalled()
+    })
+
+    test('Should continue server startup when ISO codes cache initialization fails', async () => {
+      mockInitializeIsoCodesCache.mockRejectedValueOnce(
+        new Error('ISO codes cache initialization failed')
       )
 
       server = await startServerImport.startServer()
