@@ -56,6 +56,9 @@ export default Object.freeze({
   // Co-op models
   COOP1: 'COOP1',
 
+  // Fowler-Welch models
+  FOWLERWELCH2: 'fowlerwelch-2',
+
   // Kepak models
   KEPAK1: 'KEPAK1',
 
