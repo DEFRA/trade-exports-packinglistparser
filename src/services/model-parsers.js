@@ -47,6 +47,10 @@ import { parse as parseNisa1 } from './parsers/nisa/model1.js'
 import { matches as matchesSainsburys1 } from './matchers/sainsburys/model1.js'
 import { parse as parseSainsburys1 } from './parsers/sainsburys/model1.js'
 
+// Savers Excel parsers
+import { matches as matchesSavers1 } from './matchers/savers/model1.js'
+import { parse as parseSavers1 } from './parsers/savers/model1.js'
+
 // Tesco Excel parsers
 import { matches as matchesTesco3 } from './matchers/tesco/model3.js'
 import { parse as parseTesco3 } from './parsers/tesco/model3.js'
@@ -66,6 +70,10 @@ import { parse as parseMars1 } from './parsers/mars/model1.js'
 // TJ Morris Excel parsers
 import { matches as matchesTjmorris2 } from './matchers/tjmorris/model2.js'
 import { parse as parseTjmorris2 } from './parsers/tjmorris/model2.js'
+
+// Turners Excel parsers
+import { matches as matchesTurners1 } from './matchers/turners/model1.js'
+import { parse as parseTurners1 } from './parsers/turners/model1.js'
 
 // No-match matchers and parsers
 import {
@@ -124,9 +132,17 @@ const parsersExcel = {
     matches: matchesSainsburys1,
     parse: parseSainsburys1
   },
+  SAVERS1: {
+    matches: matchesSavers1,
+    parse: parseSavers1
+  },
   TJMORRIS2: {
     matches: matchesTjmorris2,
     parse: parseTjmorris2
+  },
+  TURNERS1: {
+    matches: matchesTurners1,
+    parse: parseTurners1
   },
   TESCO3: {
     matches: matchesTesco3,

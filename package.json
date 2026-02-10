@@ -22,8 +22,8 @@
     "server:watch": "nodemon --inspect=0.0.0.0 --ext js,json --legacy-watch ./src",
     "setup:husky": "node -e \"try { (await import('husky')).default() } catch (e) { if (e.code !== 'ERR_MODULE_NOT_FOUND') throw e }\" --input-type module",
     "start": "NODE_ENV=production node --use-strict .",
-    "test": "TZ=UTC vitest run --coverage",
-    "test:watch": "TZ=UTC vitest"
+    "test": "cross-env TZ=UTC vitest run --coverage",
+    "test:watch": "cross-env TZ=UTC vitest"
   },
   "author": "Defra DDTS",
   "license": "OGL-UK-3.0",
@@ -66,6 +66,7 @@
     "@babel/preset-env": "7.27.2",
     "@vitest/coverage-v8": "3.2.4",
     "autoprefixer": "10.4.21",
+    "cross-env": "10.1.0",
     "eslint": "9.29.0",
     "husky": "9.1.7",
     "neostandard": "0.12.1",
