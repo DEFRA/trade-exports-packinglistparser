@@ -38,11 +38,14 @@ const { config } = await import('../../config.js')
 
 describe('ineligible-items-cache', () => {
   const mockConfig = {
-    readEnabled: true,
     s3FileName: 'ineligible-items',
     s3Schema: 'v1.0',
     maxRetries: 3,
     retryDelayMs: 100
+  }
+
+  const mockMdmConfig = {
+    enabled: true
   }
 
   const mockIneligibleItems = [
@@ -61,7 +64,15 @@ describe('ineligible-items-cache', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     clearIneligibleItemsCache()
-    config.get.mockReturnValue(mockConfig)
+    config.get.mockImplementation((key) => {
+      if (key === 'ineligibleItemsCache') {
+        return mockConfig
+      }
+      if (key === 'mdmIntegration') {
+        return mockMdmConfig
+      }
+      return {}
+    })
   })
 
   afterEach(() => {
@@ -82,7 +93,15 @@ describe('ineligible-items-cache', () => {
     })
 
     it('should handle S3 location without schema', async () => {
-      config.get.mockReturnValue({ ...mockConfig, s3Schema: null })
+      config.get.mockImplementation((key) => {
+        if (key === 'ineligibleItemsCache') {
+          return { ...mockConfig, s3Schema: null }
+        }
+        if (key === 'mdmIntegration') {
+          return mockMdmConfig
+        }
+        return {}
+      })
       getFileFromS3.mockResolvedValue(JSON.stringify(mockIneligibleItems))
 
       await initializeIneligibleItemsCache()
@@ -186,8 +205,16 @@ describe('ineligible-items-cache', () => {
       expect(getIneligibleItemsCache()).toEqual(mockIneligibleItems)
     })
 
-    it('should skip initialization when readEnabled is false', async () => {
-      config.get.mockReturnValue({ ...mockConfig, readEnabled: false })
+    it('should skip initialization when MDM integration is disabled', async () => {
+      config.get.mockImplementation((key) => {
+        if (key === 'ineligibleItemsCache') {
+          return mockConfig
+        }
+        if (key === 'mdmIntegration') {
+          return { enabled: false }
+        }
+        return {}
+      })
 
       await initializeIneligibleItemsCache()
 
@@ -310,13 +337,20 @@ describe('ineligible-items-cache', () => {
   describe('configuration', () => {
     it('should use configuration values from config', async () => {
       const customConfig = {
-        readEnabled: true,
         s3FileName: 'custom-file',
         s3Schema: 'v2.0',
         maxRetries: 5,
         retryDelayMs: 500
       }
-      config.get.mockReturnValue(customConfig)
+      config.get.mockImplementation((key) => {
+        if (key === 'ineligibleItemsCache') {
+          return customConfig
+        }
+        if (key === 'mdmIntegration') {
+          return { enabled: true }
+        }
+        return {}
+      })
       getFileFromS3.mockResolvedValue(JSON.stringify(mockIneligibleItems))
 
       await initializeIneligibleItemsCache()

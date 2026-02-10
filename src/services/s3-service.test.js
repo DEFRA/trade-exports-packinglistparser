@@ -3,7 +3,8 @@ import {
   S3Client,
   ListObjectsV2Command,
   PutObjectCommand,
-  GetObjectCommand
+  GetObjectCommand,
+  DeleteObjectCommand
 } from '@aws-sdk/client-s3'
 
 // Mock the config module
@@ -34,7 +35,8 @@ vi.mock('@aws-sdk/client-s3', () => ({
   S3Client: vi.fn(),
   ListObjectsV2Command: vi.fn(),
   PutObjectCommand: vi.fn(),
-  GetObjectCommand: vi.fn()
+  GetObjectCommand: vi.fn(),
+  DeleteObjectCommand: vi.fn()
 }))
 
 describe('S3 Service', () => {
@@ -42,7 +44,11 @@ describe('S3 Service', () => {
   let mockSend
 
   // Import the actual functions after mocking
-  let listS3Objects, uploadJsonFileToS3, getFileFromS3, getStreamFromS3
+  let listS3Objects,
+    uploadJsonFileToS3,
+    getFileFromS3,
+    getStreamFromS3,
+    deleteFileFromS3
 
   beforeEach(async () => {
     mockSend = vi.fn()
@@ -60,6 +66,7 @@ describe('S3 Service', () => {
     ListObjectsV2Command.mockImplementation((input) => ({ input }))
     PutObjectCommand.mockImplementation((input) => ({ input }))
     GetObjectCommand.mockImplementation((input) => ({ input }))
+    DeleteObjectCommand.mockImplementation((input) => ({ input }))
 
     // Import the service functions after mocking
     const s3Service = await import('./s3-service.js')
@@ -67,6 +74,7 @@ describe('S3 Service', () => {
     uploadJsonFileToS3 = s3Service.uploadJsonFileToS3
     getFileFromS3 = s3Service.getFileFromS3
     getStreamFromS3 = s3Service.getStreamFromS3
+    deleteFileFromS3 = s3Service.deleteFileFromS3
   })
 
   afterEach(() => {
@@ -252,6 +260,67 @@ describe('S3 Service', () => {
 
       await expect(getFileFromS3({ filename: 'test-file' })).rejects.toThrow(
         'Transform failed'
+      )
+    })
+  })
+
+  describe('deleteFileFromS3', () => {
+    it('should delete file from S3 successfully', async () => {
+      const mockResponse = { DeleteMarker: false }
+      mockSend.mockResolvedValue(mockResponse)
+      const key = 'tds-transfer/test-file.json'
+
+      const result = await deleteFileFromS3(key)
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            Bucket: 'test-bucket',
+            Key: key
+          }
+        })
+      )
+      const command = mockSend.mock.calls[0][0]
+      expect(command.input.Bucket).toBe('test-bucket')
+      expect(command.input.Key).toBe(key)
+      expect(result).toEqual(mockResponse)
+    })
+
+    it('should delete file with schema prefix', async () => {
+      const mockResponse = { DeleteMarker: false }
+      mockSend.mockResolvedValue(mockResponse)
+      const key = 'cache/document.json'
+
+      await deleteFileFromS3(key)
+
+      const command = mockSend.mock.calls[0][0]
+      expect(command.input.Key).toBe(key)
+    })
+
+    it('should handle errors when deleting file', async () => {
+      const mockError = new Error('Failed to delete file')
+      mockSend.mockRejectedValue(mockError)
+
+      await expect(deleteFileFromS3('test-key')).rejects.toThrow(
+        'Failed to delete file'
+      )
+    })
+
+    it('should handle deletion of non-existent file', async () => {
+      const mockResponse = { DeleteMarker: true, VersionId: 'null' }
+      mockSend.mockResolvedValue(mockResponse)
+      const key = 'non-existent-file.json'
+
+      const result = await deleteFileFromS3(key)
+
+      expect(result).toEqual(mockResponse)
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            Bucket: 'test-bucket',
+            Key: key
+          }
+        })
       )
     })
   })

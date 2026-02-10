@@ -2,7 +2,8 @@ import {
   S3Client,
   ListObjectsV2Command,
   PutObjectCommand,
-  GetObjectCommand
+  GetObjectCommand,
+  DeleteObjectCommand
 } from '@aws-sdk/client-s3'
 import { config } from '../config.js'
 
@@ -98,4 +99,24 @@ function getKeyFromLocation(location) {
   return `${location.schema}/${location.filename}.json`
 }
 
-export { listS3Objects, uploadJsonFileToS3, getFileFromS3, getStreamFromS3 }
+/**
+ * Deletes a file from S3 bucket
+ * @param {string} key - S3 object key to delete
+ * @returns {Promise<Object>} S3 DeleteObject command response
+ */
+function deleteFileFromS3(key) {
+  const client = createS3Client()
+  const command = new DeleteObjectCommand({
+    Bucket: s3Bucket,
+    Key: key
+  })
+  return client.send(command)
+}
+
+export {
+  listS3Objects,
+  uploadJsonFileToS3,
+  getFileFromS3,
+  getStreamFromS3,
+  deleteFileFromS3
+}

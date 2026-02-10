@@ -124,15 +124,18 @@ async function fetchFromS3WithRetry(location, maxRetries, retryDelayMs) {
  * @throws {Error} If unable to fetch data after all retry attempts
  */
 export async function initializeIneligibleItemsCache() {
-  const { readEnabled, s3FileName, s3Schema, maxRetries, retryDelayMs } =
-    config.get('ineligibleItemsCache')
+  const { enabled: mdmEnabled } = config.get('mdmIntegration')
 
-  if (!readEnabled) {
+  if (!mdmEnabled) {
     logger.info(
-      'Ineligible items S3 read is disabled, skipping cache initialization'
+      'MDM integration is disabled, skipping ineligible items cache initialization'
     )
     return
   }
+
+  const { s3FileName, s3Schema, maxRetries, retryDelayMs } = config.get(
+    'ineligibleItemsCache'
+  )
 
   const location = {
     filename: s3FileName,

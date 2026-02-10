@@ -4,6 +4,7 @@ import { getClientProxyOptions } from '../utilities/proxy-helper.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { isExcel, convertExcelToJson } from '../../utilities/excel-helper.js'
 import { isCsv, convertCsvToJson } from '../../utilities/csv-helper.js'
+import { streamToBuffer } from '../../common/helpers/stream-helpers.js'
 
 const logger = createLogger()
 
@@ -125,28 +126,49 @@ export function createBlobStorageService(storageConfig) {
     }
   }
 
+  /**
+   * Uploads data to Azure Blob Storage
+   * @param {string} blobName - The name of the blob to create/update
+   * @param {Buffer|string} data - The data to upload
+   * @param {Object} options - Upload options (contentType, etc.)
+   * @returns {Promise<Object>} Upload response with ETag and other metadata
+   * @throws {Error} If the upload fails
+   */
+  async function uploadBlob(blobName, data, options = {}) {
+    try {
+      logger.info(`Uploading blob to container: ${blobName}`)
+      const containerClient = createContainerClient()
+      const blockBlobClient = containerClient.getBlockBlobClient(blobName)
+
+      const uploadOptions = {
+        blobHTTPHeaders: {
+          blobContentType: options.contentType || 'application/octet-stream'
+        }
+      }
+
+      const uploadResponse = await blockBlobClient.upload(
+        data,
+        Buffer.byteLength(data),
+        uploadOptions
+      )
+
+      logger.info(`Blob uploaded successfully: ${blobName}`)
+
+      return {
+        ETag: uploadResponse.etag,
+        lastModified: uploadResponse.lastModified,
+        requestId: uploadResponse.requestId
+      }
+    } catch (error) {
+      throw new Error(`Failed to upload blob: ${error.message}`)
+    }
+  }
+
   return {
     downloadBlob,
     downloadBlobAsJson,
     checkContainerExists,
-    getBlobNameFromUrl
+    getBlobNameFromUrl,
+    uploadBlob
   }
-}
-
-/**
- * Helper function to convert a stream to a buffer
- * @param {NodeJS.ReadableStream} readableStream
- * @returns {Promise<Buffer>}
- */
-async function streamToBuffer(readableStream) {
-  return new Promise((resolve, reject) => {
-    const chunks = []
-    readableStream.on('data', (data) => {
-      chunks.push(data instanceof Buffer ? data : Buffer.from(data))
-    })
-    readableStream.on('end', () => {
-      resolve(Buffer.concat(chunks))
-    })
-    readableStream.on('error', reject)
-  })
 }

@@ -58,6 +58,11 @@ vi.mock('../../utilities/csv-helper.js', () => ({
   convertCsvToJson: mockConvertCsvToJson
 }))
 
+// Mock stream-helpers
+vi.mock('../../common/helpers/stream-helpers.js', () => ({
+  streamToBuffer: vi.fn()
+}))
+
 // Mock config
 const mockConfigGet = vi.fn((key) => {
   if (key === 'log') {
@@ -90,6 +95,9 @@ vi.mock('../../config.js', () => ({
 // Import after all mocks
 const { createBlobStorageService } = await import('./blob-storage-service.js')
 const { BlobServiceClient } = await import('@azure/storage-blob')
+const { streamToBuffer } = await import(
+  '../../common/helpers/stream-helpers.js'
+)
 
 // Test constants
 const TEST_CREDENTIALS = {
@@ -119,6 +127,15 @@ const createMockStream = (data) => {
 describe('blob-storage-service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+
+    // Mock streamToBuffer to convert stream content to buffer
+    streamToBuffer.mockImplementation(async (stream) => {
+      return new Promise((resolve) => {
+        const chunks = []
+        stream.on('data', (chunk) => chunks.push(chunk))
+        stream.on('end', () => resolve(Buffer.concat(chunks)))
+      })
+    })
   })
 
   describe('createBlobStorageService', () => {

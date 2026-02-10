@@ -1,13 +1,13 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import {
-  startSyncScheduler,
-  stopSyncScheduler,
-  isSchedulerRunning
+  startTdsSyncScheduler,
+  stopTdsSyncScheduler,
+  isTdsSchedulerRunning
 } from './sync-scheduler.js'
 import { config } from '../../config.js'
 
 // Mock dependencies
-vi.mock('./mdm-s3-sync.js')
+vi.mock('./tds-sync.js')
 vi.mock('../../common/helpers/sync-scheduler-factory.js', () => {
   let mockScheduler
   return {
@@ -31,7 +31,7 @@ vi.mock('../../common/helpers/logging/logger.js', () => ({
 vi.mock('../../config.js', () => ({
   config: {
     get: vi.fn((key) => {
-      if (key === 'ineligibleItemsSync') {
+      if (key === 'tdsSync') {
         return {
           enabled: true,
           cronSchedule: '0 * * * *'
@@ -42,48 +42,48 @@ vi.mock('../../config.js', () => ({
   }
 }))
 
-describe('sync-scheduler', () => {
+describe('TDS sync-scheduler', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
-    stopSyncScheduler()
+    stopTdsSyncScheduler()
   })
 
-  describe('startSyncScheduler', () => {
+  describe('startTdsSyncScheduler', () => {
     it('should start the scheduler with valid configuration', () => {
-      const result = startSyncScheduler()
+      const result = startTdsSyncScheduler()
 
       expect(result).toBeDefined()
     })
 
-    it('should return null when sync is disabled', () => {
+    it('should return null when TDS sync is disabled', () => {
       config.get.mockReturnValueOnce({
         enabled: false,
         cronSchedule: '0 * * * *'
       })
 
-      const result = startSyncScheduler()
+      const result = startTdsSyncScheduler()
 
       expect(result).toBeNull()
     })
   })
 
-  describe('stopSyncScheduler', () => {
+  describe('stopTdsSyncScheduler', () => {
     it('should stop the scheduler', () => {
-      startSyncScheduler()
-      stopSyncScheduler()
+      startTdsSyncScheduler()
+      stopTdsSyncScheduler()
 
       // Should not throw
       expect(true).toBe(true)
     })
   })
 
-  describe('isSchedulerRunning', () => {
+  describe('isTdsSchedulerRunning', () => {
     it('should return scheduler status', () => {
-      const status = isSchedulerRunning()
+      const status = isTdsSchedulerRunning()
       expect(typeof status).toBe('boolean')
     })
   })
