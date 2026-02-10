@@ -9,6 +9,7 @@ permissions:
   id-token: write
   contents: write
   pull-requests: write
+  security-events: read
 
 env:
   AWS_REGION: eu-west-2
@@ -22,6 +23,19 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+
+      - name: Check for Dependabot Alerts
+        run: |
+          ALERTS=$(gh api repos/${{ github.repository }}/dependabot/alerts --jq '[.[] | select(.state == "open")] | length')
+          echo "Found $ALERTS open Dependabot alert(s)"
+          if [ "$ALERTS" -gt 0 ]; then
+            echo "❌ Build failed: $ALERTS open Dependabot alert(s) must be resolved before publishing"
+            gh api repos/${{ github.repository }}/dependabot/alerts --jq '.[] | select(.state == "open") | "- \(.security_advisory.severity | ascii_upcase): \(.security_advisory.summary) (\(.dependency.package.name))"'
+            exit 1
+          fi
+          echo "✅ No open Dependabot alerts found"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Publish
         uses: DEFRA/cdp-build-action/build@main
