@@ -153,6 +153,32 @@ describe('sync-scheduler', () => {
       // Execute the callback - should not throw
       await expect(scheduledCallback()).resolves.toBeUndefined()
     })
+
+    it('should handle ISO codes sync errors gracefully', async () => {
+      const { syncIsoCodesMdmToS3 } = await import('./iso-codes-mdm-s3-sync.js')
+      const mockError = new Error('ISO codes sync failed')
+      syncIsoCodesMdmToS3.mockRejectedValue(mockError)
+
+      startSyncScheduler()
+
+      // Get the scheduled callback function for ISO codes
+      const isoCodesCallback = cron.schedule.mock.calls[1][1]
+
+      // Execute the callback - should not throw
+      await expect(isoCodesCallback()).resolves.toBeUndefined()
+    })
+
+    it('should throw error for invalid ISO codes cron schedule', () => {
+      // Make the first validation pass but the second fail
+      cron.validate
+        .mockReturnValueOnce(true) // ineligible items passes
+        .mockReturnValueOnce(false) // ISO codes fails
+
+      // This should throw when trying to start ISO codes scheduler
+      expect(() => startSyncScheduler()).toThrow(
+        'Invalid cron schedule: 0 * * * *'
+      )
+    })
   })
 
   describe('stopSyncScheduler', () => {
