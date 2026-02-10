@@ -1,31 +1,25 @@
 import { getFileFromS3, uploadJsonFileToS3 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
-import { getIneligibleItems } from '../mdm-service.js'
+import { getIsoCodes } from '../mdm-service.js'
 
 const logger = createLogger()
 
-// In-memory cache for ineligible items
-let ineligibleItemsCache = null
+// In-memory cache for ISO codes
+let isoCodesCache = null
 
 /**
- * Check if data is empty (null, empty array, or empty ineligibleItems)
+ * Check if data is empty (null, empty array)
  */
 function isDataEmpty(data) {
-  return (
-    !data ||
-    (Array.isArray(data) && data.length === 0) ||
-    data.ineligibleItems?.length === 0
-  )
+  return !data || (Array.isArray(data) && data.length === 0)
 }
 
 /**
  * Extract item count from data
  */
 function getItemCount(data) {
-  return (
-    data?.ineligibleItems?.length || (Array.isArray(data) ? data.length : 0)
-  )
+  return Array.isArray(data) ? data.length : 0
 }
 
 /**
@@ -39,27 +33,30 @@ function isNoSuchKeyError(error) {
  * Process successful S3 fetch
  */
 function cacheS3Data(data) {
-  ineligibleItemsCache = data
+  isoCodesCache = data
   const itemCount = getItemCount(data)
-  logger.info({ itemCount }, 'Ineligible items cache loaded')
+  logger.info({ itemCount }, 'ISO codes cache loaded')
 }
 
 /**
  * Attempt to populate cache from MDM and upload to S3
  */
 async function populateFromMDM(location, s3Error) {
-  logger.info('Attempting to populate cache from MDM')
+  logger.info('Attempting to populate ISO codes cache from MDM')
   try {
-    const mdmData = await getIneligibleItems()
+    const mdmData = await getIsoCodes()
 
     if (mdmData) {
       await uploadJsonFileToS3(location, JSON.stringify(mdmData))
       cacheS3Data(mdmData)
     }
   } catch (mdmError) {
-    logger.error({ error: mdmError.message }, 'Failed to populate from MDM')
+    logger.error(
+      { error: mdmError.message },
+      'Failed to populate ISO codes from MDM'
+    )
     throw new Error(
-      `Unable to load ineligible items from S3 or MDM: S3 error: ${s3Error?.message}, MDM error: ${mdmError.message}`
+      `Unable to load ISO codes from S3 or MDM: S3 error: ${s3Error?.message}, MDM error: ${mdmError.message}`
     )
   }
 }
@@ -77,7 +74,9 @@ async function fetchFromS3WithRetry(location, maxRetries, retryDelayMs) {
       const parsedData = JSON.parse(fileContent)
 
       if (isDataEmpty(parsedData)) {
-        logger.warn('S3 returned empty data, will attempt MDM fallback')
+        logger.warn(
+          'S3 returned empty ISO codes data, will attempt MDM fallback'
+        )
         return {
           success: false,
           error: new Error('S3 data is empty'),
@@ -92,7 +91,7 @@ async function fetchFromS3WithRetry(location, maxRetries, retryDelayMs) {
 
       if (isNoSuchKeyError(error)) {
         logger.warn(
-          'S3 file does not exist (NoSuchKey), will attempt MDM fallback'
+          'S3 ISO codes file does not exist (NoSuchKey), will attempt MDM fallback'
         )
         return { success: false, error, attempt: attempt + 1 }
       }
@@ -106,7 +105,7 @@ async function fetchFromS3WithRetry(location, maxRetries, retryDelayMs) {
           error: error.message,
           willRetry: attempt <= maxRetries
         },
-        'Failed to fetch ineligible items from S3'
+        'Failed to fetch ISO codes from S3'
       )
 
       if (attempt <= maxRetries) {
@@ -119,23 +118,22 @@ async function fetchFromS3WithRetry(location, maxRetries, retryDelayMs) {
 }
 
 /**
- * Initialize the ineligible items cache by fetching data from S3 with retry logic
+ * Initialize the ISO codes cache by fetching data from S3 with retry logic
  * @returns {Promise<void>}
  * @throws {Error} If unable to fetch data after all retry attempts
  */
-export async function initializeIneligibleItemsCache() {
+export async function initializeIsoCodesCache() {
   const { enabled: mdmEnabled } = config.get('mdmIntegration')
 
   if (!mdmEnabled) {
     logger.info(
-      'MDM integration is disabled, skipping ineligible items cache initialization'
+      'MDM integration is disabled, skipping ISO codes cache initialization'
     )
     return
   }
 
-  const { s3FileName, s3Schema, maxRetries, retryDelayMs } = config.get(
-    'ineligibleItemsCache'
-  )
+  const { s3FileName, s3Schema, maxRetries, retryDelayMs } =
+    config.get('isoCodesCache')
 
   const location = {
     filename: s3FileName,
@@ -163,33 +161,33 @@ export async function initializeIneligibleItemsCache() {
       s3FileName,
       s3Schema
     },
-    'Unable to load ineligible items data'
+    'Unable to load ISO codes data'
   )
 
   throw new Error(
-    `Unable to load ineligible items data after ${result.attempt} attempts: ${result.error?.message}`
+    `Unable to load ISO codes data after ${result.attempt} attempts: ${result.error?.message}`
   )
 }
 
 /**
- * Get the cached ineligible items data
- * @returns {Array|null} The cached ineligible items array or null if not initialized
+ * Get the cached ISO codes data
+ * @returns {Array|null} The cached ISO codes array or null if not initialized
  */
-export function getIneligibleItemsCache() {
-  return ineligibleItemsCache
+export function getIsoCodesCache() {
+  return isoCodesCache
 }
 
 /**
- * Set the ineligible items cache (useful for testing)
- * @param {Array} data - The ineligible items data to cache
+ * Set the ISO codes cache (useful for testing)
+ * @param {Array} data - The ISO codes data to cache
  */
-export function setIneligibleItemsCache(data) {
-  ineligibleItemsCache = data
+export function setIsoCodesCache(data) {
+  isoCodesCache = data
 }
 
 /**
- * Clear the ineligible items cache
+ * Clear the ISO codes cache
  */
-export function clearIneligibleItemsCache() {
-  ineligibleItemsCache = null
+export function clearIsoCodesCache() {
+  isoCodesCache = null
 }

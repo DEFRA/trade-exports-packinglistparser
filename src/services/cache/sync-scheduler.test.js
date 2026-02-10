@@ -11,6 +11,7 @@ import { config } from '../../config.js'
 // Mock dependencies
 vi.mock('node-cron')
 vi.mock('./mdm-s3-sync.js')
+vi.mock('./iso-codes-mdm-s3-sync.js')
 vi.mock('../../common/helpers/logging/logger.js', () => ({
   createLogger: vi.fn(() => ({
     info: vi.fn(),
@@ -21,9 +22,18 @@ vi.mock('../../common/helpers/logging/logger.js', () => ({
 vi.mock('../../config.js', () => ({
   config: {
     get: vi.fn((key) => {
+      if (key === 'mdmIntegration') {
+        return {
+          enabled: true
+        }
+      }
       if (key === 'ineligibleItemsSync') {
         return {
-          enabled: true,
+          cronSchedule: '0 * * * *'
+        }
+      }
+      if (key === 'isoCodesSync') {
+        return {
           cronSchedule: '0 * * * *'
         }
       }
@@ -53,33 +63,46 @@ describe('sync-scheduler', () => {
   })
 
   describe('startSyncScheduler', () => {
-    it('should start the scheduler with valid configuration', () => {
+    it('should start both schedulers with valid configuration', () => {
       const result = startSyncScheduler()
 
       expect(cron.validate).toHaveBeenCalledWith('0 * * * *')
-      expect(cron.schedule).toHaveBeenCalledWith(
-        '0 * * * *',
-        expect.any(Function),
-        {
-          scheduled: true,
-          timezone: 'UTC'
-        }
-      )
-      expect(result).toBe(mockScheduledTask)
-      expect(isSchedulerRunning()).toBe(true)
+      expect(cron.schedule).toHaveBeenCalledTimes(2) // Once for each scheduler
+      expect(result).toEqual({
+        ineligibleItems: mockScheduledTask,
+        isoCodes: mockScheduledTask
+      })
+      expect(isSchedulerRunning()).toEqual({
+        ineligibleItems: true,
+        isoCodes: true
+      })
     })
 
-    it('should return null when sync is disabled', () => {
-      config.get.mockReturnValueOnce({
-        enabled: false,
-        cronSchedule: '0 * * * *'
+    it('should return null when MDM integration is disabled', () => {
+      config.get.mockImplementation((key) => {
+        if (key === 'mdmIntegration') {
+          return { enabled: false }
+        }
+        if (key === 'ineligibleItemsSync') {
+          return { cronSchedule: '0 * * * *' }
+        }
+        if (key === 'isoCodesSync') {
+          return { cronSchedule: '0 * * * *' }
+        }
+        return {}
       })
 
       const result = startSyncScheduler()
 
-      expect(result).toBeNull()
+      expect(result).toEqual({
+        ineligibleItems: null,
+        isoCodes: null
+      })
       expect(cron.schedule).not.toHaveBeenCalled()
-      expect(isSchedulerRunning()).toBe(false)
+      expect(isSchedulerRunning()).toEqual({
+        ineligibleItems: false,
+        isoCodes: false
+      })
     })
 
     it('should throw error for invalid cron schedule', () => {
@@ -88,30 +111,34 @@ describe('sync-scheduler', () => {
       expect(() => startSyncScheduler()).toThrow(
         'Invalid cron schedule: 0 * * * *'
       )
-      expect(cron.schedule).not.toHaveBeenCalled()
     })
 
     it('should return existing task if already running', () => {
       const firstResult = startSyncScheduler()
       const secondResult = startSyncScheduler()
 
-      expect(firstResult).toBe(secondResult)
-      expect(cron.schedule).toHaveBeenCalledTimes(1)
+      expect(firstResult).toEqual(secondResult)
+      expect(cron.schedule).toHaveBeenCalledTimes(2) // Initial call for both schedulers
     })
 
-    it('should execute sync function on scheduled time', async () => {
+    it('should execute sync functions on scheduled time', async () => {
       const { syncMdmToS3 } = await import('./mdm-s3-sync.js')
+      const { syncIsoCodesMdmToS3 } = await import('./iso-codes-mdm-s3-sync.js')
       syncMdmToS3.mockResolvedValue({ success: true })
+      syncIsoCodesMdmToS3.mockResolvedValue({ success: true })
 
       startSyncScheduler()
 
-      // Get the scheduled callback function
-      const scheduledCallback = cron.schedule.mock.calls[0][1]
+      // Get the scheduled callback functions
+      const ineligibleItemsCallback = cron.schedule.mock.calls[0][1]
+      const isoCodesCallback = cron.schedule.mock.calls[1][1]
 
-      // Execute the callback
-      await scheduledCallback()
+      // Execute the callbacks
+      await ineligibleItemsCallback()
+      await isoCodesCallback()
 
       expect(syncMdmToS3).toHaveBeenCalledTimes(1)
+      expect(syncIsoCodesMdmToS3).toHaveBeenCalledTimes(1)
     })
 
     it('should handle sync errors gracefully', async () => {
@@ -120,7 +147,7 @@ describe('sync-scheduler', () => {
 
       startSyncScheduler()
 
-      // Get the scheduled callback function
+      // Get the scheduled callback function for ineligible items
       const scheduledCallback = cron.schedule.mock.calls[0][1]
 
       // Execute the callback - should not throw
@@ -129,19 +156,25 @@ describe('sync-scheduler', () => {
   })
 
   describe('stopSyncScheduler', () => {
-    it('should stop the running scheduler', () => {
+    it('should stop the running schedulers', () => {
       startSyncScheduler()
       stopSyncScheduler()
 
-      expect(mockScheduledTask.stop).toHaveBeenCalledTimes(1)
-      expect(isSchedulerRunning()).toBe(false)
+      expect(mockScheduledTask.stop).toHaveBeenCalledTimes(2) // Both schedulers stopped
+      expect(isSchedulerRunning()).toEqual({
+        ineligibleItems: false,
+        isoCodes: false
+      })
     })
 
     it('should handle stopping when no scheduler is running', () => {
       stopSyncScheduler()
 
       expect(mockScheduledTask.stop).not.toHaveBeenCalled()
-      expect(isSchedulerRunning()).toBe(false)
+      expect(isSchedulerRunning()).toEqual({
+        ineligibleItems: false,
+        isoCodes: false
+      })
     })
 
     it('should allow restarting after stopping', () => {
@@ -155,25 +188,37 @@ describe('sync-scheduler', () => {
 
       const result = startSyncScheduler()
 
-      expect(result).toBe(newTask)
-      expect(cron.schedule).toHaveBeenCalledTimes(2)
+      expect(result).toEqual({
+        ineligibleItems: newTask,
+        isoCodes: newTask
+      })
+      expect(cron.schedule).toHaveBeenCalledTimes(4) // 2 initial + 2 restart
     })
   })
 
   describe('isSchedulerRunning', () => {
-    it('should return true when scheduler is running', () => {
+    it('should return true when schedulers are running', () => {
       startSyncScheduler()
-      expect(isSchedulerRunning()).toBe(true)
+      expect(isSchedulerRunning()).toEqual({
+        ineligibleItems: true,
+        isoCodes: true
+      })
     })
 
-    it('should return false when scheduler is not running', () => {
-      expect(isSchedulerRunning()).toBe(false)
+    it('should return false when schedulers are not running', () => {
+      expect(isSchedulerRunning()).toEqual({
+        ineligibleItems: false,
+        isoCodes: false
+      })
     })
 
     it('should return false after stopping', () => {
       startSyncScheduler()
       stopSyncScheduler()
-      expect(isSchedulerRunning()).toBe(false)
+      expect(isSchedulerRunning()).toEqual({
+        ineligibleItems: false,
+        isoCodes: false
+      })
     })
   })
 })

@@ -113,6 +113,17 @@ export function getIneligibleItems() {
 }
 
 /**
+ * GET request to Azure API Management to retrieve ISO codes
+ * @returns {Promise<Array>} Parsed JSON response with ISO codes array
+ */
+export function getIsoCodes() {
+  const { internalAPIMEndpoint, getIsoCodesEndpoint } = config.get('mdm')
+  const url = `${internalAPIMEndpoint}${getIsoCodesEndpoint}`
+  logger.info(`Getting ISO codes from MDM API - ${url}`)
+  return getFromAzureApi(url, {})
+}
+
+/**
  * GET request to Azure API Management
  * @param {string} url - Full API URL
  * @param {Object} - Additional headers

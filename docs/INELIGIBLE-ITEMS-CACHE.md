@@ -14,8 +14,7 @@ The following environment variables control the ineligible items cache behavior:
 
 | Variable                          | Description                                | Default            | Example                 |
 | --------------------------------- | ------------------------------------------ | ------------------ | ----------------------- |
-| `MDM_INTEGRATION_ENABLED`         | Enable/disable MDM integration             | `true`             | `true` or `false`       |
-| `INELIGIBLE_ITEMS_READ_ENABLED`   | Enable/disable reading from S3             | `true`             | `true` or `false`       |
+| `MDM_INTEGRATION_ENABLED`         | Enable/disable MDM integration and caching | `true`             | `true` or `false`       |
 | `INELIGIBLE_ITEMS_S3_FILE_NAME`   | S3 file name (without extension)           | `ineligible-items` | `ineligible-items`      |
 | `INELIGIBLE_ITEMS_S3_SCHEMA`      | S3 schema/prefix for the file              | `cache`            | `cache`                 |
 | `INELIGIBLE_ITEMS_MAX_RETRIES`    | Max retry attempts on S3 failure           | `3`                | `3`                     |
@@ -30,7 +29,6 @@ The following environment variables control the ineligible items cache behavior:
 
 | Variable                              | Description                              | Default     | Example     |
 | ------------------------------------- | ---------------------------------------- | ----------- | ----------- |
-| `INELIGIBLE_ITEMS_SYNC_ENABLED`       | Enable/disable hourly MDM to S3 sync     | `true`      | `true`      |
 | `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE` | Cron schedule for sync (default: hourly) | `0 * * * *` | `0 * * * *` |
 
 The cron schedule format is: `minute hour day month weekday`
@@ -41,21 +39,23 @@ The cron schedule format is: `minute hour day month weekday`
 
 ## MDM Integration Feature Flag
 
-The `MDM_INTEGRATION_ENABLED` flag controls whether the system integrates with MDM for ineligible items data.
+The `MDM_INTEGRATION_ENABLED` flag controls whether the system integrates with MDM for ineligible items data and whether the cache is initialized.
 
 **When enabled (`true`)**:
 
-- MDM synchronization runs on schedule
+- Cache is initialized from S3 on startup
+- MDM synchronization runs on hourly schedule
 - Latest data is retrieved from MDM
 - S3 bucket is updated with fresh data
-- Cache is invalidated after sync
+- Cache is updated after sync
 
 **When disabled (`false`)**:
 
+- Cache initialization is skipped
 - MDM synchronization is skipped
 - S3 bucket is not updated
-- Log entry confirms MDM sync is disabled
-- Service continues to use existing S3 data
+- Service uses static fallback data from `data-ineligible-items.json`
+- Log entry confirms MDM integration is disabled
 
 This is useful for:
 
@@ -65,7 +65,7 @@ This is useful for:
 - Emergency fallback scenarios
 
 ```env
-# Disable MDM integration
+# Disable MDM integration and caching
 MDM_INTEGRATION_ENABLED=false
 ```
 
@@ -203,7 +203,6 @@ AWS_ENDPOINT_URL=http://localhost:4566
 AWS_S3_BUCKET=my-bucket
 
 # Ineligible items configuration
-INELIGIBLE_ITEMS_READ_ENABLED=true
 INELIGIBLE_ITEMS_S3_FILE_NAME=ineligible-items
 INELIGIBLE_ITEMS_S3_SCHEMA=v1
 ```
@@ -314,13 +313,14 @@ The cache is **NOT** automatically updated after startup. It remains in memory u
 To disable ineligible items cache loading:
 
 ```env
-INELIGIBLE_ITEMS_READ_ENABLED=false
+MDM_INTEGRATION_ENABLED=false
 ```
 
 With this setting:
 
-- Server skips S3 fetch on startup
+- Server skips cache initialization on startup
 - Cache remains `null`
+- Service uses static fallback data from `data-ineligible-items.json`
 - Cache test endpoint returns: `"Cache is empty or not initialized"`
 
 ## File Structure
