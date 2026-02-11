@@ -26,6 +26,8 @@ jobs:
       - name: Dependency Review
         uses: actions/dependency-review-action@v4
         with:
+          base-ref: ${{ github.event.before }}
+          head-ref: ${{ github.sha }}
           fail-on-severity: moderate
 
       # Ensure tests pass. Add more checks if required
