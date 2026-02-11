@@ -9,7 +9,6 @@ permissions:
   id-token: write
   contents: write
   pull-requests: write
-  security-events: read
 
 env:
   AWS_REGION: eu-west-2
