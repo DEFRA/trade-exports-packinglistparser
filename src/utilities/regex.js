@@ -135,7 +135,11 @@ function findUnit(header) {
  * @returns {Array<string>} Updated matches array
  */
 function addMatch(matchToAdd, matches) {
-  if (!matches.includes(matchToAdd)) {
+  if (
+    !matches.some(
+      (v) => v.toLocaleUpperCase() === matchToAdd.toLocaleUpperCase()
+    )
+  ) {
     matches.push(matchToAdd)
   }
   return matches
