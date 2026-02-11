@@ -19,6 +19,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          base-ref: ${{ github.event.pull_request.base.sha }}
+          head-ref: ${{ github.event.pull_request.head.sha }}
+          fail-on-severity: moderate
+
       - name: Test code and Create Test Coverage Reports
         uses: actions/setup-node@v4
         with:
