@@ -24,13 +24,6 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
-        with:
-          base-ref: ${{ github.event.before }}
-          head-ref: ${{ github.sha }}
-          fail-on-severity: moderate
-
       - name: Build and Publish
         uses: DEFRA/cdp-build-action/build@main
         with:

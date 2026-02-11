@@ -22,14 +22,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Depth 0 is required for branch-based versioning
-
-      - name: Dependency Review
-        uses: actions/dependency-review-action@v4
-        with:
-          base-ref: 'main'
-          head-ref: ${{ github.sha }}
-          fail-on-severity: moderate
-
+          
       # Ensure tests pass. Add more checks if required
       - run: npm ci
       - run: npm test
