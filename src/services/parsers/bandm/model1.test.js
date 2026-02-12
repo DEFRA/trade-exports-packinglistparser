@@ -118,6 +118,166 @@ describe('parseBandmModel1', () => {
       // Should only have 2 items, not 3 (third row with spaces should be filtered)
       expect(result.items).toHaveLength(2)
     })
+
+    it('filters out repeated header rows in data', () => {
+      const modelWithRepeatedHeaders = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 351357,
+            B: 10300700,
+            C: 'MINI ROLLS 10PK',
+            D: 19053199,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 3.27,
+            H: 3.63,
+            I: 'YES',
+            J: 'GB'
+          }
+        ]
+      }
+
+      const result = parse(modelWithRepeatedHeaders)
+
+      // Should only have 2 data items, repeated header row should be filtered
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+      expect(result.items[1].description).toBe('MINI ROLLS 10PK')
+    })
+
+    it('filters out rows with totals keywords', () => {
+      const modelWithTotals = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: '',
+            B: '',
+            C: 'Grand Total',
+            D: '',
+            E: '',
+            F: 10,
+            G: 50.5,
+            H: 55.2,
+            I: '',
+            J: ''
+          },
+          {
+            A: 351357,
+            B: 10300700,
+            C: 'MINI ROLLS 10PK',
+            D: 19053199,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 3.27,
+            H: 3.63,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: '',
+            B: '',
+            C: 'Total',
+            D: '',
+            E: '',
+            F: 11,
+            G: 53.77,
+            H: 58.83,
+            I: '',
+            J: ''
+          }
+        ]
+      }
+
+      const result = parse(modelWithTotals)
+
+      // Should only have 2 data items, totals rows should be filtered
+      expect(result.items).toHaveLength(2)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+      expect(result.items[1].description).toBe('MINI ROLLS 10PK')
+      // Verify totals rows are not in the results
+      expect(result.items.some(item => item.description?.toLowerCase().includes('total'))).toBe(false)
+    })
   })
 
   describe('error handling', () => {

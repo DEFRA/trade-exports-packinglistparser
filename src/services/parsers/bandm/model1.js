@@ -13,6 +13,86 @@ import { mapParser } from '../../parser-map.js'
 const logger = createLogger()
 
 /**
+ * Creates a callback function to find header rows by testing against header patterns.
+ * @returns {Function} A callback function for rowFinder.
+ */
+function createHeaderRowFinder() {
+  const headerTitles = Object.values(headers.BANDM1.regex)
+  return function (x) {
+    return regex.testAllPatterns(headerTitles, x)
+  }
+}
+
+/**
+ * Filters out empty rows, totals rows, and repeated header rows from parsed data.
+ * @param {Array} items - Array of parsed items to filter.
+ * @returns {Array} Filtered array of items.
+ */
+function filterDataRows(items) {
+  if (!headers.BANDM1.skipTotalsRows) {
+    return items
+  }
+
+  return items.filter((item) => {
+    const descEmpty = !item.description || item.description.trim() === ''
+    const commodityEmpty =
+      !item.commodity_code || String(item.commodity_code).trim() === ''
+
+    // Skip if both description and commodity code are empty
+    if (descEmpty && commodityEmpty) {
+      return false
+    }
+
+    // Skip repeated header rows - check if description matches header text
+    if (headers.BANDM1.skipRepeatedHeaders && item.description) {
+      const descLower = item.description.toLowerCase().trim()
+      const isHeaderRow =
+        descLower.includes('item description') ||
+        descLower.includes('product code') ||
+        descLower.includes('commodity code') ||
+        descLower === 'prism'
+      if (isHeaderRow) {
+        return false
+      }
+    }
+
+    // Skip total rows - check for keywords
+    const hasTotalsKeyword =
+      item.description &&
+      headers.BANDM1.totalsRowKeywords.some((keyword) =>
+        item.description.toLowerCase().includes(keyword)
+      )
+    if (hasTotalsKeyword) {
+      return false
+    }
+
+    return true
+  })
+}
+
+/**
+ * Processes a single sheet to extract and filter packing list data.
+ * @param {Object} sheetData - The sheet data to process.
+ * @param {string} sheetName - The name of the sheet.
+ * @param {Function} headerCallback - Callback function to find header rows.
+ * @returns {Array} Array of filtered packing list items.
+ */
+function processSheet(sheetData, sheetName, headerCallback) {
+  const headerRow = rowFinder(sheetData, headerCallback)
+  const dataRow = headerRow + 1
+
+  const parsedItems = mapParser(
+    sheetData,
+    headerRow,
+    dataRow,
+    headers.BANDM1,
+    sheetName
+  )
+
+  return filterDataRows(parsedItems)
+}
+
+/**
  * Parse the provided packing list JSON for B&M model 1.
  * @param {Object} packingListJson - Workbook JSON keyed by sheet name.
  * @returns {Object} Combined parser result.
@@ -21,7 +101,6 @@ export function parse(packingListJson) {
   try {
     const sheets = Object.keys(packingListJson)
     const packingListContents = []
-    let packingListContentsTemp = []
     let establishmentNumbers = []
 
     const establishmentNumber = regex.findMatch(
@@ -29,10 +108,7 @@ export function parse(packingListJson) {
       packingListJson[sheets[0]]
     )
 
-    const headerTitles = Object.values(headers.BANDM1.regex)
-    const callback = function (x) {
-      return regex.testAllPatterns(headerTitles, x)
-    }
+    const headerCallback = createHeaderRowFinder()
 
     for (const sheet of sheets) {
       establishmentNumbers = regex.findAllMatches(
@@ -41,58 +117,12 @@ export function parse(packingListJson) {
         establishmentNumbers
       )
 
-      const headerRow = rowFinder(packingListJson[sheet], callback)
-      const dataRow = headerRow + 1
-
-      packingListContentsTemp = mapParser(
+      const sheetItems = processSheet(
         packingListJson[sheet],
-        headerRow,
-        dataRow,
-        headers.BANDM1,
-        sheet
+        sheet,
+        headerCallback
       )
-
-      // Filter out totals/empty rows for BANDM1
-      // Skip rows where description AND commodity_code are empty or just spaces
-      if (headers.BANDM1.skipTotalsRows) {
-        packingListContentsTemp = packingListContentsTemp.filter((item) => {
-          const descEmpty = !item.description || item.description.trim() === ''
-          const commodityEmpty =
-            !item.commodity_code || String(item.commodity_code).trim() === ''
-
-          // Skip if both description and commodity code are empty
-          if (descEmpty && commodityEmpty) {
-            return false
-          }
-
-          // Skip repeated header rows - check if description matches header text
-          if (headers.BANDM1.skipRepeatedHeaders && item.description) {
-            const descLower = item.description.toLowerCase().trim()
-            const isHeaderRow =
-              descLower.includes('item description') ||
-              descLower.includes('product code') ||
-              descLower.includes('commodity code') ||
-              descLower === 'prism'
-            if (isHeaderRow) {
-              return false
-            }
-          }
-
-          // Skip total rows - empty description but has numeric totals
-          const hasTotalsKeyword =
-            item.description &&
-            headers.BANDM1.totalsRowKeywords.some((keyword) =>
-              item.description.toLowerCase().includes(keyword)
-            )
-          if (hasTotalsKeyword) {
-            return false
-          }
-
-          return true
-        })
-      }
-
-      packingListContents.push(...packingListContentsTemp)
+      packingListContents.push(...sheetItems)
     }
 
     return combineParser.combine(
