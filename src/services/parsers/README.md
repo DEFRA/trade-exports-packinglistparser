@@ -17,7 +17,7 @@ The parser discovery process (Step 5) follows this pattern:
 
    - Matches establishment number patterns
    - Validates header row structure
-   - Returns specific parser (e.g., ASDA1, TESCO2)
+   - Returns specific parser (e.g., ASDA3, TESCO3, BANDM1, FOWLERWELCH2, TURNERS1)
 
 4. **Data Extraction** (to be implemented in `parsers/`)
    - Extracts establishment numbers via regex

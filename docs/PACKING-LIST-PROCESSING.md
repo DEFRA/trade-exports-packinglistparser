@@ -117,7 +117,7 @@ const parser = await parserFactory.findParser(sanitizedData, 'filename.xlsx')
 // Step 5c: Retailer Matcher Selection (TODO - implement matchers)
 // - Matches establishment number patterns
 // - Validates header structure
-// - Returns specific parser (e.g., ASDA1, TESCO2)
+// - Returns specific parser (e.g., ASDA3, TESCO3, BANDM1, FOWLERWELCH2)
 ```
 
 ### Steps 6 & 7: Data Extraction + Validation

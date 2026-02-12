@@ -8,16 +8,15 @@ const packingListProcessRoute = {
 }
 
 async function processPackingListHandler(request, h) {
-  try {
-    const message = request.payload
-    const stopDataExit = request.query.stopDataExit === 'true'
-    const result = await processPackingList(message, { stopDataExit })
-    return h.response(result).code(STATUS_CODES.OK)
-  } catch (err) {
-    return h
-      .response({ result: 'failure', error: err.message })
-      .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
-  }
+  const message = request.payload
+  const stopDataExit = request.query.stopDataExit === 'true'
+  const result = await processPackingList(message, { stopDataExit })
+
+  const statusCode =
+    result.result === 'success'
+      ? STATUS_CODES.OK
+      : STATUS_CODES.INTERNAL_SERVER_ERROR
+  return h.response(result).code(statusCode)
 }
 
 export { packingListProcessRoute }

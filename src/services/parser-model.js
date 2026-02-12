@@ -20,6 +20,9 @@ export default Object.freeze({
   ASDA3: 'ASDA3',
   ASDA4: 'ASDA4',
 
+  // B&M models
+  BANDM1: 'BANDM1',
+
   // Buffaload Logistics models
   BUFFALOAD1: 'BUFFALOAD1',
 
@@ -27,6 +30,7 @@ export default Object.freeze({
   BOOKER2: 'BOOKER2',
 
   // Giovanni models
+  GIOVANNI1: 'GIOVANNI1',
   GIOVANNI3: 'GIOVANNI3',
 
   // M&S models
@@ -52,6 +56,9 @@ export default Object.freeze({
 
   // Co-op models
   COOP1: 'COOP1',
+
+  // Fowler-Welch models
+  FOWLERWELCH2: 'fowlerwelch-2',
 
   // Kepak models
   KEPAK1: 'KEPAK1',

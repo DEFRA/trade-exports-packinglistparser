@@ -4,6 +4,7 @@ import { vi } from 'vitest'
 const mockInitializeIneligibleItemsCache = vi.fn().mockResolvedValue(undefined)
 const mockInitializeIsoCodesCache = vi.fn().mockResolvedValue(undefined)
 const mockStartSyncScheduler = vi.fn()
+const mockStartTdsSyncScheduler = vi.fn()
 
 vi.mock('../../services/cache/ineligible-items-cache.js', () => ({
   initializeIneligibleItemsCache: mockInitializeIneligibleItemsCache
@@ -15,6 +16,10 @@ vi.mock('../../services/cache/iso-codes-cache.js', () => ({
 
 vi.mock('../../services/cache/sync-scheduler.js', () => ({
   startSyncScheduler: mockStartSyncScheduler
+}))
+
+vi.mock('../../services/tds-sync/sync-scheduler.js', () => ({
+  startTdsSyncScheduler: mockStartTdsSyncScheduler
 }))
 
 describe('#startServer', () => {
@@ -74,6 +79,13 @@ describe('#startServer', () => {
 
       expect(mockStartSyncScheduler).toHaveBeenCalled()
     })
+
+    test('Should start TDS sync scheduler', async () => {
+      mockStartTdsSyncScheduler.mockClear()
+      server = await startServerImport.startServer()
+
+      expect(mockStartTdsSyncScheduler).toHaveBeenCalled()
+    })
   })
 
   describe('When cache initialization fails', () => {
@@ -132,6 +144,17 @@ describe('#startServer', () => {
     test('Should continue server startup when sync scheduler fails', async () => {
       mockStartSyncScheduler.mockImplementationOnce(() => {
         throw new Error('Scheduler failed to start')
+      })
+
+      server = await startServerImport.startServer()
+
+      expect(server).toBeDefined()
+      expect(createServerSpy).toHaveBeenCalled()
+    })
+
+    test('Should continue server startup when TDS sync scheduler fails', async () => {
+      mockStartTdsSyncScheduler.mockImplementationOnce(() => {
+        throw new Error('TDS scheduler failed to start')
       })
 
       server = await startServerImport.startServer()

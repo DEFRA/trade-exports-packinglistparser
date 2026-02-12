@@ -19,6 +19,10 @@ import { parse as parseAsda4 } from './parsers/asda/model4.js'
 import { matches as matchesAsda3 } from './matchers/asda/model3.js'
 import { parse as parseAsda3 } from './parsers/asda/model3.js'
 
+// B&M Excel parsers
+import { matches as matchesBandm1 } from './matchers/bandm/model1.js'
+import { parse as parseBandm1 } from './parsers/bandm/model1.js'
+
 // Buffaload Logistics Excel parsers
 import { matches as matchesBuffaload1 } from './matchers/buffaload-logistics/model1.js'
 import { parse as parseBuffaload1 } from './parsers/buffaload-logistics/model1.js'
@@ -30,6 +34,18 @@ import { parse as parseBooker2 } from './parsers/booker/model2.js'
 // Co-op Excel parsers
 import { matches as matchesCoop1 } from './matchers/coop/model1.js'
 import { parse as parseCoop1 } from './parsers/coop/model1.js'
+
+// Fowler-Welch Excel parsers
+import { matches as matchesFowlerwelch2 } from './matchers/fowlerwelch/model2.js'
+import { parse as parseFowlerwelch2 } from './parsers/fowlerwelch/model2.js'
+
+// Giovanni Excel parsers
+import { matches as matchesGiovanni1 } from './matchers/giovanni/model1.js'
+import { parse as parseGiovanni1 } from './parsers/giovanni/model1.js'
+
+// Giovanni PDF parsers
+import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
+import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 
 // Kepak Excel parsers
 import { matches as matchesKepak1 } from './matchers/kepak/model1.js'
@@ -50,10 +66,6 @@ import { parse as parseSavers1 } from './parsers/savers/model1.js'
 // Tesco Excel parsers
 import { matches as matchesTesco3 } from './matchers/tesco/model3.js'
 import { parse as parseTesco3 } from './parsers/tesco/model3.js'
-
-// Giovanni PDF parsers
-import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
-import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 
 // M&S PDF parsers
 import { matches as matchesMands1 } from './matchers/mands/model1.js'
@@ -96,6 +108,10 @@ const parsersExcel = {
     matches: matchesAsda3,
     parse: parseAsda3
   },
+  BANDM1: {
+    matches: matchesBandm1,
+    parse: parseBandm1
+  },
   BUFFALOAD1: {
     matches: matchesBuffaload1,
     parse: parseBuffaload1
@@ -107,6 +123,14 @@ const parsersExcel = {
   COOP1: {
     matches: matchesCoop1,
     parse: parseCoop1
+  },
+  FOWLERWELCH2: {
+    matches: matchesFowlerwelch2,
+    parse: parseFowlerwelch2
+  },
+  GIOVANNI1: {
+    matches: matchesGiovanni1,
+    parse: parseGiovanni1
   },
   KEPAK1: {
     matches: matchesKepak1,
