@@ -30,6 +30,7 @@ export default Object.freeze({
   BOOKER2: 'BOOKER2',
 
   // Giovanni models
+  GIOVANNI1: 'GIOVANNI1',
   GIOVANNI3: 'GIOVANNI3',
 
   // M&S models

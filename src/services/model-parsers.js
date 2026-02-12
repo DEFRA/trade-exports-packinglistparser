@@ -39,6 +39,14 @@ import { parse as parseCoop1 } from './parsers/coop/model1.js'
 import { matches as matchesFowlerwelch2 } from './matchers/fowlerwelch/model2.js'
 import { parse as parseFowlerwelch2 } from './parsers/fowlerwelch/model2.js'
 
+// Giovanni Excel parsers
+import { matches as matchesGiovanni1 } from './matchers/giovanni/model1.js'
+import { parse as parseGiovanni1 } from './parsers/giovanni/model1.js'
+
+// Giovanni PDF parsers
+import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
+import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
+
 // Kepak Excel parsers
 import { matches as matchesKepak1 } from './matchers/kepak/model1.js'
 import { parse as parseKepak1 } from './parsers/kepak/model1.js'
@@ -58,10 +66,6 @@ import { parse as parseSavers1 } from './parsers/savers/model1.js'
 // Tesco Excel parsers
 import { matches as matchesTesco3 } from './matchers/tesco/model3.js'
 import { parse as parseTesco3 } from './parsers/tesco/model3.js'
-
-// Giovanni PDF parsers
-import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
-import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 
 // M&S PDF parsers
 import { matches as matchesMands1 } from './matchers/mands/model1.js'
@@ -123,6 +127,10 @@ const parsersExcel = {
   FOWLERWELCH2: {
     matches: matchesFowlerwelch2,
     parse: parseFowlerwelch2
+  },
+  GIOVANNI1: {
+    matches: matchesGiovanni1,
+    parse: parseGiovanni1
   },
   KEPAK1: {
     matches: matchesKepak1,
