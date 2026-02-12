@@ -6,9 +6,11 @@ import {
 } from './sync-scheduler.js'
 import { config } from '../../config.js'
 
-// Variables to capture scheduler options
-let capturedIneligibleItems
-let capturedIsoCodes
+// Variables to capture scheduler options - uses var to avoid TDZ issues with hoisting
+// eslint-disable-next-line no-var
+var capturedIneligibleItems
+// eslint-disable-next-line no-var
+var capturedIsoCodes
 
 // Mock dependencies
 vi.mock('./mdm-s3-sync.js')
