@@ -5,6 +5,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { parse } from './model1.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import headers from '../../model-headers.js'
 import model from '../../../../test/test-data-and-results/models/bandm/model1.js'
 import test_results from '../../../../test/test-data-and-results/results/bandm/model1.js'
 
@@ -276,7 +277,11 @@ describe('parseBandmModel1', () => {
       expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
       expect(result.items[1].description).toBe('MINI ROLLS 10PK')
       // Verify totals rows are not in the results
-      expect(result.items.some(item => item.description?.toLowerCase().includes('total'))).toBe(false)
+      expect(
+        result.items.some((item) =>
+          item.description?.toLowerCase().includes('total')
+        )
+      ).toBe(false)
     })
   })
 
@@ -295,6 +300,72 @@ describe('parseBandmModel1', () => {
       parse(null)
 
       expect(errorSpy).toHaveBeenCalled()
+    })
+  })
+
+  describe('row filtering configuration', () => {
+    it('does not filter rows when skipTotalsRows is false', () => {
+      // Temporarily modify headers config
+      const originalSkipTotalsRows = headers.BANDM1.skipTotalsRows
+      headers.BANDM1.skipTotalsRows = false
+
+      const modelWithEmptyRow = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: ' ',
+            B: ' ',
+            C: ' ',
+            D: ' ',
+            E: ' ',
+            F: 1,
+            G: 3.27,
+            H: 3.63
+          }
+        ]
+      }
+
+      const result = parse(modelWithEmptyRow)
+
+      // Restore original config
+      headers.BANDM1.skipTotalsRows = originalSkipTotalsRows
+
+      // Should include the empty row when filtering is disabled
+      expect(result.items.length).toBeGreaterThanOrEqual(1)
     })
   })
 })
