@@ -31,7 +31,8 @@ describe('Iceland Model 2 CSV Parser', () => {
 
   test('returns NOMATCH when header row not found', () => {
     const modelWithoutHeaders = [
-      ['Invalid', 'Headers', 'Row'],
+      ['RMS-GB-000040-001'], // Has RMS number but...
+      ['Invalid', 'Headers', 'Row'], // ...no valid headers
       ['Some', 'Data', 'Here']
     ]
     const result = parse(modelWithoutHeaders)
