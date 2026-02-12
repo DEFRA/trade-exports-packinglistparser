@@ -59,7 +59,7 @@ export function parse(packingListJson) {
           const descEmpty = !item.description || item.description.trim() === ''
           const commodityEmpty =
             !item.commodity_code || String(item.commodity_code).trim() === ''
-          
+
           // Skip if both description and commodity code are empty
           if (descEmpty && commodityEmpty) {
             return false
@@ -79,8 +79,9 @@ export function parse(packingListJson) {
           }
 
           // Skip total rows - empty description but has numeric totals
-          const hasTotalsKeyword = item.description && 
-            headers.BANDM1.totalsRowKeywords.some(keyword => 
+          const hasTotalsKeyword =
+            item.description &&
+            headers.BANDM1.totalsRowKeywords.some((keyword) =>
               item.description.toLowerCase().includes(keyword)
             )
           if (hasTotalsKeyword) {
