@@ -22,12 +22,26 @@ const logger = createLogger()
  * @returns {BlobServiceClient} Configured blob service client
  */
 function createBlobServiceClient(storageConfig) {
-  const { tenantId, clientId, blobStorageAccount } = storageConfig
-  const credential = getAzureCredentials(tenantId, clientId)
-  const blobServiceUrl = `https://${blobStorageAccount}.blob.core.windows.net`
-  const clientOptions = getClientProxyOptions()
+  try {
+    const { tenantId, clientId, blobStorageAccount } = storageConfig
+    const credential = getAzureCredentials(tenantId, clientId)
+    const blobServiceUrl = `https://${blobStorageAccount}.blob.core.windows.net`
+    const clientOptions = getClientProxyOptions()
 
-  return new BlobServiceClient(blobServiceUrl, credential, clientOptions)
+    return new BlobServiceClient(blobServiceUrl, credential, clientOptions)
+  } catch (error) {
+    logger.error(
+      {
+        error: {
+          message: error.message,
+          name: error.name,
+          stack: error.stack
+        }
+      },
+      'Failed to create blob service client'
+    )
+    throw error
+  }
 }
 
 /**

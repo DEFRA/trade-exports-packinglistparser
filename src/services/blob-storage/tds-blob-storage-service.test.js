@@ -16,7 +16,8 @@ vi.mock('./blob-storage-service.js', () => ({
 const mockTdsConfig = {
   clientId: 'tds-client-id',
   blobStorageAccount: 'tdsaccount',
-  containerName: 'tds-container'
+  containerName: 'tds-container',
+  folderPath: 'RAW/PackingListParser/Stream/'
 }
 
 const mockAzureConfig = {
@@ -158,7 +159,7 @@ describe('tds-blob-storage-service', () => {
         containerName: mockTdsConfig.containerName
       })
       expect(mockUploadBlob).toHaveBeenCalledWith(
-        blobName,
+        'RAW/PackingListParser/Stream/test-data.json',
         JSON.stringify(jsonData, null, 2),
         { contentType: 'application/json' }
       )
@@ -179,7 +180,7 @@ describe('tds-blob-storage-service', () => {
       const result = await uploadJsonToTdsBlob(blobName, jsonData)
 
       expect(mockUploadBlob).toHaveBeenCalledWith(
-        blobName,
+        'RAW/PackingListParser/Stream/' + blobName,
         JSON.stringify(jsonData, null, 2),
         { contentType: 'application/json' }
       )
@@ -207,7 +208,7 @@ describe('tds-blob-storage-service', () => {
 
       // Verify JSON is stringified with 2-space indentation
       expect(mockUploadBlob).toHaveBeenCalledWith(
-        blobName,
+        'RAW/PackingListParser/Stream/' + blobName,
         JSON.stringify(jsonData, null, 2),
         { contentType: 'application/json' }
       )
@@ -261,7 +262,11 @@ describe('tds-blob-storage-service', () => {
         blobStorageAccount: mockTdsConfig.blobStorageAccount,
         containerName: mockTdsConfig.containerName
       })
-      expect(mockUploadBlob).toHaveBeenCalledWith(blobName, data, {})
+      expect(mockUploadBlob).toHaveBeenCalledWith(
+        'RAW/PackingListParser/Stream/' + blobName,
+        data,
+        {}
+      )
       expect(result).toEqual(mockUploadResponse)
     })
 
@@ -279,7 +284,11 @@ describe('tds-blob-storage-service', () => {
 
       const result = await uploadToTdsBlob(blobName, data, options)
 
-      expect(mockUploadBlob).toHaveBeenCalledWith(blobName, data, options)
+      expect(mockUploadBlob).toHaveBeenCalledWith(
+        'RAW/PackingListParser/Stream/' + blobName,
+        data,
+        options
+      )
       expect(result).toEqual(mockUploadResponse)
     })
 
@@ -300,7 +309,11 @@ describe('tds-blob-storage-service', () => {
 
       const result = await uploadToTdsBlob(blobName, data, options)
 
-      expect(mockUploadBlob).toHaveBeenCalledWith(blobName, data, options)
+      expect(mockUploadBlob).toHaveBeenCalledWith(
+        'RAW/PackingListParser/Stream/' + blobName,
+        data,
+        options
+      )
       expect(result).toEqual(mockUploadResponse)
     })
 
@@ -318,7 +331,11 @@ describe('tds-blob-storage-service', () => {
 
       const result = await uploadToTdsBlob(blobName, data, options)
 
-      expect(mockUploadBlob).toHaveBeenCalledWith(blobName, data, options)
+      expect(mockUploadBlob).toHaveBeenCalledWith(
+        'RAW/PackingListParser/Stream/' + blobName,
+        data,
+        options
+      )
       expect(result).toEqual(mockUploadResponse)
     })
 
@@ -342,6 +359,104 @@ describe('tds-blob-storage-service', () => {
       await expect(uploadToTdsBlob(blobName, data)).rejects.toThrow(
         'Authentication failed'
       )
+    })
+
+    it('should handle folder path without trailing slash', async () => {
+      mockConfigGet.mockImplementation((key) => {
+        if (key === 'tdsBlob') {
+          return {
+            ...mockTdsConfig,
+            folderPath: 'RAW/PackingListParser/Stream'
+          }
+        }
+        if (key === 'azure') {
+          return mockAzureConfig
+        }
+        return {}
+      })
+
+      const blobName = 'test-file.txt'
+      const data = 'test data'
+      const mockUploadResponse = {
+        ETag: '"0x8D9A1B2TESTSLASH"',
+        lastModified: new Date('2026-02-10T18:00:00Z'),
+        requestId: 'test-slash-123'
+      }
+
+      mockUploadBlob.mockResolvedValue(mockUploadResponse)
+
+      const result = await uploadToTdsBlob(blobName, data)
+
+      expect(mockUploadBlob).toHaveBeenCalledWith(
+        'RAW/PackingListParser/Stream/test-file.txt',
+        data,
+        {}
+      )
+      expect(result).toEqual(mockUploadResponse)
+    })
+
+    it('should upload to root when folderPath is empty', async () => {
+      mockConfigGet.mockImplementation((key) => {
+        if (key === 'tdsBlob') {
+          return {
+            ...mockTdsConfig,
+            folderPath: ''
+          }
+        }
+        if (key === 'azure') {
+          return mockAzureConfig
+        }
+        return {}
+      })
+
+      const blobName = 'root-file.txt'
+      const data = 'test data'
+      const mockUploadResponse = {
+        ETag: '"0x8D9A1B2EMPTYPATH"',
+        lastModified: new Date('2026-02-10T19:00:00Z'),
+        requestId: 'empty-path-123'
+      }
+
+      mockUploadBlob.mockResolvedValue(mockUploadResponse)
+
+      const result = await uploadToTdsBlob(blobName, data)
+
+      expect(mockUploadBlob).toHaveBeenCalledWith('root-file.txt', data, {})
+      expect(result).toEqual(mockUploadResponse)
+    })
+
+    it('should upload to root when folderPath is null', async () => {
+      mockConfigGet.mockImplementation((key) => {
+        if (key === 'tdsBlob') {
+          return {
+            ...mockTdsConfig,
+            folderPath: null
+          }
+        }
+        if (key === 'azure') {
+          return mockAzureConfig
+        }
+        return {}
+      })
+
+      const blobName = 'null-path-file.txt'
+      const data = 'test data'
+      const mockUploadResponse = {
+        ETag: '"0x8D9A1B2NULLPATH"',
+        lastModified: new Date('2026-02-10T20:00:00Z'),
+        requestId: 'null-path-123'
+      }
+
+      mockUploadBlob.mockResolvedValue(mockUploadResponse)
+
+      const result = await uploadToTdsBlob(blobName, data)
+
+      expect(mockUploadBlob).toHaveBeenCalledWith(
+        'null-path-file.txt',
+        data,
+        {}
+      )
+      expect(result).toEqual(mockUploadResponse)
     })
   })
 })

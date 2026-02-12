@@ -49,11 +49,15 @@ The service is configured through environment variables:
 
 ### Environment Variables
 
-| Variable                      | Description                                         | Default     | Required |
-| ----------------------------- | --------------------------------------------------- | ----------- | -------- |
-| `TDS_SYNC_ENABLED`            | Enable or disable TDS synchronization               | `true`      | No       |
-| `TDS_SYNC_CRON_SCHEDULE`      | Cron schedule for synchronization (default: hourly) | `0 * * * *` | No       |
-| `PACKING_LIST_SCHEMA_VERSION` | S3 schema/folder to search for files to transfer    | `v0.0`      | No       |
+| Variable                         | Description                                            | Default                         | Required |
+| -------------------------------- | ------------------------------------------------------ | ------------------------------- | -------- |
+| `TDS_SYNC_ENABLED`               | Enable or disable TDS synchronization                  | `true`                          | No       |
+| `TDS_SYNC_CRON_SCHEDULE`         | Cron schedule for synchronization (default: hourly)    | `0 * * * *`                     | No       |
+| `PACKING_LIST_SCHEMA_VERSION`    | S3 schema/folder to search for files to transfer       | `v0.0`                          | No       |
+| `AZURE_TDS_BLOB_FOLDER_PATH`     | Folder path within the TDS blob container for uploads  | `RAW/PackingListParser/Stream/` | No       |
+| `AZURE_TDS_BLOB_CLIENT_ID`       | Azure AD Client ID for TDS blob storage authentication | -                               | Yes      |
+| `AZURE_TDS_BLOB_STORAGE_ACCOUNT` | Azure Blob Storage Account name for TDS                | -                               | Yes      |
+| `AZURE_TDS_BLOB_CONTAINER_NAME`  | Azure Blob Storage Container Name for TDS              | -                               | Yes      |
 
 ### Cron Schedule Examples
 
@@ -78,7 +82,15 @@ TDS_SYNC_CRON_SCHEDULE='0 3 * * 1'
 TDS_SYNC_ENABLED=true
 TDS_SYNC_CRON_SCHEDULE='0 * * * *'
 PACKING_LIST_SCHEMA_VERSION='v0.0'
+
+# Azure TDS Blob Storage Configuration
+AZURE_TDS_BLOB_CLIENT_ID='your-client-id'
+AZURE_TDS_BLOB_STORAGE_ACCOUNT='your-storage-account'
+AZURE_TDS_BLOB_CONTAINER_NAME='your-container-name'
+AZURE_TDS_BLOB_FOLDER_PATH='RAW/PackingListParser/Stream/'
 ```
+
+**Note:** Files will be uploaded to the folder path specified by `AZURE_TDS_BLOB_FOLDER_PATH` within the container. If not specified, the default path is `RAW/PackingListParser/Stream/`. To upload files to the root of the container, set this to an empty string.
 
 ### S3 File Organization
 
@@ -95,7 +107,7 @@ s3://your-bucket/
 The service will:
 
 1. Find all files in the configured schema folder (via `PACKING_LIST_SCHEMA_VERSION`)
-2. Transfer each file to TDS Blob Storage
+2. Transfer each file to TDS Blob Storage (into the folder specified by `AZURE_TDS_BLOB_FOLDER_PATH`)
 3. Remove each file from S3 after successful transfer
 
 ## Usage
@@ -404,7 +416,7 @@ The service transfers all file types found in the S3 schema folder:
 
 1. **Discovery**: Lists all objects in the configured S3 schema folder
 2. **Download**: Streams each file from S3 into memory buffer
-3. **Upload**: Uploads buffer to TDS Blob Storage with appropriate content type
+3. **Upload**: Uploads buffer to TDS Blob Storage with appropriate content type (files are placed in the folder path specified by `AZURE_TDS_BLOB_FOLDER_PATH`)
 4. **Cleanup**: Deletes file from S3 only after successful upload
 5. **Reporting**: Returns detailed results for all files processed
 

@@ -50,7 +50,7 @@ async function listDocumentsFromS3(schema) {
  * @returns {Promise<Object>} Transfer result
  */
 async function transferFileToTds(s3Key) {
-  logger.info({ s3Key }, 'Transferring file from S3 to TDS')
+  logger.info(`Transferring file from S3 to TDS: ${s3Key}`)
 
   try {
     // Download from S3
@@ -58,6 +58,7 @@ async function transferFileToTds(s3Key) {
       filename: s3Key.split('/').pop().replace('.json', ''),
       schema: s3Key.split('/')[0]
     })
+    logger.info(`File downloaded from S3: ${s3Key}`)
 
     // Convert stream to buffer
     const buffer = await streamToBuffer(s3Response.Body)
@@ -73,12 +74,12 @@ async function transferFileToTds(s3Key) {
       contentType
     })
 
-    logger.info({ s3Key, blobName }, 'File uploaded to TDS successfully')
+    logger.info(`File uploaded to TDS successfully: ${blobName}`)
 
     // Delete from S3
     await deleteFileFromS3(s3Key)
 
-    logger.info({ s3Key }, 'File deleted from S3 successfully')
+    logger.info(`File deleted from S3 successfully: ${s3Key}`)
 
     return {
       success: true,
@@ -96,7 +97,7 @@ async function transferFileToTds(s3Key) {
           name: error.name
         }
       },
-      'Failed to transfer file from S3 to TDS'
+      `Failed to transfer file from S3 to TD: ${s3Key}`
     )
 
     return {

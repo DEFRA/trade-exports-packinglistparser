@@ -22,6 +22,23 @@ function getTdsBlobStorageService() {
 }
 
 /**
+ * Prepends the configured folder path to the blob name
+ * @param {string} blobName - The original blob name
+ * @returns {string} Blob name with folder path prepended
+ */
+function getFolderPathedBlobName(blobName) {
+  const { folderPath } = config.get('tdsBlob')
+  if (!folderPath) {
+    return blobName
+  }
+  // Ensure folderPath ends with '/' and doesn't result in double slashes
+  const normalizedPath = folderPath.endsWith('/')
+    ? folderPath
+    : `${folderPath}/`
+  return `${normalizedPath}${blobName}`
+}
+
+/**
  * Checks if the TDS container exists in Azure Blob Storage
  * @returns {Promise<boolean>} True if container exists, false otherwise
  * @throws {Error} If the check fails
@@ -40,8 +57,9 @@ export async function checkTdsContainerExists() {
  */
 export async function uploadJsonToTdsBlob(blobName, jsonData) {
   const service = getTdsBlobStorageService()
+  const folderPathedBlobName = getFolderPathedBlobName(blobName)
   const jsonString = JSON.stringify(jsonData, null, 2)
-  return service.uploadBlob(blobName, jsonString, {
+  return service.uploadBlob(folderPathedBlobName, jsonString, {
     contentType: 'application/json'
   })
 }
@@ -56,5 +74,6 @@ export async function uploadJsonToTdsBlob(blobName, jsonData) {
  */
 export async function uploadToTdsBlob(blobName, data, options = {}) {
   const service = getTdsBlobStorageService()
-  return service.uploadBlob(blobName, data, options)
+  const folderPathedBlobName = getFolderPathedBlobName(blobName)
+  return service.uploadBlob(folderPathedBlobName, data, options)
 }
