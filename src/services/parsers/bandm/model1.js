@@ -59,8 +59,35 @@ export function parse(packingListJson) {
           const descEmpty = !item.description || item.description.trim() === ''
           const commodityEmpty =
             !item.commodity_code || String(item.commodity_code).trim() === ''
-          // Skip row only if BOTH description AND commodity code are empty
-          return !(descEmpty && commodityEmpty)
+          
+          // Skip if both description and commodity code are empty
+          if (descEmpty && commodityEmpty) {
+            return false
+          }
+
+          // Skip repeated header rows - check if description matches header text
+          if (headers.BANDM1.skipRepeatedHeaders && item.description) {
+            const descLower = item.description.toLowerCase().trim()
+            const isHeaderRow =
+              descLower.includes('item description') ||
+              descLower.includes('product code') ||
+              descLower.includes('commodity code') ||
+              descLower === 'prism'
+            if (isHeaderRow) {
+              return false
+            }
+          }
+
+          // Skip total rows - empty description but has numeric totals
+          const hasTotalsKeyword = item.description && 
+            headers.BANDM1.totalsRowKeywords.some(keyword => 
+              item.description.toLowerCase().includes(keyword)
+            )
+          if (hasTotalsKeyword) {
+            return false
+          }
+
+          return true
         })
       }
 
