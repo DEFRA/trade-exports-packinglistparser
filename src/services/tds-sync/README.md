@@ -35,7 +35,7 @@ The TDS sync service consists of two main components:
 ## Workflow
 
 ```
-1. List files in S3 schema folder (e.g., "tds-transfer/")
+1. List files in S3 schema folder (configured via PACKING_LIST_SCHEMA_VERSION, e.g., "v0.0/")
 2. For each file:
    a. Download from S3
    b. Upload to TDS Blob Storage
@@ -94,7 +94,7 @@ s3://your-bucket/
 
 The service will:
 
-1. Find all files in `tds-transfer/` folder
+1. Find all files in the configured schema folder (via `PACKING_LIST_SCHEMA_VERSION`)
 2. Transfer each file to TDS Blob Storage
 3. Remove each file from S3 after successful transfer
 
@@ -166,13 +166,13 @@ if (result.success) {
   "transfers": {
     "successful": [
       {
-        "s3Key": "tds-transfer/document1.json",
+        "s3Key": "v0.0/document1.json",
         "blobName": "document1.json",
         "etag": "\"0x8D9...",
         "size": 1024
       },
       {
-        "s3Key": "tds-transfer/report.pdf",
+        "s3Key": "v0.0/report.pdf",
         "blobName": "report.pdf",
         "etag": "\"0x8D9...",
         "size": 20480
@@ -180,7 +180,7 @@ if (result.success) {
     ],
     "failed": [
       {
-        "s3Key": "tds-transfer/corrupted.json",
+        "s3Key": "v0.0/corrupted.json",
         "error": "Failed to upload blob: Network error"
       }
     ]
@@ -283,19 +283,19 @@ Monitor the service through application logs:
 {"level":"info","msg":"Starting TDS synchronization scheduler","cronSchedule":"0 * * * *"}
 
 # Listing files
-{"level":"info","msg":"Listing documents from S3 schema folder","schema":"tds-transfer"}
-{"level":"info","msg":"Found documents in S3 schema folder","schema":"tds-transfer","count":3}
+{"level":"info","msg":"Listing documents from S3 schema folder","schema":"v0.0"}
+{"level":"info","msg":"Found documents in S3 schema folder","schema":"v0.0","count":3}
 
 # Transferring files
-{"level":"info","msg":"Transferring file from S3 to TDS","s3Key":"tds-transfer/document1.json"}
-{"level":"info","msg":"File uploaded to TDS successfully","s3Key":"tds-transfer/document1.json","blobName":"document1.json"}
-{"level":"info","msg":"File deleted from S3 successfully","s3Key":"tds-transfer/document1.json"}
+{"level":"info","msg":"Transferring file from S3 to TDS","s3Key":"v0.0/document1.json"}
+{"level":"info","msg":"File uploaded to TDS successfully","s3Key":"v0.0/document1.json","blobName":"document1.json"}
+{"level":"info","msg":"File deleted from S3 successfully","s3Key":"v0.0/document1.json"}
 
 # Successful sync
 {"level":"info","msg":"Successfully completed TDS synchronization","success":true,"totalFiles":3,"successfulTransfers":3}
 
 # Failed file transfer
-{"level":"error","msg":"Failed to transfer file from S3 to TDS","s3Key":"tds-transfer/file.json","error":{"message":"Network error"}}
+{"level":"error","msg":"Failed to transfer file from S3 to TDS","s3Key":"v0.0/file.json","error":{"message":"Network error"}}
 
 # Failed sync
 {"level":"error","msg":"Failed to synchronize S3 documents to TDS","error":{"message":"S3 connection failed"}}
@@ -308,7 +308,8 @@ Monitor the service through application logs:
 1. Place test files in S3 bucket under the configured schema folder:
 
    ```bash
-   aws s3 cp test-file.json s3://your-bucket/tds-transfer/
+   # Using default schema version (v0.0)
+   aws s3 cp test-file.json s3://your-bucket/v0.0/
    ```
 
 2. Set `TDS_SYNC_CRON_SCHEDULE='*/1 * * * *'` to run every minute
@@ -336,7 +337,7 @@ describe('TDS Sync', () => {
     expect(result.successfulTransfers).toBeGreaterThan(0)
 
     // Verify file no longer in S3
-    const s3Files = await listS3Objects('tds-transfer')
+    const s3Files = await listS3Objects('v0.0')
     expect(s3Files.Contents).toHaveLength(0)
 
     // Verify file in TDS (check blob storage)

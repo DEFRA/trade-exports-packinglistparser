@@ -126,13 +126,54 @@ The parser discovery process (Step 5) follows this pattern:
 
    - Matches establishment number patterns
    - Validates header row structure
-   - Returns specific parser (e.g., ASDA1, TESCO2)
+   - Returns specific parser (e.g., ASDA3, TESCO3, BANDM1, FOWLERWELCH2, TURNERS1)
 
 4. **Data Extraction** (`parsers/`)
    - Extracts establishment numbers via regex
    - Locates header row using rowFinder
    - Maps columns to standard fields
    - Processes rows to extract items
+
+### Currently Implemented Parsers
+
+The following parsers are currently available in the system (as of February 2026):
+
+#### Excel Format Parsers
+
+| Parser Model | Retailer/Supplier   | Notes                           |
+| ------------ | ------------------- | ------------------------------- |
+| ASDA3        | ASDA                | Model 3 format                  |
+| BANDM1       | B&M                 | Model 1 format                  |
+| BOOKER2      | Booker              | Model 2 format                  |
+| BUFFALOAD1   | Buffaload Logistics | Model 1 format                  |
+| COOP1        | Co-op               | Model 1 format                  |
+| FOWLERWELCH2 | Fowler-Welch        | Model 2 format (added Feb 2026) |
+| KEPAK1       | Kepak               | Model 1 format                  |
+| MARS1        | Mars                | Model 1 format                  |
+| NISA1        | Nisa                | Model 1 format                  |
+| SAINSBURYS1  | Sainsbury's         | Model 1 format                  |
+| SAVERS1      | Savers              | Model 1 format                  |
+| TESCO3       | Tesco               | Model 3 format                  |
+| TJMORRIS2    | TJ Morris           | Model 2 format                  |
+| TURNERS1     | Turners             | Model 1 format (added Feb 2026) |
+
+#### CSV Format Parsers
+
+| Parser Model | Retailer | Notes         |
+| ------------ | -------- | ------------- |
+| ASDA4        | ASDA     | Model 4 (CSV) |
+| ICELAND2     | Iceland  | Model 2 (CSV) |
+
+#### PDF Format Parsers
+
+| Parser Model | Retailer/Supplier | Notes                |
+| ------------ | ----------------- | -------------------- |
+| GIOVANNI3    | Giovanni          | Model 3 (PDF non-AI) |
+| MANDS1       | Marks & Spencer   | Model 1 (PDF non-AI) |
+
+**Note:** Parser model numbers (e.g., Model 1, Model 2) indicate different format variants from the same retailer/supplier. Higher numbers don't necessarily indicate newer or better versions—they simply represent different document template variations.
+
+**Registry Location:** All parsers are registered in [src/services/model-parsers.js](../src/services/model-parsers.js)
 
 ### Matcher Implementation
 

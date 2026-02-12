@@ -155,6 +155,23 @@ describe('packing-list-process-service', () => {
       })
     })
 
+    it('should log the payload before processing starts', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Processing packing list - received payload: ${JSON.stringify(mockPayload, null, 2)}`
+      )
+    })
+
     it('should log fetching dispatch location', async () => {
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
         mockPackingList

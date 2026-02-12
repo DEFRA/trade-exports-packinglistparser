@@ -20,6 +20,11 @@ export async function processPackingList(
   payload,
   { stopDataExit = false } = {}
 ) {
+  // Log the payload contents before processing starts
+  logger.info(
+    `Processing packing list - received payload: ${JSON.stringify(payload, null, 2)}`
+  )
+
   // 1. Download packing list from blob storage
   const packingList = await downloadBlobFromApplicationFormsContainerAsJson(
     payload.packing_list_blob
