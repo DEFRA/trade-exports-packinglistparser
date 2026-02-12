@@ -367,5 +367,130 @@ describe('parseBandmModel1', () => {
       // Should include the empty row when filtering is disabled
       expect(result.items.length).toBeGreaterThanOrEqual(1)
     })
+
+    it('does not filter repeated headers when skipRepeatedHeaders is false', () => {
+      // Temporarily modify headers config
+      const originalSkipRepeatedHeaders = headers.BANDM1.skipRepeatedHeaders
+      headers.BANDM1.skipRepeatedHeaders = false
+
+      const modelWithRepeatedHeaders = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          }
+        ]
+      }
+
+      const result = parse(modelWithRepeatedHeaders)
+
+      // Restore original config
+      headers.BANDM1.skipRepeatedHeaders = originalSkipRepeatedHeaders
+
+      // Should include the repeated header row when filtering is disabled
+      expect(result.items.length).toBe(2)
+    })
+
+    it('handles items with no description in totals check', () => {
+      const modelWithNoDescription = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: 123,
+            B: 456,
+            C: null,
+            D: 'test',
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 2.5,
+            H: 3.0,
+            I: 'YES',
+            J: 'GB'
+          }
+        ]
+      }
+
+      const result = parse(modelWithNoDescription)
+
+      // Should handle null description gracefully
+      expect(result.items.length).toBe(1)
+    })
   })
 })

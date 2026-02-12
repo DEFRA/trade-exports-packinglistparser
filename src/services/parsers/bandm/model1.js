@@ -24,6 +24,73 @@ function createHeaderRowFinder() {
 }
 
 /**
+ * Checks if a row is empty (both description and commodity code are empty).
+ * @param {Object} item - The item to check.
+ * @returns {boolean} True if the row is empty.
+ */
+function isEmptyRow(item) {
+  const descEmpty = !item.description || item.description.trim() === ''
+  const commodityEmpty =
+    !item.commodity_code || String(item.commodity_code).trim() === ''
+  return descEmpty && commodityEmpty
+}
+
+/**
+ * Checks if a row is a repeated header row.
+ * @param {Object} item - The item to check.
+ * @returns {boolean} True if the row is a repeated header.
+ */
+function isRepeatedHeaderRow(item) {
+  if (!headers.BANDM1.skipRepeatedHeaders || !item.description) {
+    return false
+  }
+
+  const descLower = item.description.toLowerCase().trim()
+  return (
+    descLower.includes('item description') ||
+    descLower.includes('product code') ||
+    descLower.includes('commodity code') ||
+    descLower === 'prism'
+  )
+}
+
+/**
+ * Checks if a row is a totals row based on keywords.
+ * @param {Object} item - The item to check.
+ * @returns {boolean} True if the row is a totals row.
+ */
+function isTotalsRow(item) {
+  if (!item.description) {
+    return false
+  }
+
+  return headers.BANDM1.totalsRowKeywords.some((keyword) =>
+    item.description.toLowerCase().includes(keyword)
+  )
+}
+
+/**
+ * Determines if an item should be kept in the filtered results.
+ * @param {Object} item - The item to check.
+ * @returns {boolean} True if the item should be kept.
+ */
+function shouldKeepItem(item) {
+  if (isEmptyRow(item)) {
+    return false
+  }
+
+  if (isRepeatedHeaderRow(item)) {
+    return false
+  }
+
+  if (isTotalsRow(item)) {
+    return false
+  }
+
+  return true
+}
+
+/**
  * Filters out empty rows, totals rows, and repeated header rows from parsed data.
  * @param {Array} items - Array of parsed items to filter.
  * @returns {Array} Filtered array of items.
@@ -33,41 +100,7 @@ function filterDataRows(items) {
     return items
   }
 
-  return items.filter((item) => {
-    const descEmpty = !item.description || item.description.trim() === ''
-    const commodityEmpty =
-      !item.commodity_code || String(item.commodity_code).trim() === ''
-
-    // Skip if both description and commodity code are empty
-    if (descEmpty && commodityEmpty) {
-      return false
-    }
-
-    // Skip repeated header rows - check if description matches header text
-    if (headers.BANDM1.skipRepeatedHeaders && item.description) {
-      const descLower = item.description.toLowerCase().trim()
-      const isHeaderRow =
-        descLower.includes('item description') ||
-        descLower.includes('product code') ||
-        descLower.includes('commodity code') ||
-        descLower === 'prism'
-      if (isHeaderRow) {
-        return false
-      }
-    }
-
-    // Skip total rows - check for keywords
-    const hasTotalsKeyword =
-      item.description &&
-      headers.BANDM1.totalsRowKeywords.some((keyword) =>
-        item.description.toLowerCase().includes(keyword)
-      )
-    if (hasTotalsKeyword) {
-      return false
-    }
-
-    return true
-  })
+  return items.filter(shouldKeepItem)
 }
 
 /**
