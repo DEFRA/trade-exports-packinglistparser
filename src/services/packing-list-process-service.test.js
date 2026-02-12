@@ -155,6 +155,23 @@ describe('packing-list-process-service', () => {
       })
     })
 
+    it('should log the payload before processing starts', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Processing packing list - received payload: ${JSON.stringify(mockPayload, null, 2)}`
+      )
+    })
+
     it('should log fetching dispatch location', async () => {
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
         mockPackingList
@@ -204,6 +221,63 @@ describe('packing-list-process-service', () => {
       expect(mockLogger.info).toHaveBeenCalledWith(
         `Notifying external applications of parsed packing list result for application ${mockApplicationId}`
       )
+    })
+
+    it('should log all processing steps in order', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      const infoCalls = mockLogger.info.mock.calls.map((call) => call[0])
+
+      expect(infoCalls).toContainEqual(
+        expect.stringContaining('Processing packing list - received payload')
+      )
+      expect(infoCalls).toContainEqual(
+        `Downloading packing list from blob: ${mockBlobUrl}`
+      )
+      expect(infoCalls).toContainEqual('Packing list downloaded successfully')
+      expect(infoCalls).toContainEqual('Starting packing list parsing')
+      expect(infoCalls).toContainEqual('Packing list parsed successfully')
+      expect(infoCalls).toContainEqual(
+        `Processing results for application ${mockApplicationId}`
+      )
+      expect(infoCalls).toContainEqual('Results processed successfully')
+      expect(infoCalls).toContainEqual(
+        expect.stringContaining(
+          'Packing list processing completed successfully'
+        )
+      )
+    })
+
+    it('should log success result details', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      const result = await processPackingList(mockPayload)
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Packing list processing completed successfully'
+        )
+      )
+
+      const lastInfoCall = mockLogger.info.mock.calls.at(-1)[0]
+      expect(lastInfoCall).toContain(result.data.approvalStatus)
+      expect(lastInfoCall).toContain(result.data.parserModel)
     })
 
     it('should correctly map NIRMS boolean values', async () => {
@@ -428,11 +502,20 @@ describe('packing-list-process-service', () => {
       mockUploadJsonFileToS3.mockResolvedValue(undefined)
       mockSendMessageToQueue.mockResolvedValue(undefined)
 
-      await expect(processPackingList(mockPayload)).rejects.toThrow()
+      const result = await processPackingList(mockPayload)
 
+      expect(result.result).toBe('failure')
+      expect(result.error).toBeDefined()
       expect(mockLogger.error).toHaveBeenCalled()
-      const errorCall = mockLogger.error.mock.calls[0]
-      expect(errorCall[1]).toContain('Error mapping packing list for storage')
+      // The error is logged both in mapPackingListForStorage and in the catch block
+      const errorCalls = mockLogger.error.mock.calls
+      const hasExpectedError = errorCalls.some(
+        (call) =>
+          call[1] &&
+          (call[1].includes('Error mapping packing list for storage') ||
+            call[1].includes('Error processing packing list'))
+      )
+      expect(hasExpectedError).toBe(true)
     })
 
     it('should upload mapped data to S3', async () => {

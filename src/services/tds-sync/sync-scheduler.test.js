@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import {
-  startSyncScheduler,
-  stopSyncScheduler,
-  isSchedulerRunning
+  startTdsSyncScheduler,
+  stopTdsSyncScheduler,
+  isTdsSchedulerRunning
 } from './sync-scheduler.js'
 import { config } from '../../config.js'
 
@@ -10,8 +10,9 @@ import { config } from '../../config.js'
 // eslint-disable-next-line no-var
 var captured
 
-// Mock dependencies
-vi.mock('./mdm-s3-sync.js')
+// Mock dependencies first
+vi.mock('./tds-sync.js')
+
 vi.mock('../../common/helpers/sync-scheduler-factory.js', () => ({
   createSyncScheduler: vi.fn((options) => {
     // Capture the options for testing
@@ -23,6 +24,7 @@ vi.mock('../../common/helpers/sync-scheduler-factory.js', () => ({
     }
   })
 }))
+
 vi.mock('../../common/helpers/logging/logger.js', () => ({
   createLogger: vi.fn(() => ({
     info: vi.fn(),
@@ -30,10 +32,11 @@ vi.mock('../../common/helpers/logging/logger.js', () => ({
     warn: vi.fn()
   }))
 }))
+
 vi.mock('../../config.js', () => ({
   config: {
     get: vi.fn((key) => {
-      if (key === 'ineligibleItemsSync') {
+      if (key === 'tdsSync') {
         return {
           enabled: true,
           cronSchedule: '0 * * * *'
@@ -44,48 +47,46 @@ vi.mock('../../config.js', () => ({
   }
 }))
 
-describe('sync-scheduler', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-  })
+// Import after mocks
 
+describe('TDS sync-scheduler', () => {
   afterEach(() => {
     vi.restoreAllMocks()
-    stopSyncScheduler()
+    stopTdsSyncScheduler()
   })
 
-  describe('startSyncScheduler', () => {
+  describe('startTdsSyncScheduler', () => {
     it('should start the scheduler with valid configuration', () => {
-      const result = startSyncScheduler()
+      const result = startTdsSyncScheduler()
 
       expect(result).toBeDefined()
     })
 
-    it('should return null when sync is disabled', () => {
-      config.get.mockReturnValueOnce({
+    it('should return null when TDS sync is disabled', () => {
+      vi.mocked(config.get).mockReturnValueOnce({
         enabled: false,
         cronSchedule: '0 * * * *'
       })
 
-      const result = startSyncScheduler()
+      const result = startTdsSyncScheduler()
 
       expect(result).toBeNull()
     })
   })
 
-  describe('stopSyncScheduler', () => {
+  describe('stopTdsSyncScheduler', () => {
     it('should stop the scheduler', () => {
-      startSyncScheduler()
-      stopSyncScheduler()
+      startTdsSyncScheduler()
+      stopTdsSyncScheduler()
 
       // Should not throw
       expect(true).toBe(true)
     })
   })
 
-  describe('isSchedulerRunning', () => {
+  describe('isTdsSchedulerRunning', () => {
     it('should return scheduler status', () => {
-      const status = isSchedulerRunning()
+      const status = isTdsSchedulerRunning()
       expect(typeof status).toBe('boolean')
     })
   })
@@ -112,7 +113,7 @@ describe('sync-scheduler', () => {
       const cronSchedule = captured.cronSchedule
 
       expect(cronSchedule).toBe('*/15 * * * *')
-      expect(config.get).toHaveBeenCalledWith('ineligibleItemsSync')
+      expect(config.get).toHaveBeenCalledWith('tdsSync')
     })
 
     it('should handle different cronSchedule values', () => {

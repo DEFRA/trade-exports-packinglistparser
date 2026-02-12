@@ -1,31 +1,31 @@
-import { syncMdmToS3 } from './mdm-s3-sync.js'
+import { syncToTds } from './tds-sync.js'
 import { config } from '../../config.js'
 import { createSyncScheduler } from '../../common/helpers/sync-scheduler-factory.js'
 
 const scheduler = createSyncScheduler({
-  name: 'MDM to S3',
-  syncFunction: syncMdmToS3,
+  name: 'TDS',
+  syncFunction: syncToTds,
   get enabled() {
-    return config.get('ineligibleItemsSync').enabled
+    return config.get('tdsSync').enabled
   },
   get cronSchedule() {
-    return config.get('ineligibleItemsSync').cronSchedule
+    return config.get('tdsSync').cronSchedule
   }
 })
 
 /**
- * Start the MDM to S3 synchronization scheduler
+ * Start the TDS synchronization scheduler
  * Schedules hourly synchronization jobs based on configuration
  * @returns {Object} Scheduler instance
  */
-export function startSyncScheduler() {
+export function startTdsSyncScheduler() {
   return scheduler.start()
 }
 
 /**
- * Stop the MDM to S3 synchronization scheduler
+ * Stop the TDS synchronization scheduler
  */
-export function stopSyncScheduler() {
+export function stopTdsSyncScheduler() {
   scheduler.stop()
 }
 
@@ -33,6 +33,6 @@ export function stopSyncScheduler() {
  * Get the current scheduler status
  * @returns {boolean} True if scheduler is running, false otherwise
  */
-export function isSchedulerRunning() {
+export function isTdsSchedulerRunning() {
   return scheduler.isRunning()
 }

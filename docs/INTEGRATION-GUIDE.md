@@ -68,7 +68,7 @@ The migration created placeholder directories for future implementation:
 The following were **not** included in this migration:
 
 - Steps 1-3: Blob storage retrieval, file conversion, AI processing
-- Retailer-specific parser implementations (ASDA, Tesco, etc.)
+- Retailer-specific parser implementations (ASDA, Tesco, B&M, Fowler-Welch, Turners, Mars, Kepak, Savers, etc.)
 - Excel, CSV, and PDF conversion utilities
 - Document Intelligence (AI) integration
 - No-match parser implementations

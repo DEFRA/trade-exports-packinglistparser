@@ -291,6 +291,12 @@ const config = convict({
       nullable: true,
       default: null,
       env: 'AZURE_TDS_BLOB_CONTAINER_NAME'
+    },
+    folderPath: {
+      doc: 'Folder path within the TDS blob container for uploads',
+      format: String,
+      default: 'RAW/PackingListParser/Stream/',
+      env: 'AZURE_TDS_BLOB_FOLDER_PATH'
     }
   },
   mdm: {
@@ -348,12 +354,6 @@ const config = convict({
     }
   },
   ineligibleItemsCache: {
-    readEnabled: {
-      doc: 'Enable or disable reading ineligible items from S3',
-      format: Boolean,
-      default: true,
-      env: 'INELIGIBLE_ITEMS_READ_ENABLED'
-    },
     s3FileName: {
       doc: 'S3 file name for ineligible items data (without extension)',
       format: String,
@@ -392,6 +392,20 @@ const config = convict({
       format: String,
       default: '0 * * * *',
       env: 'INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE'
+    }
+  },
+  tdsSync: {
+    enabled: {
+      doc: 'Enable or disable hourly TDS Blob Storage synchronization',
+      format: Boolean,
+      default: true,
+      env: 'TDS_SYNC_ENABLED'
+    },
+    cronSchedule: {
+      doc: 'Cron schedule for TDS sync (default: hourly at minute 0)',
+      format: String,
+      default: '0 * * * *',
+      env: 'TDS_SYNC_CRON_SCHEDULE'
     }
   }
 })
