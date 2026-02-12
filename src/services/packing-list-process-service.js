@@ -59,8 +59,7 @@ export async function processPackingList(
     }
 
     logger.info(
-      { result: successResult },
-      'Packing list processing completed successfully'
+      `Packing list processing completed successfully: ${JSON.stringify(successResult, null, 2)}`
     )
 
     return successResult
@@ -80,15 +79,14 @@ export async function processPackingList(
       error: err.message
     }
 
-    logger.info({ result: errorResult }, 'Packing list processing failed')
-
     return errorResult
   }
 }
 
 async function getParsedPackingList(packingList, payload) {
+  let establishmentId = null
   try {
-    const establishmentId =
+    establishmentId =
       payload.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId
     logger.info(
       `Fetching dispatch location for packing list parsing: ${establishmentId}`
@@ -103,8 +101,6 @@ async function getParsedPackingList(packingList, payload) {
     )
   }
 
-  const establishmentId =
-    payload.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId
   const dispatchLocation = await getDispatchLocation(establishmentId)
   return parsePackingList(
     packingList,

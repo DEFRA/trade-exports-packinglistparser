@@ -223,6 +223,63 @@ describe('packing-list-process-service', () => {
       )
     })
 
+    it('should log all processing steps in order', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      const infoCalls = mockLogger.info.mock.calls.map((call) => call[0])
+
+      expect(infoCalls).toContainEqual(
+        expect.stringContaining('Processing packing list - received payload')
+      )
+      expect(infoCalls).toContainEqual(
+        `Downloading packing list from blob: ${mockBlobUrl}`
+      )
+      expect(infoCalls).toContainEqual('Packing list downloaded successfully')
+      expect(infoCalls).toContainEqual('Starting packing list parsing')
+      expect(infoCalls).toContainEqual('Packing list parsed successfully')
+      expect(infoCalls).toContainEqual(
+        `Processing results for application ${mockApplicationId}`
+      )
+      expect(infoCalls).toContainEqual('Results processed successfully')
+      expect(infoCalls).toContainEqual(
+        expect.stringContaining(
+          'Packing list processing completed successfully'
+        )
+      )
+    })
+
+    it('should log success result details', async () => {
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(mockParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      const result = await processPackingList(mockPayload)
+
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        expect.stringContaining(
+          'Packing list processing completed successfully'
+        )
+      )
+
+      const lastInfoCall = mockLogger.info.mock.calls.at(-1)[0]
+      expect(lastInfoCall).toContain(result.data.approvalStatus)
+      expect(lastInfoCall).toContain(result.data.parserModel)
+    })
+
     it('should correctly map NIRMS boolean values', async () => {
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
         mockPackingList
