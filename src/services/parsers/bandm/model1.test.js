@@ -489,8 +489,8 @@ describe('parseBandmModel1', () => {
 
       const result = parse(modelWithNoDescription)
 
-      // Should handle null description gracefully
-      expect(result.items.length).toBe(1)
+      // Should handle null description gracefully (not filtered as it has commodity code)
+      expect(result.items.length).toBe(2)
     })
   })
 })
