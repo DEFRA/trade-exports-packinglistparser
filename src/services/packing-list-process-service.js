@@ -20,42 +20,91 @@ export async function processPackingList(
   payload,
   { stopDataExit = false } = {}
 ) {
-  // Log the payload contents before processing starts
-  logger.info(
-    `Processing packing list - received payload: ${JSON.stringify(payload, null, 2)}`
-  )
+  try {
+    // Log the payload contents before processing starts
+    logger.info(
+      `Processing packing list - received payload: ${JSON.stringify(payload, null, 2)}`
+    )
 
-  // 1. Download packing list from blob storage
-  const packingList = await downloadBlobFromApplicationFormsContainerAsJson(
-    payload.packing_list_blob
-  )
+    // 1. Download packing list from blob storage
+    logger.info(
+      `Downloading packing list from blob: ${payload.packing_list_blob}`
+    )
+    const packingList = await downloadBlobFromApplicationFormsContainerAsJson(
+      payload.packing_list_blob
+    )
+    logger.info('Packing list downloaded successfully')
 
-  // 2. Process packing list
-  const parsedData = await getParsedPackingList(packingList, payload)
+    // 2. Process packing list
+    logger.info('Starting packing list parsing')
+    const parsedData = await getParsedPackingList(packingList, payload)
+    logger.info('Packing list parsed successfully')
 
-  // 3. Process results
-  const persistedData = await processPackingListResults(
-    parsedData,
-    payload.application_id,
-    { stopDataExit }
-  )
+    // 3. Process results
+    logger.info(`Processing results for application ${payload.application_id}`)
+    const persistedData = await processPackingListResults(
+      parsedData,
+      payload.application_id,
+      { stopDataExit }
+    )
+    logger.info('Results processed successfully')
 
-  return {
-    result: 'success',
-    data: {
-      approvalStatus: persistedData.approvalStatus,
-      reasonsForFailure: persistedData.reasonsForFailure,
-      parserModel: persistedData.parserModel
+    const successResult = {
+      result: 'success',
+      data: {
+        approvalStatus: persistedData.approvalStatus,
+        reasonsForFailure: persistedData.reasonsForFailure,
+        parserModel: persistedData.parserModel
+      }
     }
+
+    logger.info(
+      { result: successResult },
+      'Packing list processing completed successfully'
+    )
+
+    return successResult
+  } catch (err) {
+    logger.error(
+      {
+        error: {
+          message: err.message,
+          stack: err.stack
+        }
+      },
+      `Error processing packing list: ${err.message}`
+    )
+
+    const errorResult = {
+      result: 'failure',
+      error: err.message
+    }
+
+    logger.info({ result: errorResult }, 'Packing list processing failed')
+
+    return errorResult
   }
 }
 
 async function getParsedPackingList(packingList, payload) {
+  try {
+    const establishmentId =
+      payload.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId
+    logger.info(
+      `Fetching dispatch location for packing list parsing: ${establishmentId}`
+    )
+  } catch (err) {
+    logger.error(
+      { error: err.message, payload },
+      'Failed to extract establishment ID from payload'
+    )
+    throw new Error(
+      `Invalid payload structure: ${err.message}. Expected payload.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId`
+    )
+  }
+
   const establishmentId =
     payload.SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId
-  logger.info(
-    `Fetching dispatch location for packing list parsing: ${establishmentId}`
-  )
   const dispatchLocation = await getDispatchLocation(establishmentId)
   return parsePackingList(
     packingList,

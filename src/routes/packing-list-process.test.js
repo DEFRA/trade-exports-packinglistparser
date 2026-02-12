@@ -41,10 +41,11 @@ describe('Packing List Process Route', () => {
         data: 'test-data'
       }
       const mockResult = {
-        parserModel: 'MODEL1',
-        items: [{ description: 'Item 1' }],
-        business_checks: {
-          all_required_fields_present: true
+        result: 'success',
+        data: {
+          parserModel: 'MODEL1',
+          approvalStatus: 'approved',
+          reasonsForFailure: []
         }
       }
 
@@ -56,21 +57,30 @@ describe('Packing List Process Route', () => {
       expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
         stopDataExit: false
       })
-      expect(mockH.response).toHaveBeenCalledWith(mockResult)
+      expect(mockH.response).toHaveBeenCalledWith({
+        result: 'success',
+        data: {
+          parserModel: 'MODEL1',
+          approvalStatus: 'approved',
+          reasonsForFailure: []
+        }
+      })
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should return error response when processing fails', async () => {
-      const errorMessage = 'Failed to process packing list'
-      const error = new Error(errorMessage)
+      const mockResult = {
+        result: 'failure',
+        error: 'Failed to process packing list'
+      }
 
-      processPackingList.mockRejectedValue(error)
+      processPackingList.mockResolvedValue(mockResult)
 
       await packingListProcessRoute.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
         result: 'failure',
-        error: errorMessage
+        error: 'Failed to process packing list'
       })
       expect(mockResponse.code).toHaveBeenCalledWith(
         STATUS_CODES.INTERNAL_SERVER_ERROR
@@ -79,10 +89,11 @@ describe('Packing List Process Route', () => {
 
     it('should handle empty payload', async () => {
       const mockResult = {
-        parserModel: 'NOMATCH',
-        items: [],
-        business_checks: {
-          all_required_fields_present: false
+        result: 'success',
+        data: {
+          parserModel: 'NOMATCH',
+          approvalStatus: 'rejected_other',
+          reasonsForFailure: []
         }
       }
 
@@ -95,14 +106,24 @@ describe('Packing List Process Route', () => {
         {},
         { stopDataExit: false }
       )
-      expect(mockH.response).toHaveBeenCalledWith(mockResult)
+      expect(mockH.response).toHaveBeenCalledWith({
+        result: 'success',
+        data: {
+          parserModel: 'NOMATCH',
+          approvalStatus: 'rejected_other',
+          reasonsForFailure: []
+        }
+      })
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should handle service throwing generic error', async () => {
-      const error = new Error('Database connection failed')
+      const mockResult = {
+        result: 'failure',
+        error: 'Database connection failed'
+      }
 
-      processPackingList.mockRejectedValue(error)
+      processPackingList.mockResolvedValue(mockResult)
 
       await packingListProcessRoute.handler(mockRequest, mockH)
 
@@ -124,7 +145,10 @@ describe('Packing List Process Route', () => {
           timestamp: '2026-01-05T12:00:00Z'
         }
       }
-      const mockResult = { success: true }
+      const mockResult = {
+        result: 'success',
+        data: {}
+      }
 
       mockRequest.payload = mockMessage
       processPackingList.mockResolvedValue(mockResult)
@@ -139,7 +163,10 @@ describe('Packing List Process Route', () => {
 
     it('should pass stopDataExit=true when query parameter is set', async () => {
       const mockMessage = { filename: 'test.pdf' }
-      const mockResult = { success: true }
+      const mockResult = {
+        result: 'success',
+        data: {}
+      }
 
       mockRequest.payload = mockMessage
       mockRequest.query.stopDataExit = 'true'
@@ -156,7 +183,10 @@ describe('Packing List Process Route', () => {
 
     it('should pass stopDataExit=false when query parameter is not true', async () => {
       const mockMessage = { filename: 'test.pdf' }
-      const mockResult = { success: true }
+      const mockResult = {
+        result: 'success',
+        data: {}
+      }
 
       mockRequest.payload = mockMessage
       mockRequest.query.stopDataExit = 'false'
@@ -171,7 +201,10 @@ describe('Packing List Process Route', () => {
 
     it('should pass stopDataExit=false when query parameter is not set', async () => {
       const mockMessage = { filename: 'test.pdf' }
-      const mockResult = { success: true }
+      const mockResult = {
+        result: 'success',
+        data: {}
+      }
 
       mockRequest.payload = mockMessage
       processPackingList.mockResolvedValue(mockResult)

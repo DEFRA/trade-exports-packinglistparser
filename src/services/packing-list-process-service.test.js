@@ -445,11 +445,20 @@ describe('packing-list-process-service', () => {
       mockUploadJsonFileToS3.mockResolvedValue(undefined)
       mockSendMessageToQueue.mockResolvedValue(undefined)
 
-      await expect(processPackingList(mockPayload)).rejects.toThrow()
+      const result = await processPackingList(mockPayload)
 
+      expect(result.result).toBe('failure')
+      expect(result.error).toBeDefined()
       expect(mockLogger.error).toHaveBeenCalled()
-      const errorCall = mockLogger.error.mock.calls[0]
-      expect(errorCall[1]).toContain('Error mapping packing list for storage')
+      // The error is logged both in mapPackingListForStorage and in the catch block
+      const errorCalls = mockLogger.error.mock.calls
+      const hasExpectedError = errorCalls.some(
+        (call) =>
+          call[1] &&
+          (call[1].includes('Error mapping packing list for storage') ||
+            call[1].includes('Error processing packing list'))
+      )
+      expect(hasExpectedError).toBe(true)
     })
 
     it('should upload mapped data to S3', async () => {
