@@ -181,10 +181,15 @@ function isValidIsoCode(code) {
   }
 
   // Try to get ISO codes from cache first, fallback to static data
-  const isoCodes = getIsoCodesCache() || isoCodesData
+  const cachedIsoCodes = getIsoCodesCache()
+  const isoCodes =
+    (Array.isArray(cachedIsoCodes) ? cachedIsoCodes : null) || isoCodesData
 
   const normalizedCode = code.toLowerCase().trim()
-  return isoCodes.some((isoCode) => isoCode.toLowerCase() === normalizedCode)
+  return isoCodes.some(
+    (isoCode) =>
+      typeof isoCode === 'string' && isoCode.toLowerCase() === normalizedCode
+  )
 }
 
 /**
