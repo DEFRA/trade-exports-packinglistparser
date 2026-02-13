@@ -482,7 +482,7 @@ INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE=0 * * * *
 **Manual Sync:**
 
 ```javascript
-import { syncMdmToS3 } from './services/cache/mdm-s3-sync.js'
+import { syncMdmToS3 } from './services/cache/ineligible-items-mdm-s3-sync.js'
 
 const result = await syncMdmToS3()
 if (result.success) {

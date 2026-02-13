@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { syncMdmToS3 } from './mdm-s3-sync.js'
+import { syncMdmToS3 } from './ineligible-items-mdm-s3-sync.js'
 
 // Mock all dependencies before they're imported
 vi.mock('../../common/helpers/logging/logger.js', () => ({
@@ -47,7 +47,7 @@ const { uploadJsonFileToS3 } = await import('../s3-service.js')
 const { setIneligibleItemsCache } = await import('./ineligible-items-cache.js')
 const { config } = await import('../../config.js')
 
-describe('mdm-s3-sync', () => {
+describe('ineligible-items-mdm-s3-sync', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     // Reset config mock to default state

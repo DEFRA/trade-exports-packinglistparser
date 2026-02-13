@@ -3,6 +3,7 @@ import {
   callAzureApiWithToken,
   callAzureApiJson,
   getIneligibleItems,
+  getIsoCodes,
   postToAzureApi
 } from './mdm-service.js'
 import { STATUS_CODES } from '../routes/statuscodes.js'
@@ -34,7 +35,8 @@ const TEST_CONFIG = {
   SUBSCRIPTION_KEY: 'test-subscription-key',
   SCOPE: 'api://test-app-id/.default',
   ENDPOINT: 'https://test-apim.azure-api.net',
-  INELIGIBLE_ITEMS_PATH: '/api/ineligible-items'
+  INELIGIBLE_ITEMS_PATH: '/api/ineligible-items',
+  ISO_CODES_PATH: '/api/iso-codes'
 }
 
 const TEST_TOKEN = 'test-access-token-12345'
@@ -107,7 +109,8 @@ describe('mdm-service', () => {
           internalAPIMScope: TEST_CONFIG.SCOPE,
           subscriptionKey: TEST_CONFIG.SUBSCRIPTION_KEY,
           internalAPIMEndpoint: TEST_CONFIG.ENDPOINT,
-          getIneligibleItemsEndpoint: TEST_CONFIG.INELIGIBLE_ITEMS_PATH
+          getIneligibleItemsEndpoint: TEST_CONFIG.INELIGIBLE_ITEMS_PATH,
+          getIsoCodesEndpoint: TEST_CONFIG.ISO_CODES_PATH
         }
       }
       return {}
@@ -549,6 +552,111 @@ describe('mdm-service', () => {
       ).rejects.toMatchObject({
         status: STATUS_CODES.BAD_REQUEST,
         statusText: TEST_VALUES.BAD_REQUEST
+      })
+    })
+  })
+
+  describe('getIsoCodes', () => {
+    /**
+     * Test: Verifies successful retrieval of ISO codes from MDM API
+     */
+    it('should get ISO codes from MDM API', async () => {
+      const mockIsoCodesData = [
+        { code: 'GB', name: 'United Kingdom' },
+        { code: 'US', name: 'United States' },
+        { code: 'FR', name: 'France' }
+      ]
+      const mockResponse = {
+        ok: true,
+        status: STATUS_CODES.OK,
+        json: vi.fn().mockResolvedValue(mockIsoCodesData)
+      }
+      mockFetch.mockResolvedValue(mockResponse)
+
+      const result = await getIsoCodes()
+
+      expect(result).toEqual(mockIsoCodesData)
+      expect(mockFetch).toHaveBeenCalledWith(
+        `${TEST_CONFIG.ENDPOINT}${TEST_CONFIG.ISO_CODES_PATH}`,
+        expect.objectContaining({
+          method: HTTP_METHODS.GET,
+          headers: expect.objectContaining({
+            [HEADER_NAMES.AUTHORIZATION]: `Bearer ${TEST_TOKEN}`,
+            [HEADER_NAMES.SUBSCRIPTION_KEY]: TEST_CONFIG.SUBSCRIPTION_KEY
+          })
+        })
+      )
+    })
+
+    /**
+     * Test: Verifies error handling when MDM API returns an error
+     */
+    it('should throw error when MDM API call fails', async () => {
+      const errorText = TEST_VALUES.SERVICE_UNAVAILABLE
+      const mockResponse = {
+        ok: false,
+        status: STATUS_CODES.SERVICE_UNAVAILABLE,
+        statusText: 'Service Unavailable',
+        text: vi.fn().mockResolvedValue(errorText)
+      }
+      mockFetch.mockResolvedValue(mockResponse)
+
+      await expect(getIsoCodes()).rejects.toMatchObject({
+        status: STATUS_CODES.SERVICE_UNAVAILABLE,
+        responseBody: errorText
+      })
+    })
+
+    /**
+     * Test: Verifies that correct URL is constructed from config
+     */
+    it('should construct correct URL from config', async () => {
+      const mockResponse = {
+        ok: true,
+        status: STATUS_CODES.OK,
+        json: vi.fn().mockResolvedValue([])
+      }
+      mockFetch.mockResolvedValue(mockResponse)
+
+      await getIsoCodes()
+
+      const expectedUrl = `${TEST_CONFIG.ENDPOINT}${TEST_CONFIG.ISO_CODES_PATH}`
+      expect(mockFetch).toHaveBeenCalledWith(expectedUrl, expect.any(Object))
+    })
+
+    /**
+     * Test: Verifies handling of empty ISO codes response
+     */
+    it('should handle empty ISO codes array', async () => {
+      const mockResponse = {
+        ok: true,
+        status: STATUS_CODES.OK,
+        json: vi.fn().mockResolvedValue([])
+      }
+      mockFetch.mockResolvedValue(mockResponse)
+
+      const result = await getIsoCodes()
+
+      expect(result).toEqual([])
+      expect(Array.isArray(result)).toBe(true)
+    })
+
+    /**
+     * Test: Verifies handling of 404 response
+     */
+    it('should throw error when ISO codes endpoint returns 404', async () => {
+      const errorText = TEST_VALUES.RESOURCE_NOT_FOUND
+      const mockResponse = {
+        ok: false,
+        status: STATUS_CODES.NOT_FOUND,
+        statusText: 'Not Found',
+        text: vi.fn().mockResolvedValue(errorText)
+      }
+      mockFetch.mockResolvedValue(mockResponse)
+
+      await expect(getIsoCodes()).rejects.toMatchObject({
+        status: STATUS_CODES.NOT_FOUND,
+        responseBody: errorText
       })
     })
   })

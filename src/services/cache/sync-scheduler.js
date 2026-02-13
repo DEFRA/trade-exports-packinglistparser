@@ -1,38 +1,57 @@
-import { syncMdmToS3 } from './mdm-s3-sync.js'
+import { syncMdmToS3 } from './ineligible-items-mdm-s3-sync.js'
+import { syncIsoCodesMdmToS3 } from './iso-codes-mdm-s3-sync.js'
 import { config } from '../../config.js'
 import { createSyncScheduler } from '../../common/helpers/sync-scheduler-factory.js'
 
-const scheduler = createSyncScheduler({
+const ineligibleItemsScheduler = createSyncScheduler({
   name: 'MDM to S3',
   syncFunction: syncMdmToS3,
   get enabled() {
-    return config.get('ineligibleItemsSync').enabled
+    return config.get('mdmIntegration').enabled
   },
   get cronSchedule() {
     return config.get('ineligibleItemsSync').cronSchedule
   }
 })
 
+const isoCodesScheduler = createSyncScheduler({
+  name: 'ISO codes MDM to S3',
+  syncFunction: syncIsoCodesMdmToS3,
+  get enabled() {
+    return config.get('mdmIntegration').enabled
+  },
+  get cronSchedule() {
+    return config.get('isoCodesSync').cronSchedule
+  }
+})
+
 /**
- * Start the MDM to S3 synchronization scheduler
- * Schedules hourly synchronization jobs based on configuration
- * @returns {Object} Scheduler instance
+ * Start all MDM to S3 synchronization schedulers
+ * Starts both ineligible items and ISO codes synchronization
+ * @returns {Object} Object containing both scheduler instances
  */
 export function startSyncScheduler() {
-  return scheduler.start()
+  return {
+    ineligibleItems: ineligibleItemsScheduler.start(),
+    isoCodes: isoCodesScheduler.start()
+  }
 }
 
 /**
- * Stop the MDM to S3 synchronization scheduler
+ * Stop all MDM to S3 synchronization schedulers
  */
 export function stopSyncScheduler() {
-  scheduler.stop()
+  ineligibleItemsScheduler.stop()
+  isoCodesScheduler.stop()
 }
 
 /**
  * Get the current scheduler status
- * @returns {boolean} True if scheduler is running, false otherwise
+ * @returns {Object} Object with status of both schedulers
  */
 export function isSchedulerRunning() {
-  return scheduler.isRunning()
+  return {
+    ineligibleItems: ineligibleItemsScheduler.isRunning(),
+    isoCodes: isoCodesScheduler.isRunning()
+  }
 }

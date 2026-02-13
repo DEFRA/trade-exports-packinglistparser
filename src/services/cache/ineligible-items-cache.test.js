@@ -44,7 +44,7 @@ describe('ineligible-items-cache', () => {
     retryDelayMs: 100
   }
 
-  const mockMdmConfig = {
+  const mockMdmIntegration = {
     enabled: true
   }
 
@@ -65,12 +65,8 @@ describe('ineligible-items-cache', () => {
     vi.clearAllMocks()
     clearIneligibleItemsCache()
     config.get.mockImplementation((key) => {
-      if (key === 'ineligibleItemsCache') {
-        return mockConfig
-      }
-      if (key === 'mdmIntegration') {
-        return mockMdmConfig
-      }
+      if (key === 'mdmIntegration') return mockMdmIntegration
+      if (key === 'ineligibleItemsCache') return mockConfig
       return {}
     })
   })
@@ -94,11 +90,11 @@ describe('ineligible-items-cache', () => {
 
     it('should handle S3 location without schema', async () => {
       config.get.mockImplementation((key) => {
+        if (key === 'mdmIntegration') {
+          return mockMdmIntegration
+        }
         if (key === 'ineligibleItemsCache') {
           return { ...mockConfig, s3Schema: null }
-        }
-        if (key === 'mdmIntegration') {
-          return mockMdmConfig
         }
         return {}
       })
@@ -129,7 +125,7 @@ describe('ineligible-items-cache', () => {
       getFileFromS3.mockRejectedValue(error)
 
       await expect(initializeIneligibleItemsCache()).rejects.toThrow(
-        /Unable to load ineligible items data after 4 attempts/
+        /Unable to load ineligible items data after 4 S3 attempts and MDM fallback/
       )
 
       // maxRetries = 3, so total attempts = 4 (initial + 3 retries)
@@ -207,12 +203,8 @@ describe('ineligible-items-cache', () => {
 
     it('should skip initialization when MDM integration is disabled', async () => {
       config.get.mockImplementation((key) => {
-        if (key === 'ineligibleItemsCache') {
-          return mockConfig
-        }
-        if (key === 'mdmIntegration') {
-          return { enabled: false }
-        }
+        if (key === 'mdmIntegration') return { enabled: false }
+        if (key === 'ineligibleItemsCache') return mockConfig
         return {}
       })
 
@@ -377,12 +369,8 @@ describe('ineligible-items-cache', () => {
         retryDelayMs: 500
       }
       config.get.mockImplementation((key) => {
-        if (key === 'ineligibleItemsCache') {
-          return customConfig
-        }
-        if (key === 'mdmIntegration') {
-          return { enabled: true }
-        }
+        if (key === 'mdmIntegration') return mockMdmIntegration
+        if (key === 'ineligibleItemsCache') return customConfig
         return {}
       })
       getFileFromS3.mockResolvedValue(JSON.stringify(mockIneligibleItems))

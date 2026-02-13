@@ -11,7 +11,10 @@ import { sendtoqueue } from '../routes/trade-service-bus.js'
 import { getFileFromBlob, formsContainerExists } from '../routes/ehco-blob.js'
 import { ineligibleItems } from '../routes/mdm.js'
 import { testRoute } from '../routes/test-parse.js'
-import { cacheTest } from '../routes/cache-test.js'
+import {
+  cacheTestIneligibleItems,
+  cacheTestIsoCodes
+} from '../routes/cache-test.js'
 
 const router = {
   plugin: {
@@ -27,7 +30,7 @@ const router = {
       server.route([ineligibleItems])
       server.route([packingListProcessRoute])
       server.route([testRoute])
-      server.route([cacheTest])
+      server.route([cacheTestIneligibleItems, cacheTestIsoCodes])
     }
   }
 }

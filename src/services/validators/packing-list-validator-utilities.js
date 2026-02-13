@@ -6,6 +6,7 @@
 
 import { findUnit } from '../../utilities/regex.js'
 import isoCodesData from '../data/data-iso-codes.json' with { type: 'json' }
+import { getIsoCodesCache } from '../cache/iso-codes-cache.js'
 import ineligibleItemsData from '../data/data-ineligible-items.json' with { type: 'json' }
 import failureReasonsDescriptions from './packing-list-failure-reasons.js'
 
@@ -169,6 +170,7 @@ function hasInvalidCoO(item) {
 
 /**
  * Validate if a country code is a valid ISO code.
+ * Uses cached ISO codes from MDM if available, otherwise falls back to static data.
  *
  * @param {string} code - Country code to validate
  * @returns {boolean} True when code is valid ISO code
@@ -177,10 +179,12 @@ function isValidIsoCode(code) {
   if (!code || typeof code !== 'string') {
     return false
   }
+
+  // Try to get ISO codes from cache first, fallback to static data
+  const isoCodes = getIsoCodesCache() || isoCodesData
+
   const normalizedCode = code.toLowerCase().trim()
-  return isoCodesData.some(
-    (isoCode) => isoCode.toLowerCase() === normalizedCode
-  )
+  return isoCodes.some((isoCode) => isoCode.toLowerCase() === normalizedCode)
 }
 
 /**

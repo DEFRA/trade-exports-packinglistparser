@@ -343,6 +343,13 @@ const config = convict({
       nullable: true,
       default: null,
       env: 'AZURE_MDM_GET_INELIGIBLE_ITEMS_ENDPOINT'
+    },
+    getIsoCodesEndpoint: {
+      doc: 'Azure APIM Get ISO Codes Endpoint',
+      format: String,
+      nullable: true,
+      default: null,
+      env: 'AZURE_MDM_GET_ISO_CODES_ENDPOINT'
     }
   },
   mdmIntegration: {
@@ -361,11 +368,11 @@ const config = convict({
       env: 'INELIGIBLE_ITEMS_S3_FILE_NAME'
     },
     s3Schema: {
-      doc: 'S3 schema/prefix for ineligible items file',
+      doc: 'S3 schema/prefix for cache files',
       format: String,
       nullable: true,
       default: 'cache',
-      env: 'INELIGIBLE_ITEMS_S3_SCHEMA'
+      env: 'CACHE_S3_SCHEMA'
     },
     maxRetries: {
       doc: 'Maximum number of retry attempts when fetching ineligible items from S3',
@@ -381,17 +388,46 @@ const config = convict({
     }
   },
   ineligibleItemsSync: {
-    enabled: {
-      doc: 'Enable or disable hourly MDM to S3 synchronization',
-      format: Boolean,
-      default: true,
-      env: 'INELIGIBLE_ITEMS_SYNC_ENABLED'
-    },
     cronSchedule: {
       doc: 'Cron schedule for MDM to S3 sync (default: hourly at minute 0)',
       format: String,
       default: '0 * * * *',
       env: 'INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE'
+    }
+  },
+  isoCodesCache: {
+    s3FileName: {
+      doc: 'S3 file name for ISO codes data (without extension)',
+      format: String,
+      default: 'iso-codes',
+      env: 'ISO_CODES_S3_FILE_NAME'
+    },
+    s3Schema: {
+      doc: 'S3 schema/prefix for cache files',
+      format: String,
+      nullable: true,
+      default: 'cache',
+      env: 'CACHE_S3_SCHEMA'
+    },
+    maxRetries: {
+      doc: 'Maximum number of retry attempts when fetching ISO codes from S3',
+      format: 'nat',
+      default: 3,
+      env: 'ISO_CODES_MAX_RETRIES'
+    },
+    retryDelayMs: {
+      doc: 'Delay in milliseconds between retry attempts for ISO codes',
+      format: 'nat',
+      default: 2000,
+      env: 'ISO_CODES_RETRY_DELAY_MS'
+    }
+  },
+  isoCodesSync: {
+    cronSchedule: {
+      doc: 'Cron schedule for ISO codes MDM to S3 sync (default: hourly at minute 0)',
+      format: String,
+      default: '0 * * * *',
+      env: 'ISO_CODES_SYNC_CRON_SCHEDULE'
     }
   },
   tdsSync: {

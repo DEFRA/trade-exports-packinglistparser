@@ -6,16 +6,23 @@ import {
 } from './sync-scheduler.js'
 import { config } from '../../config.js'
 
-// Variable to capture scheduler options at module load time - uses var to avoid TDZ issues with hoisting
+// Variables to capture scheduler options - uses var to avoid TDZ issues with hoisting
 // eslint-disable-next-line no-var
-var captured
+var capturedIneligibleItems
+// eslint-disable-next-line no-var
+var capturedIsoCodes
 
 // Mock dependencies
-vi.mock('./mdm-s3-sync.js')
+vi.mock('./ineligible-items-mdm-s3-sync.js')
+vi.mock('./iso-codes-mdm-s3-sync.js')
 vi.mock('../../common/helpers/sync-scheduler-factory.js', () => ({
   createSyncScheduler: vi.fn((options) => {
-    // Capture the options for testing
-    captured = options
+    // Capture the options for testing - identify by name
+    if (options.name === 'MDM to S3') {
+      capturedIneligibleItems = options
+    } else if (options.name === 'ISO codes MDM to S3') {
+      capturedIsoCodes = options
+    }
     return {
       start: vi.fn(() => (options.enabled ? { stop: vi.fn() } : null)),
       stop: vi.fn(),
@@ -33,9 +40,18 @@ vi.mock('../../common/helpers/logging/logger.js', () => ({
 vi.mock('../../config.js', () => ({
   config: {
     get: vi.fn((key) => {
+      if (key === 'mdmIntegration') {
+        return {
+          enabled: true
+        }
+      }
       if (key === 'ineligibleItemsSync') {
         return {
-          enabled: true,
+          cronSchedule: '0 * * * *'
+        }
+      }
+      if (key === 'isoCodesSync') {
+        return {
           cronSchedule: '0 * * * *'
         }
       }
@@ -55,26 +71,37 @@ describe('sync-scheduler', () => {
   })
 
   describe('startSyncScheduler', () => {
-    it('should start the scheduler with valid configuration', () => {
+    it('should start both schedulers with valid configuration', () => {
       const result = startSyncScheduler()
 
       expect(result).toBeDefined()
+      expect(result).toHaveProperty('ineligibleItems')
+      expect(result).toHaveProperty('isoCodes')
     })
 
-    it('should return null when sync is disabled', () => {
-      config.get.mockReturnValueOnce({
-        enabled: false,
-        cronSchedule: '0 * * * *'
+    it('should return null for both schedulers when MDM integration is disabled', () => {
+      config.get.mockImplementation((key) => {
+        if (key === 'mdmIntegration') {
+          return { enabled: false }
+        }
+        if (key === 'ineligibleItemsSync') {
+          return { cronSchedule: '0 * * * *' }
+        }
+        if (key === 'isoCodesSync') {
+          return { cronSchedule: '0 * * * *' }
+        }
+        return {}
       })
 
       const result = startSyncScheduler()
 
-      expect(result).toBeNull()
+      expect(result.ineligibleItems).toBeNull()
+      expect(result.isoCodes).toBeNull()
     })
   })
 
   describe('stopSyncScheduler', () => {
-    it('should stop the scheduler', () => {
+    it('should stop both schedulers', () => {
       startSyncScheduler()
       stopSyncScheduler()
 
@@ -84,70 +111,75 @@ describe('sync-scheduler', () => {
   })
 
   describe('isSchedulerRunning', () => {
-    it('should return scheduler status', () => {
+    it('should return status for both schedulers', () => {
       const status = isSchedulerRunning()
-      expect(typeof status).toBe('boolean')
+      expect(status).toHaveProperty('ineligibleItems')
+      expect(status).toHaveProperty('isoCodes')
+      expect(typeof status.ineligibleItems).toBe('boolean')
+      expect(typeof status.isoCodes).toBe('boolean')
     })
   })
 
   describe('scheduler configuration', () => {
-    it('should use cronSchedule from config', () => {
-      // The scheduler is created at module load time
-      expect(captured).toBeDefined()
-      expect(typeof captured.cronSchedule).not.toBe('undefined')
-
-      // The cronSchedule is a getter that returns the value from config
-      const cronValue = captured.cronSchedule
+    it('should configure ineligible items scheduler with correct name and schedule', () => {
+      expect(capturedIneligibleItems).toBeDefined()
+      expect(capturedIneligibleItems.name).toBe('MDM to S3')
+      expect(typeof capturedIneligibleItems.cronSchedule).not.toBe('undefined')
+      const cronValue = capturedIneligibleItems.cronSchedule
       expect(cronValue).toBe('0 * * * *')
     })
 
-    it('should retrieve cronSchedule dynamically from config getter', () => {
-      // Mock a different cron schedule
-      vi.mocked(config.get).mockReturnValue({
-        enabled: true,
-        cronSchedule: '*/15 * * * *'
-      })
-
-      // Access the getter to get the current value
-      const cronSchedule = captured.cronSchedule
-
-      expect(cronSchedule).toBe('*/15 * * * *')
-      expect(config.get).toHaveBeenCalledWith('ineligibleItemsSync')
+    it('should configure ISO codes scheduler with correct name and schedule', () => {
+      expect(capturedIsoCodes).toBeDefined()
+      expect(capturedIsoCodes.name).toBe('ISO codes MDM to S3')
+      expect(typeof capturedIsoCodes.cronSchedule).not.toBe('undefined')
+      const cronValue = capturedIsoCodes.cronSchedule
+      expect(cronValue).toBe('0 * * * *')
     })
 
-    it('should handle different cronSchedule values', () => {
-      const testSchedules = [
-        '0 0 * * *', // Daily at midnight
-        '*/30 * * * *', // Every 30 minutes
-        '0 */2 * * *', // Every 2 hours
-        '0 0 * * 0' // Weekly on Sunday
-      ]
-
-      testSchedules.forEach((schedule) => {
-        vi.mocked(config.get).mockReturnValue({
-          enabled: true,
-          cronSchedule: schedule
-        })
-
-        const result = captured.cronSchedule
-
-        expect(result).toBe(schedule)
-      })
-    })
-
-    it('should use enabled from config getter', () => {
-      // Test that enabled getter works
-      expect(typeof captured.enabled).not.toBe('undefined')
-      expect(captured.enabled).toBe(true)
+    it('should use enabled from mdmIntegration config getter for both schedulers', () => {
+      expect(capturedIneligibleItems.enabled).toBe(true)
+      expect(capturedIsoCodes.enabled).toBe(true)
 
       // Mock disabled
-      vi.mocked(config.get).mockReturnValue({
-        enabled: false,
-        cronSchedule: '0 * * * *'
+      vi.mocked(config.get).mockImplementation((key) => {
+        if (key === 'mdmIntegration') {
+          return { enabled: false }
+        }
+        return {
+          enabled: true,
+          cronSchedule: '0 * * * *'
+        }
       })
 
-      const enabled = captured.enabled
-      expect(enabled).toBe(false)
+      const ineligibleEnabled = capturedIneligibleItems.enabled
+      const isoEnabled = capturedIsoCodes.enabled
+      expect(ineligibleEnabled).toBe(false)
+      expect(isoEnabled).toBe(false)
+    })
+
+    it('should retrieve cronSchedule dynamically from config getter for ineligible items', () => {
+      vi.mocked(config.get).mockImplementation((key) => {
+        if (key === 'ineligibleItemsSync') {
+          return { cronSchedule: '*/15 * * * *' }
+        }
+        return { enabled: true, cronSchedule: '0 * * * *' }
+      })
+
+      const cronSchedule = capturedIneligibleItems.cronSchedule
+      expect(cronSchedule).toBe('*/15 * * * *')
+    })
+
+    it('should retrieve cronSchedule dynamically from config getter for ISO codes', () => {
+      vi.mocked(config.get).mockImplementation((key) => {
+        if (key === 'isoCodesSync') {
+          return { cronSchedule: '*/30 * * * *' }
+        }
+        return { enabled: true, cronSchedule: '0 * * * *' }
+      })
+
+      const cronSchedule = capturedIsoCodes.cronSchedule
+      expect(cronSchedule).toBe('*/30 * * * *')
     })
   })
 })
