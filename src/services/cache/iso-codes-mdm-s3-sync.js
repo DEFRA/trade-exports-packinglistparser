@@ -3,37 +3,18 @@ import { uploadJsonFileToS3 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { setIsoCodesCache } from './iso-codes-cache.js'
+import {
+  buildSyncSuccessResult,
+  buildSyncErrorResult
+} from '../../common/helpers/sync-result-builders.js'
+import { createEnabledCheck } from '../../common/helpers/sync-helpers.js'
 
 const logger = createLogger()
-
-/**
- * Check if MDM integration is enabled
- * @param {number} startTime - Start time of the sync operation
- * @returns {Object|null} Result object if disabled, null if enabled
- */
-function checkMdmEnabled(startTime) {
-  const { enabled: mdmEnabled } = config.get('mdmIntegration')
-
-  if (!mdmEnabled) {
-    const endTime = Date.now()
-    const result = {
-      success: false,
-      timestamp: new Date(endTime).toISOString(),
-      duration: endTime - startTime,
-      skipped: true,
-      reason: 'MDM integration is disabled'
-    }
-
-    logger.info(
-      result,
-      'ISO codes synchronization skipped - MDM integration is disabled'
-    )
-
-    return result
-  }
-
-  return null
-}
+const checkMdmEnabled = createEnabledCheck(
+  'mdmIntegration',
+  'MDM integration',
+  logger
+)
 
 /**
  * Retrieve and validate MDM ISO codes data
@@ -79,43 +60,6 @@ async function writeMdmDataToS3(mdmData) {
 }
 
 /**
- * Build success result object
- * @param {number} startTime - Start time
- * @param {Array} mdmData - ISO codes data
- * @param {Object} location - S3 location
- * @param {string} etag - S3 ETag
- * @returns {Object} Success result
- */
-function buildSuccessResult(startTime, mdmData, location, etag) {
-  const endTime = Date.now()
-  return {
-    success: true,
-    timestamp: new Date(endTime).toISOString(),
-    duration: endTime - startTime,
-    itemCount: Array.isArray(mdmData) ? mdmData.length : 0,
-    s3Location: location,
-    etag
-  }
-}
-
-/**
- * Build error result object
- * @param {number} startTime - Start time
- * @param {Error} error - Error object
- * @returns {Object} Error result
- */
-function buildErrorResult(startTime, error) {
-  const endTime = Date.now()
-  return {
-    success: false,
-    timestamp: new Date(endTime).toISOString(),
-    duration: endTime - startTime,
-    error: error.message,
-    errorName: error.name
-  }
-}
-
-/**
  * Synchronize ISO codes from MDM to S3
  * This function retrieves the latest ISO codes data from MDM, writes it to S3,
  * and updates the in-memory cache with the fresh data
@@ -124,7 +68,7 @@ function buildErrorResult(startTime, error) {
 export async function syncIsoCodesMdmToS3() {
   const startTime = Date.now()
 
-  const disabledResult = checkMdmEnabled(startTime)
+  const disabledResult = checkMdmEnabled(startTime, config)
   if (disabledResult) {
     return disabledResult
   }
@@ -134,12 +78,11 @@ export async function syncIsoCodesMdmToS3() {
   try {
     const mdmData = await retrieveMdmData()
     const { s3Response, location } = await writeMdmDataToS3(mdmData)
-    const result = buildSuccessResult(
-      startTime,
-      mdmData,
-      location,
-      s3Response.ETag
-    )
+    const result = buildSyncSuccessResult(startTime, {
+      itemCount: Array.isArray(mdmData) ? mdmData.length : 0,
+      s3Location: location,
+      etag: s3Response.ETag
+    })
 
     logger.info(
       result,
@@ -162,6 +105,6 @@ export async function syncIsoCodesMdmToS3() {
       'Failed to synchronize ISO codes MDM to S3 - existing S3 data remains unchanged'
     )
 
-    return buildErrorResult(startTime, error)
+    return buildSyncErrorResult(startTime, error)
   }
 }

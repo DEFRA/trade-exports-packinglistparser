@@ -319,29 +319,29 @@ The service implements a robust error handling approach:
 
 ## Key Implementation Files
 
-| Component                | File Path                                                |
-| ------------------------ | -------------------------------------------------------- |
-| HTTP Route               | `src/routes/packing-list-process.js`                     |
-| Processing Service       | `src/services/packing-list-process-service.js`           |
-| Parser Service           | `src/services/parser-service.js`                         |
-| Parser Factory           | `src/services/parsers/parser-factory.js`                 |
-| Parser Selection         | `src/services/parsers/parsers.js`                        |
-| Model Headers            | `src/services/model-headers.js`                          |
-| Parser Mapping           | `src/services/parser-map.js`                             |
-| Matchers                 | `src/services/matchers/`                                 |
-| Parsers                  | `src/services/parsers/`                                  |
-| Validators               | `src/services/validators/`                               |
-| Blob Storage Service     | `src/services/blob-storage/ehco-blob-storage-service.js` |
-| TDS Blob Storage Service | `src/services/blob-storage/tds-blob-storage-service.js`  |
-| S3 Service               | `src/services/s3-service.js`                             |
-| Dynamics Service         | `src/services/dynamics-service.js`                       |
-| Service Bus Service      | `src/services/trade-service-bus-service.js`              |
-| Ineligible Items Cache   | `src/services/cache/ineligible-items-cache.js`           |
-| MDM to S3 Sync           | `src/services/cache/mdm-s3-sync.js`                      |
-| Cache Sync Scheduler     | `src/services/cache/sync-scheduler.js`                   |
-| TDS Sync Service         | `src/services/tds-sync/tds-sync.js`                      |
-| TDS Sync Scheduler       | `src/services/tds-sync/sync-scheduler.js`                |
-| Server Startup           | `src/common/helpers/start-server.js`                     |
+| Component                       | File Path                                                |
+| ------------------------------- | -------------------------------------------------------- |
+| HTTP Route                      | `src/routes/packing-list-process.js`                     |
+| Processing Service              | `src/services/packing-list-process-service.js`           |
+| Parser Service                  | `src/services/parser-service.js`                         |
+| Parser Factory                  | `src/services/parsers/parser-factory.js`                 |
+| Parser Selection                | `src/services/parsers/parsers.js`                        |
+| Model Headers                   | `src/services/model-headers.js`                          |
+| Parser Mapping                  | `src/services/parser-map.js`                             |
+| Matchers                        | `src/services/matchers/`                                 |
+| Parsers                         | `src/services/parsers/`                                  |
+| Validators                      | `src/services/validators/`                               |
+| Blob Storage Service            | `src/services/blob-storage/ehco-blob-storage-service.js` |
+| TDS Blob Storage Service        | `src/services/blob-storage/tds-blob-storage-service.js`  |
+| S3 Service                      | `src/services/s3-service.js`                             |
+| Dynamics Service                | `src/services/dynamics-service.js`                       |
+| Service Bus Service             | `src/services/trade-service-bus-service.js`              |
+| Ineligible Items Cache          | `src/services/cache/ineligible-items-cache.js`           |
+| Ineligible Items MDM to S3 Sync | `src/services/cache/ineligible-items-mdm-s3-sync.js`     |
+| Cache Sync Scheduler            | `src/services/cache/sync-scheduler.js`                   |
+| TDS Sync Service                | `src/services/tds-sync/tds-sync.js`                      |
+| TDS Sync Scheduler              | `src/services/tds-sync/sync-scheduler.js`                |
+| Server Startup                  | `src/common/helpers/start-server.js`                     |
 
 ## HTTP API Contract
 
@@ -441,7 +441,7 @@ For information on testing the packing list processing flow, see:
 
 **MDM to S3 Sync:**
 
-- Unit tests: `src/services/cache/mdm-s3-sync.test.js`
+- Unit tests: `src/services/cache/ineligible-items-mdm-s3-sync.test.js`
 - Scheduler tests: `src/services/cache/sync-scheduler.test.js`
 - Manual trigger: Call `syncMdmToS3()` function directly
 

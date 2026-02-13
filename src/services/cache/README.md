@@ -225,8 +225,8 @@ The test suite covers:
 
 - [ineligible-items-cache.js](./ineligible-items-cache.js) - Main cache service
 - [ineligible-items-cache.test.js](./ineligible-items-cache.test.js) - Test suite
-- [mdm-s3-sync.js](./mdm-s3-sync.js) - MDM to S3 synchronization service
-- [mdm-s3-sync.test.js](./mdm-s3-sync.test.js) - Sync test suite
+- [ineligible-items-mdm-s3-sync.js](./ineligible-items-mdm-s3-sync.js) - Ineligible items MDM to S3 synchronization service
+- [ineligible-items-mdm-s3-sync.test.js](./ineligible-items-mdm-s3-sync.test.js) - Sync test suite
 - [sync-scheduler.js](./sync-scheduler.js) - Hourly sync scheduler
 - [sync-scheduler.test.js](./sync-scheduler.test.js) - Scheduler test suite
 - [start-server.js](../common/helpers/start-server.js) - Server startup integration
@@ -275,7 +275,7 @@ startSyncScheduler()
 You can trigger a manual sync programmatically:
 
 ```javascript
-import { syncMdmToS3 } from './services/cache/mdm-s3-sync.js'
+import { syncMdmToS3 } from './services/cache/ineligible-items-mdm-s3-sync.js'
 
 // Trigger manual sync
 const result = await syncMdmToS3()
@@ -312,6 +312,6 @@ Check logs for sync operations:
 Run sync tests:
 
 ```bash
-npx vitest run src/services/cache/mdm-s3-sync.test.js
+npx vitest run src/services/cache/ineligible-items-mdm-s3-sync.test.js
 npx vitest run src/services/cache/sync-scheduler.test.js
 ```

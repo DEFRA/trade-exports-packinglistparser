@@ -13,7 +13,7 @@ var capturedIneligibleItems
 var capturedIsoCodes
 
 // Mock dependencies
-vi.mock('./mdm-s3-sync.js')
+vi.mock('./ineligible-items-mdm-s3-sync.js')
 vi.mock('./iso-codes-mdm-s3-sync.js')
 vi.mock('../../common/helpers/sync-scheduler-factory.js', () => ({
   createSyncScheduler: vi.fn((options) => {

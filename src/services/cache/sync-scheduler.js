@@ -1,4 +1,4 @@
-import { syncMdmToS3 } from './mdm-s3-sync.js'
+import { syncMdmToS3 } from './ineligible-items-mdm-s3-sync.js'
 import { syncIsoCodesMdmToS3 } from './iso-codes-mdm-s3-sync.js'
 import { config } from '../../config.js'
 import { createSyncScheduler } from '../../common/helpers/sync-scheduler-factory.js'
