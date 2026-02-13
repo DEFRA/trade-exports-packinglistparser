@@ -45,6 +45,29 @@ async function listDocumentsFromS3(schema) {
 }
 
 /**
+ * Process items in batches to avoid overwhelming resources
+ * @param {Array} items - Items to process
+ * @param {Function} processFn - Async function to process each item
+ * @param {number} batchSize - Number of items to process concurrently
+ * @returns {Promise<Array>} Array of results
+ */
+async function processBatches(items, processFn, batchSize) {
+  const results = []
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize)
+    logger.info(
+      `Processing batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(items.length / batchSize)} (${batch.length} files)`
+    )
+
+    const batchResults = await Promise.all(batch.map((item) => processFn(item)))
+    results.push(...batchResults)
+  }
+
+  return results
+}
+
+/**
  * Transfer a single file from S3 to TDS Blob Storage
  * @param {string} s3Key - S3 object key
  * @returns {Promise<Object>} Transfer result
@@ -126,6 +149,7 @@ export async function syncToTds() {
 
   try {
     const { schemaVersion } = config.get('packingList')
+    const { batchSize } = config.get('tdsSync')
 
     // List documents from S3
     const s3Keys = await listDocumentsFromS3(schemaVersion)
@@ -144,10 +168,12 @@ export async function syncToTds() {
       return noFilesResult
     }
 
-    // Transfer each file
-    const transfers = await Promise.all(
-      s3Keys.map((key) => transferFileToTds(key))
+    logger.info(
+      `Starting batched transfer of ${s3Keys.length} files (batch size: ${batchSize})`
     )
+
+    // Transfer files in batches to avoid resource exhaustion
+    const transfers = await processBatches(s3Keys, transferFileToTds, batchSize)
 
     const successful = transfers.filter((t) => t.success)
     const failed = transfers.filter((t) => !t.success)

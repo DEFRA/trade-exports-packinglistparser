@@ -105,14 +105,35 @@ git config --global core.autocrlf false
 
 ## API endpoints
 
+### Production Endpoints
+
+These endpoints are available in all environments including production:
+
+| Endpoint                      | Description                         |
+| :---------------------------- | :---------------------------------- |
+| `GET: /`                      | Home / service information          |
+| `GET: /health`                | Application health check            |
+| `GET: /connectivity-check`    | Check external service connectivity |
+| `POST: /process-packing-list` | Process packing list documents      |
+
+### Test/Development-Only Endpoints
+
+These endpoints are only available in test and development environments (local, infra-dev, management, dev, test):
+
 | Endpoint                                           | Description                      |
 | :------------------------------------------------- | :------------------------------- |
-| `GET: /health`                                     | Application health check         |
 | `GET: /dynamics/health`                            | Dynamics 365 config health check |
 | `GET: /dynamics/dispatch-location/{applicationId}` | Test Dynamics integration        |
 | `GET: /s3`                                         | List S3 bucket objects           |
-| `GET: /s3/{key}`                                   | Get S3 object by key             |
-| `POST: /s3`                                        | Upload JSON file to S3           |
+| `GET: /s3/{filename}`                              | Get S3 object by filename        |
+| `POST: /s3/{filename}`                             | Upload JSON file to S3           |
+| `GET: /trade-service-bus`                          | Send message to service bus      |
+| `GET: /ehco-blob-forms`                            | Get file from blob storage       |
+| `GET: /ehco-blob-forms-container`                  | Check if blob container exists   |
+| `GET: /mdm/ineligible-items`                       | Get ineligible items from MDM    |
+| `GET: /test-parse`                                 | Test parser functionality        |
+| `GET: /cache/ineligible-items`                     | Test ineligible items cache      |
+| `GET: /cache/iso-codes`                            | Test ISO codes cache             |
 
 See [Dynamics Test Routes Documentation](./docs/DYNAMICS-TEST-ROUTES.md) for detailed information about testing the Dynamics 365 integration.
 

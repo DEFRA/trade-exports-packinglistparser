@@ -29,7 +29,8 @@ vi.mock('../../config.js', () => ({
     get: vi.fn((key) => {
       if (key === 'tdsSync') {
         return {
-          enabled: true
+          enabled: true,
+          batchSize: 5
         }
       }
       if (key === 'packingList') {
@@ -70,6 +71,12 @@ function createMockStream(content) {
   return stream
 }
 
+// Test constants
+const TEST_CONTENT = 'test content'
+const EXPECTED_FILE_COUNT_THREE = 3
+const EXPECTED_FILE_COUNT_SEVEN = 7
+const BATCH_SIZE_TWO = 2
+
 describe('tds-sync', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -77,7 +84,8 @@ describe('tds-sync', () => {
     config.get.mockImplementation((key) => {
       if (key === 'tdsSync') {
         return {
-          enabled: true
+          enabled: true,
+          batchSize: 5
         }
       }
       if (key === 'packingList') {
@@ -183,9 +191,9 @@ describe('tds-sync', () => {
       )
     })
 
-    it('should transfer multiple files in parallel', async () => {
+    it('should transfer multiple files in batches', async () => {
       const mockS3Response = {
-        Body: createMockStream('test content')
+        Body: createMockStream(TEST_CONTENT)
       }
 
       listS3Objects.mockResolvedValueOnce({
@@ -202,11 +210,55 @@ describe('tds-sync', () => {
       const result = await syncToTds()
 
       expect(result.success).toBe(true)
-      expect(result.totalFiles).toBe(3)
-      expect(result.successfulTransfers).toBe(3)
+      expect(result.totalFiles).toBe(EXPECTED_FILE_COUNT_THREE)
+      expect(result.successfulTransfers).toBe(EXPECTED_FILE_COUNT_THREE)
       expect(result.failedTransfers).toBe(0)
-      expect(uploadToTdsBlob).toHaveBeenCalledTimes(3)
-      expect(deleteFileFromS3).toHaveBeenCalledTimes(3)
+      expect(uploadToTdsBlob).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_THREE)
+      expect(deleteFileFromS3).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_THREE)
+    })
+
+    it('should process large volumes in batches to prevent resource exhaustion', async () => {
+      const mockS3Response = {
+        Body: createMockStream(TEST_CONTENT)
+      }
+
+      // Mock config with batchSize of 2
+      config.get.mockImplementation((key) => {
+        if (key === 'tdsSync') {
+          return {
+            enabled: true,
+            batchSize: BATCH_SIZE_TWO
+          }
+        }
+        if (key === 'packingList') {
+          return {
+            schemaVersion: 'v0.0'
+          }
+        }
+        return {}
+      })
+
+      // Create 7 files (will need 4 batches: 2, 2, 2, 1)
+      const files = Array.from(
+        { length: EXPECTED_FILE_COUNT_SEVEN },
+        (_, i) => ({
+          Key: `tds-transfer/file${i + 1}.json`
+        })
+      )
+
+      listS3Objects.mockResolvedValueOnce({ Contents: files })
+      getStreamFromS3.mockResolvedValue(mockS3Response)
+      uploadToTdsBlob.mockResolvedValue({ ETag: '"abc"' })
+      deleteFileFromS3.mockResolvedValue({})
+
+      const result = await syncToTds()
+
+      expect(result.success).toBe(true)
+      expect(result.totalFiles).toBe(EXPECTED_FILE_COUNT_SEVEN)
+      expect(result.successfulTransfers).toBe(EXPECTED_FILE_COUNT_SEVEN)
+      expect(result.failedTransfers).toBe(0)
+      expect(uploadToTdsBlob).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_SEVEN)
+      expect(deleteFileFromS3).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_SEVEN)
     })
   })
 

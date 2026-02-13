@@ -442,6 +442,12 @@ const config = convict({
       format: String,
       default: '0 * * * *',
       env: 'TDS_SYNC_CRON_SCHEDULE'
+    },
+    batchSize: {
+      doc: 'Number of files to upload concurrently in each batch to prevent resource exhaustion',
+      format: 'nat',
+      default: 5,
+      env: 'TDS_SYNC_BATCH_SIZE'
     }
   }
 })
