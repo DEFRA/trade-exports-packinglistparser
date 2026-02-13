@@ -22,11 +22,22 @@ function getItemCount(data) {
 }
 
 /**
- * Process successful S3 fetch
+ * Process successful S3 fetch and normalize data format
+ * Converts MDM API format [{code, name}] to simple string array [code]
  */
 function cacheS3Data(data) {
-  isoCodesCache = data
-  const itemCount = getItemCount(data)
+  // Normalize data: if array of objects with 'code' property, extract just the codes
+  if (
+    Array.isArray(data) &&
+    data.length > 0 &&
+    typeof data[0] === 'object' &&
+    data[0].code
+  ) {
+    isoCodesCache = data.map((item) => item.code?.toUpperCase() || item.code)
+  } else {
+    isoCodesCache = data
+  }
+  const itemCount = getItemCount(isoCodesCache)
   logger.info({ itemCount }, 'ISO codes cache loaded')
 }
 

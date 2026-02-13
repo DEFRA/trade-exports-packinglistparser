@@ -171,6 +171,7 @@ function hasInvalidCoO(item) {
 /**
  * Validate if a country code is a valid ISO code.
  * Uses cached ISO codes from MDM if available, otherwise falls back to static data.
+ * Handles both string format ["GB", "US"] and object format [{code: "GB", name: "..."}]
  *
  * @param {string} code - Country code to validate
  * @returns {boolean} True when code is valid ISO code
@@ -186,10 +187,16 @@ function isValidIsoCode(code) {
     (Array.isArray(cachedIsoCodes) ? cachedIsoCodes : null) || isoCodesData
 
   const normalizedCode = code.toLowerCase().trim()
-  return isoCodes.some(
-    (isoCode) =>
-      typeof isoCode === 'string' && isoCode.toLowerCase() === normalizedCode
-  )
+  return isoCodes.some((isoCode) => {
+    // Handle both string format and object format {code: "GB", name: "..."}
+    if (typeof isoCode === 'string') {
+      return isoCode.toLowerCase() === normalizedCode
+    }
+    if (typeof isoCode === 'object' && isoCode?.code) {
+      return isoCode.code.toLowerCase() === normalizedCode
+    }
+    return false
+  })
 }
 
 /**
