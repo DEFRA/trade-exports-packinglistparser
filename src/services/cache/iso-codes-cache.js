@@ -23,17 +23,24 @@ function getItemCount(data) {
 
 /**
  * Process successful S3 fetch and normalize data format
- * Converts MDM API format [{code, name}] to simple string array [code]
+ * Converts MDM API format to simple string array of ISO alpha-2 codes
+ * Handles MDM /geo/countries format: {alpha2, effectiveAlpha2, name, ...}
+ * Also backward compatible with simplified format: {code, name}
  */
 function cacheS3Data(data) {
-  // Normalize data: if array of objects with 'code' property, extract just the codes
-  if (
-    Array.isArray(data) &&
-    data.length > 0 &&
-    typeof data[0] === 'object' &&
-    data[0].code
-  ) {
-    isoCodesCache = data.map((item) => item.code?.toUpperCase() || item.code)
+  // Normalize data: if array of objects, extract ISO codes
+  if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+    isoCodesCache = data
+      .map((item) => {
+        // Priority: effectiveAlpha2 > alpha2 > code (for backward compat)
+        const code =
+          item.effectiveAlpha2 || item.alpha2 || item.code || item.Alpha2
+        return code ? code.toUpperCase() : null
+      })
+      .filter((code) => code !== null) // Remove any null values
+  } else if (Array.isArray(data)) {
+    // Already a string array
+    isoCodesCache = data
   } else {
     isoCodesCache = data
   }
