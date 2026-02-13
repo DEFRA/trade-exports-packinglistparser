@@ -15,22 +15,37 @@ import {
   cacheTestIneligibleItems,
   cacheTestIsoCodes
 } from '../routes/cache-test.js'
+import { config } from '../config.js'
 
 const router = {
   plugin: {
     name: 'router',
     register: (server, _options) => {
+      // Core routes available in all environments
       server.route([home])
       server.route([health])
       server.route([connectivityCheck])
-      server.route([getListFromS3, getFromS3, addFileToS3])
-      server.route([getDispatchLocationRoute, dynamicsHealthCheck])
-      server.route([sendtoqueue])
-      server.route([getFileFromBlob, formsContainerExists])
-      server.route([ineligibleItems])
       server.route([packingListProcessRoute])
-      server.route([testRoute])
-      server.route([cacheTestIneligibleItems, cacheTestIsoCodes])
+
+      // Test/development routes - only available in non-production environments
+      const environment = config.get('cdpEnvironment')
+      const isTestEnvironment = [
+        'local',
+        'infra-dev',
+        'management',
+        'dev',
+        'test'
+      ].includes(environment)
+
+      if (isTestEnvironment) {
+        server.route([getListFromS3, getFromS3, addFileToS3])
+        server.route([getDispatchLocationRoute, dynamicsHealthCheck])
+        server.route([sendtoqueue])
+        server.route([getFileFromBlob, formsContainerExists])
+        server.route([ineligibleItems])
+        server.route([testRoute])
+        server.route([cacheTestIneligibleItems, cacheTestIsoCodes])
+      }
     }
   }
 }

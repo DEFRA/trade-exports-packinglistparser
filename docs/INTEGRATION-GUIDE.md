@@ -2,17 +2,18 @@
 
 ## Overview
 
-This guide shows how to integrate the migrated packing list processing code (steps 4-7) with the existing codebase.
+This guide documents the implemented packing list processing code (steps 4-7) and how to use it in your application.
 
 ### Source Information
 
 **Source Repository:** https://github.com/DEFRA/trade-exportscore-plp  
 **Migration Date:** December 2025  
-**Migrated By:** Code migration from legacy ADP system
+**Completed:** February 2026  
+**Status:** ✅ Fully Implemented
 
-### Scope of Migration
+### Implementation Scope
 
-The following components were migrated from the trade-exportscore-plp repository:
+The following components are fully implemented and production-ready:
 
 #### Core Processing (Steps 4-7)
 
@@ -54,25 +55,31 @@ For detailed information about the complete packing list processing workflow, se
 - Regex utilities for pattern matching
 - Matcher result constants
 
-#### Placeholder Structure
+#### Implemented Structure
 
-The migration created placeholder directories for future implementation:
+The implementation includes complete directories with working parsers:
 
-- `src/services/parsers/` - Retailer-specific parser implementations
+- `src/services/parsers/` - Retailer-specific parser implementations (ASDA, Tesco, B&M, Fowler-Welch, Turners, Mars, Kepak, Savers, Iceland, Booker, Co-op, Giovanni, Nisa, Sainsbury's, TJ Morris, M&S, Buffaload Logistics)
 - `src/services/matchers/` - Retailer-specific matcher implementations
 - `src/services/model-headers/` - Retailer header definitions
-- `src/services/model-parsers.js` - Parser registry (placeholder)
+- `src/services/model-parsers.js` - Parser registry with all models registered
+- `src/services/parsers/no-match/` - No-match parsers (NOREMOS, NOREMOSCSV, NOREMOSPDF)
 
-#### Not Migrated
+#### Previously Not Included (Now Implemented)
 
-The following were **not** included in this migration:
+The following components are **now fully implemented**:
+
+- ✅ Retailer-specific parser implementations (multiple retailers)
+- ✅ Excel, CSV, and PDF conversion utilities
+- ✅ No-match parser implementations
+- ✅ Model header definitions for all supported retailers
+
+#### Still Not Included
+
+The following remain outside the scope of this service:
 
 - Steps 1-3: Blob storage retrieval, file conversion, AI processing
-- Retailer-specific parser implementations (ASDA, Tesco, B&M, Fowler-Welch, Turners, Mars, Kepak, Savers, etc.)
-- Excel, CSV, and PDF conversion utilities
-- Document Intelligence (AI) integration
-- No-match parser implementations
-- Actual model header definitions
+- Document Intelligence (AI) integration (for AI-based PDF parsing)
 
 ### Architecture Notes
 
@@ -86,105 +93,88 @@ The migrated code follows these patterns:
 
 ---
 
-## Current Integration Point
+## Integration Status
 
-The existing [src/services/packing-list-process-service.js](src/services/packing-list-process-service.js) has a placeholder function that needs to be replaced:
+✅ **Fully Implemented** - The [src/services/packing-list-process-service.js](src/services/packing-list-process-service.js) is complete with full parsing logic.
 
-### Current Code
+### Current Implementation
+
+The service orchestrates the complete packing list processing workflow:
 
 ```javascript
-async function parsePackingList(packingList, message, dispatchLocation) {
-  // TODO: Implement parsing logic
-  return {}
+export async function processPackingList(
+  payload,
+  { stopDataExit = false } = {}
+) {
+  // 1. Download packing list from blob storage
+  const packingList = await downloadBlobFromApplicationFormsContainerAsJson(
+    payload.packing_list_blob
+  )
+
+  // 2. Process packing list
+  const parsedData = await getParsedPackingList(packingList, payload)
+
+  // 3. Process results
+  const persistedData = await processPackingListResults(
+    parsedData,
+    payload.application_id,
+    { stopDataExit }
+  )
+
+  return { result: 'success', data: persistedData }
 }
 ```
 
 ### Integration Steps
 
-#### 1. Import the New Parser Service
+#### 1. Using the Parser Service
 
-Replace the existing `packing-list-process-service.js` content or update the import:
-
-```javascript
-// Add this import at the top of your file
-const packingListParser = require('./packing-list-process-service')
-// OR if you keep the existing service, import the parser orchestrator:
-// const { parsePackingList } = require('./packing-list-parser-orchestrator')
-```
-
-#### 2. Update the parsePackingList Function
-
-Replace the TODO implementation with:
+The parser service is fully integrated and can be imported as follows:
 
 ```javascript
-async function parsePackingList(packingList, message, dispatchLocation) {
-  const fileName = extractFileName(message.body.packing_list_blob)
-
-  try {
-    // Call the migrated steps 4-7 orchestration
-    const parsedResult = await packingListParser.parsePackingList(
-      packingList,
-      fileName,
-      dispatchLocation
-    )
-
-    return parsedResult
-  } catch (error) {
-    logger.logError(
-      'packing-list-process-service',
-      'parsePackingList()',
-      `Failed to parse packing list: ${error.message}`
-    )
-    throw error
-  }
-}
-
-// Helper to extract filename from blob URI
-function extractFileName(blobUri) {
-  const url = new URL(blobUri)
-  const pathname = url.pathname
-  const filename = pathname.split('/').pop()
-  return filename || 'unknown.xlsx'
-}
+import { processPackingList } from './services/packing-list-process-service.js'
+import { parsePackingList } from './services/parser-service.js'
 ```
 
-#### 3. Update the Download Logic
+#### 2. Parser Service Usage
 
-Ensure the blob download returns the correct format:
+The parser service is production-ready:
 
 ```javascript
-async function downloadPackingList(packing_list_blob) {
-  // For Excel/CSV files
-  if (
-    packing_list_blob.endsWith('.xlsx') ||
-    packing_list_blob.endsWith('.xls')
-  ) {
-    // TODO: Use excel-utility to convert to JSON
-    // const excelUtility = require('../utilities/excel-utility')
-    // return excelUtility.convertExcelToJson({ sourceFile: filePath })
-  }
+import { parsePackingList } from './services/parser-service.js'
 
-  // For CSV files
-  if (packing_list_blob.endsWith('.csv')) {
-    // TODO: Use csv-utility to convert to JSON
-    // const csvUtility = require('../utilities/csv-utility')
-    // return csvUtility.convertCsvToJson(filePath)
-  }
+// Parse a packing list document
+const result = await parsePackingList(packingListData, filename)
 
-  // For PDF files
-  if (packing_list_blob.endsWith('.pdf')) {
-    // TODO: Use pdf-helper to extract content
-    // const pdfHelper = require('../utilities/pdf-helper')
-    // return pdfHelper.extractPdf(buffer)
-  }
-
-  throw new Error('Unsupported file format')
-}
+// Result includes:
+// - items: Array of extracted items
+// - parserModel: Name of parser used (e.g., 'ASDA3', 'TESCO3')
+// - business_checks: Validation results
+// - establishmentNumbers: Array of RMS numbers found
 ```
 
-## File Format Utilities (TODO)
+#### 3. File Conversion Utilities
 
-The following utilities need to be implemented for complete integration:
+✅ **All utilities are implemented** in the `src/utilities/` directory:
+
+```javascript
+import { convertExcelToJson } from '../utilities/excel-utility.js'
+import { convertCsvToJson } from '../utilities/csv-utility.js'
+import { extractPdf } from '../utilities/pdf-helper.js'
+
+// Excel files
+const excelData = convertExcelToJson({ sourceFile: filePath })
+
+// CSV files
+const csvData = await convertCsvToJson(bufferOrFilename)
+
+// PDF files
+const pdfData = await extractPdf(buffer)
+```
+
+## File Format Utilities
+
+✅ **Fully Implemented** - All file format utilities are production-ready.
 
 ### Excel Utility
 
@@ -377,15 +367,17 @@ The migrated code uses the existing logger from [src/utilities/logger.js](src/ut
 - `logger.logError(filename, function, error)`
 - `logger.logWarning(filename, function, message)`
 
-## Next Steps
+## Implementation Status
+
+✅ **All Core Components Implemented** (as of February 2026)
 
 1. ✅ Migrated orchestration for steps 4-7
-2. ✅ Created placeholder structure for models
-3. ⏳ Implement file conversion utilities (Excel, CSV, PDF)
-4. ⏳ Implement no-match parsers (NOREMOS, NOREMOSCSV, NOREMOSPDF)
-5. ⏳ Add first retailer parser (e.g., ASDA, Tesco)
-6. ⏳ Add tests for each component
-7. ⏳ Update parser-factory.js to use new parsers
+2. ✅ Created model structure for parsers, matchers, and headers
+3. ✅ Implemented file conversion utilities (Excel, CSV, PDF)
+4. ✅ Implemented no-match parsers (NOREMOS, NOREMOSCSV, NOREMOSPDF)
+5. ✅ Added multiple retailer parsers (ASDA, Tesco, B&M, Fowler-Welch, Turners, Mars, Kepak, Savers, Iceland, Booker, Co-op, Giovanni, Nisa, Sainsbury's, TJ Morris, M&S)
+6. ✅ Comprehensive test coverage for all components
+7. ✅ parser-factory.js fully operational with all parsers
 
 ## Documentation References
 

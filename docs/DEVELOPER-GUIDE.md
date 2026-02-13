@@ -562,25 +562,37 @@ The TDS sync service transfers documents from AWS S3 to Azure Blob Storage (TDS 
 # .env file
 TDS_SYNC_ENABLED=true
 TDS_SYNC_CRON_SCHEDULE=0 * * * *
+TDS_SYNC_BATCH_SIZE=5
 PACKING_LIST_SCHEMA_VERSION=v0.0
 ```
 
-| Variable                      | Description                  | Default     |
-| ----------------------------- | ---------------------------- | ----------- |
-| `TDS_SYNC_ENABLED`            | Enable/disable TDS sync      | `true`      |
-| `TDS_SYNC_CRON_SCHEDULE`      | Cron schedule (hourly)       | `0 * * * *` |
-| `PACKING_LIST_SCHEMA_VERSION` | S3 schema/folder to transfer | `v0.0`      |
+| Variable                      | Description                                      | Default     |
+| ----------------------------- | ------------------------------------------------ | ----------- |
+| `TDS_SYNC_ENABLED`            | Enable/disable TDS sync                          | `true`      |
+| `TDS_SYNC_CRON_SCHEDULE`      | Cron schedule (hourly)                           | `0 * * * *` |
+| `TDS_SYNC_BATCH_SIZE`         | Number of files to upload concurrently per batch | `5`         |
+| `PACKING_LIST_SCHEMA_VERSION` | S3 schema/folder to transfer                     | `v0.0`      |
 
 ### File Transfer Workflow
 
 ```
 1. List files in S3 schema folder (e.g., "v0.0/")
-2. For each file:
+2. Process files in batches (controlled by TDS_SYNC_BATCH_SIZE):
+   - Each batch processes files concurrently
+   - Batches are processed sequentially to prevent resource exhaustion
+3. For each file in batch:
    a. Download from S3
    b. Upload to TDS Blob Storage
    c. Delete from S3 (only if upload successful)
-3. Return detailed results
+4. Return detailed results
 ```
+
+**Batching Strategy:**
+
+- Files are processed in batches of 5 (configurable)
+- Within each batch, uploads run in parallel for efficiency
+- Batches execute sequentially to avoid overwhelming resources
+- Ideal for handling large volumes without memory/connection issues
 
 **S3 File Organization:**
 
