@@ -250,4 +250,107 @@ describe('iso-codes-cache', () => {
       expect(() => clearIsoCodesCache()).not.toThrow()
     })
   })
+
+  describe('cacheS3Data - data normalization', () => {
+    it('should handle MDM format with effectiveAlpha2 field', async () => {
+      const mdmData = [
+        { effectiveAlpha2: 'gb', name: 'United Kingdom' },
+        { effectiveAlpha2: 'us', name: 'United States' },
+        { effectiveAlpha2: 'fr', name: 'France' }
+      ]
+      getFileFromS3.mockResolvedValue(JSON.stringify(mdmData))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(['GB', 'US', 'FR'])
+    })
+
+    it('should handle MDM format with alpha2 field', async () => {
+      const mdmData = [
+        { alpha2: 'de', name: 'Germany' },
+        { alpha2: 'it', name: 'Italy' },
+        { alpha2: 'es', name: 'Spain' }
+      ]
+      getFileFromS3.mockResolvedValue(JSON.stringify(mdmData))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(['DE', 'IT', 'ES'])
+    })
+
+    it('should handle backward compatible format with code field', async () => {
+      const legacyData = [
+        { code: 'ca', name: 'Canada' },
+        { code: 'mx', name: 'Mexico' },
+        { code: 'br', name: 'Brazil' }
+      ]
+      getFileFromS3.mockResolvedValue(JSON.stringify(legacyData))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(['CA', 'MX', 'BR'])
+    })
+
+    it('should handle Alpha2 field (uppercase A)', async () => {
+      const data = [
+        { Alpha2: 'au', name: 'Australia' },
+        { Alpha2: 'nz', name: 'New Zealand' },
+        { Alpha2: 'jp', name: 'Japan' }
+      ]
+      getFileFromS3.mockResolvedValue(JSON.stringify(data))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(['AU', 'NZ', 'JP'])
+    })
+
+    it('should filter out items with no code fields', async () => {
+      const mixedData = [
+        { alpha2: 'gb', name: 'United Kingdom' },
+        { name: 'Invalid Entry' }, // No code field
+        { alpha2: 'us', name: 'United States' },
+        { somefield: 'value' } // No code field
+      ]
+      getFileFromS3.mockResolvedValue(JSON.stringify(mixedData))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(['GB', 'US'])
+    })
+
+    it('should handle already normalized string array', async () => {
+      const stringArray = ['GB', 'US', 'FR', 'DE']
+      getFileFromS3.mockResolvedValue(JSON.stringify(stringArray))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(stringArray)
+    })
+
+    it('should handle non-array data format', async () => {
+      const nonArrayData = { someKey: 'someValue', codes: ['GB', 'US'] }
+      getFileFromS3.mockResolvedValue(JSON.stringify(nonArrayData))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(nonArrayData)
+    })
+
+    it('should prioritize effectiveAlpha2 over other fields', async () => {
+      const data = [
+        {
+          effectiveAlpha2: 'gb',
+          alpha2: 'uk',
+          code: 'en',
+          Alpha2: 'br',
+          name: 'United Kingdom'
+        }
+      ]
+      getFileFromS3.mockResolvedValue(JSON.stringify(data))
+
+      await initializeIsoCodesCache()
+
+      expect(getIsoCodesCache()).toEqual(['GB'])
+    })
+  })
 })
