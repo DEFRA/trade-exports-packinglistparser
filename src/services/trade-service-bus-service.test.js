@@ -147,7 +147,13 @@ describe('trade-service-bus-service', () => {
       ).rejects.toThrow('Send failed')
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { err: error },
+        {
+          error: {
+            message: error.message,
+            stack_trace: error.stack,
+            type: error.name
+          }
+        },
         `Failed to send message to Service Bus queue: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME} for applicationId: test-123`
       )
     })
@@ -159,8 +165,7 @@ describe('trade-service-bus-service', () => {
       await sendMessageToQueue({ body: { applicationId: 'test-123' } })
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { err: expect.any(Error) },
-        'Failed to close Service Bus sender'
+        'Failed to close Service Bus sender (error: Close failed)'
       )
       expect(mockClose).toHaveBeenCalled()
     })
@@ -215,8 +220,7 @@ describe('trade-service-bus-service', () => {
       expect(result).toEqual([{ text: 'Message 1' }, { text: 'Message 2' }])
       expect(mockCompleteMessage).toHaveBeenCalledTimes(2)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME, count: 2 },
-        'Received messages from Service Bus queue'
+        `Received messages from Service Bus queue (queueName: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}, count: 2)`
       )
     })
 
@@ -237,8 +241,7 @@ describe('trade-service-bus-service', () => {
 
       expect(result).toEqual([])
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME, count: 0 },
-        'Received messages from Service Bus queue'
+        `Received messages from Service Bus queue (queueName: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}, count: 0)`
       )
     })
 
@@ -258,8 +261,14 @@ describe('trade-service-bus-service', () => {
       await expect(receiveMessagesFromQueue()).rejects.toThrow('Receive failed')
 
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { err: error, queueName: TEST_SERVICE_BUS_CONFIG.QUEUE_NAME },
-        'Failed to receive messages from Service Bus queue'
+        {
+          error: {
+            message: error.message,
+            stack_trace: error.stack,
+            type: error.name
+          }
+        },
+        `Failed to receive messages from Service Bus queue (queueName: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME})`
       )
     })
 
@@ -277,8 +286,7 @@ describe('trade-service-bus-service', () => {
 
       expect(result).toEqual([{ text: 'Message 1' }, { text: 'Message 2' }])
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { err: expect.any(Error), messageId: '1' },
-        'Failed to complete message'
+        'Failed to complete message (messageId: 1, error: Complete failed)'
       )
       expect(mockCompleteMessage).toHaveBeenCalledTimes(2)
     })
@@ -290,8 +298,7 @@ describe('trade-service-bus-service', () => {
       await receiveMessagesFromQueue()
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { err: expect.any(Error) },
-        'Failed to close Service Bus receiver'
+        'Failed to close Service Bus receiver (error: Close failed)'
       )
       expect(mockClose).toHaveBeenCalled()
     })
@@ -331,8 +338,14 @@ describe('trade-service-bus-service', () => {
       expect(result).toBe(false)
       expect(mockPeekMessages).toHaveBeenCalledWith(1)
       expect(mockLogger.error).toHaveBeenCalledWith(
-        `Failed to connect to Service Bus: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`,
-        { err: error }
+        {
+          error: {
+            message: error.message,
+            stack_trace: error.stack,
+            type: error.name
+          }
+        },
+        `Failed to connect to Service Bus: ${TEST_SERVICE_BUS_CONFIG.QUEUE_NAME}`
       )
     })
 
@@ -362,8 +375,7 @@ describe('trade-service-bus-service', () => {
       await checkTradeServiceBusConnection()
 
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { err: expect.any(Error) },
-        'Failed to close Service Bus receiver'
+        'Failed to close Service Bus receiver (error: Close failed)'
       )
       expect(mockClose).toHaveBeenCalled()
     })
@@ -378,8 +390,7 @@ describe('trade-service-bus-service', () => {
 
       expect(result).toBe(false)
       expect(mockLogger.warn).toHaveBeenCalledWith(
-        { err: closeError },
-        'Failed to close Service Bus receiver'
+        'Failed to close Service Bus receiver (error: Close failed)'
       )
       expect(mockClose).toHaveBeenCalled()
     })

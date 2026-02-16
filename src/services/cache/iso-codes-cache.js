@@ -45,7 +45,7 @@ function cacheS3Data(data) {
     isoCodesCache = data
   }
   const itemCount = getItemCount(isoCodesCache)
-  logger.info({ itemCount }, 'ISO codes cache loaded')
+  logger.info(`ISO codes cache loaded (itemCount: ${itemCount})`)
 }
 
 /**

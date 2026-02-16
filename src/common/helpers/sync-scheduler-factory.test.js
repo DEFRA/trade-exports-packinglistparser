@@ -117,8 +117,14 @@ describe('createSyncScheduler', () => {
         'Invalid cron schedule: invalid-cron'
       )
       expect(mockLogger.error).toHaveBeenCalledWith(
-        { cronSchedule: 'invalid-cron' },
-        'Invalid cron schedule for TestSync sync'
+        {
+          error: {
+            message: 'Invalid cron schedule: invalid-cron',
+            stack_trace: expect.any(String),
+            type: 'Error'
+          }
+        },
+        'Invalid cron schedule for TestSync sync (cronSchedule: invalid-cron)'
       )
     })
 
@@ -142,8 +148,7 @@ describe('createSyncScheduler', () => {
         }
       )
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { cronSchedule: '0 * * * *' },
-        'Starting TestSync synchronization scheduler'
+        'Starting TestSync synchronization scheduler (cronSchedule: 0 * * * *)'
       )
       expect(mockLogger.info).toHaveBeenCalledWith(
         'TestSync synchronization scheduler started successfully'
@@ -219,7 +224,8 @@ describe('createSyncScheduler', () => {
         {
           error: {
             message: 'Sync failed',
-            stack_trace: 'Error stack trace'
+            stack_trace: 'Error stack trace',
+            type: 'Error'
           }
         },
         'Scheduled TestSync synchronization failed'

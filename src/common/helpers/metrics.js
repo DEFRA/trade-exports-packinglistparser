@@ -23,11 +23,8 @@ const metricsCounter = async (metricName, value = 1) => {
     await metricsLogger.flush()
   } catch (error) {
     createLogger().error(
-      {
-        ...formatError(error),
-        metricName
-      },
-      'Failed to log metric'
+      formatError(error),
+      `Failed to log metric (name: ${metricName})`
     )
   }
 }

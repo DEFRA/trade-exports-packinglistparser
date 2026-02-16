@@ -1,6 +1,7 @@
 import { getFileFromS3, uploadJsonFileToS3 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import { formatError } from '../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -122,15 +123,8 @@ export async function populateFromMDM(
     }
   } catch (mdmError) {
     logger.error(
-      {
-        error: {
-          message: mdmError.message,
-          stack_trace: mdmError.stack,
-          type: mdmError.name
-        },
-        s3Error: s3Error?.message
-      },
-      `Failed to populate ${cacheType} from MDM`
+      formatError(mdmError),
+      `Failed to populate ${cacheType} from MDM (S3 error: ${s3Error?.message})`
     )
     throw new Error(
       `Unable to load ${cacheType} from S3 or MDM: S3 error: ${s3Error?.message}, MDM error: ${mdmError.message}`
@@ -202,18 +196,8 @@ export async function initializeCache(
     )
   } catch (mdmError) {
     logger.error(
-      {
-        error: {
-          message: mdmError.message,
-          stack_trace: mdmError.stack,
-          type: mdmError.name
-        },
-        s3Error: result.error?.message,
-        attempts: result.attempt,
-        s3FileName,
-        s3Schema
-      },
-      `Unable to load ${cacheType} data from both S3 and MDM`
+      formatError(mdmError),
+      `Unable to load ${cacheType} data from both S3 and MDM (attempts: ${result.attempt}, S3 error: ${result.error?.message}, file: ${s3FileName}, schema: ${s3Schema})`
     )
 
     throw new Error(

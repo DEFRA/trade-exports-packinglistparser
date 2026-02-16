@@ -25,11 +25,8 @@ async function makeListHandler(request, h) {
     return h.response(objectsResponse).code(STATUS_CODES.OK)
   } catch (error) {
     request.logger.error(
-      {
-        ...formatError(error),
-        schema
-      },
-      'Error listing S3 buckets'
+      formatError(error),
+      `Error listing S3 buckets (schema: ${schema})`
     )
     return h
       .response({ error: 'Failed to list S3 buckets' })
@@ -57,12 +54,8 @@ async function makeGetHandler(request, h) {
     return h.response(data).code(STATUS_CODES.OK)
   } catch (error) {
     request.logger.error(
-      {
-        ...formatError(error),
-        filename,
-        schema
-      },
-      'Error getting file from S3'
+      formatError(error),
+      `Error getting file from S3 (filename: ${filename}, schema: ${schema})`
     )
     return h
       .response({ error: 'Failed to get file from S3' })
@@ -95,12 +88,8 @@ async function makeAddHandler(request, h) {
       .code(STATUS_CODES.CREATED)
   } catch (error) {
     request.logger.error(
-      {
-        ...formatError(error),
-        filename,
-        schema
-      },
-      'Error adding file to S3'
+      formatError(error),
+      `Error adding file to S3 (filename: ${filename}, schema: ${schema})`
     )
     return h
       .response({ error: 'Failed to add file to S3' })

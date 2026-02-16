@@ -77,12 +77,8 @@ const expectErrorLogged = (mockRequest, error, blobName = null) => {
     }
   }
 
-  if (blobName) {
-    errorData.blobName = blobName
-  }
-
   const expectedMessage = blobName
-    ? 'Error downloading blob from application forms'
+    ? `Error downloading blob from application forms (blobName: ${blobName})`
     : 'Error checking if application forms container exists'
 
   expect(mockRequest.logger.error).toHaveBeenCalledWith(

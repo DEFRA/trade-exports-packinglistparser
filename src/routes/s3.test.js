@@ -102,10 +102,9 @@ describe('S3 Routes', () => {
             message: mockError.message,
             stack_trace: mockError.stack,
             type: mockError.name
-          },
-          schema: 'v2'
+          }
         },
-        'Error listing S3 buckets'
+        'Error listing S3 buckets (schema: v2)'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to list S3 buckets'
@@ -193,11 +192,9 @@ describe('S3 Routes', () => {
             message: mockError.message,
             stack_trace: mockError.stack,
             type: mockError.name
-          },
-          filename: testFilename,
-          schema: 'v2'
+          }
         },
-        'Error getting file from S3'
+        'Error getting file from S3 (filename: nonexistent-file, schema: v2)'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to get file from S3'
@@ -334,11 +331,9 @@ describe('S3 Routes', () => {
             message: mockError.message,
             stack_trace: mockError.stack,
             type: mockError.name
-          },
-          filename: testFilename,
-          schema: 'v2'
+          }
         },
-        'Error adding file to S3'
+        'Error adding file to S3 (filename: upload-file, schema: v2)'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to add file to S3'

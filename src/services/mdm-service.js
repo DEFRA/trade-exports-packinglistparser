@@ -25,7 +25,9 @@ export async function callAzureApiWithToken(url, options) {
 
     // Get Azure credentials and request token
     const credential = getAzureCredentials(defraCloudTenantId, clientId)
-    logger.info({ internalAPIMScope }, 'Requesting Azure AD token for API call')
+    logger.info(
+      `Requesting Azure AD token for API call (scope: ${internalAPIMScope})`
+    )
 
     const tokenResponse = await credential.getToken(internalAPIMScope)
 
@@ -44,7 +46,13 @@ export async function callAzureApiWithToken(url, options) {
     }
 
     // Make the API call
-    logger.info({ url, method: options.method || 'GET' }, 'Calling Azure API')
+    logger.info(
+      {
+        url: { full: url },
+        http: { request: { method: options.method || 'GET' } }
+      },
+      'Calling Azure API'
+    )
 
     const response = await fetch(url, {
       ...options,

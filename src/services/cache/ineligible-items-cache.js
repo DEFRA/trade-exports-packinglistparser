@@ -33,7 +33,7 @@ function getItemCount(data) {
 function cacheS3Data(data) {
   ineligibleItemsCache = data
   const itemCount = getItemCount(data)
-  logger.info({ itemCount }, 'Ineligible items cache loaded')
+  logger.info(`Ineligible items cache loaded (itemCount: ${itemCount})`)
 }
 
 /**

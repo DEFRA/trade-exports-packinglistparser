@@ -2,6 +2,7 @@ import { getIsoCodes } from '../mdm-service.js'
 import { uploadJsonFileToS3 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import { formatError } from '../../common/helpers/logging/error-logger.js'
 import { setIsoCodesCache } from './iso-codes-cache.js'
 import {
   buildSyncSuccessResult,
@@ -44,11 +45,7 @@ async function writeMdmDataToS3(mdmData) {
   }
 
   logger.info(
-    {
-      location,
-      dataSize: JSON.stringify(mdmData).length
-    },
-    'Writing ISO codes to S3'
+    `Writing ISO codes to S3 (filename: ${location.filename}, schema: ${location.schema}, dataSize: ${JSON.stringify(mdmData).length})`
   )
 
   const s3Response = await uploadJsonFileToS3(location, JSON.stringify(mdmData))
@@ -90,19 +87,10 @@ export async function syncIsoCodesMdmToS3() {
     )
     return result
   } catch (error) {
+    const duration = Date.now() - startTime
     logger.error(
-      {
-        error: {
-          message: error.message,
-          name: error.name,
-          stack_trace: error.stack
-        },
-        timestamp: new Date().toISOString(),
-        duration: Date.now() - startTime,
-        s3DataPreserved: true,
-        cacheUnchanged: true
-      },
-      'Failed to synchronize ISO codes MDM to S3 - existing S3 data remains unchanged'
+      formatError(error),
+      `Failed to synchronize ISO codes MDM to S3 - existing S3 data remains unchanged (duration: ${duration}ms, timestamp: ${new Date().toISOString()})`
     )
 
     return buildSyncErrorResult(startTime, error)

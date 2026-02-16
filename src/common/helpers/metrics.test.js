@@ -91,10 +91,9 @@ describe('#metrics', () => {
           error: expect.objectContaining({
             message: mockError,
             type: 'Error'
-          }),
-          metricName: mockMetricsName
+          })
         }),
-        'Failed to log metric'
+        'Failed to log metric (name: mock-metrics-name)'
       )
     })
   })

@@ -25,11 +25,8 @@ async function getHandler(request, h) {
     return h.response('Success').code(STATUS_CODES.OK)
   } catch (error) {
     request.logger.error(
-      {
-        ...formatError(error),
-        blobName
-      },
-      'Error downloading blob from application forms'
+      formatError(error),
+      `Error downloading blob from application forms (blobName: ${blobName})`
     )
     return h
       .response({ error: 'Failed to download blob' })

@@ -4,6 +4,7 @@
  * Checks if any row in a packing list sheet matches all provided regex patterns.
  */
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import matcherResult from './matcher-result.js'
 import * as regex from '../utilities/regex.js'
 
@@ -24,15 +25,7 @@ export function matchesHeader(regexHeaders, packingListSheet) {
     }
     return matcherResult.WRONG_HEADER
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in matchesHeader()'
-    )
+    logger.error(formatError(err), 'Error in matchesHeader()')
     return matcherResult.GENERIC_ERROR
   }
 }

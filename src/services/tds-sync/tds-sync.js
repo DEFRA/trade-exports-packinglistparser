@@ -27,19 +27,18 @@ const checkTdsSyncEnabled = createEnabledCheck(
  * @returns {Promise<Array>} Array of S3 object keys
  */
 async function listDocumentsFromS3(schema) {
-  logger.info({ schema }, 'Listing documents from S3 schema folder')
+  logger.info(`Listing documents from S3 schema folder (schema: ${schema})`)
 
   const response = await listS3Objects(schema)
 
   if (!response.Contents || response.Contents.length === 0) {
-    logger.info({ schema }, 'No documents found in S3 schema folder')
+    logger.info(`No documents found in S3 schema folder (schema: ${schema})`)
     return []
   }
 
   const keys = response.Contents.map((obj) => obj.Key)
   logger.info(
-    { schema, count: keys.length },
-    'Found documents in S3 schema folder'
+    `Found documents in S3 schema folder (schema: ${schema}, count: ${keys.length})`
   )
 
   return keys

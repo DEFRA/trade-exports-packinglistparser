@@ -1,5 +1,6 @@
 import cron from 'node-cron'
 import { createLogger } from './logging/logger.js'
+import { formatError } from './logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -36,11 +37,17 @@ export function createSyncScheduler(options) {
 
     // Validate cron schedule
     if (!cron.validate(cronSchedule)) {
-      logger.error({ cronSchedule }, `Invalid cron schedule for ${name} sync`)
-      throw new Error(`Invalid cron schedule: ${cronSchedule}`)
+      const error = new Error(`Invalid cron schedule: ${cronSchedule}`)
+      logger.error(
+        formatError(error),
+        `Invalid cron schedule for ${name} sync (cronSchedule: ${cronSchedule})`
+      )
+      throw error
     }
 
-    logger.info({ cronSchedule }, `Starting ${name} synchronization scheduler`)
+    logger.info(
+      `Starting ${name} synchronization scheduler (cronSchedule: ${cronSchedule})`
+    )
 
     scheduledTask = cron.schedule(
       cronSchedule,
@@ -50,12 +57,7 @@ export function createSyncScheduler(options) {
           await syncFunction()
         } catch (error) {
           logger.error(
-            {
-              error: {
-                message: error.message,
-                stack_trace: error.stack
-              }
-            },
+            formatError(error),
             `Scheduled ${name} synchronization failed`
           )
         }

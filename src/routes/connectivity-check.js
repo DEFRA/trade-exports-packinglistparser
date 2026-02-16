@@ -152,7 +152,7 @@ async function canConnect(func, name) {
 
     return true
   } catch (err) {
-    logger.error(formatError(err), `${name} connection failure:`)
+    logger.error(formatError(err), `${name} connection failure`)
     return false
   }
 }

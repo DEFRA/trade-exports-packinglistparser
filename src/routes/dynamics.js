@@ -79,7 +79,7 @@ const getDispatchLocationRoute = {
     } catch (err) {
       request.logger.error(
         formatError(err),
-        `Dynamics test endpoint: Error retrieving dispatch location for ${applicationId}`
+        `Dynamics test endpoint: Error retrieving dispatch location (applicationId: ${applicationId}, environment: ${environment})`
       )
 
       return h
