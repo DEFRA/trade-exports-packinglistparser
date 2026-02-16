@@ -52,11 +52,11 @@ export function transformToSimpleIsoCodes(data) {
   }
 
   // If already strings, just normalize and deduplicate
-  const codes = data
+  const normalizedCodes = data
     .map((code) => (typeof code === 'string' ? code.toUpperCase() : null))
     .filter((code) => code !== null)
 
-  return [...new Set(codes)]
+  return [...new Set(normalizedCodes)]
 }
 
 /**
