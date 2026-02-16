@@ -6,6 +6,7 @@
  */
 
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import matcherResult from '../../matcher-result.js'
 import headers from '../../model-headers-pdf.js'
 import * as regex from '../../../utilities/regex.js'
@@ -49,7 +50,7 @@ export async function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error(`Error in matches() for file ${filename}`, { err })
+    logger.error(formatError(err), 'Error in matches() for Giovanni Model 3')
     return matcherResult.GENERIC_ERROR
   }
 }

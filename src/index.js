@@ -1,6 +1,7 @@
 import process from 'node:process'
 
 import { createLogger } from './common/helpers/logging/logger.js'
+import { formatError } from './common/helpers/logging/error-logger.js'
 import { startServer } from './common/helpers/start-server.js'
 
 await startServer()
@@ -8,7 +9,7 @@ await startServer()
 const handleProcessError = (errorType) => (error) => {
   const logger = createLogger()
   logger.info(errorType)
-  logger.error(error)
+  logger.error(formatError(error), errorType)
   process.exitCode = 1
 }
 

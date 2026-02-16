@@ -5,6 +5,10 @@ This guide provides comprehensive documentation for developers working with the 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Error Handling and Logging](#error-handling-and-logging)
+  - [Error Logging Pattern](#error-logging-pattern)
+  - [ECS-Compliant Error Format](#ecs-compliant-error-format)
+  - [Examples](#examples)
 - [Service Architecture](#service-architecture)
 - [Parser Models](#parser-models)
   - [Parser Structure](#parser-structure)
@@ -41,6 +45,100 @@ The Trade Exports Packing List Parser is a Node.js service that:
 5. **Integrates** with Dynamics 365 for dispatch location lookups
 
 The service uses a modular architecture with clear separation of concerns across parsers, validators, matchers, and data services.
+
+---
+
+## Error Handling and Logging
+
+The service uses structured logging with ECS-compliant error formatting for CDP compatibility.
+
+### Error Logging Pattern
+
+**Always use the `formatError` helper** for logging errors to ensure ECS compliance:
+
+```javascript
+import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
+
+const logger = createLogger()
+
+try {
+  // Your code here
+} catch (error) {
+  logger.error(formatError(error), 'Error message')
+}
+```
+
+### ECS-Compliant Error Format
+
+The `formatError` helper automatically structures errors with the following fields:
+
+- `error.message` - Error description
+- `error.stack_trace` - Full stack trace
+- `error.type` - Error type/name
+
+These fields are searchable in OpenSearch under CDP's ECS schema.
+
+### Examples
+
+**Basic error logging:**
+
+```javascript
+import { formatError } from '../common/helpers/logging/error-logger.js'
+
+try {
+  await processData()
+} catch (error) {
+  logger.error(formatError(error), 'Failed to process data')
+}
+```
+
+**Error logging with additional context:**
+
+```javascript
+try {
+  await uploadToS3(fileKey)
+} catch (error) {
+  logger.error(
+    {
+      ...formatError(error),
+      fileKey,
+      bucket: 's3-bucket-name'
+    },
+    'Failed to upload file to S3'
+  )
+}
+```
+
+**Info logging with context:**
+
+```javascript
+logger.info(
+  {
+    filename: 'packing-list.xlsx',
+    parserModel: 'TESCO1'
+  },
+  'Successfully parsed packing list'
+)
+```
+
+**⚠️ Never manually construct error objects:**
+
+```javascript
+// ❌ WRONG - Don't do this
+logger.error(
+  {
+    error: {
+      message: error.message,
+      stack_trace: error.stack
+    }
+  },
+  'Error message'
+)
+
+// ✅ CORRECT - Use formatError helper
+logger.error(formatError(error), 'Error message')
+```
 
 ---
 

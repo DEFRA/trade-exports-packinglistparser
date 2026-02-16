@@ -6,6 +6,7 @@
  */
 
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import * as combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers-pdf.js'
@@ -53,15 +54,7 @@ export async function parse(packingList) {
       headers.GIOVANNI3
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in parse()'
-    )
+    logger.error(formatError(err), 'Error in parse()')
     return combineParser.combine(null, [], false, parserModel.NOMATCH)
   }
 }
@@ -110,15 +103,7 @@ function getYsForRows(pageContent, model) {
 
     return ysInRange
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in getYsForRows()'
-    )
+    logger.error(formatError(err), 'Error in getYsForRows()')
     return []
   }
 }

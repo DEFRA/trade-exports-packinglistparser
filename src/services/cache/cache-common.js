@@ -122,7 +122,14 @@ export async function populateFromMDM(
     }
   } catch (mdmError) {
     logger.error(
-      { error: mdmError.message },
+      {
+        error: {
+          message: mdmError.message,
+          stack_trace: mdmError.stack,
+          type: mdmError.name
+        },
+        s3Error: s3Error?.message
+      },
       `Failed to populate ${cacheType} from MDM`
     )
     throw new Error(
@@ -196,8 +203,12 @@ export async function initializeCache(
   } catch (mdmError) {
     logger.error(
       {
+        error: {
+          message: mdmError.message,
+          stack_trace: mdmError.stack,
+          type: mdmError.name
+        },
         s3Error: result.error?.message,
-        mdmError: mdmError.message,
         attempts: result.attempt,
         s3FileName,
         s3Schema

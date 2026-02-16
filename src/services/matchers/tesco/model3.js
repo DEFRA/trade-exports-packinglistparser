@@ -6,6 +6,7 @@
  * header row patterns.
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import matcherResult from '../../matcher-result.js'
 import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
@@ -57,12 +58,7 @@ export function matches(packingList, filename) {
     return result
   } catch (err) {
     logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
+      formatError(err),
       `Error in Tesco 3 matcher for file ${filename}`
     )
     return matcherResult.GENERIC_ERROR

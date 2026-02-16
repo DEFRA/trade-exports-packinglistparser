@@ -10,6 +10,7 @@ import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
 import * as regex from '../../../utilities/regex.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -81,7 +82,7 @@ export function parse(packingListJson) {
       modelHeaders.TURNERS1
     )
   } catch (err) {
-    logger.error({ error: err }, 'Error parsing TURNERS Model 1')
+    logger.error(formatError(err), 'Error parsing TURNERS Model 1')
     return combineParser.combine(null, [], false, parserModel.NOMATCH)
   }
 }

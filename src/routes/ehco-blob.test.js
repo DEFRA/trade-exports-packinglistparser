@@ -68,10 +68,26 @@ const expectErrorResponse = (
   expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.INTERNAL_SERVER_ERROR)
 }
 
-const expectErrorLogged = (mockConsoleError, error) => {
-  expect(mockConsoleError).toHaveBeenCalledWith(
-    ERROR_MESSAGES.ERROR_DOWNLOADING,
-    error
+const expectErrorLogged = (mockRequest, error, blobName = null) => {
+  const errorData = {
+    error: {
+      message: error.message,
+      stack_trace: error.stack,
+      type: error.name
+    }
+  }
+
+  if (blobName) {
+    errorData.blobName = blobName
+  }
+
+  const expectedMessage = blobName
+    ? 'Error downloading blob from application forms'
+    : 'Error checking if application forms container exists'
+
+  expect(mockRequest.logger.error).toHaveBeenCalledWith(
+    errorData,
+    expectedMessage
   )
 }
 
@@ -90,17 +106,16 @@ const createErrorWithStatus = (message, statusCode) => {
 describe('EHCO Blob Routes', () => {
   let mockRequest
   let mockH
-  let mockConsoleError
 
   beforeEach(() => {
     vi.clearAllMocks()
 
-    // Console.error spy
-    mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
-
     mockRequest = {
       query: {
         blobname: 'test-file.pdf'
+      },
+      logger: {
+        error: vi.fn()
       }
     }
 
@@ -158,7 +173,7 @@ describe('EHCO Blob Routes', () => {
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expectErrorLogged(mockConsoleError, error)
+      expectErrorLogged(mockRequest, error, mockRequest.query.blobname)
       expectErrorResponse(mockH)
     })
 
@@ -168,7 +183,7 @@ describe('EHCO Blob Routes', () => {
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expectErrorLogged(mockConsoleError, timeoutError)
+      expectErrorLogged(mockRequest, timeoutError, mockRequest.query.blobname)
       expectErrorResponse(mockH)
     })
 
@@ -181,7 +196,7 @@ describe('EHCO Blob Routes', () => {
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expectErrorLogged(mockConsoleError, authError)
+      expectErrorLogged(mockRequest, authError, mockRequest.query.blobname)
       expectErrorResponse(mockH)
     })
 
@@ -194,7 +209,7 @@ describe('EHCO Blob Routes', () => {
 
       await getFileFromBlob.handler(mockRequest, mockH)
 
-      expectErrorLogged(mockConsoleError, notFoundError)
+      expectErrorLogged(mockRequest, notFoundError, mockRequest.query.blobname)
       expectErrorResponse(mockH)
     })
 
@@ -260,7 +275,7 @@ describe('EHCO Blob Routes', () => {
 
       await formsContainerExists.handler(mockRequest, mockH)
 
-      expectErrorLogged(mockConsoleError, error)
+      expectErrorLogged(mockRequest, error)
       expectErrorResponse(mockH)
     })
 
@@ -270,7 +285,7 @@ describe('EHCO Blob Routes', () => {
 
       await formsContainerExists.handler(mockRequest, mockH)
 
-      expectErrorLogged(mockConsoleError, timeoutError)
+      expectErrorLogged(mockRequest, timeoutError)
       expectErrorResponse(mockH)
     })
 
@@ -283,7 +298,7 @@ describe('EHCO Blob Routes', () => {
 
       await formsContainerExists.handler(mockRequest, mockH)
 
-      expectErrorLogged(mockConsoleError, authError)
+      expectErrorLogged(mockRequest, authError)
       expectErrorResponse(mockH)
     })
   })

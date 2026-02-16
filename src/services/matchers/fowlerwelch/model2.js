@@ -8,6 +8,7 @@ import * as regex from '../../../utilities/regex.js'
 import headers from '../../model-headers.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { matchesHeader } from '../../matches-header.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -51,7 +52,10 @@ export function matchesModel(packingList, filename, regexExpression) {
 
     return result // Return the last checked result if no issues were found
   } catch (err) {
-    logger.error(`Error in matchesModel() for file ${filename}`, { err })
+    logger.error(
+      formatError(err),
+      'Error in matchesModel() for Fowler Welch Model 2'
+    )
     return MatcherResult.GENERIC_ERROR
   }
 }

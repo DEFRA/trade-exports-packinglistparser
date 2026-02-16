@@ -6,6 +6,7 @@ import { initializeIsoCodesCache } from '../../services/cache/iso-codes-cache.js
 import { startSyncScheduler } from '../../services/cache/sync-scheduler.js'
 import { startTdsSyncScheduler } from '../../services/tds-sync/sync-scheduler.js'
 import { createLogger } from './logging/logger.js'
+import { formatError } from './logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -18,7 +19,7 @@ async function startServer() {
     await initializeIneligibleItemsCache()
   } catch (error) {
     logger.error(
-      { error: error.message },
+      formatError(error),
       'Failed to initialize ineligible items cache - server will start but cache will be empty'
     )
     // Continue with server startup even if cache initialization fails
@@ -31,7 +32,7 @@ async function startServer() {
     await initializeIsoCodesCache()
   } catch (error) {
     logger.error(
-      { error: error.message },
+      formatError(error),
       'Failed to initialize ISO codes cache - server will start but cache will be empty'
     )
     // Continue with server startup even if cache initialization fails
@@ -44,7 +45,7 @@ async function startServer() {
     startSyncScheduler()
   } catch (error) {
     logger.error(
-      { error: error.message },
+      formatError(error),
       'Failed to start MDM to S3 sync schedulers - manual sync will still be available'
     )
   }
@@ -55,7 +56,7 @@ async function startServer() {
     startTdsSyncScheduler()
   } catch (error) {
     logger.error(
-      { error: error.message },
+      formatError(error),
       'Failed to start TDS sync scheduler - manual sync will still be available'
     )
   }

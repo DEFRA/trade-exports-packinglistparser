@@ -1,5 +1,6 @@
 import { config } from '../config.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 const dsConfig = config.get('dynamics')
@@ -40,15 +41,7 @@ async function bearerTokenRequest() {
 
     return json.access_token
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'bearerTokenRequest() failed'
-    )
+    logger.error(formatError(err), 'bearerTokenRequest() failed')
     throw err
   }
 }
@@ -152,13 +145,13 @@ function logHttpError(status, errorText) {
  * @param {string} errorMessage - Error message
  * @param {number} retryDelayMs - Retry delay in milliseconds
  */
-function logCatchError(attempt, maxRetries, errorMessage, retryDelayMs) {
+function logCatchError(attempt, maxRetries, error, retryDelayMs) {
   const isLastAttempt = attempt === maxRetries
   const message = isLastAttempt
-    ? `Final attempt failed with error: ${errorMessage}`
-    : `Attempt ${attempt} failed with error: ${errorMessage}, retrying in ${retryDelayMs}ms`
+    ? `Final attempt failed with error: ${error.message}`
+    : `Attempt ${attempt} failed with error: ${error.message}, retrying in ${retryDelayMs}ms`
 
-  logger.error(message)
+  logger.error(formatError(error), message)
 }
 
 /**
@@ -181,15 +174,7 @@ async function getDispatchLocation(
 
       if (!validateBearerToken(bearerToken)) {
         const error = new Error(`Failed to obtain bearer token: ${bearerToken}`)
-        logger.error(
-          {
-            error: {
-              message: error.message,
-              stack_trace: error.stack
-            }
-          },
-          GET_DISPATCH_LOCATION_METHOD
-        )
+        logger.error(formatError(error), GET_DISPATCH_LOCATION_METHOD)
         return null
       }
 
@@ -208,7 +193,7 @@ async function getDispatchLocation(
       return null
     } catch (err) {
       // Only retry on fetch failures (network errors)
-      logCatchError(attempt, maxRetries, err.message, retryDelayMs)
+      logCatchError(attempt, maxRetries, err, retryDelayMs)
 
       if (attempt === maxRetries) {
         return null

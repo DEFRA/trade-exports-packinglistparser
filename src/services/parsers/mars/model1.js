@@ -9,6 +9,7 @@ import { mapParser } from '../../parser-map.js'
 import * as regex from '../../../utilities/regex.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
 
@@ -65,15 +66,7 @@ export function parse(packingListJson) {
       headers.MARS1
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Mars Model 1 parser'
-    )
+    logger.error(formatError(err), 'Error in Mars Model 1 parser')
     return combineParser.combine(null, [], false, ParserModel.NOMATCH)
   }
 }

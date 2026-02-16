@@ -28,6 +28,7 @@ const ERROR_MESSAGES = {
 describe('MDM Routes', () => {
   let mockH
   let mockResponse
+  let mockRequest
 
   beforeEach(() => {
     vi.clearAllMocks()
@@ -36,6 +37,13 @@ describe('MDM Routes', () => {
     mockResponse = { code: vi.fn().mockReturnThis() }
     mockH = {
       response: vi.fn().mockReturnValue(mockResponse)
+    }
+
+    // Setup mock request with logger
+    mockRequest = {
+      logger: {
+        error: vi.fn()
+      }
     }
   })
 
@@ -55,7 +63,7 @@ describe('MDM Routes', () => {
     it('should return success response with items', async () => {
       getIneligibleItems.mockResolvedValue(TEST_ITEMS)
 
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       expect(getIneligibleItems).toHaveBeenCalledTimes(1)
       expect(mockH.response).toHaveBeenCalledWith(
@@ -70,7 +78,7 @@ describe('MDM Routes', () => {
     it('should handle empty items array', async () => {
       getIneligibleItems.mockResolvedValue([])
 
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       expect(getIneligibleItems).toHaveBeenCalledTimes(1)
       expect(mockH.response).toHaveBeenCalledWith('Success: [] ')
@@ -84,7 +92,7 @@ describe('MDM Routes', () => {
       const singleItem = [TEST_ITEMS[0]]
       getIneligibleItems.mockResolvedValue(singleItem)
 
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith(
         `Success: ${JSON.stringify(singleItem)} `
@@ -99,17 +107,18 @@ describe('MDM Routes', () => {
       const error = new Error(ERROR_MESSAGES.SERVICE_ERROR)
       getIneligibleItems.mockRejectedValue(error)
 
-      // Spy on console.error
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       expect(getIneligibleItems).toHaveBeenCalledTimes(1)
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error downloading ineligible items:',
-        error
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: error.message,
+            stack_trace: error.stack,
+            type: error.name
+          }
+        },
+        'Error downloading ineligible items from MDM'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: ERROR_MESSAGES.DOWNLOAD_FAILED
@@ -117,8 +126,6 @@ describe('MDM Routes', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(
         STATUS_CODES.INTERNAL_SERVER_ERROR
       )
-
-      consoleErrorSpy.mockRestore()
     })
 
     /**
@@ -133,7 +140,7 @@ describe('MDM Routes', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {})
 
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
         error: ERROR_MESSAGES.DOWNLOAD_FAILED
@@ -157,7 +164,7 @@ describe('MDM Routes', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {})
 
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
         error: ERROR_MESSAGES.DOWNLOAD_FAILED
@@ -176,15 +183,17 @@ describe('MDM Routes', () => {
       const networkError = new Error('Network timeout')
       getIneligibleItems.mockRejectedValue(networkError)
 
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
+      await ineligibleItems.handler(mockRequest, mockH)
 
-      await ineligibleItems.handler({}, mockH)
-
-      expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'Error downloading ineligible items:',
-        networkError
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: networkError.message,
+            stack_trace: networkError.stack,
+            type: networkError.name
+          }
+        },
+        'Error downloading ineligible items from MDM'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: ERROR_MESSAGES.DOWNLOAD_FAILED
@@ -192,8 +201,6 @@ describe('MDM Routes', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(
         STATUS_CODES.INTERNAL_SERVER_ERROR
       )
-
-      consoleErrorSpy.mockRestore()
     })
 
     /**
@@ -225,7 +232,7 @@ describe('MDM Routes', () => {
       ]
       getIneligibleItems.mockResolvedValue(complexItems)
 
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       const expectedResponse = `Success: ${JSON.stringify(complexItems)} `
       expect(mockH.response).toHaveBeenCalledWith(expectedResponse)
@@ -238,7 +245,7 @@ describe('MDM Routes', () => {
     it('should always return a response', async () => {
       getIneligibleItems.mockResolvedValue(TEST_ITEMS)
 
-      const result = await ineligibleItems.handler({}, mockH)
+      const result = await ineligibleItems.handler(mockRequest, mockH)
 
       // Should return the response with code method
       expect(result).toBe(mockResponse)
@@ -255,7 +262,7 @@ describe('MDM Routes', () => {
         .spyOn(console, 'error')
         .mockImplementation(() => {})
 
-      await ineligibleItems.handler({}, mockH)
+      await ineligibleItems.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith(
         expect.objectContaining({

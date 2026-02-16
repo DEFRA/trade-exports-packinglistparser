@@ -23,15 +23,16 @@ describe('trade-service-bus routes', () => {
   beforeEach(() => {
     vi.clearAllMocks()
 
-    mockRequest = {}
+    mockRequest = {
+      logger: {
+        error: vi.fn()
+      }
+    }
 
     mockH = {
       response: vi.fn().mockReturnThis(),
       code: vi.fn().mockReturnThis()
     }
-
-    // Mock console.error to avoid test output pollution
-    vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   describe('sendtoqueue', () => {
@@ -61,9 +62,15 @@ describe('trade-service-bus routes', () => {
 
       const result = await sendtoqueue.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        ERROR_MESSAGES.ERROR_SENDING,
-        error
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: error.message,
+            stack_trace: error.stack,
+            type: error.name
+          }
+        },
+        'Error sending message to Service Bus queue'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: ERROR_MESSAGES.FAILED_SEND
@@ -95,9 +102,15 @@ describe('trade-service-bus routes', () => {
 
       const result = await sendtoqueue.handler(mockRequest, mockH)
 
-      expect(console.error).toHaveBeenCalledWith(
-        ERROR_MESSAGES.ERROR_SENDING,
-        authError
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: authError.message,
+            stack_trace: authError.stack,
+            type: authError.name
+          }
+        },
+        'Error sending message to Service Bus queue'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: ERROR_MESSAGES.FAILED_SEND

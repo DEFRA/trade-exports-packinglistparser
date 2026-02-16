@@ -3,6 +3,7 @@
  * @module parsers/buffaload-logistics/model1
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js'
@@ -11,12 +12,8 @@ import { mapParser } from '../../parser-map.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
 import * as regex from '../../../utilities/regex.js'
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 
 const logger = createLogger()
-const currentFilename = fileURLToPath(import.meta.url)
-const filename = path.join('src', currentFilename.split('src')[1])
 
 /**
  * Parse the provided packing list JSON for BUFFALOAD-LOGISTICS model 1.
@@ -69,17 +66,7 @@ function parse(packingListJson) {
       headers.BUFFALOAD1
     )
   } catch (err) {
-    logger.error(
-      {
-        filename,
-        function: 'parse()',
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error parsing Buffaload Logistics Model 1'
-    )
+    logger.error(formatError(err), 'Error parsing Buffaload Logistics Model 1')
     return combineParser.combine(null, [], false, parserModel.NOMATCH)
   }
 }

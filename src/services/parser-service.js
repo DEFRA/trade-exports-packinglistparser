@@ -8,6 +8,7 @@ import * as jsonFile from '../utilities/json-file.js'
 import * as fileExtension from '../utilities/file-extension.js'
 import * as parserFactory from './parsers/parser-factory.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -69,15 +70,7 @@ async function parsePackingList(packingList, fileName, dispatchLocation) {
       )
     }
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack: err.stack
-        }
-      },
-      'Error parsing packing list'
-    )
+    logger.error(formatError(err), 'Error parsing packing list')
     return {}
   }
 }

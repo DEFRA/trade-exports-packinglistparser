@@ -10,6 +10,7 @@ import {
 import { determineApprovalStatus } from '../utilities/approval-status.js'
 import { v4 } from 'uuid'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { config } from '../config.js'
 
 const { disableSend } = config.get('tradeServiceBus')
@@ -65,12 +66,7 @@ export async function processPackingList(
     return successResult
   } catch (err) {
     logger.error(
-      {
-        error: {
-          message: err.message,
-          stack: err.stack
-        }
-      },
+      formatError(err),
       `Error processing packing list: ${err.message}`
     )
 
@@ -93,7 +89,7 @@ async function getParsedPackingList(packingList, payload) {
     )
   } catch (err) {
     logger.error(
-      { error: err.message, payload },
+      formatError(err),
       'Failed to extract establishment ID from payload'
     )
     throw new Error(
@@ -190,12 +186,7 @@ function mapPackingListForStorage(packingListJson, applicationId) {
     }
   } catch (err) {
     logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
+      formatError(err),
       `Error mapping packing list for storage for application ${applicationId}`
     )
     return undefined
@@ -246,10 +237,7 @@ function itemsMapper(o, applicationId) {
       failureReason: o.failure
     }
   } catch (err) {
-    logger.error(
-      { applicationId, item: o, err },
-      'Error mapping packing list item'
-    )
+    logger.error(formatError(err), 'Error mapping packing list item')
     return undefined
   }
 }

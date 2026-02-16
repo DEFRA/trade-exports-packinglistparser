@@ -6,6 +6,7 @@ import {
 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import { formatError } from '../../common/helpers/logging/error-logger.js'
 import {
   buildSyncSuccessResult,
   buildSyncErrorResult
@@ -113,13 +114,7 @@ async function transferFileToTds(s3Key) {
     }
   } catch (error) {
     logger.error(
-      {
-        s3Key,
-        error: {
-          message: error.message,
-          name: error.name
-        }
-      },
+      formatError(error),
       `Failed to transfer file from S3 to TD: ${s3Key}`
     )
 
@@ -201,15 +196,7 @@ export async function syncToTds() {
     return result
   } catch (error) {
     logger.error(
-      {
-        error: {
-          message: error.message,
-          name: error.name,
-          stack_trace: error.stack
-        },
-        timestamp: new Date().toISOString(),
-        duration: Date.now() - startTime
-      },
+      formatError(error),
       'Failed to synchronize S3 documents to TDS'
     )
 

@@ -33,11 +33,13 @@ describe('S3 Routes', () => {
 
     mockRequest = {
       params: {},
-      payload: {}
+      payload: {},
+      logger: {
+        error: vi.fn()
+      }
     }
 
     vi.clearAllMocks()
-    vi.spyOn(console, 'error').mockImplementation(() => {})
     vi.spyOn(console, 'log').mockImplementation(() => {})
   })
 
@@ -94,9 +96,16 @@ describe('S3 Routes', () => {
       await getListFromS3.handler(mockRequest, mockH)
 
       expect(listS3Objects).toHaveBeenCalledTimes(1)
-      expect(console.error).toHaveBeenCalledWith(
-        'Error listing S3 buckets:',
-        mockError
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: mockError.message,
+            stack_trace: mockError.stack,
+            type: mockError.name
+          },
+          schema: 'v2'
+        },
+        'Error listing S3 buckets'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to list S3 buckets'
@@ -178,9 +187,17 @@ describe('S3 Routes', () => {
         filename: testFilename,
         schema: 'v2'
       })
-      expect(console.error).toHaveBeenCalledWith(
-        'Error getting file from S3:',
-        mockError
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: mockError.message,
+            stack_trace: mockError.stack,
+            type: mockError.name
+          },
+          filename: testFilename,
+          schema: 'v2'
+        },
+        'Error getting file from S3'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to get file from S3'
@@ -311,9 +328,17 @@ describe('S3 Routes', () => {
         { filename: testFilename, schema: 'v2' },
         JSON.stringify(testPayload)
       )
-      expect(console.error).toHaveBeenCalledWith(
-        'Error adding file to S3:',
-        mockError
+      expect(mockRequest.logger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: mockError.message,
+            stack_trace: mockError.stack,
+            type: mockError.name
+          },
+          filename: testFilename,
+          schema: 'v2'
+        },
+        'Error adding file to S3'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         error: 'Failed to add file to S3'

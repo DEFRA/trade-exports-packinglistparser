@@ -3,6 +3,7 @@
  * @module parsers/iceland/model2
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers-csv.js'
@@ -81,15 +82,7 @@ export function parse(packingListCsv) {
       headers.ICELAND2 // Required for Country of Origin validation
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Iceland 2 parser'
-    )
+    logger.error(formatError(err), 'Error in Iceland 2 parser')
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

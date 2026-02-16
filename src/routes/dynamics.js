@@ -1,5 +1,6 @@
 import Joi from 'joi'
 import { getDispatchLocation } from '../services/dynamics-service.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { config } from '../config.js'
 import { STATUS_CODES } from './statuscodes.js'
 
@@ -77,12 +78,7 @@ const getDispatchLocationRoute = {
       return h.response(response).code(STATUS_CODES.OK)
     } catch (err) {
       request.logger.error(
-        {
-          error: {
-            message: err.message,
-            stack_trace: err.stack
-          }
-        },
+        formatError(err),
         `Dynamics test endpoint: Error retrieving dispatch location for ${applicationId}`
       )
 

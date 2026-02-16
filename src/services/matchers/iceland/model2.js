@@ -6,6 +6,7 @@
  * header row patterns.
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import matcherResult from '../../matcher-result.js'
 import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
@@ -47,7 +48,7 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error(`Error in matches() for file ${filename}`, { err })
+    logger.error(formatError(err), 'Error in matches() for Iceland Model 2')
     return matcherResult.GENERIC_ERROR
   }
 }

@@ -7,6 +7,7 @@ import ParserModel from '../../parser-model.js'
 import headers from '../../model-headers.js'
 import * as regex from '../../../utilities/regex.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import { mapParser } from '../../parser-map.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { matchesHeader } from '../../matches-header.js'
@@ -75,15 +76,7 @@ export function parseModel(packingListJson, model, establishmentNumberRegex) {
       headers.FOWLERWELCH2
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Fowlerwelch Model 2 parser'
-    )
+    logger.error(formatError(err), 'Error in Fowlerwelch Model 2 parser')
     return combineParser.combine(null, [], false, ParserModel.NOMATCH)
   }
 }
