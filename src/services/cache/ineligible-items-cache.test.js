@@ -3,7 +3,8 @@ import {
   initializeIneligibleItemsCache,
   getIneligibleItemsCache,
   setIneligibleItemsCache,
-  clearIneligibleItemsCache
+  clearIneligibleItemsCache,
+  deduplicateIneligibleItems
 } from './ineligible-items-cache.js'
 
 // Mock dependencies
@@ -381,6 +382,143 @@ describe('ineligible-items-cache', () => {
         filename: 'custom-file',
         schema: 'v2.0'
       })
+    })
+  })
+
+  describe('deduplicateIneligibleItems', () => {
+    it('should return non-array input unchanged', () => {
+      const input = { some: 'object' }
+      expect(deduplicateIneligibleItems(input)).toEqual(input)
+    })
+
+    it('should return empty array unchanged', () => {
+      expect(deduplicateIneligibleItems([])).toEqual([])
+    })
+
+    it('should deduplicate items with same identifying fields', () => {
+      const items = [
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        }
+      ]
+      const result = deduplicateIneligibleItems(items)
+      expect(result).toHaveLength(1)
+      expect(result[0]).toEqual(items[1]) // Should keep the last one
+    })
+
+    it('should deduplicate based on country, commodity, and treatment combination', () => {
+      const items = [
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen',
+          extra: 'field1'
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen',
+          extra: 'field2'
+        },
+        {
+          country_of_origin: 'BR',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        }
+      ]
+      const result = deduplicateIneligibleItems(items)
+      expect(result).toHaveLength(2)
+      expect(result[0].extra).toBe('field2') // Should keep last CN item
+      expect(result[1].country_of_origin).toBe('BR')
+    })
+
+    it('should handle null/undefined identifying fields', () => {
+      const items = [
+        {
+          country_of_origin: 'CN',
+          commodity_code: null,
+          type_of_treatment: undefined
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '',
+          type_of_treatment: null
+        }
+      ]
+      const result = deduplicateIneligibleItems(items)
+      expect(result).toHaveLength(1) // Both have same key: CN||
+    })
+
+    it('should use JSON.stringify fallback when all identifying fields are empty', () => {
+      const items = [
+        { id: 1, name: 'Item 1' },
+        { id: 1, name: 'Item 1' },
+        { id: 2, name: 'Item 2' }
+      ]
+      const result = deduplicateIneligibleItems(items)
+      expect(result).toHaveLength(2)
+      expect(result[0]).toEqual({ id: 1, name: 'Item 1' })
+      expect(result[1]).toEqual({ id: 2, name: 'Item 2' })
+    })
+
+    it('should preserve insertion order', () => {
+      const items = [
+        {
+          country_of_origin: 'US',
+          commodity_code: '0101',
+          type_of_treatment: null
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        },
+        {
+          country_of_origin: 'BR',
+          commodity_code: '0602',
+          type_of_treatment: 'Chilled'
+        }
+      ]
+      const result = deduplicateIneligibleItems(items)
+      expect(result).toHaveLength(3)
+      expect(result[0].country_of_origin).toBe('US')
+      expect(result[1].country_of_origin).toBe('CN')
+      expect(result[2].country_of_origin).toBe('BR')
+    })
+
+    it('should keep last occurrence when duplicates exist', () => {
+      const items = [
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen',
+          version: 'v1'
+        },
+        {
+          country_of_origin: 'US',
+          commodity_code: '0101',
+          type_of_treatment: null,
+          version: 'v1'
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen',
+          version: 'v2'
+        }
+      ]
+      const result = deduplicateIneligibleItems(items)
+      expect(result).toHaveLength(2)
+      expect(result[0].country_of_origin).toBe('CN')
+      expect(result[0].version).toBe('v2') // Should have latest CN version
+      expect(result[1].country_of_origin).toBe('US')
     })
   })
 })

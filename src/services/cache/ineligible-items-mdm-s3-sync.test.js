@@ -347,4 +347,110 @@ describe('ineligible-items-mdm-s3-sync', () => {
       expect(uploadJsonFileToS3).not.toHaveBeenCalled()
     })
   })
+
+  describe('Deduplication', () => {
+    it('should deduplicate ineligibleItems before storing to S3 (object format)', async () => {
+      const mockData = {
+        ineligibleItems: [
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          },
+          {
+            country_of_origin: 'US',
+            commodity_code: '0101',
+            type_of_treatment: null
+          },
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          } // Duplicate
+        ],
+        version: '1.0'
+      }
+
+      const mockS3Response = { ETag: '"dedup123"' }
+      getIneligibleItems.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      await syncMdmToS3()
+
+      // Verify deduplicated data was sent to S3
+      expect(uploadJsonFileToS3).toHaveBeenCalledTimes(1)
+      const uploadedData = JSON.parse(uploadJsonFileToS3.mock.calls[0][1])
+      expect(uploadedData.ineligibleItems).toHaveLength(2)
+      expect(uploadedData.version).toBe('1.0')
+    })
+
+    it('should deduplicate array format before storing to S3', async () => {
+      const mockData = [
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        },
+        {
+          country_of_origin: 'US',
+          commodity_code: '0101',
+          type_of_treatment: null
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        }
+      ]
+
+      const mockS3Response = { ETag: '"dedup456"' }
+      getIneligibleItems.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      await syncMdmToS3()
+
+      const uploadedData = JSON.parse(uploadJsonFileToS3.mock.calls[0][1])
+      expect(uploadedData).toHaveLength(2)
+    })
+
+    it('should handle non-array non-object data without deduplication', async () => {
+      const mockData = { someKey: 'someValue' }
+
+      const mockS3Response = { ETag: '"other789"' }
+      getIneligibleItems.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      await syncMdmToS3()
+
+      const uploadedData = JSON.parse(uploadJsonFileToS3.mock.calls[0][1])
+      expect(uploadedData).toEqual(mockData)
+    })
+
+    it('should update cache with deduplicated data', async () => {
+      const mockData = {
+        ineligibleItems: [
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          },
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          }
+        ]
+      }
+
+      const mockS3Response = { ETag: '"cache123"' }
+      getIneligibleItems.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      await syncMdmToS3()
+
+      expect(setIneligibleItemsCache).toHaveBeenCalledTimes(1)
+      const cacheData = setIneligibleItemsCache.mock.calls[0][0]
+      expect(cacheData.ineligibleItems).toHaveLength(1)
+    })
+  })
 })
