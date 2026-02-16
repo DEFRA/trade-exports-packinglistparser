@@ -18,9 +18,13 @@ vi.mock('../s3-service.js', () => ({
   uploadJsonFileToS3: vi.fn()
 }))
 
-vi.mock('./ineligible-items-cache.js', () => ({
-  setIneligibleItemsCache: vi.fn()
-}))
+vi.mock('./ineligible-items-cache.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    setIneligibleItemsCache: vi.fn()
+  }
+})
 
 vi.mock('../../config.js', () => ({
   config: {

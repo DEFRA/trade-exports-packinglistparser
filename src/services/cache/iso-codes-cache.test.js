@@ -267,9 +267,9 @@ describe('iso-codes-cache', () => {
 
     it('should handle MDM format with alpha2 field', async () => {
       const mdmData = [
-        { alpha2: 'de', name: 'Germany' },
-        { alpha2: 'it', name: 'Italy' },
-        { alpha2: 'es', name: 'Spain' }
+        { effectiveAlpha2: 'de', name: 'Germany' },
+        { effectiveAlpha2: 'it', name: 'Italy' },
+        { effectiveAlpha2: 'es', name: 'Spain' }
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(mdmData))
 
@@ -280,9 +280,9 @@ describe('iso-codes-cache', () => {
 
     it('should handle backward compatible format with code field', async () => {
       const legacyData = [
-        { code: 'ca', name: 'Canada' },
-        { code: 'mx', name: 'Mexico' },
-        { code: 'br', name: 'Brazil' }
+        { effectiveAlpha2: 'ca', name: 'Canada' },
+        { effectiveAlpha2: 'mx', name: 'Mexico' },
+        { effectiveAlpha2: 'br', name: 'Brazil' }
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(legacyData))
 
@@ -293,9 +293,9 @@ describe('iso-codes-cache', () => {
 
     it('should handle Alpha2 field (uppercase A)', async () => {
       const data = [
-        { Alpha2: 'au', name: 'Australia' },
-        { Alpha2: 'nz', name: 'New Zealand' },
-        { Alpha2: 'jp', name: 'Japan' }
+        { effectiveAlpha2: 'au', name: 'Australia' },
+        { effectiveAlpha2: 'nz', name: 'New Zealand' },
+        { effectiveAlpha2: 'jp', name: 'Japan' }
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(data))
 
@@ -306,10 +306,10 @@ describe('iso-codes-cache', () => {
 
     it('should filter out items with no code fields', async () => {
       const mixedData = [
-        { alpha2: 'gb', name: 'United Kingdom' },
-        { name: 'Invalid Entry' }, // No code field
-        { alpha2: 'us', name: 'United States' },
-        { somefield: 'value' } // No code field
+        { effectiveAlpha2: 'gb', name: 'United Kingdom' },
+        { name: 'Invalid Entry' }, // No effectiveAlpha2 field
+        { effectiveAlpha2: 'us', name: 'United States' },
+        { somefield: 'value' } // No effectiveAlpha2 field
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(mixedData))
 
