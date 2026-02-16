@@ -189,6 +189,62 @@ describe('ineligible-items-cache', () => {
       expect(getIneligibleItemsCache()).toEqual(objectData)
     })
 
+    it('should deduplicate object format with ineligibleItems during initialization', async () => {
+      const dataWithDuplicates = {
+        ineligibleItems: [
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          },
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          }, // Duplicate
+          {
+            country_of_origin: 'US',
+            commodity_code: '0101',
+            type_of_treatment: null
+          }
+        ],
+        version: '2.0'
+      }
+      getFileFromS3.mockResolvedValue(JSON.stringify(dataWithDuplicates))
+
+      await initializeIneligibleItemsCache()
+
+      const cached = getIneligibleItemsCache()
+      expect(cached.ineligibleItems).toHaveLength(2)
+      expect(cached.version).toBe('2.0')
+    })
+
+    it('should deduplicate array format during initialization', async () => {
+      const arrayWithDuplicates = [
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        },
+        {
+          country_of_origin: 'US',
+          commodity_code: '0101',
+          type_of_treatment: null
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        } // Duplicate
+      ]
+      getFileFromS3.mockResolvedValue(JSON.stringify(arrayWithDuplicates))
+
+      await initializeIneligibleItemsCache()
+
+      const cached = getIneligibleItemsCache()
+      expect(cached).toHaveLength(2)
+    })
+
     it('should succeed on final retry attempt', async () => {
       getFileFromS3
         .mockRejectedValueOnce(new Error('Fail 1'))
@@ -308,7 +364,7 @@ describe('ineligible-items-cache', () => {
   })
 
   describe('setIneligibleItemsCache', () => {
-    it('should set cache data', () => {
+    it('should set cache data from array', () => {
       const testData = [{ test: 'data' }]
       setIneligibleItemsCache(testData)
 
@@ -323,6 +379,110 @@ describe('ineligible-items-cache', () => {
       setIneligibleItemsCache(newData)
 
       expect(getIneligibleItemsCache()).toEqual(newData)
+    })
+
+    it('should handle object with ineligibleItems array', () => {
+      const testData = {
+        ineligibleItems: [
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          },
+          {
+            country_of_origin: 'US',
+            commodity_code: '0101',
+            type_of_treatment: null
+          }
+        ],
+        version: '1.0',
+        metadata: { source: 'MDM' }
+      }
+
+      setIneligibleItemsCache(testData)
+
+      const cached = getIneligibleItemsCache()
+      expect(cached.ineligibleItems).toHaveLength(2)
+      expect(cached.version).toBe('1.0')
+      expect(cached.metadata).toEqual({ source: 'MDM' })
+    })
+
+    it('should deduplicate ineligibleItems array in object format', () => {
+      const testData = {
+        ineligibleItems: [
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          },
+          {
+            country_of_origin: 'CN',
+            commodity_code: '0207',
+            type_of_treatment: 'Frozen'
+          }, // Duplicate
+          {
+            country_of_origin: 'US',
+            commodity_code: '0101',
+            type_of_treatment: null
+          }
+        ],
+        version: '1.0'
+      }
+
+      setIneligibleItemsCache(testData)
+
+      const cached = getIneligibleItemsCache()
+      expect(cached.ineligibleItems).toHaveLength(2)
+    })
+
+    it('should deduplicate direct array format', () => {
+      const testData = [
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        },
+        {
+          country_of_origin: 'CN',
+          commodity_code: '0207',
+          type_of_treatment: 'Frozen'
+        },
+        {
+          country_of_origin: 'US',
+          commodity_code: '0101',
+          type_of_treatment: null
+        }
+      ]
+
+      setIneligibleItemsCache(testData)
+
+      const cached = getIneligibleItemsCache()
+      expect(cached).toHaveLength(2)
+    })
+
+    it('should handle non-array non-object data (else branch)', () => {
+      const testData = { someOtherFormat: 'data', noIneligibleItems: true }
+
+      setIneligibleItemsCache(testData)
+
+      expect(getIneligibleItemsCache()).toEqual(testData)
+    })
+
+    it('should handle null data', () => {
+      setIneligibleItemsCache([{ test: 'data' }])
+      expect(getIneligibleItemsCache()).not.toBeNull()
+
+      setIneligibleItemsCache(null)
+
+      expect(getIneligibleItemsCache()).toBeNull()
+    })
+
+    it('should handle string data', () => {
+      const testData = 'some string data'
+
+      setIneligibleItemsCache(testData)
+
+      expect(getIneligibleItemsCache()).toBe(testData)
     })
   })
 
