@@ -18,9 +18,13 @@ vi.mock('../s3-service.js', () => ({
   uploadJsonFileToS3: vi.fn()
 }))
 
-vi.mock('./iso-codes-cache.js', () => ({
-  setIsoCodesCache: vi.fn()
-}))
+vi.mock('./iso-codes-cache.js', async (importOriginal) => {
+  const actual = await importOriginal()
+  return {
+    ...actual,
+    setIsoCodesCache: vi.fn()
+  }
+})
 
 vi.mock('../../config.js', () => ({
   config: {
@@ -102,10 +106,13 @@ describe('iso-codes-mdm-s3-sync', () => {
 
     it('should successfully sync ISO codes from MDM to S3', async () => {
       const mockData = [
-        { code: 'GB', name: 'United Kingdom' },
-        { code: 'US', name: 'United States' },
-        { code: 'FR', name: 'France' }
+        { effectiveAlpha2: 'GB', name: 'United Kingdom' },
+        { effectiveAlpha2: 'US', name: 'United States' },
+        { effectiveAlpha2: 'FR', name: 'France' }
       ]
+
+      // Expected simplified format after transformation
+      const expectedSimplifiedData = ['GB', 'US', 'FR']
 
       const mockS3Response = {
         ETag: '"abc123"'
@@ -127,16 +134,19 @@ describe('iso-codes-mdm-s3-sync', () => {
       expect(result.duration).toBeGreaterThanOrEqual(0)
 
       expect(getIsoCodes).toHaveBeenCalledTimes(1)
+      // Now expecting simplified format to be uploaded to S3
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
         { filename: 'iso-codes', schema: 'cache' },
-        JSON.stringify(mockData)
+        JSON.stringify(expectedSimplifiedData)
       )
       expect(setIsoCodesCache).toHaveBeenCalledTimes(1)
-      expect(setIsoCodesCache).toHaveBeenCalledWith(mockData)
+      // Cache also receives simplified format
+      expect(setIsoCodesCache).toHaveBeenCalledWith(expectedSimplifiedData)
     })
 
     it('should handle empty ISO codes array', async () => {
       const mockData = []
+      const expectedSimplifiedData = []
 
       const mockS3Response = {
         ETag: '"empty123"'
@@ -151,16 +161,22 @@ describe('iso-codes-mdm-s3-sync', () => {
       expect(result.itemCount).toBe(0)
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
         { filename: 'iso-codes', schema: 'cache' },
-        JSON.stringify(mockData)
+        JSON.stringify(expectedSimplifiedData)
       )
-      expect(setIsoCodesCache).toHaveBeenCalledWith(mockData)
+      expect(setIsoCodesCache).toHaveBeenCalledWith(expectedSimplifiedData)
     })
 
     it('should handle large ISO codes dataset', async () => {
       const mockData = Array.from({ length: 250 }, (_, i) => ({
-        code: `C${i}`,
+        effectiveAlpha2: `C${i}`,
         name: `Country ${i}`
       }))
+
+      // Expected simplified format: just the codes
+      const expectedSimplifiedData = Array.from(
+        { length: 250 },
+        (_, i) => `C${i}`
+      )
 
       const mockS3Response = {
         ETag: '"large456"'
@@ -173,7 +189,7 @@ describe('iso-codes-mdm-s3-sync', () => {
 
       expect(result.success).toBe(true)
       expect(result.itemCount).toBe(250)
-      expect(setIsoCodesCache).toHaveBeenCalledWith(mockData)
+      expect(setIsoCodesCache).toHaveBeenCalledWith(expectedSimplifiedData)
     })
 
     it('should handle MDM returning null data', async () => {
@@ -303,7 +319,8 @@ describe('iso-codes-mdm-s3-sync', () => {
     })
 
     it('should update cache only after successful S3 upload', async () => {
-      const mockData = [{ code: 'GB', name: 'United Kingdom' }]
+      const mockData = [{ effectiveAlpha2: 'GB', name: 'United Kingdom' }]
+      const expectedSimplifiedData = ['GB']
 
       const mockS3Response = {
         ETag: '"success123"'
@@ -316,9 +333,9 @@ describe('iso-codes-mdm-s3-sync', () => {
 
       expect(result.success).toBe(true)
 
-      // Verify cache is updated after S3 upload
+      // Verify cache is updated with simplified format after S3 upload
       expect(setIsoCodesCache).toHaveBeenCalledTimes(1)
-      expect(setIsoCodesCache).toHaveBeenCalledWith(mockData)
+      expect(setIsoCodesCache).toHaveBeenCalledWith(expectedSimplifiedData)
     })
 
     it('should handle non-array ISO codes data', async () => {
@@ -343,6 +360,90 @@ describe('iso-codes-mdm-s3-sync', () => {
         JSON.stringify(mockData)
       )
       expect(setIsoCodesCache).toHaveBeenCalledWith(mockData)
+    })
+
+    it('should normalize mixed case codes to uppercase', async () => {
+      const mockData = [
+        { effectiveAlpha2: 'gb', name: 'United Kingdom' },
+        { effectiveAlpha2: 'us', name: 'United States' },
+        { effectiveAlpha2: 'Fr', name: 'France' }
+      ]
+      const expectedSimplifiedData = ['GB', 'US', 'FR']
+
+      const mockS3Response = { ETag: '"normalized123"' }
+      getIsoCodes.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      const result = await syncIsoCodesMdmToS3()
+
+      expect(result.success).toBe(true)
+      expect(uploadJsonFileToS3).toHaveBeenCalledWith(
+        { filename: 'iso-codes', schema: 'cache' },
+        JSON.stringify(expectedSimplifiedData)
+      )
+      expect(setIsoCodesCache).toHaveBeenCalledWith(expectedSimplifiedData)
+    })
+
+    it('should deduplicate duplicate codes', async () => {
+      const mockData = [
+        { effectiveAlpha2: 'GB', name: 'United Kingdom' },
+        { effectiveAlpha2: 'US', name: 'United States' },
+        { effectiveAlpha2: 'gb', name: 'Great Britain' },
+        { effectiveAlpha2: 'US', name: 'USA' }
+      ]
+      const expectedSimplifiedData = ['GB', 'US']
+
+      const mockS3Response = { ETag: '"dedup123"' }
+      getIsoCodes.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      const result = await syncIsoCodesMdmToS3()
+
+      expect(result.success).toBe(true)
+      expect(uploadJsonFileToS3).toHaveBeenCalledWith(
+        { filename: 'iso-codes', schema: 'cache' },
+        JSON.stringify(expectedSimplifiedData)
+      )
+    })
+
+    it('should filter out codes with null effectiveAlpha2', async () => {
+      const mockData = [
+        { effectiveAlpha2: 'GB', name: 'United Kingdom' },
+        { effectiveAlpha2: null, name: 'Invalid Country' },
+        { effectiveAlpha2: 'US', name: 'United States' },
+        { name: 'No Code Country' }
+      ]
+      const expectedSimplifiedData = ['GB', 'US']
+
+      const mockS3Response = { ETag: '"filtered123"' }
+      getIsoCodes.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      const result = await syncIsoCodesMdmToS3()
+
+      expect(result.success).toBe(true)
+      expect(uploadJsonFileToS3).toHaveBeenCalledWith(
+        { filename: 'iso-codes', schema: 'cache' },
+        JSON.stringify(expectedSimplifiedData)
+      )
+      expect(setIsoCodesCache).toHaveBeenCalledWith(expectedSimplifiedData)
+    })
+
+    it('should handle array of strings (already simplified)', async () => {
+      const mockData = ['GB', 'US', 'FR']
+      const expectedSimplifiedData = ['GB', 'US', 'FR']
+
+      const mockS3Response = { ETag: '"strings123"' }
+      getIsoCodes.mockResolvedValue(mockData)
+      uploadJsonFileToS3.mockResolvedValue(mockS3Response)
+
+      const result = await syncIsoCodesMdmToS3()
+
+      expect(result.success).toBe(true)
+      expect(uploadJsonFileToS3).toHaveBeenCalledWith(
+        { filename: 'iso-codes', schema: 'cache' },
+        JSON.stringify(expectedSimplifiedData)
+      )
     })
   })
 })
