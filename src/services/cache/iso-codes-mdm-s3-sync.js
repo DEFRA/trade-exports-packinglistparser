@@ -3,7 +3,10 @@ import { uploadJsonFileToS3 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { formatError } from '../../common/helpers/logging/error-logger.js'
-import { setIsoCodesCache } from './iso-codes-cache.js'
+import {
+  setIsoCodesCache,
+  transformToSimpleIsoCodes
+} from './iso-codes-cache.js'
 import {
   buildSyncSuccessResult,
   buildSyncErrorResult
@@ -34,7 +37,10 @@ async function retrieveMdmData() {
 
 /**
  * Write ISO codes MDM data to S3 and update cache
- * @param {Array} mdmData - ISO codes data to write
+ * Performs COMPLETE REPLACEMENT (not merge) to ensure removed codes don't persist
+ * Transforms MDM object format to simple string array before storage
+ * This ensures S3 stores data in same format as data-iso-codes.json
+ * @param {Array} mdmData - ISO codes data from MDM (object array)
  * @returns {Promise<Object>} S3 response
  */
 async function writeMdmDataToS3(mdmData) {
@@ -44,14 +50,23 @@ async function writeMdmDataToS3(mdmData) {
     schema: s3Schema
   }
 
+  // Transform MDM object array to simple string array
+  // Format: ["AD", "AE", "AF", ...] - matches data-iso-codes.json
+  // IMPORTANT: This completely replaces S3 content with latest MDM data
+  // If MDM removed a country, it will be removed from S3 too
+  const simplifiedData = transformToSimpleIsoCodes(mdmData)
+
   logger.info(
     `Writing ISO codes to S3 (filename: ${location.filename}, schema: ${location.schema}, dataSize: ${JSON.stringify(mdmData).length})`
   )
 
-  const s3Response = await uploadJsonFileToS3(location, JSON.stringify(mdmData))
+  const s3Response = await uploadJsonFileToS3(
+    location,
+    JSON.stringify(simplifiedData)
+  )
 
-  logger.info('Updating in-memory ISO codes cache with fresh data from MDM')
-  setIsoCodesCache(mdmData)
+  logger.info('Updating in-memory cache with fresh data (complete replacement)')
+  setIsoCodesCache(simplifiedData)
 
   return { s3Response, location }
 }

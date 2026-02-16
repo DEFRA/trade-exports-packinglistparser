@@ -3,7 +3,8 @@ import {
   initializeIsoCodesCache,
   getIsoCodesCache,
   setIsoCodesCache,
-  clearIsoCodesCache
+  clearIsoCodesCache,
+  transformToSimpleIsoCodes
 } from './iso-codes-cache.js'
 
 // Mock dependencies
@@ -267,9 +268,9 @@ describe('iso-codes-cache', () => {
 
     it('should handle MDM format with alpha2 field', async () => {
       const mdmData = [
-        { alpha2: 'de', name: 'Germany' },
-        { alpha2: 'it', name: 'Italy' },
-        { alpha2: 'es', name: 'Spain' }
+        { effectiveAlpha2: 'de', name: 'Germany' },
+        { effectiveAlpha2: 'it', name: 'Italy' },
+        { effectiveAlpha2: 'es', name: 'Spain' }
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(mdmData))
 
@@ -280,9 +281,9 @@ describe('iso-codes-cache', () => {
 
     it('should handle backward compatible format with code field', async () => {
       const legacyData = [
-        { code: 'ca', name: 'Canada' },
-        { code: 'mx', name: 'Mexico' },
-        { code: 'br', name: 'Brazil' }
+        { effectiveAlpha2: 'ca', name: 'Canada' },
+        { effectiveAlpha2: 'mx', name: 'Mexico' },
+        { effectiveAlpha2: 'br', name: 'Brazil' }
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(legacyData))
 
@@ -293,9 +294,9 @@ describe('iso-codes-cache', () => {
 
     it('should handle Alpha2 field (uppercase A)', async () => {
       const data = [
-        { Alpha2: 'au', name: 'Australia' },
-        { Alpha2: 'nz', name: 'New Zealand' },
-        { Alpha2: 'jp', name: 'Japan' }
+        { effectiveAlpha2: 'au', name: 'Australia' },
+        { effectiveAlpha2: 'nz', name: 'New Zealand' },
+        { effectiveAlpha2: 'jp', name: 'Japan' }
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(data))
 
@@ -306,10 +307,10 @@ describe('iso-codes-cache', () => {
 
     it('should filter out items with no code fields', async () => {
       const mixedData = [
-        { alpha2: 'gb', name: 'United Kingdom' },
-        { name: 'Invalid Entry' }, // No code field
-        { alpha2: 'us', name: 'United States' },
-        { somefield: 'value' } // No code field
+        { effectiveAlpha2: 'gb', name: 'United Kingdom' },
+        { name: 'Invalid Entry' }, // No effectiveAlpha2 field
+        { effectiveAlpha2: 'us', name: 'United States' },
+        { somefield: 'value' } // No effectiveAlpha2 field
       ]
       getFileFromS3.mockResolvedValue(JSON.stringify(mixedData))
 
@@ -351,6 +352,75 @@ describe('iso-codes-cache', () => {
       await initializeIsoCodesCache()
 
       expect(getIsoCodesCache()).toEqual(['GB'])
+    })
+  })
+
+  describe('transformToSimpleIsoCodes', () => {
+    it('should return non-array input unchanged', () => {
+      const input = { some: 'object' }
+      expect(transformToSimpleIsoCodes(input)).toEqual(input)
+    })
+
+    it('should return empty array unchanged', () => {
+      expect(transformToSimpleIsoCodes([])).toEqual([])
+    })
+
+    it('should transform array of objects to uppercase codes', () => {
+      const input = [
+        { effectiveAlpha2: 'gb' },
+        { effectiveAlpha2: 'us' },
+        { effectiveAlpha2: 'fr' }
+      ]
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US', 'FR'])
+    })
+
+    it('should filter out null codes from objects', () => {
+      const input = [
+        { effectiveAlpha2: 'gb' },
+        { effectiveAlpha2: null },
+        { effectiveAlpha2: 'us' },
+        { name: 'NoCode' }
+      ]
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US'])
+    })
+
+    it('should deduplicate codes from object array', () => {
+      const input = [
+        { effectiveAlpha2: 'gb' },
+        { effectiveAlpha2: 'us' },
+        { effectiveAlpha2: 'GB' },
+        { effectiveAlpha2: 'us' }
+      ]
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US'])
+    })
+
+    it('should transform array of strings to uppercase', () => {
+      const input = ['gb', 'us', 'fr']
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US', 'FR'])
+    })
+
+    it('should filter out non-string values from string array', () => {
+      const input = ['gb', null, 'us', undefined, 123, 'fr']
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US', 'FR'])
+    })
+
+    it('should deduplicate codes from string array', () => {
+      const input = ['gb', 'US', 'gb', 'fr', 'US']
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US', 'FR'])
+    })
+
+    it('should handle mixed case strings', () => {
+      const input = ['Gb', 'uS', 'Fr']
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US', 'FR'])
+    })
+
+    it('should handle empty effectiveAlpha2 string', () => {
+      const input = [
+        { effectiveAlpha2: 'gb' },
+        { effectiveAlpha2: '' },
+        { effectiveAlpha2: 'us' }
+      ]
+      expect(transformToSimpleIsoCodes(input)).toEqual(['GB', 'US'])
     })
   })
 })

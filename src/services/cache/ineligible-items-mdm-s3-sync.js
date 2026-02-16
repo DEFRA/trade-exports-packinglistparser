@@ -3,7 +3,10 @@ import { uploadJsonFileToS3 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { formatError } from '../../common/helpers/logging/error-logger.js'
-import { setIneligibleItemsCache } from './ineligible-items-cache.js'
+import {
+  setIneligibleItemsCache,
+  deduplicateIneligibleItems
+} from './ineligible-items-cache.js'
 import {
   buildSyncSuccessResult,
   buildSyncErrorResult
@@ -34,7 +37,9 @@ async function retrieveMdmData() {
 
 /**
  * Write MDM data to S3 and update cache
- * @param {Object} mdmData - Data to write
+ * Performs COMPLETE REPLACEMENT (not merge) to ensure removed items don't persist
+ * Deduplicates data before storing to ensure no duplicates in S3 or cache
+ * @param {Object} mdmData - Data to write (fresh from MDM)
  * @returns {Promise<Object>} S3 response
  */
 async function writeMdmDataToS3(mdmData) {
@@ -44,18 +49,46 @@ async function writeMdmDataToS3(mdmData) {
     schema: s3Schema
   }
 
+  // Deduplicate before storing to S3
+  // IMPORTANT: This completely replaces S3 content with latest MDM data
+  // If MDM removed an item, it will be removed from S3 too
+  let deduplicatedData
+  if (mdmData?.ineligibleItems) {
+    deduplicatedData = {
+      ...mdmData,
+      ineligibleItems: deduplicateIneligibleItems(mdmData.ineligibleItems)
+    }
+  } else if (Array.isArray(mdmData)) {
+    deduplicatedData = deduplicateIneligibleItems(mdmData)
+  } else {
+    deduplicatedData = mdmData
+  }
+
+  const originalCount =
+    mdmData?.ineligibleItems?.length ||
+    (Array.isArray(mdmData) ? mdmData.length : 0)
+  const deduplicatedCount =
+    deduplicatedData?.ineligibleItems?.length ||
+    (Array.isArray(deduplicatedData) ? deduplicatedData.length : 0)
+
   logger.info(
     {
       location,
-      dataSize: JSON.stringify(mdmData).length
+      dataSize: JSON.stringify(deduplicatedData).length,
+      originalCount,
+      deduplicatedCount,
+      duplicatesRemoved: originalCount - deduplicatedCount
     },
-    'Writing ineligible items to S3'
+    'Writing ineligible items to S3 (complete replacement, not merge)'
   )
 
-  const s3Response = await uploadJsonFileToS3(location, JSON.stringify(mdmData))
+  const s3Response = await uploadJsonFileToS3(
+    location,
+    JSON.stringify(deduplicatedData)
+  )
 
-  logger.info('Updating in-memory cache with fresh data from MDM')
-  setIneligibleItemsCache(mdmData)
+  logger.info('Updating in-memory cache with fresh data (complete replacement)')
+  setIneligibleItemsCache(deduplicatedData)
 
   return { s3Response, location }
 }

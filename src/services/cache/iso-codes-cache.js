@@ -22,30 +22,57 @@ function getItemCount(data) {
 }
 
 /**
- * Process successful S3 fetch and normalize data format
- * Converts MDM API format to simple string array of ISO alpha-2 codes
- * Handles MDM /geo/countries format: {alpha2, effectiveAlpha2, name, ...}
- * Also backward compatible with simplified format: {code, name}
+ * Transform MDM ISO codes objects to simple string array format
+ * Extracts effectiveAlpha2 codes and normalizes to uppercase
+ * Matches the format in data-iso-codes.json: ["AD", "AE", "AF", ...]
+ * @param {Array} data - Array of ISO code objects or strings
+ * @returns {Array|*} Array of uppercase ISO code strings (deduplicated) or original data if not an array
  */
-function cacheS3Data(data) {
-  // Normalize data: if array of objects, extract ISO codes
-  if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
-    isoCodesCache = data
+export function transformToSimpleIsoCodes(data) {
+  // Handle non-array data (legacy support for tests/edge cases)
+  if (!Array.isArray(data)) {
+    return data
+  }
+
+  if (data.length === 0) {
+    return []
+  }
+
+  // If data is an array of objects (MDM format), extract the codes
+  if (typeof data[0] === 'object' && data[0] !== null) {
+    const codes = data
       .map((item) => {
-        // Priority: effectiveAlpha2 > alpha2 > code (for backward compat)
-        const code =
-          item.effectiveAlpha2 || item.alpha2 || item.code || item.Alpha2
+        const code = item.effectiveAlpha2
         return code ? code.toUpperCase() : null
       })
-      .filter((code) => code !== null) // Remove any null values
-  } else if (Array.isArray(data)) {
-    // Already a string array
-    isoCodesCache = data
-  } else {
-    isoCodesCache = data
+      .filter((code) => code !== null)
+
+    // Deduplicate using Set
+    return [...new Set(codes)]
   }
+
+  // If already strings, just normalize and deduplicate
+  const normalizedCodes = data
+    .map((code) => (typeof code === 'string' ? code.toUpperCase() : null))
+    .filter((code) => code !== null)
+
+  return [...new Set(normalizedCodes)]
+}
+
+/**
+ * Process successful S3 fetch and normalize data format
+ * Converts MDM API format to simple string array of ISO alpha-2 codes
+ * Handles MDM /geo/countries format: {effectiveAlpha2, name, ...}
+ * Performs COMPLETE REPLACEMENT of cache (not merge) to ensure removed codes don't persist
+ */
+function cacheS3Data(data) {
+  // IMPORTANT: This is a complete replacement, not a merge
+  // If MDM removes a country code, it will be removed from our cache too
+  isoCodesCache = transformToSimpleIsoCodes(data)
   const itemCount = getItemCount(isoCodesCache)
-  logger.info(`ISO codes cache loaded (itemCount: ${itemCount})`)
+  logger.info(
+    `ISO codes cache loaded (Complete Replacement) (itemCount: ${itemCount})`
+  )
 }
 
 /**
@@ -73,10 +100,13 @@ export function getIsoCodesCache() {
 
 /**
  * Set the ISO codes cache (useful for testing)
- * @param {Array} data - The ISO codes data to cache
+ * Performs COMPLETE REPLACEMENT (not merge) and automatically transforms object arrays to simple string format
+ * @param {Array} data - The ISO codes data to cache (objects or strings)
  */
 export function setIsoCodesCache(data) {
-  isoCodesCache = data
+  // IMPORTANT: This is a complete replacement, not a merge
+  // Previous cache data is discarded entirely
+  isoCodesCache = transformToSimpleIsoCodes(data)
 }
 
 /**
