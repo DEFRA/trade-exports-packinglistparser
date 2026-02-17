@@ -64,13 +64,7 @@ export async function fetchFromS3WithRetry(
       attempt++
 
       logger.warn(
-        {
-          attempt,
-          maxRetries: maxRetries + 1,
-          error: error.message,
-          willRetry: attempt <= maxRetries
-        },
-        `Failed to fetch ${cacheType} from S3`
+        `Failed to fetch ${cacheType} from S3 (attempt ${attempt}/${maxRetries + 1}, error: ${error.message}, will retry: ${attempt <= maxRetries})`
       )
 
       if (attempt <= maxRetries) {
@@ -117,8 +111,7 @@ export async function populateFromMDM(
       logger.info(`Successfully uploaded ${cacheType} data to S3`)
     } catch (s3UploadError) {
       logger.warn(
-        { error: s3UploadError.message },
-        `Failed to upload ${cacheType} to S3, but data is cached in memory`
+        `Failed to upload ${cacheType} to S3 (error: ${s3UploadError.message}), but data is cached in memory`
       )
     }
   } catch (mdmError) {
@@ -182,8 +175,7 @@ export async function initializeCache(
   // Fall back to MDM on any S3 error
   // This includes NoSuchKey (file doesn't exist), empty data, and connection errors
   logger.info(
-    { s3Error: result.error?.message },
-    `S3 fetch failed, falling back to MDM for ${cacheType}`
+    `S3 fetch failed (error: ${result.error?.message}), falling back to MDM for ${cacheType}`
   )
 
   try {

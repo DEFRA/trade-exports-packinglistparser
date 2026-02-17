@@ -47,11 +47,7 @@ export async function callAzureApiWithToken(url, options) {
 
     // Make the API call
     logger.info(
-      {
-        url: { full: url },
-        http: { request: { method: options.method || 'GET' } }
-      },
-      'Calling Azure API'
+      `Calling Azure API (url: ${url}, method: ${options.method || 'GET'})`
     )
 
     const response = await fetch(url, {
@@ -59,14 +55,7 @@ export async function callAzureApiWithToken(url, options) {
       headers
     })
 
-    logger.info(
-      {
-        url: {
-          full: url
-        }
-      },
-      'Azure API response received'
-    )
+    logger.info(`Azure API response received (url: ${url})`)
 
     return response
   } catch (err) {

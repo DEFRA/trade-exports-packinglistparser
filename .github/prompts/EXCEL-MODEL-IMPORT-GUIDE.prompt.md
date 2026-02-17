@@ -548,10 +548,10 @@ export function matches(packingList, filename) {
 - Import and use Pino logger via `createLogger()` from `common/helpers/logging/logger.js`
 - Import and use `formatError` helper from `common/helpers/logging/error-logger.js`
 - Use structured logging:
-  - Info: `logger.info({ context }, 'message')` - context object first, message second
+  - Info: `logger.info('message')` - simple message or incorporate context into message string
   - Error: `logger.error(formatError(err), 'message')` - using formatError helper
   - **Legacy format:** `logger.logInfo(file, function, message)` and `logger.logError(file, function, err)`
-  - **New format:** Structured logging with `formatError()` for errors
+  - **New format:** Simple message strings with `formatError()` for errors (CDP does not support context objects)
 - Import `formatError` from `common/helpers/logging/error-logger.js`
 - Keep the same matching logic
 

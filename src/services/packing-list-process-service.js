@@ -182,7 +182,7 @@ function mapPackingListForStorage(packingListJson, applicationId) {
         packingListJson.business_checks.all_required_fields_present,
         packingListJson.business_checks.failure_reasons
       ),
-      items: packingListJson.items.map((n) => itemsMapper(n, applicationId))
+      items: packingListJson.items.map((n) => itemsMapper(n))
     }
   } catch (err) {
     logger.error(
@@ -202,10 +202,9 @@ function mapPackingListForStorage(packingListJson, applicationId) {
  * between explicit false and unknown.
  *
  * @param {Object} o - Single item object from the parser JSON
- * @param {number|string} applicationId - Foreign key for the parent packing list
  * @returns {Object|undefined} - Mapped item object or undefined on error
  */
-function itemsMapper(o, applicationId) {
+function itemsMapper(o) {
   /**
    * Convert NIRMS string value to boolean using validation utilities.
    * @param {string} nirmsValue - NIRMS value to convert

@@ -68,12 +68,7 @@ export function deduplicateIneligibleItems(items) {
 
   if (deduplicated.length < items.length) {
     logger.info(
-      {
-        original: items.length,
-        deduplicated: deduplicated.length,
-        duplicatesRemoved: items.length - deduplicated.length
-      },
-      'Removed duplicate ineligible items - cache contains latest version only'
+      `Removed duplicate ineligible items - cache contains latest version only (original: ${items.length}, deduplicated: ${deduplicated.length}, duplicates removed: ${items.length - deduplicated.length})`
     )
   }
 

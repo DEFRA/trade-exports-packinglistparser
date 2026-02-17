@@ -74,8 +74,8 @@ logger.logError(filename, 'functionName', error)
 logger.info('message')
 logger.error('Error occurred')
 
-// New style (pino) - With metadata
-logger.info({ filename, function: 'functionName' }, 'message')
+// New style (pino) - With metadata in message string
+logger.info(`Doing something (filename: ${filename}, function: functionName)`)
 
 // New style (pino) - Errors using formatError helper
 import { formatError } from '../common/helpers/logging/error-logger.js'
@@ -303,7 +303,9 @@ const filename = path.join('src', currentFilename.split('src')[1])
  * Process the data
  */
 function processData(data) {
-  logger.info({ filename, function: 'processData' }, 'Processing started')
+  logger.info(
+    `Processing started (filename: ${filename}, function: processData)`
+  )
   return parseData(data)
 }
 

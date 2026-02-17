@@ -701,7 +701,7 @@ export function matches(packingList, filename) {
     )
 
     if (result === matcherResult.CORRECT) {
-      logger.info({ filename }, 'Packing list matches LIDL Model 1')
+      logger.info(`Packing list matches LIDL Model 1 (filename: ${filename})`)
     }
 
     return result
@@ -1666,7 +1666,7 @@ export function matches(packingList, filename) {
     ])
 
     if (result === matcherResult.CORRECT) {
-      logger.info({ filename }, 'Packing list matches MODEL')
+      logger.info(`Packing list matches MODEL (filename: ${filename})`)
     }
 
     return result

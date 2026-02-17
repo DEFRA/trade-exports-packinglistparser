@@ -45,8 +45,7 @@ export function getServiceBusConnectionOptions() {
       agent: proxyAgent
     }
     logger.info(
-      { proxyUrl },
-      'Using proxy for Service Bus WebSocket connection'
+      `Using proxy for Service Bus WebSocket connection (proxy URL: ${proxyUrl})`
     )
   }
   return connectionOptions
