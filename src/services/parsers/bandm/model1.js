@@ -27,10 +27,10 @@ function createHeaderRowFinder() {
  * Checks if a row is completely empty (no meaningful data in any field).
  * Only rows that are COMPLETELY empty should be filtered out.
  * Rows with any meaningful data should be included for validation.
- * 
- * Note: Excludes blanket values (nirms, type_of_treatment, total_net_weight_unit) 
+ *
+ * Note: Excludes blanket values (nirms, type_of_treatment, total_net_weight_unit)
  * that are applied from document headers, not from the actual row cells.
- * 
+ *
  * @param {Object} item - The item to check.
  * @returns {boolean} True if the row is completely empty.
  */
@@ -45,7 +45,7 @@ function isEmptyRow(item) {
     if (typeof value === 'number' && value === 0) return true
     return false
   }
-  
+
   // Check ONLY the fields that come directly from Excel cells (not blanket values)
   // A row is empty only if it has no identifying info AND no meaningful quantities AND no origin
   const coreFields = [
@@ -56,7 +56,7 @@ function isEmptyRow(item) {
     item.total_net_weight_kg,
     item.country_of_origin
   ]
-  
+
   // Row is empty only if ALL core fields are empty/zero
   return coreFields.every(isEmpty)
 }
@@ -95,25 +95,33 @@ function isTotalsRow(item) {
       return true
     }
   }
-  
+
   // Check for numeric-only totals rows (secondary heuristic)
   // Only filter if it has suspiciously large aggregate numbers
-  const hasNoDescription = !item.description || (typeof item.description === 'string' && item.description.trim() === '')
-  const hasNoCommodityCode = !item.commodity_code || (typeof item.commodity_code === 'string' && item.commodity_code.trim() === '')
-  const hasNoCountryOfOrigin = !item.country_of_origin || (typeof item.country_of_origin === 'string' && item.country_of_origin.trim() === '')
-  
+  const hasNoDescription =
+    !item.description ||
+    (typeof item.description === 'string' && item.description.trim() === '')
+  const hasNoCommodityCode =
+    !item.commodity_code ||
+    (typeof item.commodity_code === 'string' &&
+      item.commodity_code.trim() === '')
+  const hasNoCountryOfOrigin =
+    !item.country_of_origin ||
+    (typeof item.country_of_origin === 'string' &&
+      item.country_of_origin.trim() === '')
+
   // Pattern: empty ALL identifiers + has very large quantities = likely a grand total row
   if (hasNoDescription && hasNoCommodityCode && hasNoCountryOfOrigin) {
     const packages = item.number_of_packages || 0
     const weight = item.total_net_weight_kg || 0
-    
+
     // Only consider it a totals row if quantities are very large (likely aggregated)
     // Using threshold: >20 packages OR >50kg suggests aggregated data
     if (packages > 20 || weight > 50) {
       return true
     }
   }
-  
+
   return false
 }
 
@@ -154,25 +162,30 @@ function filterDataRows(items) {
 /**
  * Cleans up parsed items by converting whitespace-only strings to null.
  * B&M-specific: handles Excel cells containing only spaces.
- * 
+ *
  * Important: This must run AFTER filtering for totals/headers, because those
  * checks need the original string values to detect keywords.
- * 
+ *
  * @param {Array} items - Array of parsed items
  * @returns {Array} Items with whitespace-only strings converted to null
  */
 function cleanupWhitespace(items) {
-  return items.map(item => {
+  return items.map((item) => {
     const cleaned = { ...item }
-    
+
     // Clean string fields (convert whitespace-only to null)
-    const stringFields = ['description', 'commodity_code', 'nature_of_products', 'country_of_origin']
-    stringFields.forEach(field => {
+    const stringFields = [
+      'description',
+      'commodity_code',
+      'nature_of_products',
+      'country_of_origin'
+    ]
+    stringFields.forEach((field) => {
       if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {
         cleaned[field] = null
       }
     })
-    
+
     return cleaned
   })
 }
@@ -198,7 +211,7 @@ function processSheet(sheetData, sheetName, headerCallback) {
 
   // Filter FIRST (while we still have original string values for totals detection)
   const filteredItems = filterDataRows(parsedItems)
-  
+
   // THEN clean whitespace (after filtering based on keywords)
   return cleanupWhitespace(filteredItems)
 }

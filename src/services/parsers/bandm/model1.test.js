@@ -27,7 +27,7 @@ describe('parseBandmModel1', () => {
     it('parses json with case insensitive headers', () => {
       const result = parse(model.validModelInsensitiveHeader)
 
-      expect(result.items).toHaveLength(3)  // Now includes drag-down row
+      expect(result.items).toHaveLength(3) // Now includes drag-down row
       expect(result.business_checks.all_required_fields_present).toBe(true)
     })
 
