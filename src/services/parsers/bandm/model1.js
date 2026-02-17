@@ -9,6 +9,7 @@ import headers from '../../model-headers.js'
 import * as regex from '../../../utilities/regex.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { mapParser } from '../../parser-map.js'
+import * as validatorUtilities from '../../validators/packing-list-validator-utilities.js'
 
 const logger = createLogger()
 
@@ -87,22 +88,47 @@ function isRepeatedHeaderRow(item) {
 }
 
 /**
- * Checks if a row is a totals/summary row based on keywords.
- * B&M totals rows contain keywords like "total", "totals", or "grand total" in the description.
+ * Checks if a row is a totals/summary row based on keywords or pattern.
+ * Uses a similar pattern to NISA parser but excludes drag-down rows.
  * @param {Object} item - The item to check.
  * @returns {boolean} True if the row is a totals row.
  */
 function isTotalsRow(item) {
   // Check for keyword-based totals rows
-  if (!item.description) {
+  if (item.description) {
+    const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
+      item.description.toLowerCase().includes(keyword)
+    )
+    if (hasKeyword) {
+      return true
+    }
+  }
+
+  // Exclude drag-down rows (have space-only strings before cleanup)
+  // Drag-down rows have literal space characters from Excel drag operations
+  const hasSpaceOnlyDescription =
+    typeof item.description === 'string' &&
+    item.description.trim() === '' &&
+    item.description.length > 0
+
+  const hasSpaceOnlyCommodityCode =
+    typeof item.commodity_code === 'string' &&
+    item.commodity_code.trim() === '' &&
+    item.commodity_code.length > 0
+
+  if (hasSpaceOnlyDescription || hasSpaceOnlyCommodityCode) {
     return false
   }
 
-  const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
-    item.description.toLowerCase().includes(keyword)
+  // Check for aggregate/summary rows using validator utilities (NISA pattern)
+  // Pattern: missing description AND missing identifier BUT has packages AND has weight
+  // This catches numeric-only totals rows without item details
+  return (
+    validatorUtilities.hasMissingDescription(item) &&
+    validatorUtilities.hasMissingIdentifier(item) &&
+    !validatorUtilities.hasMissingPackages(item) &&
+    !validatorUtilities.hasMissingNetWeight(item)
   )
-
-  return hasKeyword
 }
 
 /**
