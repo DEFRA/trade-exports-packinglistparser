@@ -8,8 +8,11 @@
 import headers from '../services/model-headers-pdf.js'
 import { PDFExtract } from 'pdf.js-extract'
 import { findAllMatches, remosRegex } from './regex.js'
+import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 
 const pdfExtract = new PDFExtract()
+const logger = createLogger()
 
 /**
  * Extract structured JSON from a PDF buffer and run sanitisation on it.
@@ -87,7 +90,7 @@ export function getHeaders(pageContent, model) {
 
     return groupedByX
   } catch (err) {
-    console.error('src/utilities/pdf-helper.js getHeaders() error:', err)
+    logger.error(formatError(err), 'Error extracting headers from PDF')
     return []
   }
 }

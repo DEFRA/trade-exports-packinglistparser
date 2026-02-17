@@ -10,6 +10,7 @@ import {
 import { determineApprovalStatus } from '../utilities/approval-status.js'
 import { v4 } from 'uuid'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { config } from '../config.js'
 
 const { disableSend } = config.get('tradeServiceBus')
@@ -65,12 +66,7 @@ export async function processPackingList(
     return successResult
   } catch (err) {
     logger.error(
-      {
-        error: {
-          message: err.message,
-          stack: err.stack
-        }
-      },
+      formatError(err),
       `Error processing packing list: ${err.message}`
     )
 
@@ -93,7 +89,7 @@ async function getParsedPackingList(packingList, payload) {
     )
   } catch (err) {
     logger.error(
-      { error: err.message, payload },
+      formatError(err),
       'Failed to extract establishment ID from payload'
     )
     throw new Error(
@@ -186,16 +182,11 @@ function mapPackingListForStorage(packingListJson, applicationId) {
         packingListJson.business_checks.all_required_fields_present,
         packingListJson.business_checks.failure_reasons
       ),
-      items: packingListJson.items.map((n) => itemsMapper(n, applicationId))
+      items: packingListJson.items.map((n) => itemsMapper(n))
     }
   } catch (err) {
     logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
+      formatError(err),
       `Error mapping packing list for storage for application ${applicationId}`
     )
     return undefined
@@ -211,10 +202,9 @@ function mapPackingListForStorage(packingListJson, applicationId) {
  * between explicit false and unknown.
  *
  * @param {Object} o - Single item object from the parser JSON
- * @param {number|string} applicationId - Foreign key for the parent packing list
  * @returns {Object|undefined} - Mapped item object or undefined on error
  */
-function itemsMapper(o, applicationId) {
+function itemsMapper(o) {
   /**
    * Convert NIRMS string value to boolean using validation utilities.
    * @param {string} nirmsValue - NIRMS value to convert
@@ -246,10 +236,7 @@ function itemsMapper(o, applicationId) {
       failureReason: o.failure
     }
   } catch (err) {
-    logger.error(
-      { applicationId, item: o, err },
-      'Error mapping packing list item'
-    )
+    logger.error(formatError(err), 'Error mapping packing list item')
     return undefined
   }
 }

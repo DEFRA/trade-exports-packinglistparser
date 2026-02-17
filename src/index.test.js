@@ -42,7 +42,16 @@ describe('index', () => {
       const handleProcessError = (errorType) => (error) => {
         const logger = mockCreateLogger()
         logger.info(errorType)
-        logger.error(error)
+        logger.error(
+          {
+            error: {
+              message: error.message,
+              stack_trace: error.stack,
+              type: error.name
+            }
+          },
+          errorType
+        )
         process.exitCode = 1
       }
 
@@ -51,7 +60,16 @@ describe('index', () => {
 
       expect(mockCreateLogger).toHaveBeenCalled()
       expect(mockLogger.info).toHaveBeenCalledWith('Test error type')
-      expect(mockLogger.error).toHaveBeenCalledWith(testError)
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: testError.message,
+            stack_trace: testError.stack,
+            type: testError.name
+          }
+        },
+        'Test error type'
+      )
       expect(process.exitCode).toBe(1)
 
       // Restore original exit code
@@ -66,7 +84,16 @@ describe('index', () => {
       const handleProcessError = (errorType) => (error) => {
         const logger = mockCreateLogger()
         logger.info(errorType)
-        logger.error(error)
+        logger.error(
+          {
+            error: {
+              message: error.message,
+              stack_trace: error.stack,
+              type: error.name
+            }
+          },
+          errorType
+        )
         process.exitCode = 1
       }
 
@@ -86,7 +113,16 @@ describe('index', () => {
       const handleProcessError = (errorType) => (error) => {
         const logger = mockCreateLogger()
         logger.info(errorType)
-        logger.error(error)
+        logger.error(
+          {
+            error: {
+              message: error.message,
+              stack_trace: error.stack,
+              type: error.name
+            }
+          },
+          errorType
+        )
         process.exitCode = 1
       }
 
@@ -103,7 +139,16 @@ describe('index', () => {
       const handleProcessError = (errorType) => (error) => {
         const logger = mockCreateLogger()
         logger.info(errorType)
-        logger.error(error)
+        logger.error(
+          {
+            error: {
+              message: error.message,
+              stack_trace: error.stack,
+              type: error.name
+            }
+          },
+          errorType
+        )
         process.exitCode = 1
       }
 
@@ -120,8 +165,26 @@ describe('index', () => {
 
       expect(mockLogger.info).toHaveBeenCalledWith('Unhandled rejection')
       expect(mockLogger.info).toHaveBeenCalledWith('Uncaught Exception')
-      expect(mockLogger.error).toHaveBeenCalledWith(rejectionError)
-      expect(mockLogger.error).toHaveBeenCalledWith(exceptionError)
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: rejectionError.message,
+            stack_trace: rejectionError.stack,
+            type: rejectionError.name
+          }
+        },
+        'Unhandled rejection'
+      )
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        {
+          error: {
+            message: exceptionError.message,
+            stack_trace: exceptionError.stack,
+            type: exceptionError.name
+          }
+        },
+        'Uncaught Exception'
+      )
     })
   })
 })

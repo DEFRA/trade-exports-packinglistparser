@@ -3,6 +3,7 @@
  * @module parsers/asda/model4
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import csvHeaders from '../../model-headers-csv.js'
@@ -75,9 +76,7 @@ export function parse(packingListCsv) {
       csvHeaders.ASDA4
     )
   } catch (err) {
-    logger.error(`Error parsing ASDA Model 4: ${err.message}`, {
-      stack: err.stack
-    })
+    logger.error(formatError(err), 'Error parsing ASDA Model 4')
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

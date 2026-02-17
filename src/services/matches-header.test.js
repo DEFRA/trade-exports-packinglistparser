@@ -152,7 +152,8 @@ describe('matchesHeader', () => {
         {
           error: {
             message: 'Test error from regex',
-            stack_trace: 'Error stack trace'
+            stack_trace: 'Error stack trace',
+            type: 'Error'
           }
         },
         'Error in matchesHeader()'
@@ -178,7 +179,8 @@ describe('matchesHeader', () => {
         {
           error: {
             message: 'Iteration error',
-            stack_trace: 'Stack trace for iteration error'
+            stack_trace: 'Stack trace for iteration error',
+            type: 'Error'
           }
         },
         'Error in matchesHeader()'
@@ -202,7 +204,8 @@ describe('matchesHeader', () => {
         {
           error: {
             message: 'Error without stack',
-            stack_trace: undefined
+            stack_trace: undefined,
+            type: 'Error'
           }
         },
         'Error in matchesHeader()'
@@ -226,7 +229,8 @@ describe('matchesHeader', () => {
         {
           error: {
             message: 'Cannot read properties of null',
-            stack_trace: 'TypeError stack trace'
+            stack_trace: 'TypeError stack trace',
+            type: 'TypeError'
           }
         },
         'Error in matchesHeader()'

@@ -55,10 +55,6 @@ const PROPERTY_NAMES = {
   PORT: 'port'
 }
 
-const LOG_MESSAGES = {
-  USING_PROXY: 'Using proxy for Service Bus WebSocket connection'
-}
-
 describe('proxy-helper', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -209,8 +205,7 @@ describe('proxy-helper', () => {
       getServiceBusConnectionOptions()
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        { proxyUrl: TEST_PROXY_URLS.HTTPS_WITH_PORT },
-        LOG_MESSAGES.USING_PROXY
+        `Using proxy for Service Bus WebSocket connection (proxy URL: ${TEST_PROXY_URLS.HTTPS_WITH_PORT})`
       )
     })
   })

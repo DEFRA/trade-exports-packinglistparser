@@ -3,6 +3,7 @@
  * @module parsers/giovanni/model1
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js'
@@ -89,15 +90,7 @@ export function parse(packingListJson) {
       headers.GIOVANNI1
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Giovanni 1 parser'
-    )
+    logger.error(formatError(err), 'Error in Giovanni 1 parser')
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

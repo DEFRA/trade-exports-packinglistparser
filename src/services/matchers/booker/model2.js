@@ -9,6 +9,7 @@ import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
 import headers from '../../model-headers.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -55,15 +56,7 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Booker Model 2 matcher'
-    )
+    logger.error(formatError(err), 'Error in Booker Model 2 matcher')
     return matcherResult.GENERIC_ERROR
   }
 }

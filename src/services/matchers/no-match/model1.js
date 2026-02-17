@@ -11,6 +11,7 @@ import {
 } from '../../../utilities/regex.js'
 import { extractPdf } from '../../../utilities/pdf-helper.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import headersPdf from '../../model-headers-pdf.js'
 const logger = createLogger()
 
@@ -111,10 +112,7 @@ async function noRemosMatchPdf(packingList) {
     }
     return false
   } catch (err) {
-    logger.error(
-      { error: { message: err.message, stack_trace: err.stack } },
-      'noRemosMatchPdf() error'
-    )
+    logger.error(formatError(err), 'noRemosMatchPdf() error')
     return false
   }
 }

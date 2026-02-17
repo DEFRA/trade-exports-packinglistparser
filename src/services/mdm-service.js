@@ -1,5 +1,6 @@
 import { getAzureCredentials } from './utilities/get-azure-credentials.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { config } from '../config.js'
 
 const logger = createLogger()
@@ -24,7 +25,9 @@ export async function callAzureApiWithToken(url, options) {
 
     // Get Azure credentials and request token
     const credential = getAzureCredentials(defraCloudTenantId, clientId)
-    logger.info({ internalAPIMScope }, 'Requesting Azure AD token for API call')
+    logger.info(
+      `Requesting Azure AD token for API call (scope: ${internalAPIMScope})`
+    )
 
     const tokenResponse = await credential.getToken(internalAPIMScope)
 
@@ -43,36 +46,20 @@ export async function callAzureApiWithToken(url, options) {
     }
 
     // Make the API call
-    logger.info({ url, method: options.method || 'GET' }, 'Calling Azure API')
+    logger.info(
+      `Calling Azure API (url: ${url}, method: ${options.method || 'GET'})`
+    )
 
     const response = await fetch(url, {
       ...options,
       headers
     })
 
-    logger.info(
-      {
-        url: {
-          full: url
-        }
-      },
-      'Azure API response received'
-    )
+    logger.info(`Azure API response received (url: ${url})`)
 
     return response
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        },
-        url: {
-          full: url
-        }
-      },
-      'Failed to call Azure API'
-    )
+    logger.error(formatError(err), 'Failed to call Azure API')
     throw err
   }
 }

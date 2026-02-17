@@ -1,6 +1,7 @@
 import { ServiceBusClient } from '@azure/service-bus'
 import { getAzureCredentials } from './utilities/get-azure-credentials.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { config } from '../config.js'
 import { getServiceBusConnectionOptions } from './utilities/proxy-helper.js'
 
@@ -63,7 +64,7 @@ export async function sendMessageToQueue(message) {
     )
   } catch (err) {
     logger.error(
-      { err },
+      formatError(err),
       `Failed to send message to Service Bus queue: ${queueName} for applicationId: ${message.body?.applicationId}`
     )
     throw err
@@ -71,7 +72,7 @@ export async function sendMessageToQueue(message) {
     try {
       await sender.close()
     } catch (e) {
-      logger.warn({ err: e }, 'Failed to close Service Bus sender')
+      logger.warn(`Failed to close Service Bus sender (error: ${e.message})`)
     }
     await client.close()
   }
@@ -102,28 +103,26 @@ export async function receiveMessagesFromQueue(
         await receiver.completeMessage(m)
       } catch (e) {
         logger.warn(
-          { err: e, messageId: m.messageId },
-          'Failed to complete message'
+          `Failed to complete message (messageId: ${m.messageId}, error: ${e.message})`
         )
       }
     }
 
     logger.info(
-      { queueName, count: bodies.length },
-      'Received messages from Service Bus queue'
+      `Received messages from Service Bus queue (queueName: ${queueName}, count: ${bodies.length})`
     )
     return bodies
   } catch (err) {
     logger.error(
-      { err, queueName },
-      'Failed to receive messages from Service Bus queue'
+      formatError(err),
+      `Failed to receive messages from Service Bus queue (queueName: ${queueName})`
     )
     throw err
   } finally {
     try {
       await receiver.close()
     } catch (e) {
-      logger.warn({ err: e }, 'Failed to close Service Bus receiver')
+      logger.warn(`Failed to close Service Bus receiver (error: ${e.message})`)
     }
     await client.close()
   }
@@ -142,13 +141,16 @@ export async function checkTradeServiceBusConnection() {
     logger.info(`Successfully connected to Service Bus: ${queueName}`)
     return true
   } catch (err) {
-    logger.error(`Failed to connect to Service Bus: ${queueName}`, { err })
+    logger.error(
+      formatError(err),
+      `Failed to connect to Service Bus: ${queueName}`
+    )
     return false
   } finally {
     try {
       await receiver.close()
     } catch (e) {
-      logger.warn({ err: e }, 'Failed to close Service Bus receiver')
+      logger.warn(`Failed to close Service Bus receiver (error: ${e.message})`)
     }
     await client.close()
   }

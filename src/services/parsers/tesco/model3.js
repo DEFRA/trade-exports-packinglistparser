@@ -3,6 +3,7 @@
  * @module parsers/tesco/model3
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js'
@@ -85,15 +86,7 @@ export function parse(packingListJson) {
       headers.TESCO3 // Required for Country of Origin validation
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Tesco 3 parser'
-    )
+    logger.error(formatError(err), 'Error in Tesco 3 parser')
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

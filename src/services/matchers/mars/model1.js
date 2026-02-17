@@ -9,6 +9,7 @@ import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
 import headers from '../../model-headers.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -48,7 +49,7 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error(`Error in matches() for file ${filename}`, { err })
+    logger.error(formatError(err), 'Error in matches() for Mars Model 1')
     return MatcherResult.GENERIC_ERROR
   }
 }

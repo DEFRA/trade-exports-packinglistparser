@@ -655,8 +655,11 @@ describe('packing-list-process-service', () => {
 
       expect(mockLogger.error).toHaveBeenCalledWith(
         expect.objectContaining({
-          applicationId: mockApplicationId,
-          item: parsedDataWithBadItem.items[1]
+          error: expect.objectContaining({
+            message: expect.any(String),
+            stack_trace: expect.any(String),
+            type: expect.any(String)
+          })
         }),
         'Error mapping packing list item'
       )

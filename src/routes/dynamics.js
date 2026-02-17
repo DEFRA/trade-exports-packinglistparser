@@ -1,5 +1,6 @@
 import Joi from 'joi'
 import { getDispatchLocation } from '../services/dynamics-service.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { config } from '../config.js'
 import { STATUS_CODES } from './statuscodes.js'
 
@@ -64,8 +65,7 @@ const getDispatchLocationRoute = {
 
       if (remosId === null) {
         request.logger.warn(
-          { applicationId },
-          'Dynamics test endpoint: No REMOS ID found'
+          `Dynamics test endpoint: No REMOS ID found for application ${applicationId}`
         )
         return h.response(response).code(STATUS_CODES.NOT_FOUND)
       }
@@ -77,13 +77,8 @@ const getDispatchLocationRoute = {
       return h.response(response).code(STATUS_CODES.OK)
     } catch (err) {
       request.logger.error(
-        {
-          error: {
-            message: err.message,
-            stack_trace: err.stack
-          }
-        },
-        `Dynamics test endpoint: Error retrieving dispatch location for ${applicationId}`
+        formatError(err),
+        `Dynamics test endpoint: Error retrieving dispatch location (applicationId: ${applicationId}, environment: ${environment})`
       )
 
       return h
@@ -144,8 +139,7 @@ const dynamicsHealthCheck = {
 
     if (!isConfigured) {
       request.logger.warn(
-        { checks: response.checks, environment },
-        'Dynamics service is not fully configured'
+        `Dynamics service is not fully configured (checks: ${JSON.stringify(response.checks)}, environment: ${environment})`
       )
       return h.response(response).code(STATUS_CODES.SERVICE_UNAVAILABLE)
     }

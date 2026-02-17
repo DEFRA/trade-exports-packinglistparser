@@ -86,7 +86,15 @@ describe('#metrics', () => {
     })
 
     test('Should log expected error', () => {
-      expect(mockLoggerError).toHaveBeenCalledWith(Error(mockError), mockError)
+      expect(mockLoggerError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          error: expect.objectContaining({
+            message: mockError,
+            type: 'Error'
+          })
+        }),
+        'Failed to log metric (name: mock-metrics-name)'
+      )
     })
   })
 })

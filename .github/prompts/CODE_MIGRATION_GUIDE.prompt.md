@@ -72,22 +72,36 @@ logger.logError(filename, 'functionName', error)
 
 // New style (pino) - Simple version
 logger.info('message')
-logger.error(`Error occurred: ${error.message}`)
+logger.error('Error occurred')
 
-// New style (pino) - With metadata
-logger.info({ filename, function: 'functionName' }, 'message')
+// New style (pino) - With metadata in message string
+logger.info(`Doing something (filename: ${filename}, function: functionName)`)
+
+// New style (pino) - Errors using formatError helper
+import { formatError } from '../common/helpers/logging/error-logger.js'
+
+logger.error(formatError(error), 'Error message')
+
+// With additional context
 logger.error(
   {
+    ...formatError(error),
     filename,
-    function: 'functionName',
-    error: {
-      message: error.message,
-      stack_trace: error.stack
-    }
+    function: 'functionName'
   },
   'Error message'
 )
 ```
+
+**Error Logging Pattern:**
+
+- Use `formatError()` helper for ECS-compliant error formatting
+- `formatError()` automatically includes:
+  - `error.message`
+  - `error.stack_trace` (from error.stack)
+  - `error.type` (from error.name)
+- Spread `...formatError(error)` to add additional context fields
+- Never manually construct error objects
 
 ### 3. Naming Conventions
 
@@ -289,7 +303,9 @@ const filename = path.join('src', currentFilename.split('src')[1])
  * Process the data
  */
 function processData(data) {
-  logger.info({ filename, function: 'processData' }, 'Processing started')
+  logger.info(
+    `Processing started (filename: ${filename}, function: processData)`
+  )
   return parseData(data)
 }
 

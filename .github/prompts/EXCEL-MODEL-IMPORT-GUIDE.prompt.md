@@ -482,6 +482,7 @@ Adapt the matcher from the legacy repo:
  * header row patterns.
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import matcherResult from '../../matcher-result.js'
 import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
@@ -535,15 +536,7 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Sainsburys 1 matcher'
-    )
+    logger.error(formatError(err), 'Error in Sainsburys 1 matcher')
     return matcherResult.GENERIC_ERROR
   }
 }
@@ -553,11 +546,13 @@ export function matches(packingList, filename) {
 
 - Use ES6 imports instead of `require()`
 - Import and use Pino logger via `createLogger()` from `common/helpers/logging/logger.js`
+- Import and use `formatError` helper from `common/helpers/logging/error-logger.js`
 - Use structured logging:
-  - Info: `logger.info({ context }, 'message')` - context object first, message second
-  - Error: `logger.error({ error: { message: err.message, stack_trace: err.stack } }, 'message')`
+  - Info: `logger.info('message')` - simple message or incorporate context into message string
+  - Error: `logger.error(formatError(err), 'message')` - using formatError helper
   - **Legacy format:** `logger.logInfo(file, function, message)` and `logger.logError(file, function, err)`
-  - **New format:** Structured logging with context objects
+  - **New format:** Simple message strings with `formatError()` for errors (CDP does not support context objects)
+- Import `formatError` from `common/helpers/logging/error-logger.js`
 - Keep the same matching logic
 
 ---
@@ -583,6 +578,7 @@ Adapt the parser from the legacy repo:
  * @module parsers/sainsburys/model1
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js' // Excel headers registry
@@ -656,15 +652,7 @@ export function parse(packingListJson) {
       headers.SAINSBURYS1 // Required for Country of Origin validation
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'Error in Sainsburys 1 parser'
-    )
+    logger.error(formatError(err), 'Error in Sainsburys 1 parser')
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }
@@ -674,7 +662,8 @@ export function parse(packingListJson) {
 
 - Use ES6 imports instead of `require()`
 - Import and use Pino logger via `createLogger()` from `common/helpers/logging/logger.js`
-- Use structured logging: `logger.error({ error: { message: err.message, stack_trace: err.stack } }, 'message')` for errors
+- Import and use `formatError` helper from `common/helpers/logging/error-logger.js`
+- Use structured logging: `logger.error(formatError(err), 'message')` for errors
 - **CRITICAL:** Ensure the 6th parameter (headers) is passed to `combineParser.combine()` - this is required for validation flags
 - **DO NOT modify the parsing logic** - keep the same flow and structure from legacy
 - **DO NOT change parameter names** - `combineParser.combine()` expects legacy parameter names:

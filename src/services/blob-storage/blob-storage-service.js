@@ -2,6 +2,7 @@ import { BlobServiceClient } from '@azure/storage-blob'
 import { getAzureCredentials } from '../utilities/get-azure-credentials.js'
 import { getClientProxyOptions } from '../utilities/proxy-helper.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import { formatError } from '../../common/helpers/logging/error-logger.js'
 import { isExcel, convertExcelToJson } from '../../utilities/excel-helper.js'
 import { isCsv, convertCsvToJson } from '../../utilities/csv-helper.js'
 import { streamToBuffer } from '../../common/helpers/stream-helpers.js'
@@ -30,16 +31,7 @@ function createBlobServiceClient(storageConfig) {
 
     return new BlobServiceClient(blobServiceUrl, credential, clientOptions)
   } catch (error) {
-    logger.error(
-      {
-        error: {
-          message: error.message,
-          name: error.name,
-          stack: error.stack
-        }
-      },
-      'Failed to create blob service client'
-    )
+    logger.error(formatError(error), 'Failed to create blob service client')
     throw error
   }
 }

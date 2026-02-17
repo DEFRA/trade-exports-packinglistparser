@@ -6,6 +6,7 @@
  * header row patterns.
  */
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import matcherResult from '../../matcher-result.js'
 import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
@@ -49,9 +50,7 @@ export function matches(packingList, filename) {
 
     return result
   } catch (err) {
-    logger.error(`Error in ASDA Model 4 matcher: ${err.message}`, {
-      stack: err.stack
-    })
+    logger.error(formatError(err), 'Error in ASDA Model 4 matcher')
     return matcherResult.GENERIC_ERROR
   }
 }

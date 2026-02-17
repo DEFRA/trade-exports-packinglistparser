@@ -548,7 +548,7 @@ export function matches(pdfData, filename) {
       return matcherResult.WRONG_HEADER
     }
 
-    logger.info({ filename }, 'Packing list matches M&S Model 1 PDF')
+    logger.info(`Packing list matches M&S Model 1 PDF (filename: ${filename})`)
 
     return matcherResult.CORRECT
   } catch (err) {
@@ -692,7 +692,7 @@ export function parse(pdfData) {
       headers.MANDS1
     )
   } catch (err) {
-    logger.error({ err }, 'Error in parse()')
+    logger.error(formatError(err), 'Error in parse()')
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

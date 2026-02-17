@@ -70,7 +70,9 @@ function cacheS3Data(data) {
   // If MDM removes a country code, it will be removed from our cache too
   isoCodesCache = transformToSimpleIsoCodes(data)
   const itemCount = getItemCount(isoCodesCache)
-  logger.info({ itemCount }, 'ISO codes cache loaded (complete replacement)')
+  logger.info(
+    `ISO codes cache loaded (Complete Replacement) (itemCount: ${itemCount})`
+  )
 }
 
 /**

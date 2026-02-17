@@ -7,6 +7,7 @@ import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js'
 import * as regex from '../../../utilities/regex.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { matchesHeader } from '../../matches-header.js'
 import matcherResult from '../../matcher-result.js'
@@ -64,15 +65,7 @@ export function parse(packingListJson) {
       headers.TJMORRIS2
     )
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      'TJ Morris Model 2 parser error'
-    )
+    logger.error(formatError(err), 'TJ Morris Model 2 parser error')
     return combineParser.combine(null, [], false, parserModel.NOMATCH)
   }
 }

@@ -7,6 +7,7 @@ import { matchesHeader } from '../../matches-header.js'
 import * as regex from '../../../utilities/regex.js'
 import headers from '../../model-headers.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 
@@ -63,14 +64,7 @@ function matches(packingList, sourceFilename) {
     return result
   } catch (err) {
     logger.error(
-      {
-        filename,
-        function: 'matches()',
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
+      formatError(err),
       'Error in Buffaload Logistics Model 1 matcher'
     )
     return matcherResult.GENERIC_ERROR

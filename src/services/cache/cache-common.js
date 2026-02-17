@@ -1,6 +1,7 @@
 import { getFileFromS3, uploadJsonFileToS3 } from '../s3-service.js'
 import { config } from '../../config.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
+import { formatError } from '../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
@@ -63,13 +64,7 @@ export async function fetchFromS3WithRetry(
       attempt++
 
       logger.warn(
-        {
-          attempt,
-          maxRetries: maxRetries + 1,
-          error: error.message,
-          willRetry: attempt <= maxRetries
-        },
-        `Failed to fetch ${cacheType} from S3`
+        `Failed to fetch ${cacheType} from S3 (attempt ${attempt}/${maxRetries + 1}, error: ${error.message}, will retry: ${attempt <= maxRetries})`
       )
 
       if (attempt <= maxRetries) {
@@ -116,14 +111,13 @@ export async function populateFromMDM(
       logger.info(`Successfully uploaded ${cacheType} data to S3`)
     } catch (s3UploadError) {
       logger.warn(
-        { error: s3UploadError.message },
-        `Failed to upload ${cacheType} to S3, but data is cached in memory`
+        `Failed to upload ${cacheType} to S3 (error: ${s3UploadError.message}), but data is cached in memory`
       )
     }
   } catch (mdmError) {
     logger.error(
-      { error: mdmError.message },
-      `Failed to populate ${cacheType} from MDM`
+      formatError(mdmError),
+      `Failed to populate ${cacheType} from MDM (S3 error: ${s3Error?.message})`
     )
     throw new Error(
       `Unable to load ${cacheType} from S3 or MDM: S3 error: ${s3Error?.message}, MDM error: ${mdmError.message}`
@@ -181,8 +175,7 @@ export async function initializeCache(
   // Fall back to MDM on any S3 error
   // This includes NoSuchKey (file doesn't exist), empty data, and connection errors
   logger.info(
-    { s3Error: result.error?.message },
-    `S3 fetch failed, falling back to MDM for ${cacheType}`
+    `S3 fetch failed (error: ${result.error?.message}), falling back to MDM for ${cacheType}`
   )
 
   try {
@@ -195,14 +188,8 @@ export async function initializeCache(
     )
   } catch (mdmError) {
     logger.error(
-      {
-        s3Error: result.error?.message,
-        mdmError: mdmError.message,
-        attempts: result.attempt,
-        s3FileName,
-        s3Schema
-      },
-      `Unable to load ${cacheType} data from both S3 and MDM`
+      formatError(mdmError),
+      `Unable to load ${cacheType} data from both S3 and MDM (attempts: ${result.attempt}, S3 error: ${result.error?.message}, file: ${s3FileName}, schema: ${s3Schema})`
     )
 
     throw new Error(

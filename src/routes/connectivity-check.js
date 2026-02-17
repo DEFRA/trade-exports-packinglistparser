@@ -8,6 +8,7 @@ import { checkApplicationFormsContainerExists } from '../services/blob-storage/e
 import { checkTdsContainerExists } from '../services/blob-storage/tds-blob-storage-service.js'
 import { getIneligibleItems } from '../services/mdm-service.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { checkTradeServiceBusConnection } from '../services/trade-service-bus-service.js'
 
 const logger = createLogger()
@@ -151,15 +152,7 @@ async function canConnect(func, name) {
 
     return true
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack
-        }
-      },
-      `${name} connection failure:`
-    )
+    logger.error(formatError(err), `${name} connection failure`)
     return false
   }
 }

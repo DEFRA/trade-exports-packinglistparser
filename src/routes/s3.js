@@ -3,7 +3,7 @@ import {
   uploadJsonFileToS3,
   getFileFromS3
 } from '../services/s3-service.js'
-
+import { formatError } from '../common/helpers/logging/error-logger.js'
 import { STATUS_CODES } from './statuscodes.js'
 
 const getListFromS3 = {
@@ -24,7 +24,10 @@ async function makeListHandler(request, h) {
     const objectsResponse = await listS3Objects(schema)
     return h.response(objectsResponse).code(STATUS_CODES.OK)
   } catch (error) {
-    console.error('Error listing S3 buckets:', error)
+    request.logger.error(
+      formatError(error),
+      `Error listing S3 buckets (schema: ${schema})`
+    )
     return h
       .response({ error: 'Failed to list S3 buckets' })
       .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
@@ -50,7 +53,10 @@ async function makeGetHandler(request, h) {
     const data = await getFileFromS3({ filename, schema })
     return h.response(data).code(STATUS_CODES.OK)
   } catch (error) {
-    console.error('Error getting file from S3:', error)
+    request.logger.error(
+      formatError(error),
+      `Error getting file from S3 (filename: ${filename}, schema: ${schema})`
+    )
     return h
       .response({ error: 'Failed to get file from S3' })
       .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
@@ -81,7 +87,10 @@ async function makeAddHandler(request, h) {
       .response({ message: 'File added to S3 successfully' })
       .code(STATUS_CODES.CREATED)
   } catch (error) {
-    console.error('Error adding file to S3:', error)
+    request.logger.error(
+      formatError(error),
+      `Error adding file to S3 (filename: ${filename}, schema: ${schema})`
+    )
     return h
       .response({ error: 'Failed to add file to S3' })
       .code(STATUS_CODES.INTERNAL_SERVER_ERROR)
