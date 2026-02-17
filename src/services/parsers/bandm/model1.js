@@ -25,15 +25,34 @@ function createHeaderRowFinder() {
 }
 
 /**
- * Checks if a row is empty (both description and commodity code are empty).
+ * Checks if a row is completely empty or has no identifying information.
+ * Filters rows that have no description, commodity code, nature, or origin.
+ *
+ * Note: Excludes blanket values (nirms, type_of_treatment, total_net_weight_unit)
+ * that are applied from document headers, not from the actual row cells.
+ *
  * @param {Object} item - The item to check.
- * @returns {boolean} True if the row is empty.
+ * @returns {boolean} True if the row should be filtered.
  */
 function isEmptyRow(item) {
-  const descEmpty = !item.description || item.description.trim() === ''
-  const commodityEmpty =
-    !item.commodity_code || String(item.commodity_code).trim() === ''
-  return descEmpty && commodityEmpty
+  const isEmpty = (value) => {
+    if (value === null || value === undefined) {
+      return true
+    }
+    if (typeof value === 'string' && value.trim() === '') {
+      return true
+    }
+    return false
+  }
+
+  // Check if any identifying field has data
+  const hasDescription = !isEmpty(item.description)
+  const hasCommodityCode = !isEmpty(item.commodity_code)
+  const hasNature = !isEmpty(item.nature_of_products)
+  const hasOrigin = !isEmpty(item.country_of_origin)
+
+  // Filter rows with no identifying information
+  return !hasDescription && !hasCommodityCode && !hasNature && !hasOrigin
 }
 
 /**
@@ -56,7 +75,7 @@ function isRepeatedHeaderRow(item) {
 }
 
 /**
- * Checks if a row is a totals row based on keywords.
+ * Checks if a row is a totals/summary row based on keywords.
  * @param {Object} item - The item to check.
  * @returns {boolean} True if the row is a totals row.
  */
@@ -65,9 +84,10 @@ function isTotalsRow(item) {
     return false
   }
 
-  return headers.BANDM1.totalsRowKeywords.some((keyword) =>
+  const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
     item.description.toLowerCase().includes(keyword)
   )
+  return hasKeyword
 }
 
 /**
@@ -105,6 +125,37 @@ function filterDataRows(items) {
 }
 
 /**
+ * Cleans up parsed items by converting whitespace-only strings to null.
+ * B&M-specific: handles Excel cells containing only spaces.
+ *
+ * Important: This must run AFTER filtering for totals/headers, because those
+ * checks need the original string values to detect keywords.
+ *
+ * @param {Array} items - Array of parsed items
+ * @returns {Array} Items with whitespace-only strings converted to null
+ */
+function cleanupWhitespace(items) {
+  return items.map((item) => {
+    const cleaned = { ...item }
+
+    // Clean string fields (convert whitespace-only to null)
+    const stringFields = [
+      'description',
+      'commodity_code',
+      'nature_of_products',
+      'country_of_origin'
+    ]
+    stringFields.forEach((field) => {
+      if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {
+        cleaned[field] = null
+      }
+    })
+
+    return cleaned
+  })
+}
+
+/**
  * Processes a single sheet to extract and filter packing list data.
  * @param {Object} sheetData - The sheet data to process.
  * @param {string} sheetName - The name of the sheet.
@@ -123,7 +174,11 @@ function processSheet(sheetData, sheetName, headerCallback) {
     sheetName
   )
 
-  return filterDataRows(parsedItems)
+  // Filter FIRST (while we still have original string values for totals detection)
+  const filteredItems = filterDataRows(parsedItems)
+
+  // THEN clean whitespace (after filtering based on keywords)
+  return cleanupWhitespace(filteredItems)
 }
 
 /**
