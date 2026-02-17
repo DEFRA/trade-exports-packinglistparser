@@ -27,7 +27,7 @@ describe('parseBandmModel1', () => {
     it('parses json with case insensitive headers', () => {
       const result = parse(model.validModelInsensitiveHeader)
 
-      expect(result.items).toHaveLength(3) // Now includes drag-down row
+      expect(result.items).toHaveLength(2) // Drag-down row filtered (no identifiers)
       expect(result.business_checks.all_required_fields_present).toBe(true)
     })
 
@@ -121,8 +121,8 @@ describe('parseBandmModel1', () => {
     it('includes rows with partial data for validation', () => {
       const result = parse(model.validModel)
 
-      // Should have 3 items including drag-down row (will be validated later in pipeline)
-      expect(result.items).toHaveLength(3)
+      // Should have 2 items (drag-down row filtered - no identifiers)
+      expect(result.items).toHaveLength(2)
     })
 
     it('filters out repeated header rows in data', () => {
@@ -496,6 +496,897 @@ describe('parseBandmModel1', () => {
 
       // Should handle null description gracefully (not filtered as it has commodity code)
       expect(result.items.length).toBe(2)
+    })
+  })
+
+  describe('isEmptyRow filtering', () => {
+    it('filters completely empty rows', () => {
+      const modelWithEmptyRow = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: null,
+            B: null,
+            C: null,
+            D: null,
+            E: null,
+            F: null,
+            G: null,
+            H: null,
+            I: null,
+            J: null
+          }
+        ]
+      }
+
+      const result = parse(modelWithEmptyRow)
+
+      // Should only have 1 valid item, empty row should be filtered
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+
+    it('filters rows with zero packages and weight', () => {
+      const modelWithZeros = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: null,
+            B: null,
+            C: '',
+            D: '',
+            E: '',
+            F: 0,
+            G: 0,
+            H: 0,
+            I: '',
+            J: ''
+          }
+        ]
+      }
+
+      const result = parse(modelWithZeros)
+
+      // Should only have 1 valid item, zero row should be filtered as empty
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+
+    it('keeps rows with only whitespace strings (drag-down rows for validation)', () => {
+      const modelWithWhitespace = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: ' ',
+            B: ' ',
+            C: ' ',
+            D: ' ',
+            E: ' ',
+            F: 1,
+            G: 3.27,
+            H: 3.63
+          }
+        ]
+      }
+
+      const result = parse(modelWithWhitespace)
+
+      // Note: After cleanupWhitespace, this row will have null identifiers + quantities
+      // The NISA pattern will filter it as a totals row
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+  })
+
+  describe('isTotalsRow detection', () => {
+    it('filters rows with "total" keyword', () => {
+      const modelWithTotal = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: '',
+            B: '',
+            C: 'Total',
+            D: '',
+            E: '',
+            F: 10,
+            G: 50.5,
+            H: 55.2,
+            I: '',
+            J: ''
+          }
+        ]
+      }
+
+      const result = parse(modelWithTotal)
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+
+    it('filters rows with "totals" keyword (case insensitive)', () => {
+      const modelWithTotals = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: '',
+            B: '',
+            C: 'TOTALS',
+            D: '',
+            E: '',
+            F: 10,
+            G: 50.5,
+            H: 55.2,
+            I: '',
+            J: ''
+          }
+        ]
+      }
+
+      const result = parse(modelWithTotals)
+
+      expect(result.items).toHaveLength(1)
+    })
+
+    it('filters rows with null identifiers but has quantities (aggregate totals)', () => {
+      const modelWithNullIdentifiers = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: null,
+            B: null,
+            C: null,
+            D: null,
+            E: '',
+            F: 47,
+            G: 150.82,
+            H: 165.5,
+            I: '',
+            J: null
+          }
+        ]
+      }
+
+      const result = parse(modelWithNullIdentifiers)
+
+      // NISA pattern filters: null identifiers + has quantities = aggregate totals row
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+
+    it('filters rows with space strings after cleanup (pattern matches totals)', () => {
+      const modelWithSpaces = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: ' ',
+            B: ' ',
+            C: ' ',
+            D: ' ',
+            E: ' ',
+            F: 1,
+            G: 3.27,
+            H: 3.63
+          }
+        ]
+      }
+
+      const result = parse(modelWithSpaces)
+
+      // After cleanupWhitespace converts spaces to null, NISA pattern filters as totals
+      expect(result.items).toHaveLength(1)
+    })
+  })
+
+  describe('cleanupWhitespace processing', () => {
+    it('converts whitespace-only strings to null', () => {
+      const modelWithWhitespace = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: ' ',
+            B: ' ',
+            C: '   ',
+            D: '  ',
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: '  '
+          }
+        ]
+      }
+
+      const result = parse(modelWithWhitespace)
+
+      // Row filtered - no identifying info (all whitespace)
+      expect(result.items).toHaveLength(0)
+    })
+
+    it('preserves non-whitespace string values', () => {
+      const modelWithValidData = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'Valid Description',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          }
+        ]
+      }
+
+      const result = parse(modelWithValidData)
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('Valid Description')
+      expect(result.items[0].commodity_code).toBe(16025095)
+      expect(result.items[0].country_of_origin).toBe('GB')
+    })
+
+    it('preserves numeric values during cleanup', () => {
+      const modelWithNumbers = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'Test Item',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 5,
+            G: 10.5,
+            H: 11.2,
+            I: 'YES',
+            J: 'GB'
+          }
+        ]
+      }
+
+      const result = parse(modelWithNumbers)
+
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].number_of_packages).toBe(5)
+      expect(result.items[0].total_net_weight_kg).toBe(10.5)
+    })
+  })
+
+  describe('isRepeatedHeaderRow filtering', () => {
+    it('filters rows containing "item description" keyword', () => {
+      const modelWithRepeatedHeader = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          }
+        ]
+      }
+
+      const result = parse(modelWithRepeatedHeader)
+
+      // Should filter the repeated header row
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+
+    it('filters rows with "prism" as description', () => {
+      const modelWithPrism = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: '',
+            B: '',
+            C: 'PRISM',
+            D: '',
+            E: '',
+            F: 1,
+            G: 1.5,
+            H: 2.0,
+            I: '',
+            J: ''
+          }
+        ]
+      }
+
+      const result = parse(modelWithPrism)
+
+      // Should filter the row with "PRISM" in description
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+  })
+
+  describe('exception handling and edge cases', () => {
+    it('handles undefined items gracefully', () => {
+      const modelWithUndefined = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: undefined,
+            B: undefined,
+            C: undefined,
+            D: undefined,
+            E: undefined,
+            F: undefined,
+            G: undefined,
+            H: undefined,
+            I: undefined,
+            J: undefined
+          }
+        ]
+      }
+
+      const result = parse(modelWithUndefined)
+
+      // Should filter undefined row as empty
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+
+    it('handles mixed null and whitespace gracefully', () => {
+      const modelWithMixed = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: null,
+            B: '  ',
+            C: '',
+            D: null,
+            E: '   ',
+            F: 0,
+            G: null,
+            H: 0,
+            I: '',
+            J: null
+          }
+        ]
+      }
+
+      const result = parse(modelWithMixed)
+
+      // Should filter row with mixed null/whitespace/zeros as empty
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+    })
+
+    it('handles malformed sheet data without crashing', () => {
+      const malformedModel = {
+        Sheet1: []
+      }
+
+      const result = parse(malformedModel)
+
+      // Should return NOMATCH without crashing
+      expect(result.parserModel).toBe('NOMATCH')
+      expect(result.business_checks.all_required_fields_present).toBe(false)
+    })
+
+    it('handles missing sheet keys', () => {
+      const emptyModel = {}
+
+      const result = parse(emptyModel)
+
+      // Should return NOMATCH without crashing
+      expect(result.parserModel).toBe('NOMATCH')
+      expect(result.business_checks.all_required_fields_present).toBe(false)
+    })
+
+    it('handles items with only blanket values (nirms, treatment)', () => {
+      const modelWithBlanketOnly = {
+        Sheet1: [
+          {},
+          {},
+          {
+            H: 'WAREHOUSE SCHEME NUMBER:',
+            I: 'RMS-GB-000005-001'
+          },
+          {
+            J: 'This consignment contains only NIRMS eligible goods',
+            K: 'Treatment type: all products are processed'
+          },
+          {},
+          {
+            A: 'PRODUCT CODE (SHORT)',
+            B: 'PRISM',
+            C: 'ITEM DESCRIPTION',
+            D: 'COMMODITY CODE',
+            E: 'PLACE OF DISPATCH',
+            F: 'TOTAL NUMBER OF CASES',
+            G: 'NET WEIGHT KG',
+            H: 'GROSS WEIGHT',
+            I: 'ANIMAL ORIGIN',
+            J: 'COUNTRY OF ORIGIN'
+          },
+          {
+            A: 412267,
+            B: 10145600,
+            C: 'J/L JERKY 70G TERIYAKI',
+            D: 16025095,
+            E: 'RMS-GB-000005-001',
+            F: 1,
+            G: 1.15,
+            H: 1.28,
+            I: 'YES',
+            J: 'GB'
+          },
+          {
+            A: null,
+            B: null,
+            C: null,
+            D: null,
+            E: null,
+            F: null,
+            G: null,
+            H: null,
+            I: null,
+            J: null
+          }
+        ]
+      }
+
+      const result = parse(modelWithBlanketOnly)
+
+      // Empty row should be filtered even though blanket values get applied
+      expect(result.items).toHaveLength(1)
+      expect(result.items[0].description).toBe('J/L JERKY 70G TERIYAKI')
+      expect(result.items[0].nirms).toBe('NIRMS')
+      expect(result.items[0].type_of_treatment).toBe('Processed')
     })
   })
 })

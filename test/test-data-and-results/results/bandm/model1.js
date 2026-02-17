@@ -4,9 +4,8 @@ import failureReasonsDescriptions from '../../../../src/services/validators/pack
 export default {
   validTestResult: {
     business_checks: {
-      all_required_fields_present: false,
-      failure_reasons:
-        'Identifier is missing in sheet "Sheet1" row 9.\nProduct description is missing in sheet "Sheet1" row 9.\nMissing Country of Origin in sheet "Sheet1" row 9.\n'
+      all_required_fields_present: true,
+      failure_reasons: null
     },
     items: [
       {
@@ -30,21 +29,6 @@ export default {
         total_net_weight_unit: 'KG',
         nirms: 'NIRMS',
         country_of_origin: 'GB'
-      },
-      {
-        commodity_code: null,
-        description: null,
-        nature_of_products: null,
-        number_of_packages: 1,
-        total_net_weight_kg: 3.27,
-        type_of_treatment: 'Processed',
-        total_net_weight_unit: 'KG',
-        nirms: 'NIRMS',
-        country_of_origin: null,
-        row_location: {
-          sheetName: 'Sheet1',
-          rowNumber: 9
-        }
       }
     ],
     registration_approval_number: 'RMS-GB-000005-001',
@@ -72,21 +56,6 @@ export default {
         }
       },
       {
-        commodity_code: null,
-        description: null,
-        nature_of_products: null,
-        number_of_packages: 1,
-        total_net_weight_kg: 3.27,
-        type_of_treatment: 'Processed',
-        country_of_origin: null,
-        nirms: 'NIRMS',
-        total_net_weight_unit: null,
-        row_location: {
-          sheetName: 'Sheet1',
-          rowNumber: 8
-        }
-      },
-      {
         commodity_code: 16041428,
         description: 'JOHN W 5X132G S/WATER',
         nature_of_products: null,
@@ -100,21 +69,6 @@ export default {
           sheetName: 'sheet2',
           rowNumber: 7
         }
-      },
-      {
-        commodity_code: null,
-        description: null,
-        nature_of_products: null,
-        number_of_packages: 1,
-        total_net_weight_kg: 3.27,
-        type_of_treatment: 'Processed',
-        country_of_origin: null,
-        nirms: 'NIRMS',
-        total_net_weight_unit: null,
-        row_location: {
-          sheetName: 'sheet2',
-          rowNumber: 8
-        }
       }
     ],
     registration_approval_number: 'RMS-GB-000005-001',
@@ -124,7 +78,7 @@ export default {
     business_checks: {
       all_required_fields_present: false,
       failure_reasons:
-        'Net Weight Unit of Measure (kg) not found.\nIdentifier is missing in sheet "Sheet1" row 7 and sheet "Sheet1" row 9.\nProduct description is missing in sheet "Sheet1" row 9.\nTotal net weight is missing in sheet "Sheet1" row 7.\nMissing Country of Origin in sheet "Sheet1" row 9.\n'
+        'Net Weight Unit of Measure (kg) not found.\nIdentifier is missing in sheet "Sheet1" row 7.\nTotal net weight is missing in sheet "Sheet1" row 7.\n'
     },
     items: [
       {
@@ -155,21 +109,6 @@ export default {
         row_location: {
           sheetName: 'Sheet1',
           rowNumber: 8
-        }
-      },
-      {
-        commodity_code: null,
-        description: null,
-        nature_of_products: null,
-        number_of_packages: 1,
-        total_net_weight_kg: 3.27,
-        type_of_treatment: 'Processed',
-        country_of_origin: null,
-        nirms: 'NIRMS',
-        total_net_weight_unit: null,
-        row_location: {
-          sheetName: 'Sheet1',
-          rowNumber: 9
         }
       }
     ],

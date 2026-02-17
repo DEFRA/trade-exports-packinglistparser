@@ -9,7 +9,6 @@ import headers from '../../model-headers.js'
 import * as regex from '../../../utilities/regex.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { mapParser } from '../../parser-map.js'
-import * as validatorUtilities from '../../validators/packing-list-validator-utilities.js'
 
 const logger = createLogger()
 
@@ -25,21 +24,16 @@ function createHeaderRowFinder() {
 }
 
 /**
- * Checks if a row is completely empty (no meaningful data in any field).
- * Only rows that are COMPLETELY empty should be filtered out.
- * Rows with any meaningful data should be included for validation.
+ * Checks if a row is completely empty or has no identifying information.
+ * Filters rows that have no description, commodity code, nature, or origin.
  *
  * Note: Excludes blanket values (nirms, type_of_treatment, total_net_weight_unit)
  * that are applied from document headers, not from the actual row cells.
  *
  * @param {Object} item - The item to check.
- * @returns {boolean} True if the row is completely empty.
+ * @returns {boolean} True if the row should be filtered.
  */
 function isEmptyRow(item) {
-  /**
-   * Helper to check if a value is effectively empty (null, undefined, empty string, whitespace, or zero)
-   * Zero is considered empty because 0 packages or 0 weight is not meaningful data.
-   */
   const isEmpty = (value) => {
     if (value === null || value === undefined) {
       return true
@@ -47,25 +41,17 @@ function isEmptyRow(item) {
     if (typeof value === 'string' && value.trim() === '') {
       return true
     }
-    if (typeof value === 'number' && value === 0) {
-      return true
-    }
     return false
   }
 
-  // Check ONLY the fields that come directly from Excel cells (not blanket values)
-  // A row is empty only if it has no identifying info AND no meaningful quantities AND no origin
-  const coreFields = [
-    item.description,
-    item.commodity_code,
-    item.nature_of_products,
-    item.number_of_packages,
-    item.total_net_weight_kg,
-    item.country_of_origin
-  ]
+  // Check if any identifying field has data
+  const hasDescription = !isEmpty(item.description)
+  const hasCommodityCode = !isEmpty(item.commodity_code)
+  const hasNature = !isEmpty(item.nature_of_products)
+  const hasOrigin = !isEmpty(item.country_of_origin)
 
-  // Row is empty only if ALL core fields are empty/zero
-  return coreFields.every(isEmpty)
+  // Filter rows with no identifying information
+  return !hasDescription && !hasCommodityCode && !hasNature && !hasOrigin
 }
 
 /**
@@ -88,47 +74,19 @@ function isRepeatedHeaderRow(item) {
 }
 
 /**
- * Checks if a row is a totals/summary row based on keywords or pattern.
- * Uses a similar pattern to NISA parser but excludes drag-down rows.
+ * Checks if a row is a totals/summary row based on keywords.
  * @param {Object} item - The item to check.
  * @returns {boolean} True if the row is a totals row.
  */
 function isTotalsRow(item) {
-  // Check for keyword-based totals rows
-  if (item.description) {
-    const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
-      item.description.toLowerCase().includes(keyword)
-    )
-    if (hasKeyword) {
-      return true
-    }
-  }
-
-  // Exclude drag-down rows (have space-only strings before cleanup)
-  // Drag-down rows have literal space characters from Excel drag operations
-  const hasSpaceOnlyDescription =
-    typeof item.description === 'string' &&
-    item.description.trim() === '' &&
-    item.description.length > 0
-
-  const hasSpaceOnlyCommodityCode =
-    typeof item.commodity_code === 'string' &&
-    item.commodity_code.trim() === '' &&
-    item.commodity_code.length > 0
-
-  if (hasSpaceOnlyDescription || hasSpaceOnlyCommodityCode) {
+  if (!item.description) {
     return false
   }
 
-  // Check for aggregate/summary rows using validator utilities (NISA pattern)
-  // Pattern: missing description AND missing identifier BUT has packages AND has weight
-  // This catches numeric-only totals rows without item details
-  return (
-    validatorUtilities.hasMissingDescription(item) &&
-    validatorUtilities.hasMissingIdentifier(item) &&
-    !validatorUtilities.hasMissingPackages(item) &&
-    !validatorUtilities.hasMissingNetWeight(item)
+  const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
+    item.description.toLowerCase().includes(keyword)
   )
+  return hasKeyword
 }
 
 /**
