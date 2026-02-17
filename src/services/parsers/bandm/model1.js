@@ -40,9 +40,15 @@ function isEmptyRow(item) {
    * Zero is considered empty because 0 packages or 0 weight is not meaningful data.
    */
   const isEmpty = (value) => {
-    if (value === null || value === undefined) return true
-    if (typeof value === 'string' && value.trim() === '') return true
-    if (typeof value === 'number' && value === 0) return true
+    if (value === null || value === undefined) {
+      return true
+    }
+    if (typeof value === 'string' && value.trim() === '') {
+      return true
+    }
+    if (typeof value === 'number' && value === 0) {
+      return true
+    }
     return false
   }
 
@@ -81,48 +87,22 @@ function isRepeatedHeaderRow(item) {
 }
 
 /**
- * Checks if a row is a totals row based on keywords or pattern.
+ * Checks if a row is a totals/summary row based on keywords.
+ * B&M totals rows contain keywords like "total", "totals", or "grand total" in the description.
  * @param {Object} item - The item to check.
  * @returns {boolean} True if the row is a totals row.
  */
 function isTotalsRow(item) {
-  // Check for keyword-based totals rows (primary detection method)
-  if (item.description) {
-    const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
-      item.description.toLowerCase().includes(keyword)
-    )
-    if (hasKeyword) {
-      return true
-    }
+  // Check for keyword-based totals rows
+  if (!item.description) {
+    return false
   }
 
-  // Check for numeric-only totals rows (secondary heuristic)
-  // Only filter if it has suspiciously large aggregate numbers
-  const hasNoDescription =
-    !item.description ||
-    (typeof item.description === 'string' && item.description.trim() === '')
-  const hasNoCommodityCode =
-    !item.commodity_code ||
-    (typeof item.commodity_code === 'string' &&
-      item.commodity_code.trim() === '')
-  const hasNoCountryOfOrigin =
-    !item.country_of_origin ||
-    (typeof item.country_of_origin === 'string' &&
-      item.country_of_origin.trim() === '')
+  const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
+    item.description.toLowerCase().includes(keyword)
+  )
 
-  // Pattern: empty ALL identifiers + has very large quantities = likely a grand total row
-  if (hasNoDescription && hasNoCommodityCode && hasNoCountryOfOrigin) {
-    const packages = item.number_of_packages || 0
-    const weight = item.total_net_weight_kg || 0
-
-    // Only consider it a totals row if quantities are very large (likely aggregated)
-    // Using threshold: >20 packages OR >50kg suggests aggregated data
-    if (packages > 20 || weight > 50) {
-      return true
-    }
-  }
-
-  return false
+  return hasKeyword
 }
 
 /**
