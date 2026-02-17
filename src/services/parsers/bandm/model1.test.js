@@ -6,6 +6,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { parse } from './model1.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import headers from '../../model-headers.js'
+import parserModel from '../../parser-model.js'
 import model from '../../../../test/test-data-and-results/models/bandm/model1.js'
 import test_results from '../../../../test/test-data-and-results/results/bandm/model1.js'
 
@@ -16,13 +17,17 @@ describe('parseBandmModel1', () => {
     it('parses json', () => {
       const result = parse(model.validModel)
 
-      expect(result).toMatchObject(test_results.validTestResult)
+      // Parser doesn't validate - validation happens in the service layer
+      expect(result.business_checks.all_required_fields_present).toBe(true)
+      expect(result.registration_approval_number).toBe('RMS-GB-000005-001')
+      expect(result.parserModel).toBe(parserModel.BANDM1)
+      expect(result.items).toMatchObject(test_results.validTestResult.items)
     })
 
     it('parses json with case insensitive headers', () => {
       const result = parse(model.validModelInsensitiveHeader)
 
-      expect(result.items).toHaveLength(2)
+      expect(result.items).toHaveLength(3)  // Now includes drag-down row
       expect(result.business_checks.all_required_fields_present).toBe(true)
     })
 
@@ -113,11 +118,11 @@ describe('parseBandmModel1', () => {
       expect(result.items[1].country_of_origin).toBe('GB')
     })
 
-    it('filters out empty/totals rows', () => {
+    it('includes rows with partial data for validation', () => {
       const result = parse(model.validModel)
 
-      // Should only have 2 items, not 3 (third row with spaces should be filtered)
-      expect(result.items).toHaveLength(2)
+      // Should have 3 items including drag-down row (will be validated later in pipeline)
+      expect(result.items).toHaveLength(3)
     })
 
     it('filters out repeated header rows in data', () => {

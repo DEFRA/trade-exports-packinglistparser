@@ -24,15 +24,41 @@ function createHeaderRowFinder() {
 }
 
 /**
- * Checks if a row is empty (both description and commodity code are empty).
+ * Checks if a row is completely empty (no meaningful data in any field).
+ * Only rows that are COMPLETELY empty should be filtered out.
+ * Rows with any meaningful data should be included for validation.
+ * 
+ * Note: Excludes blanket values (nirms, type_of_treatment, total_net_weight_unit) 
+ * that are applied from document headers, not from the actual row cells.
+ * 
  * @param {Object} item - The item to check.
- * @returns {boolean} True if the row is empty.
+ * @returns {boolean} True if the row is completely empty.
  */
 function isEmptyRow(item) {
-  const descEmpty = !item.description || item.description.trim() === ''
-  const commodityEmpty =
-    !item.commodity_code || String(item.commodity_code).trim() === ''
-  return descEmpty && commodityEmpty
+  /**
+   * Helper to check if a value is effectively empty (null, undefined, empty string, whitespace, or zero)
+   * Zero is considered empty because 0 packages or 0 weight is not meaningful data.
+   */
+  const isEmpty = (value) => {
+    if (value === null || value === undefined) return true
+    if (typeof value === 'string' && value.trim() === '') return true
+    if (typeof value === 'number' && value === 0) return true
+    return false
+  }
+  
+  // Check ONLY the fields that come directly from Excel cells (not blanket values)
+  // A row is empty only if it has no identifying info AND no meaningful quantities AND no origin
+  const coreFields = [
+    item.description,
+    item.commodity_code,
+    item.nature_of_products,
+    item.number_of_packages,
+    item.total_net_weight_kg,
+    item.country_of_origin
+  ]
+  
+  // Row is empty only if ALL core fields are empty/zero
+  return coreFields.every(isEmpty)
 }
 
 /**
@@ -55,18 +81,40 @@ function isRepeatedHeaderRow(item) {
 }
 
 /**
- * Checks if a row is a totals row based on keywords.
+ * Checks if a row is a totals row based on keywords or pattern.
  * @param {Object} item - The item to check.
  * @returns {boolean} True if the row is a totals row.
  */
 function isTotalsRow(item) {
-  if (!item.description) {
-    return false
+  // Check for keyword-based totals rows (primary detection method)
+  if (item.description) {
+    const hasKeyword = headers.BANDM1.totalsRowKeywords.some((keyword) =>
+      item.description.toLowerCase().includes(keyword)
+    )
+    if (hasKeyword) {
+      return true
+    }
   }
-
-  return headers.BANDM1.totalsRowKeywords.some((keyword) =>
-    item.description.toLowerCase().includes(keyword)
-  )
+  
+  // Check for numeric-only totals rows (secondary heuristic)
+  // Only filter if it has suspiciously large aggregate numbers
+  const hasNoDescription = !item.description || (typeof item.description === 'string' && item.description.trim() === '')
+  const hasNoCommodityCode = !item.commodity_code || (typeof item.commodity_code === 'string' && item.commodity_code.trim() === '')
+  const hasNoCountryOfOrigin = !item.country_of_origin || (typeof item.country_of_origin === 'string' && item.country_of_origin.trim() === '')
+  
+  // Pattern: empty ALL identifiers + has very large quantities = likely a grand total row
+  if (hasNoDescription && hasNoCommodityCode && hasNoCountryOfOrigin) {
+    const packages = item.number_of_packages || 0
+    const weight = item.total_net_weight_kg || 0
+    
+    // Only consider it a totals row if quantities are very large (likely aggregated)
+    // Using threshold: >20 packages OR >50kg suggests aggregated data
+    if (packages > 20 || weight > 50) {
+      return true
+    }
+  }
+  
+  return false
 }
 
 /**
@@ -104,6 +152,32 @@ function filterDataRows(items) {
 }
 
 /**
+ * Cleans up parsed items by converting whitespace-only strings to null.
+ * B&M-specific: handles Excel cells containing only spaces.
+ * 
+ * Important: This must run AFTER filtering for totals/headers, because those
+ * checks need the original string values to detect keywords.
+ * 
+ * @param {Array} items - Array of parsed items
+ * @returns {Array} Items with whitespace-only strings converted to null
+ */
+function cleanupWhitespace(items) {
+  return items.map(item => {
+    const cleaned = { ...item }
+    
+    // Clean string fields (convert whitespace-only to null)
+    const stringFields = ['description', 'commodity_code', 'nature_of_products', 'country_of_origin']
+    stringFields.forEach(field => {
+      if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {
+        cleaned[field] = null
+      }
+    })
+    
+    return cleaned
+  })
+}
+
+/**
  * Processes a single sheet to extract and filter packing list data.
  * @param {Object} sheetData - The sheet data to process.
  * @param {string} sheetName - The name of the sheet.
@@ -122,7 +196,11 @@ function processSheet(sheetData, sheetName, headerCallback) {
     sheetName
   )
 
-  return filterDataRows(parsedItems)
+  // Filter FIRST (while we still have original string values for totals detection)
+  const filteredItems = filterDataRows(parsedItems)
+  
+  // THEN clean whitespace (after filtering based on keywords)
+  return cleanupWhitespace(filteredItems)
 }
 
 /**
