@@ -70,6 +70,8 @@ import { matches as matchesSavers1 } from './matchers/savers/model1.js'
 import { parse as parseSavers1 } from './parsers/savers/model1.js'
 
 // Tesco Excel parsers
+import { matches as matchesTesco2 } from './matchers/tesco/model2.js'
+import { parse as parseTesco2 } from './parsers/tesco/model2.js'
 import { matches as matchesTesco3 } from './matchers/tesco/model3.js'
 import { parse as parseTesco3 } from './parsers/tesco/model3.js'
 
@@ -173,6 +175,10 @@ const parsersExcel = {
   TURNERS1: {
     matches: matchesTurners1,
     parse: parseTurners1
+  },
+  TESCO2: {
+    matches: matchesTesco2,
+    parse: parseTesco2
   },
   TESCO3: {
     matches: matchesTesco3,
