@@ -1,5 +1,6 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import { noRemosMatchCsv, noRemosMatch, noRemosMatchPdf } from './model1.js'
+import * as pdfHelper from '../../../utilities/pdf-helper.js'
 
 describe('no-match model1 - noRemosMatchCsv', () => {
   test.each([
@@ -125,6 +126,21 @@ describe('matchesNoMatch - sheet-based data', () => {
 })
 
 describe('noRemosMatchPdf', () => {
+  test('returns REMOS match when PDF contains a valid RMS value', async () => {
+    const extractPdfSpy = vi.spyOn(pdfHelper, 'extractPdf').mockResolvedValue({
+      pages: [
+        {
+          content: [{ A: 'RMS-GB-123456-789' }]
+        }
+      ]
+    })
+
+    const result = await noRemosMatchPdf(Buffer.from('mock-pdf'))
+
+    expect(result).toBe('RMS-GB-123456-789')
+    extractPdfSpy.mockRestore()
+  })
+
   test('returns false when PDF extraction throws an error', async () => {
     // Pass invalid data that will cause extractPdf to throw
     const invalidPdfBuffer = Buffer.from('not a valid PDF')

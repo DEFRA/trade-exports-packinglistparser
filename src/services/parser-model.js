@@ -61,6 +61,9 @@ export default Object.freeze({
   // Fowler-Welch models
   FOWLERWELCH2: 'FOWLERWELCH2',
 
+  // Warrens models
+  WARRENS2: 'WARRENS2',
+
   // Kepak models
   KEPAK1: 'KEPAK1',
 

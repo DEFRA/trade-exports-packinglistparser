@@ -1,11 +1,11 @@
 import { describe, test, expect } from 'vitest'
 import { matches } from './model2.js'
 import matcherResult from '../../matcher-result.js'
-import model from '../../../../test/test-data-and-results/models/fowlerwelch/model2.js'
+import model from '../../../../test/test-data-and-results/models/warrens/model2.js'
 
 const filename = 'packinglist.xlsx'
 
-describe('matchesFowlerwelch2', () => {
+describe('matchesWarrens2', () => {
   test("returns 'Empty File' matcher result for empty json", () => {
     const packingListJson = {}
 
@@ -44,14 +44,12 @@ describe('matchesFowlerwelch2', () => {
   })
 
   test("returns 'Wrong Header' matcher result for incorrect header values of one sheet", () => {
-    const filename = 'packinglist.xlsx'
     const result = matches(model.invalid_Model_IncorrectHeader, filename)
 
     expect(result).toBe(matcherResult.WRONG_HEADER)
   })
 
   test("returns 'Wrong Header' matcher result for incorrect header values of multiple sheets", () => {
-    const filename = 'packinglist.xlsx'
     const result = matches(
       model.invalid_Model_IncorrectHeaderMultiple,
       filename
