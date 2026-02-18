@@ -9,6 +9,7 @@ import { matches } from './model1.js'
 import matcherResult from '../../matcher-result.js'
 import model from '../../../../test/test-data-and-results/models-pdf/mands/model1.js'
 import { extractPdf } from '../../../utilities/pdf-helper.js'
+import headers from '../../model-headers-pdf.js'
 
 vi.mock('../../../utilities/pdf-helper.js', () => {
   const actual = vi.importActual('../../../utilities/pdf-helper.js')
@@ -21,6 +22,34 @@ vi.mock('../../../utilities/pdf-helper.js', () => {
 describe('matchesMandS', () => {
   afterEach(() => {
     vi.clearAllMocks()
+  })
+
+  test('returns EMPTY_FILE when PDF has no pages', async () => {
+    extractPdf.mockImplementation(() => ({ pages: [] }))
+
+    const result = await matches({}, 'PackingList.pdf')
+
+    expect(result).toEqual(matcherResult.EMPTY_FILE)
+  })
+
+  test('ignores inherited header fields when validating headers', async () => {
+    const originalHeaders = headers.MANDS1.headers
+    const inheritedHeaders = {
+      inheritedField: { regex: /this-should-not-be-checked/ }
+    }
+    const headersWithPrototype = Object.create(inheritedHeaders)
+    Object.assign(headersWithPrototype, originalHeaders)
+    try {
+      headers.MANDS1.headers = headersWithPrototype
+
+      extractPdf.mockImplementation(() => model.validModel)
+
+      const result = await matches({}, 'PackingList.pdf')
+
+      expect(result).toEqual(matcherResult.CORRECT)
+    } finally {
+      headers.MANDS1.headers = originalHeaders
+    }
   })
 
   test.each([

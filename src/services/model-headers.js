@@ -19,6 +19,7 @@ import { saversHeaders } from './model-headers/savers.js'
 import { tescoHeaders } from './model-headers/tesco.js'
 import { tjmorrisHeaders } from './model-headers/tjmorris.js'
 import { turnersHeaders } from './model-headers/turners.js'
+import { warrensHeaders } from './model-headers/warrens.js'
 
 const modelHeaders = {
   ...asdaHeaders,
@@ -35,7 +36,8 @@ const modelHeaders = {
   ...saversHeaders,
   ...tescoHeaders,
   ...tjmorrisHeaders,
-  ...turnersHeaders
+  ...turnersHeaders,
+  ...warrensHeaders
 }
 
 export default modelHeaders
