@@ -251,6 +251,7 @@ The following parsers are currently available in the system (as of February 2026
 | NISA1        | Nisa                | Model 1 format                  |
 | SAINSBURYS1  | Sainsbury's         | Model 1 format                  |
 | SAVERS1      | Savers              | Model 1 format                  |
+| TESCO2       | Tesco               | Model 2 format (added Feb 2026) |
 | TESCO3       | Tesco               | Model 3 format                  |
 | TJMORRIS2    | TJ Morris           | Model 2 format                  |
 | TURNERS1     | Turners             | Model 1 format (added Feb 2026) |
