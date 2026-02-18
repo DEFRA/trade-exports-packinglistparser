@@ -43,6 +43,7 @@ export default Object.freeze({
   NISA1: 'NISA1',
 
   // Tesco models
+  TESCO2: 'TESCO2',
   TESCO3: 'TESCO3',
 
   // Sainsburys models
