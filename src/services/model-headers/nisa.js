@@ -35,5 +35,35 @@ export const nisaHeaders = {
       'header_net_weight_unit'
     ],
     optional: ['country_of_origin', 'type_of_treatment', 'nirms']
+  },
+  NISA2: {
+    establishmentNumber: {
+      regex: /RMS-GB-000025-(\d{3})?/i
+    },
+    regex: {
+      description: /PART NUMBER DESCRIPTION/i,
+      commodity_code: /TARIFF CODE EU/i,
+      number_of_packages: /PACKAGES/i,
+      total_net_weight_kg: /NET WEIGHT TOTAL/i,
+      nature_of_products: /PRODUCT TYPE CATEGORY/i,
+      header_net_weight_unit: /NET WEIGHT PACKAGE/i
+    },
+    // Optional fields
+    country_of_origin: /COUNTRY OF ORIGIN/i,
+    type_of_treatment: /TYPE OF TREATMENT/i,
+    nirms: /NIRMS/i,
+    // Validation flags
+    findUnitInHeader: true,
+    validateCountryOfOrigin: true,
+    // Required and optional field lists
+    required: [
+      'description',
+      'commodity_code',
+      'number_of_packages',
+      'total_net_weight_kg',
+      'nature_of_products',
+      'header_net_weight_unit'
+    ],
+    optional: ['country_of_origin', 'type_of_treatment', 'nirms']
   }
 }

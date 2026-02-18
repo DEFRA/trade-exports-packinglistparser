@@ -8,6 +8,7 @@ import model from '../../../../test/test-data-and-results/models-pdf/giovanni/mo
 import expectedResults from '../../../../test/test-data-and-results/results-pdf/giovanni/model3.js'
 import parserModel from '../../parser-model.js'
 import * as pdfHelper from '../../../utilities/pdf-helper.js'
+import * as parserMap from '../../parser-map.js'
 
 // Mock the pdf-helper module - only mock extractPdf
 vi.mock('../../../utilities/pdf-helper.js', async () => {
@@ -48,5 +49,44 @@ describe('Giovanni Model 3 PDF Parser', () => {
     expect(result).toMatchObject(
       expectedResults.validTestResultWithShortCommodityCode
     )
+  })
+
+  test('handles pages with no rows after header', async () => {
+    const mapSpy = vi.spyOn(parserMap, 'mapPdfNonAiParser').mockReturnValue([])
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue({
+      pages: [
+        {
+          content: [
+            { x: 100, y: 299, str: 'DESCRIPTION' },
+            { x: 120, y: 300, str: 'RMS-GB-000149-002' }
+          ]
+        }
+      ]
+    })
+
+    const result = await parse(Buffer.from('mock-pdf'))
+
+    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [])
+    expect(result.parserModel).toBe(parserModel.GIOVANNI3)
+  })
+
+  test('handles malformed row data when extracting Y coordinates', async () => {
+    const mapSpy = vi.spyOn(parserMap, 'mapPdfNonAiParser').mockReturnValue([])
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue({
+      pages: [
+        {
+          content: [
+            { x: 100, y: 301, str: 'DESCRIPTION' },
+            { x: 120, y: 302, str: 'RMS-GB-000149-002' },
+            { x: 140, y: undefined, str: 'BROKEN' }
+          ]
+        }
+      ]
+    })
+
+    const result = await parse(Buffer.from('mock-pdf'))
+
+    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [])
+    expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
 })

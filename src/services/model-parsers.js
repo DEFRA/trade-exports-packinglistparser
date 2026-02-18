@@ -54,6 +54,8 @@ import { parse as parseKepak1 } from './parsers/kepak/model1.js'
 // Nisa Excel parsers
 import { matches as matchesNisa1 } from './matchers/nisa/model1.js'
 import { parse as parseNisa1 } from './parsers/nisa/model1.js'
+import { matches as matchesNisa2 } from './matchers/nisa/model2.js'
+import { parse as parseNisa2 } from './parsers/nisa/model2.js'
 
 // Sainsburys Excel parsers
 import { matches as matchesSainsburys1 } from './matchers/sainsburys/model1.js'
@@ -143,6 +145,10 @@ const parsersExcel = {
   NISA1: {
     matches: matchesNisa1,
     parse: parseNisa1
+  },
+  NISA2: {
+    matches: matchesNisa2,
+    parse: parseNisa2
   },
   SAINSBURYS1: {
     matches: matchesSainsburys1,
