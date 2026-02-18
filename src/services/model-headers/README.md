@@ -15,7 +15,7 @@ Header definitions are used in Step 6: Data Extraction to:
 ```
 model-headers/
   ├── [retailer].js          # Header definitions for each retailer
-  └── index.js               # Export all headers
+  └── ../model-headers.js    # Export all headers
 ```
 
 ## Header Definition Format
@@ -75,14 +75,16 @@ All models must define regex patterns for these fields:
 
 ## Exporting Headers
 
-Update `index.js` to export all header definitions:
+Update `src/services/model-headers.js` to export all header definitions:
 
 ```javascript
-const retailer1Headers = require('./retailer-name')
+import { retailer1Headers } from './model-headers/retailer-name.js'
 // ... other imports
 
-module.exports = {
+const modelHeaders = {
   ...retailer1Headers
   // ... other exports
 }
+
+export default modelHeaders
 ```

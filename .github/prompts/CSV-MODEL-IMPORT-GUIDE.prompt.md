@@ -2482,7 +2482,7 @@ if (headerRow >= 0 && headerRow < csv.length) {
 | `app/services/parsers-csv/[retailer]/model[N].js`                    | `src/services/parsers/[retailer]/model[N].js`                   | CSV parser implementation  |
 | `test/unit/test-data-and-results/models-csv/[retailer]/model[N].js`  | `test/test-data-and-results/models-csv/[retailer]/model[N].js`  | CSV test data              |
 | `test/unit/test-data-and-results/results-csv/[retailer]/model[N].js` | `test/test-data-and-results/results-csv/[retailer]/model[N].js` | Expected results           |
-| `app/services/model-headers-csv.js`                                  | `src/services/model-headers/index.js`                           | Headers registry           |
+| `app/services/model-headers-csv.js`                                  | `src/services/model-headers.js`                                 | Headers registry           |
 | `app/services/parsers.js` (getCsvParser)                             | `src/services/parsers/parsers.js` (getCsvParser)                | CSV parser routing         |
 
 ---
@@ -2522,7 +2522,7 @@ This is a complete walkthrough of importing a CSV model:
    - Matcher: Use `packingList[0]` for header check
    - Parser: Set `headerRow = 0`, `dataRow = 1`, pass `null` for sheet name
 
-5. **Register:** Add to `parsersCsv` object in `parsers.js`, export in `model-headers/index.js`
+5. **Register:** Add to `parsersCsv` object in `parsers.js`, export in `model-headers.js`
 
 6. **Test:** Run unit tests and integration tests
 

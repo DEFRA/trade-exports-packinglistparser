@@ -206,7 +206,7 @@ src/services/
   │
   └── model-headers/
       ├── [retailer].js          # Header definitions
-      └── index.js               # Export all headers
+      └── ../model-headers.js    # Export all headers
 ```
 
 ### Parser Discovery Process

@@ -50,7 +50,9 @@ matchers/
 
 model-headers/
   ├── [retailer].js          # Header definitions for each retailer
-  └── index.js               # Export all headers
+
+src/services/
+  └── model-headers.js       # Export all Excel model headers
 ```
 
 ### Example Parser Implementation

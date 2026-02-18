@@ -67,16 +67,18 @@ The following directory structure contains fully implemented retailer-specific p
 
 ```
 src/services/
+  ├── model-headers.js           # Excel header registry (aggregates retailer headers)
   ├── parsers/
   │   ├── README.md               # Instructions for adding new parsers
   │   ├── asda/                   # ASDA parsers (model3.js, model4.js)
   │   ├── tesco/                  # Tesco parsers
   │   ├── bandm/                  # B&M parsers
   │   ├── fowlerwelch/            # Fowler-Welch parsers
+  │   ├── warrens/                # Warrens parsers (model2.js)
   │   ├── turners/                # Turners parsers
   │   ├── mars/                   # Mars parsers
   │   ├── kepak/                  # Kepak parsers
-  │   ├── and 9 more retailers...
+  │   ├── and more retailers...
   │   └── no-match/               # No-match parsers (NOREMOS, NOREMOSCSV, NOREMOSPDF)
   ├── matchers/
   │   ├── README.md               # Instructions for adding new matchers
@@ -84,7 +86,6 @@ src/services/
   │   └── [retailer]/             # Retailer-specific matchers for all parsers
   └── model-headers/
       ├── README.md               # Instructions for header definitions
-      ├── index.js                # Central export point
       └── [retailer].js           # Header definitions for each retailer
 ```
 
@@ -207,7 +208,7 @@ module.exports = {
 }
 ```
 
-Update `src/services/model-headers/index.js` to export the new headers.
+Update `src/services/model-headers.js` to export the new headers.
 
 ### 2. Create Matcher
 
