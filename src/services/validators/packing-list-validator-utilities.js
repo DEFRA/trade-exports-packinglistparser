@@ -293,7 +293,7 @@ function stringMatchesPattern(value, ...patterns) {
 
 /**
  * Check if an item matches ineligible items criteria.
- * Uses cached ineligible items from MDM if integration is enabled, otherwise falls back to static data.
+ * Defaults to static file data. Uses cached ineligible items from MDM only if integration is enabled.
  *
  * @param {string} countryOfOrigin - Country of origin code
  * @param {string} commodityCode - Commodity code
@@ -306,24 +306,23 @@ function isIneligibleItem(countryOfOrigin, commodityCode, typeOfTreatment) {
       ? typeOfTreatment.trim()
       : null
 
-  // Get ineligible items data - check MDM first, fall back to local file
-  const { enabled: mdmEnabled } = config.get('mdmIntegration')
-  let ineligibleData
+  // Default to static file data
+  let ineligibleData = ineligibleItemsData
 
-  if (mdmEnabled) {
-    // Try to get from MDM cache first when MDM integration is enabled
-    const cachedData = getIneligibleItemsCache()
-    if (cachedData) {
-      // Handle both array format and object with ineligibleItems property
-      ineligibleData = Array.isArray(cachedData)
-        ? cachedData
-        : cachedData.ineligibleItems
+  // Override with cached data only if MDM integration is explicitly enabled
+  try {
+    const mdmIntegration = config.get('mdmIntegration')
+    if (mdmIntegration?.enabled) {
+      const cachedData = getIneligibleItemsCache()
+      if (cachedData) {
+        // Handle both array format and object with ineligibleItems property
+        ineligibleData = Array.isArray(cachedData)
+          ? cachedData
+          : cachedData.ineligibleItems || ineligibleItemsData
+      }
     }
-  }
-
-  // Fall back to static data if MDM is disabled or no cached data available
-  if (!ineligibleData) {
-    ineligibleData = ineligibleItemsData
+  } catch (error) {
+    // If config fails, just use static data (already set above)
   }
 
   // Find matching entries based on country and commodity code
