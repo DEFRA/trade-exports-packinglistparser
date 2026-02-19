@@ -22,6 +22,27 @@ import {
 } from './packing-list-validator-utilities.js'
 import failureReasons from './packing-list-failure-reasons.js'
 
+// Mock the config module
+vi.mock('../../config.js', () => ({
+  default: {
+    get: vi.fn((key) => {
+      if (key === 'mdmIntegration') {
+        return { enabled: false } // Default to disabled for tests to use static data
+      }
+      return {}
+    })
+  }
+}))
+
+// Mock the cache modules
+vi.mock('../cache/iso-codes-cache.js', () => ({
+  getIsoCodesCache: vi.fn(() => null) // Return null to use static data in tests
+}))
+
+vi.mock('../cache/ineligible-items-cache.js', () => ({
+  getIneligibleItemsCache: vi.fn(() => null) // Return null to use static data in tests
+}))
+
 // Mock the data files
 vi.mock('../data/data-iso-codes.json', () => ({
   default: ['VALID_ISO', 'INELIGIBLE_ITEM_ISO']

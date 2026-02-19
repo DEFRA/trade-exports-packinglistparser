@@ -5,9 +5,11 @@
  */
 
 import { findUnit } from '../../utilities/regex.js'
+import config from '../../config.js'
 import isoCodesData from '../data/data-iso-codes.json' with { type: 'json' }
 import { getIsoCodesCache } from '../cache/iso-codes-cache.js'
 import ineligibleItemsData from '../data/data-ineligible-items.json' with { type: 'json' }
+import { getIneligibleItemsCache } from '../cache/ineligible-items-cache.js'
 import failureReasonsDescriptions from './packing-list-failure-reasons.js'
 
 /**
@@ -291,6 +293,7 @@ function stringMatchesPattern(value, ...patterns) {
 
 /**
  * Check if an item matches ineligible items criteria.
+ * Uses cached ineligible items from MDM if integration is enabled, otherwise falls back to static data.
  *
  * @param {string} countryOfOrigin - Country of origin code
  * @param {string} commodityCode - Commodity code
@@ -303,8 +306,28 @@ function isIneligibleItem(countryOfOrigin, commodityCode, typeOfTreatment) {
       ? typeOfTreatment.trim()
       : null
 
+  // Get ineligible items data - check MDM first, fall back to local file
+  const { enabled: mdmEnabled } = config.get('mdmIntegration')
+  let ineligibleData
+
+  if (mdmEnabled) {
+    // Try to get from MDM cache first when MDM integration is enabled
+    const cachedData = getIneligibleItemsCache()
+    if (cachedData) {
+      // Handle both array format and object with ineligibleItems property
+      ineligibleData = Array.isArray(cachedData)
+        ? cachedData
+        : cachedData.ineligibleItems
+    }
+  }
+
+  // Fall back to static data if MDM is disabled or no cached data available
+  if (!ineligibleData) {
+    ineligibleData = ineligibleItemsData
+  }
+
   // Find matching entries based on country and commodity code
-  const matchingEntries = ineligibleItemsData.filter(
+  const matchingEntries = ineligibleData.filter(
     (item) =>
       isCountryOfOriginMatching(countryOfOrigin, item.country_of_origin) &&
       commodityCode
