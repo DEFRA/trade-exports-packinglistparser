@@ -51,6 +51,10 @@ import { parse as parseWarrens2 } from './parsers/warrens/model2.js'
 import { matches as matchesGiovanni1 } from './matchers/giovanni/model1.js'
 import { parse as parseGiovanni1 } from './parsers/giovanni/model1.js'
 
+// Gousto Excel parsers
+import { matches as matchesGousto1 } from './matchers/gousto/model1.js'
+import { parse as parseGousto1 } from './parsers/gousto/model1.js'
+
 // Giovanni PDF parsers
 import { matches as matchesGiovanni3 } from './matchers/giovanni/model3.js'
 import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
@@ -151,6 +155,10 @@ const parsersExcel = {
   GIOVANNI1: {
     matches: matchesGiovanni1,
     parse: parseGiovanni1
+  },
+  GOUSTO1: {
+    matches: matchesGousto1,
+    parse: parseGousto1
   },
   KEPAK1: {
     matches: matchesKepak1,
