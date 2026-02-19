@@ -310,19 +310,15 @@ function isIneligibleItem(countryOfOrigin, commodityCode, typeOfTreatment) {
   let ineligibleData = ineligibleItemsData
 
   // Override with cached data only if MDM integration is explicitly enabled
-  try {
-    const mdmIntegration = config.get('mdmIntegration')
-    if (mdmIntegration?.enabled) {
-      const cachedData = getIneligibleItemsCache()
-      if (cachedData) {
-        // Handle both array format and object with ineligibleItems property
-        ineligibleData = Array.isArray(cachedData)
-          ? cachedData
-          : cachedData.ineligibleItems || ineligibleItemsData
-      }
+  const mdmIntegration = config.get('mdmIntegration')
+  if (mdmIntegration?.enabled) {
+    const cachedData = getIneligibleItemsCache()
+    if (cachedData) {
+      // Handle both array format and object with ineligibleItems property
+      ineligibleData = Array.isArray(cachedData)
+        ? cachedData
+        : cachedData.ineligibleItems || ineligibleItemsData
     }
-  } catch (error) {
-    // If config fails, just use static data (already set above)
   }
 
   // Find matching entries based on country and commodity code
@@ -571,5 +567,7 @@ export {
   removeBadData,
   isNirms,
   isNotNirms,
-  getItemFailureMessage
+  getItemFailureMessage,
+  isValidIsoCode,
+  isIneligibleItem
 }

@@ -27,7 +27,8 @@ const checkMdmEnabled = createEnabledCheck(
  */
 function transformMdmData(mdmData) {
   const transformItem = (item) => {
-    const { id, last_modified: lastModified, ...cleanItem } = item
+    // eslint-disable-next-line camelcase
+    const { id, last_modified, ...cleanItem } = item
     return cleanItem
   }
 
