@@ -18,9 +18,34 @@ import {
   hasMissingNetWeightUnit,
   isNirms,
   isNotNirms,
-  getItemFailureMessage
+  getItemFailureMessage,
+  isValidIsoCode,
+  isIneligibleItem
 } from './packing-list-validator-utilities.js'
 import failureReasons from './packing-list-failure-reasons.js'
+import { config } from '../../config.js'
+import { getIneligibleItemsCache } from '../cache/ineligible-items-cache.js'
+
+// Mock the config module
+vi.mock('../../config.js', () => ({
+  config: {
+    get: vi.fn((key) => {
+      if (key === 'mdmIntegration') {
+        return { enabled: false } // Default to disabled for tests to use static data
+      }
+      return {}
+    })
+  }
+}))
+
+// Mock the cache modules
+vi.mock('../cache/iso-codes-cache.js', () => ({
+  getIsoCodesCache: vi.fn(() => null) // Return null to use static data in tests
+}))
+
+vi.mock('../cache/ineligible-items-cache.js', () => ({
+  getIneligibleItemsCache: vi.fn(() => null) // Return null to use static data in tests
+}))
 
 // Mock the data files
 vi.mock('../data/data-iso-codes.json', () => ({
@@ -789,5 +814,103 @@ describe('getItemFailureMessage', () => {
     expect(result).toContain('Identifier is missing')
     expect(result).toContain('NIRMS/Non-NIRMS goods not specified')
     expect(result?.split(';').length).toBeGreaterThan(1)
+  })
+})
+
+describe('MDM Integration Coverage Tests', () => {
+  test('hasInvalidCoO with null value should return false', () => {
+    const item = { nirms: 'NIRMS', country_of_origin: null }
+    expect(hasInvalidCoO(item)).toBe(false)
+  })
+
+  test('hasInvalidCoO with non-string value should return true (invalid)', () => {
+    const item = { nirms: 'NIRMS', country_of_origin: 123 }
+    expect(hasInvalidCoO(item)).toBe(true) // Numbers are considered invalid
+  })
+
+  test('hasInvalidCoO with empty string should return false', () => {
+    const item = { nirms: 'NIRMS', country_of_origin: '' }
+    expect(hasInvalidCoO(item)).toBe(false)
+  })
+})
+
+describe('isValidIsoCode edge cases', () => {
+  test('should return false for null', () => {
+    expect(isValidIsoCode(null)).toBe(false)
+  })
+
+  test('should return false for undefined', () => {
+    expect(isValidIsoCode(undefined)).toBe(false)
+  })
+
+  test('should return false for empty string', () => {
+    expect(isValidIsoCode('')).toBe(false)
+  })
+
+  test('should return false for non-string (number)', () => {
+    expect(isValidIsoCode(123)).toBe(false)
+  })
+
+  test('should return false for non-string (object)', () => {
+    expect(isValidIsoCode({})).toBe(false)
+  })
+})
+
+describe('isIneligibleItem direct tests for MDM cache coverage', () => {
+  test('should use MDM cache when enabled (array format)', () => {
+    // Enable MDM and provide cache data
+    vi.mocked(config.get).mockReturnValueOnce({ enabled: true })
+    vi.mocked(getIneligibleItemsCache).mockReturnValueOnce([
+      {
+        country_of_origin: 'TEST',
+        commodity_code: '777',
+        type_of_treatment: 'TEST_TYPE'
+      }
+    ])
+
+    const result = isIneligibleItem('TEST', '777', 'TEST_TYPE')
+    expect(result).toBe(true)
+  })
+
+  test('should use MDM cache when enabled (object format)', () => {
+    // Enable MDM and provide cache data in object format
+    vi.mocked(config.get).mockReturnValueOnce({ enabled: true })
+    vi.mocked(getIneligibleItemsCache).mockReturnValueOnce({
+      ineligibleItems: [
+        {
+          country_of_origin: 'TEST2',
+          commodity_code: '666',
+          type_of_treatment: 'TEST_TYPE2'
+        }
+      ]
+    })
+
+    const result = isIneligibleItem('TEST2', '666', 'TEST_TYPE2')
+    expect(result).toBe(true)
+  })
+
+  test('should fallback to static data when MDM enabled but cache returns null', () => {
+    // Enable MDM but cache returns null
+    vi.mocked(config.get).mockReturnValueOnce({ enabled: true })
+    vi.mocked(getIneligibleItemsCache).mockReturnValueOnce(null)
+
+    const result = isIneligibleItem(
+      'INELIGIBLE_ITEM_ISO',
+      '123',
+      'INELIGIBLE_ITEM_TREATMENT'
+    )
+    expect(result).toBe(true) // Should use static data
+  })
+
+  test('should use static data when MDM is disabled', () => {
+    // Disable MDM
+    vi.mocked(config.get).mockReturnValueOnce({ enabled: false })
+
+    const result = isIneligibleItem(
+      'INELIGIBLE_ITEM_ISO',
+      '123',
+      'INELIGIBLE_ITEM_TREATMENT'
+    )
+    expect(result).toBe(true)
   })
 })
