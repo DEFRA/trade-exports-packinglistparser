@@ -29,6 +29,9 @@ export default Object.freeze({
   // Booker models
   BOOKER2: 'BOOKER2',
 
+  // Boots models
+  BOOTS1: 'BOOTS1',
+
   // Giovanni models
   GIOVANNI1: 'GIOVANNI1',
   GIOVANNI3: 'GIOVANNI3',
