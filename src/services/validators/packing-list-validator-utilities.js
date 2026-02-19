@@ -5,7 +5,7 @@
  */
 
 import { findUnit } from '../../utilities/regex.js'
-import config from '../../config.js'
+import { config } from '../../config.js'
 import isoCodesData from '../data/data-iso-codes.json' with { type: 'json' }
 import { getIsoCodesCache } from '../cache/iso-codes-cache.js'
 import ineligibleItemsData from '../data/data-ineligible-items.json' with { type: 'json' }
