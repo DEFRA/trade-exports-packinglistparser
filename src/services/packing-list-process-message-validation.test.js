@@ -60,13 +60,13 @@ const { validateProcessPackingListPayload } = await import(
 
 describe('packing-list-process-message-validation', () => {
   const validPayload = {
-    application_id: 12345,
+    application_id: '12345',
     packing_list_blob:
       'https://testaccount.blob.core.windows.net/container/file.xlsx',
     SupplyChainConsignment: {
       DispatchLocation: {
         IDCOMS: {
-          EstablishmentId: '550e8400-e29b-41d4-a716-446655440000'
+          EstablishmentId: '30614e2b-b895-ee11-be37-000d3aba36b2'
         }
       }
     }
@@ -96,15 +96,15 @@ describe('packing-list-process-message-validation', () => {
     })
   })
 
-  it('returns error when application_id is not a positive integer', () => {
+  it('returns error when application_id is not a positive integer string', () => {
     const result = validateProcessPackingListPayload({
       ...validPayload,
-      application_id: '12345'
+      application_id: 12345
     })
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(
-      'application_id must be a positive integer'
+      'application_id must be a positive integer string'
     )
   })
 
@@ -116,19 +116,31 @@ describe('packing-list-process-message-validation', () => {
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(
-      'application_id must be a positive integer'
+      'application_id must be a positive integer string'
     )
   })
 
   it('returns error when application_id is not positive', () => {
     const result = validateProcessPackingListPayload({
       ...validPayload,
-      application_id: 0
+      application_id: '0'
     })
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(
-      'application_id must be a positive integer'
+      'application_id must be a positive integer string'
+    )
+  })
+
+  it('returns error when application_id contains decimal characters', () => {
+    const result = validateProcessPackingListPayload({
+      ...validPayload,
+      application_id: '123.45'
+    })
+
+    expect(result.isValid).toBe(false)
+    expect(result.description).toContain(
+      'application_id must be a positive integer string'
     )
   })
 
@@ -215,7 +227,25 @@ describe('packing-list-process-message-validation', () => {
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(
-      'SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID'
+      'SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID string'
+    )
+  })
+
+  it('returns error when EstablishmentId is not a string', () => {
+    const result = validateProcessPackingListPayload({
+      ...validPayload,
+      SupplyChainConsignment: {
+        DispatchLocation: {
+          IDCOMS: {
+            EstablishmentId: 123
+          }
+        }
+      }
+    })
+
+    expect(result.isValid).toBe(false)
+    expect(result.description).toContain(
+      'SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID string'
     )
   })
 

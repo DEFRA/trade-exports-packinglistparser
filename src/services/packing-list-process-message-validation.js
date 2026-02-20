@@ -1,7 +1,7 @@
 import { config } from '../config.js'
 
-const UUID_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+const GUID_FORMAT_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function isString(value) {
   return typeof value === 'string'
@@ -60,11 +60,19 @@ function validateEstablishmentId(payload) {
   const establishmentId =
     payload.SupplyChainConsignment?.DispatchLocation?.IDCOMS?.EstablishmentId
 
-  if (!isString(establishmentId) || !UUID_REGEX.test(establishmentId)) {
-    return `SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID. Received: ${establishmentId}`
+  if (!isString(establishmentId) || !GUID_FORMAT_REGEX.test(establishmentId)) {
+    return `SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID string. Received: ${establishmentId}`
   }
 
   return null
+}
+
+function isPositiveIntegerString(value) {
+  if (!isString(value)) {
+    return false
+  }
+
+  return /^[1-9]\d*$/.test(value)
 }
 
 export function validateProcessPackingListPayload(payload) {
@@ -79,11 +87,8 @@ export function validateProcessPackingListPayload(payload) {
     }
   }
 
-  if (
-    !Number.isInteger(payload.application_id) ||
-    payload.application_id <= 0
-  ) {
-    validationErrors.push('application_id must be a positive integer')
+  if (!isPositiveIntegerString(payload.application_id)) {
+    validationErrors.push('application_id must be a positive integer string')
   }
 
   if (

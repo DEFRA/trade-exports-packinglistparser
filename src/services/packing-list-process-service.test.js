@@ -91,7 +91,7 @@ vi.mock('../common/helpers/logging/logger.js', () => ({
 const { processPackingList } = await import('./packing-list-process-service.js')
 
 describe('packing-list-process-service', () => {
-  const mockApplicationId = 12345
+  const mockApplicationId = '12345'
   const mockEstablishmentId = '550e8400-e29b-41d4-a716-446655440000'
   const mockBlobUrl =
     'https://testaccount.blob.core.windows.net/container/file.xlsx'
@@ -313,10 +313,10 @@ describe('packing-list-process-service', () => {
       expect(lastInfoCall).toContain(result.data.parserModel)
     })
 
-    it('should return validation failure when application_id is not a positive integer', async () => {
+    it('should return validation failure when application_id is not a positive integer string', async () => {
       const invalidPayload = {
         ...mockPayload,
-        application_id: '12345'
+        application_id: 12345
       }
 
       const result = await processPackingList(invalidPayload)
@@ -324,7 +324,7 @@ describe('packing-list-process-service', () => {
       expect(result).toEqual({
         result: 'failure',
         error: expect.stringContaining(
-          'Validation failed: application_id must be a positive integer'
+          'Validation failed: application_id must be a positive integer string'
         ),
         errorType: 'client'
       })
@@ -344,7 +344,7 @@ describe('packing-list-process-service', () => {
       expect(result).toEqual({
         result: 'failure',
         error: expect.stringContaining(
-          'Validation failed: application_id must be a positive integer'
+          'Validation failed: application_id must be a positive integer string'
         ),
         errorType: 'client'
       })
@@ -426,7 +426,7 @@ describe('packing-list-process-service', () => {
       expect(result).toEqual({
         result: 'failure',
         error: expect.stringContaining(
-          'Validation failed: SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID'
+          'Validation failed: SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID string'
         ),
         errorType: 'client'
       })
@@ -728,7 +728,7 @@ describe('packing-list-process-service', () => {
 
       expect(mockUploadJsonFileToS3).toHaveBeenCalledWith(
         { filename: mockApplicationId },
-        expect.stringContaining('"applicationId":12345')
+        expect.stringContaining('"applicationId":"12345"')
       )
 
       // Verify the structure by parsing the JSON from second argument
