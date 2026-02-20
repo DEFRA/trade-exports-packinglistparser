@@ -26,4 +26,19 @@ describe('parseBookerModel2', () => {
 
     expect(result).toMatchObject(testResults.emptyTestResult)
   })
+
+  test('returns NOMATCH when parser throws', () => {
+    const result = parse(null)
+
+    expect(result).toMatchObject({
+      registration_approval_number: null,
+      items: [],
+      business_checks: {
+        all_required_fields_present: false,
+        failure_reasons: null
+      },
+      parserModel: 'NOMATCH',
+      establishment_numbers: []
+    })
+  })
 })

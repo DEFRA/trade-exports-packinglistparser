@@ -1,6 +1,6 @@
 # Packing List Processing - Steps 4-7 Implementation
 
-This document describes the implemented code for orchestrating packing list processing as outlined in sections 4-7 of [original-adp-packing-list-processing-flow.md](docs/migration/original-adp-packing-list-processing-flow.md).
+This document describes the implemented code for orchestrating packing list processing as outlined in sections 4-7 of [original-adp-packing-list-processing-flow.md](flow/original-adp-packing-list-processing-flow.md).
 
 **Status:** ✅ Fully Implemented (as of February 2026)
 
@@ -19,12 +19,22 @@ The implementation provides the core infrastructure for:
 
 **[src/services/packing-list-process-service.js](src/services/packing-list-process-service.js)** ✅ Fully Implemented
 
-- Main entry point for steps 4-7
+- Main entry point for full packing list processing
+- Orchestrates payload validation → blob download → parser execution → result processing
+
+**[src/services/parser-service.js](src/services/parser-service.js)** ✅ Fully Implemented
+
+- Steps 4-7 execution for parsing pipeline
 - Orchestrates: sanitization → parser discovery → extraction → validation
+
+**[src/services/packing-list-process-message-validation.js](src/services/packing-list-process-message-validation.js)** ✅ Fully Implemented
+
+- Validates incoming process message payload before parsing begins
+- Checks payload shape, `application_id`, blob URL constraints, and establishment ID format
 
 ### Parser Factory
 
-**[src/services/parser-factory.js](src/services/parser-factory.js)**
+**[src/services/parsers/parser-factory.js](src/services/parsers/parser-factory.js)**
 
 - `findParser()` - Step 5: Discovers appropriate parser based on file type and content
 - `generateParsedPackingList()` - Steps 6 & 7: Extracts data and runs validation
@@ -94,7 +104,7 @@ src/services/
 ### Step 4: Input Sanitization
 
 ```javascript
-const { sanitizeInput } = require('./services/packing-list-process-service')
+import { sanitizeInput } from './services/parser-service.js'
 
 // For Excel/CSV files
 const sanitized = sanitizeInput(packingListJson, 'filename.xlsx')
@@ -158,7 +168,7 @@ const result = await parserFactory.generateParsedPackingList(
 ## Usage Example
 
 ```javascript
-const { parsePackingList } = require('./services/packing-list-process-service')
+import { parsePackingList } from './services/parser-service.js'
 
 async function processPackingList(packingListData, fileName, dispatchLocation) {
   try {
@@ -318,7 +328,7 @@ export const excelMatchers = [
 
 ## References
 
-- [Original ADP Packing List Processing Flow](docs/migration/original-adp-packing-list-processing-flow.md)
-- [Parser Discovery Extraction Detailed](docs/flow/parser-discovery-extraction-detailed.md)
-- [Find Parser to Use](docs/migration/find-parser-to-use.md)
-- [Parsers README](src/services/parsers/README.md) - Detailed implementation guide
+- [Original ADP Packing List Processing Flow](flow/original-adp-packing-list-processing-flow.md)
+- [Parser Discovery Extraction Detailed](flow/parser-discovery-extraction-detailed.md)
+- [Generic Parser Discovery and Extraction Flow](flow/parser-discovery-extraction-generic.md)
+- [Parsers README](../src/services/parsers/README.md) - Detailed implementation guide
