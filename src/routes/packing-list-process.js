@@ -12,11 +12,20 @@ async function processPackingListHandler(request, h) {
   const stopDataExit = request.query.stopDataExit === 'true'
   const result = await processPackingList(message, { stopDataExit })
 
-  const statusCode =
-    result.result === 'success'
-      ? STATUS_CODES.OK
-      : STATUS_CODES.INTERNAL_SERVER_ERROR
+  const statusCode = getStatusCodeFromResult(result)
   return h.response(result).code(statusCode)
+}
+
+function getStatusCodeFromResult(result) {
+  if (result.result === 'success') {
+    return STATUS_CODES.OK
+  }
+
+  if (result.errorType === 'client') {
+    return STATUS_CODES.BAD_REQUEST
+  }
+
+  return STATUS_CODES.INTERNAL_SERVER_ERROR
 }
 
 export { packingListProcessRoute }

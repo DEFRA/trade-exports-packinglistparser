@@ -390,12 +390,23 @@ Content-Type: application/json
 }
 ```
 
+### Response - Validation Error (400 Bad Request)
+
+```json
+{
+  "result": "failure",
+  "error": "Validation failed: application_id must be a positive integer",
+  "errorType": "client"
+}
+```
+
 ### Response - Error (500 Internal Server Error)
 
 ```json
 {
   "result": "failure",
-  "error": "Failed to download blob from storage"
+  "error": "Failed to download blob from storage",
+  "errorType": "server"
 }
 ```
 

@@ -37,4 +37,19 @@ describe('parseTescoModel3', () => {
     expect(result.items[0].row_location.rowNumber).toBe(3)
     expect(result.items[1].row_location.rowNumber).toBe(6)
   })
+
+  test('returns NOMATCH fallback when parser throws', () => {
+    const result = parse(null)
+
+    expect(result).toMatchObject({
+      registration_approval_number: null,
+      items: [],
+      business_checks: {
+        all_required_fields_present: false,
+        failure_reasons: null
+      },
+      parserModel: 'NOMATCH',
+      establishment_numbers: []
+    })
+  })
 })

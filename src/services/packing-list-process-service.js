@@ -3,6 +3,7 @@ import { getDispatchLocation } from './dynamics-service.js'
 import { downloadBlobFromApplicationFormsContainerAsJson } from './blob-storage/ehco-blob-storage-service.js'
 import { uploadJsonFileToS3 } from './s3-service.js'
 import { sendMessageToQueue } from './trade-service-bus-service.js'
+import { validateProcessPackingListPayload } from './packing-list-process-message-validation.js'
 import {
   isNirms,
   isNotNirms
@@ -17,6 +18,14 @@ const { disableSend } = config.get('tradeServiceBus')
 
 const logger = createLogger()
 
+function createFailureResult(description, errorType = 'server') {
+  return {
+    result: 'failure',
+    error: description,
+    errorType
+  }
+}
+
 export async function processPackingList(
   payload,
   { stopDataExit = false } = {}
@@ -26,6 +35,17 @@ export async function processPackingList(
     logger.info(
       `Processing packing list - received payload: ${JSON.stringify(payload, null, 2)}`
     )
+
+    const validation = validateProcessPackingListPayload(payload)
+    if (!validation.isValid) {
+      logger.error(
+        `Input validation failed for packing list payload: ${validation.description}`
+      )
+      return createFailureResult(
+        `Validation failed: ${validation.description}`,
+        'client'
+      )
+    }
 
     // 1. Download packing list from blob storage
     logger.info(
@@ -70,12 +90,7 @@ export async function processPackingList(
       `Error processing packing list: ${err.message}`
     )
 
-    const errorResult = {
-      result: 'failure',
-      error: err.message
-    }
-
-    return errorResult
+    return createFailureResult(err.message, 'server')
   }
 }
 

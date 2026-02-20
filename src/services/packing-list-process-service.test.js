@@ -1,5 +1,37 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
+const TEST_BLOB_STORAGE_ACCOUNT = 'testaccount'
+const TEST_BLOB_CONTAINER_NAME = 'container'
+const PACKING_LIST_BLOB_VALIDATION_ERROR =
+  'Validation failed: packing_list_blob must be a valid URL from ehcoBlob.blobStorageAccount and ehcoBlob.containerName'
+const MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR =
+  'Missing commodity code\nInvalid weight'
+const INVALID_COUNTRY_OF_ORIGIN_ERROR =
+  'Invalid Country of Origin ISO Code for line 5'
+const PROHIBITED_ITEM_IDENTIFIED_ERROR =
+  'Prohibited item identified on the packing list for line 3'
+
+const mockConfigGet = vi.fn((key) => {
+  if (key === 'tradeServiceBus') {
+    return { disableSend: false }
+  }
+
+  if (key === 'ehcoBlob') {
+    return {
+      blobStorageAccount: TEST_BLOB_STORAGE_ACCOUNT,
+      containerName: TEST_BLOB_CONTAINER_NAME
+    }
+  }
+
+  return {}
+})
+
+vi.mock('../config.js', () => ({
+  config: {
+    get: mockConfigGet
+  }
+}))
+
 // Mock parsePackingList
 const mockParsePackingList = vi.fn()
 vi.mock('./parser-service.js', () => ({
@@ -59,9 +91,10 @@ vi.mock('../common/helpers/logging/logger.js', () => ({
 const { processPackingList } = await import('./packing-list-process-service.js')
 
 describe('packing-list-process-service', () => {
-  const mockApplicationId = '12345'
-  const mockEstablishmentId = 'EST-001'
-  const mockBlobUrl = 'https://test.blob.core.windows.net/container/file.xlsx'
+  const mockApplicationId = 12345
+  const mockEstablishmentId = '550e8400-e29b-41d4-a716-446655440000'
+  const mockBlobUrl =
+    'https://testaccount.blob.core.windows.net/container/file.xlsx'
 
   const mockPayload = {
     application_id: mockApplicationId,
@@ -280,6 +313,170 @@ describe('packing-list-process-service', () => {
       expect(lastInfoCall).toContain(result.data.parserModel)
     })
 
+    it('should return validation failure when application_id is not a positive integer', async () => {
+      const invalidPayload = {
+        ...mockPayload,
+        application_id: '12345'
+      }
+
+      const result = await processPackingList(invalidPayload)
+
+      expect(result).toEqual({
+        result: 'failure',
+        error: expect.stringContaining(
+          'Validation failed: application_id must be a positive integer'
+        ),
+        errorType: 'client'
+      })
+      expect(
+        mockDownloadBlobFromApplicationFormsContainerAsJson
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return validation failure when application_id is decimal', async () => {
+      const invalidPayload = {
+        ...mockPayload,
+        application_id: 123.45
+      }
+
+      const result = await processPackingList(invalidPayload)
+
+      expect(result).toEqual({
+        result: 'failure',
+        error: expect.stringContaining(
+          'Validation failed: application_id must be a positive integer'
+        ),
+        errorType: 'client'
+      })
+      expect(
+        mockDownloadBlobFromApplicationFormsContainerAsJson
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return validation failure when packing_list_blob is not a valid URL', async () => {
+      const invalidPayload = {
+        ...mockPayload,
+        packing_list_blob: 'not-a-url'
+      }
+
+      const result = await processPackingList(invalidPayload)
+
+      expect(result).toEqual({
+        result: 'failure',
+        error: expect.stringContaining(PACKING_LIST_BLOB_VALIDATION_ERROR),
+        errorType: 'client'
+      })
+      expect(
+        mockDownloadBlobFromApplicationFormsContainerAsJson
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return validation failure when packing_list_blob URL host is not the configured EHCO account', async () => {
+      const invalidPayload = {
+        ...mockPayload,
+        packing_list_blob:
+          'https://differentaccount.blob.core.windows.net/container/file.xlsx'
+      }
+
+      const result = await processPackingList(invalidPayload)
+
+      expect(result).toEqual({
+        result: 'failure',
+        error: expect.stringContaining(PACKING_LIST_BLOB_VALIDATION_ERROR),
+        errorType: 'client'
+      })
+      expect(
+        mockDownloadBlobFromApplicationFormsContainerAsJson
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return validation failure when packing_list_blob URL container is not the configured EHCO container', async () => {
+      const invalidPayload = {
+        ...mockPayload,
+        packing_list_blob:
+          'https://testaccount.blob.core.windows.net/wrong-container/file.xlsx'
+      }
+
+      const result = await processPackingList(invalidPayload)
+
+      expect(result).toEqual({
+        result: 'failure',
+        error: expect.stringContaining(PACKING_LIST_BLOB_VALIDATION_ERROR),
+        errorType: 'client'
+      })
+      expect(
+        mockDownloadBlobFromApplicationFormsContainerAsJson
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return validation failure when EstablishmentId is not a UUID', async () => {
+      const invalidPayload = {
+        ...mockPayload,
+        SupplyChainConsignment: {
+          DispatchLocation: {
+            IDCOMS: {
+              EstablishmentId: 'EST-001'
+            }
+          }
+        }
+      }
+
+      const result = await processPackingList(invalidPayload)
+
+      expect(result).toEqual({
+        result: 'failure',
+        error: expect.stringContaining(
+          'Validation failed: SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID'
+        ),
+        errorType: 'client'
+      })
+      expect(
+        mockDownloadBlobFromApplicationFormsContainerAsJson
+      ).not.toHaveBeenCalled()
+    })
+
+    it('should return server failure when establishment ID extraction fails during parsing step', async () => {
+      const supplyChainConsignment = {}
+      let dispatchLocationAccessCount = 0
+
+      Object.defineProperty(supplyChainConsignment, 'DispatchLocation', {
+        enumerable: false,
+        get() {
+          dispatchLocationAccessCount += 1
+          if (dispatchLocationAccessCount === 1) {
+            return {
+              IDCOMS: {
+                EstablishmentId: mockEstablishmentId
+              }
+            }
+          }
+
+          throw new Error('DispatchLocation unavailable')
+        }
+      })
+
+      const payloadWithFailingDispatchLocation = {
+        ...mockPayload,
+        SupplyChainConsignment: supplyChainConsignment
+      }
+
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+
+      const result = await processPackingList(
+        payloadWithFailingDispatchLocation
+      )
+
+      expect(result.result).toBe('failure')
+      expect(result.errorType).toBe('server')
+      expect(result.error).toContain('Invalid payload structure')
+      expect(mockLogger.error).toHaveBeenCalledWith(
+        expect.anything(),
+        'Failed to extract establishment ID from payload'
+      )
+    })
+
     it('should correctly map NIRMS boolean values', async () => {
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
         mockPackingList
@@ -361,10 +558,10 @@ describe('packing-list-process-service', () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
         approvalStatus: 'rejected_other',
-        reasonsForFailure: 'Missing commodity code\nInvalid weight',
+        reasonsForFailure: MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR,
         business_checks: {
           all_required_fields_present: false,
-          failure_reasons: 'Missing commodity code\nInvalid weight'
+          failure_reasons: MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR
         }
       }
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
@@ -381,7 +578,7 @@ describe('packing-list-process-service', () => {
       const messageCall = mockSendMessageToQueue.mock.calls[0][0]
       expect(messageCall.body.approvalStatus).toBe('rejected_other')
       expect(messageCall.body.failureReasons).toBe(
-        'Missing commodity code\nInvalid weight'
+        MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR
       )
     })
 
@@ -389,12 +586,10 @@ describe('packing-list-process-service', () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
         approvalStatus: 'rejected_ineligible',
-        reasonsForFailure:
-          'Prohibited item identified on the packing list for line 3',
+        reasonsForFailure: PROHIBITED_ITEM_IDENTIFIED_ERROR,
         business_checks: {
           all_required_fields_present: false,
-          failure_reasons:
-            'Prohibited item identified on the packing list for line 3'
+          failure_reasons: PROHIBITED_ITEM_IDENTIFIED_ERROR
         }
       }
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
@@ -411,7 +606,7 @@ describe('packing-list-process-service', () => {
       const messageCall = mockSendMessageToQueue.mock.calls[0][0]
       expect(messageCall.body.approvalStatus).toBe('rejected_ineligible')
       expect(messageCall.body.failureReasons).toBe(
-        'Prohibited item identified on the packing list for line 3'
+        PROHIBITED_ITEM_IDENTIFIED_ERROR
       )
     })
 
@@ -419,10 +614,10 @@ describe('packing-list-process-service', () => {
       const parsedDataWithFailures = {
         ...mockParsedData,
         approvalStatus: 'rejected_coo',
-        reasonsForFailure: 'Invalid Country of Origin ISO Code for line 5',
+        reasonsForFailure: INVALID_COUNTRY_OF_ORIGIN_ERROR,
         business_checks: {
           all_required_fields_present: false,
-          failure_reasons: 'Invalid Country of Origin ISO Code for line 5'
+          failure_reasons: INVALID_COUNTRY_OF_ORIGIN_ERROR
         }
       }
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
@@ -439,7 +634,7 @@ describe('packing-list-process-service', () => {
       const messageCall = mockSendMessageToQueue.mock.calls[0][0]
       expect(messageCall.body.approvalStatus).toBe('rejected_coo')
       expect(messageCall.body.failureReasons).toBe(
-        'Invalid Country of Origin ISO Code for line 5'
+        INVALID_COUNTRY_OF_ORIGIN_ERROR
       )
     })
 
@@ -506,6 +701,7 @@ describe('packing-list-process-service', () => {
 
       expect(result.result).toBe('failure')
       expect(result.error).toBeDefined()
+      expect(result.errorType).toBe('server')
       expect(mockLogger.error).toHaveBeenCalled()
       // The error is logged both in mapPackingListForStorage and in the catch block
       const errorCalls = mockLogger.error.mock.calls
@@ -532,7 +728,7 @@ describe('packing-list-process-service', () => {
 
       expect(mockUploadJsonFileToS3).toHaveBeenCalledWith(
         { filename: mockApplicationId },
-        expect.stringContaining('"applicationId":"12345"')
+        expect.stringContaining('"applicationId":12345')
       )
 
       // Verify the structure by parsing the JSON from second argument
@@ -679,6 +875,12 @@ describe('packing-list-process-service', () => {
           get: vi.fn((key) => {
             if (key === 'tradeServiceBus') {
               return originalDisableSend
+            }
+            if (key === 'ehcoBlob') {
+              return {
+                blobStorageAccount: TEST_BLOB_STORAGE_ACCOUNT,
+                containerName: TEST_BLOB_CONTAINER_NAME
+              }
             }
             return {}
           })
