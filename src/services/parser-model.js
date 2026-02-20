@@ -36,6 +36,9 @@ export default Object.freeze({
   GIOVANNI1: 'GIOVANNI1',
   GIOVANNI3: 'GIOVANNI3',
 
+  // Gousto models
+  GOUSTO1: 'GOUSTO1',
+
   // M&S models
   MANDS1: 'MANDS1',
 

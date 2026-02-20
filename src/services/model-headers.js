@@ -12,6 +12,7 @@ import { bootsHeaders } from './model-headers/boots.js'
 import { coopHeaders } from './model-headers/coop.js'
 import { fowlerwelchHeaders } from './model-headers/fowlerwelch.js'
 import { giovanniHeaders } from './model-headers/giovanni.js'
+import goustoHeaders from './model-headers/gousto.js'
 import { kepakHeaders } from './model-headers/kepak.js'
 import { marsHeaders } from './model-headers/mars.js'
 import { nisaHeaders } from './model-headers/nisa.js'
@@ -31,6 +32,7 @@ const modelHeaders = {
   ...coopHeaders,
   ...fowlerwelchHeaders,
   ...giovanniHeaders,
+  ...goustoHeaders,
   ...kepakHeaders,
   ...marsHeaders,
   ...nisaHeaders,
