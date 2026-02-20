@@ -29,6 +29,10 @@ export default Object.freeze({
   // Booker models
   BOOKER2: 'BOOKER2',
 
+  // CDS models
+  CDS1: 'CDS1',
+  CDS2: 'CDS2',
+
   // Boots models
   BOOTS1: 'BOOTS1',
 
