@@ -70,7 +70,7 @@ function parse(packingListJson) {
       headers.GOUSTO1
     )
   } catch (err) {
-    logger.error(formatError(err), 'Error parsing Gousto Model 1')
+    logger.error(formatError(err), 'Error in parse() for Gousto Model 1')
     return combine(null, [], false, parserModel.NOMATCH)
   }
 }

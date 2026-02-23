@@ -65,7 +65,7 @@ function parse(packingListJson) {
       modelHeaders.CDS2
     )
   } catch (err) {
-    logger.error(formatError(err), 'Error parsing CDS model 2')
+    logger.error(formatError(err), 'Error in parse() for CDS Model 2')
     return combine(null, [], false, parserModel.NOMATCH)
   }
 }
