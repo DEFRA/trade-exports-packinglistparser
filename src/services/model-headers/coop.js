@@ -22,16 +22,7 @@ const coopHeaders = {
     type_of_treatment: /Type of Treatment/i,
     nirms: /^NIRMS$/i,
     findUnitInHeader: true,
-    validateCountryOfOrigin: true,
-    // Required and optional field lists
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg',
-      'header_net_weight_unit'
-    ],
-    optional: ['country_of_origin', 'type_of_treatment', 'nirms']
+    validateCountryOfOrigin: true
   }
 }
 

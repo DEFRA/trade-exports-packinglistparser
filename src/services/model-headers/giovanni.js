@@ -33,14 +33,7 @@ const giovanniHeaders = {
         col: 0,
         row: 1
       }
-    },
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg'
-    ],
-    optional: ['country_of_origin']
+    }
   },
   GIOVANNI2: {
     establishmentNumber: {
@@ -53,14 +46,7 @@ const giovanniHeaders = {
       total_net_weight_kg: netWeight
     },
     country_of_origin: /Country of Origin/i,
-    findUnitInHeader: true,
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg'
-    ],
-    optional: ['country_of_origin']
+    findUnitInHeader: true
   }
 }
 
