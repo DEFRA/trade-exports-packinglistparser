@@ -42,7 +42,10 @@ describe('matchesFowlerWelch', () => {
 
   it("returns 'Wrong Header' matcher result for incorrect header values of multiple sheets", () => {
     const filename = 'packinglist.xlsx'
-    const result = matches(model.invalid_Model_IncorrectHeaderMultiple, filename)
+    const result = matches(
+      model.invalid_Model_IncorrectHeaderMultiple,
+      filename
+    )
 
     expect(result).toBe(MatcherResult.WRONG_HEADER)
   })
