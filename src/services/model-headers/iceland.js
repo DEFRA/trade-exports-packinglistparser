@@ -18,19 +18,8 @@ const csvIcelandHeaders = {
       total_net_weight_kg: /Net Weight\/Package/i,
       nature_of_products: /Nature/i
     },
-    // List required fields
-    required: [
-      'commodity_code',
-      'description',
-      'type_of_treatment',
-      'number_of_packages',
-      'total_net_weight_kg',
-      'nature_of_products'
-    ],
-    // Optional fields
     nirms: /NIRMS/i,
     country_of_origin: /Country of Origin Code/i,
-    optional: ['nirms', 'country_of_origin'],
     // Validation flags
     findUnitInHeader: true,
     validateCountryOfOrigin: true,

@@ -24,17 +24,7 @@ export const nisaHeaders = {
     nirms: /NIRMS/i,
     // Validation flags
     findUnitInHeader: true,
-    validateCountryOfOrigin: true,
-    // Required and optional field lists
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg',
-      'nature_of_products',
-      'header_net_weight_unit'
-    ],
-    optional: ['country_of_origin', 'type_of_treatment', 'nirms']
+    validateCountryOfOrigin: true
   },
   NISA2: {
     establishmentNumber: {
@@ -54,16 +44,6 @@ export const nisaHeaders = {
     nirms: /NIRMS/i,
     // Validation flags
     findUnitInHeader: true,
-    validateCountryOfOrigin: true,
-    // Required and optional field lists
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg',
-      'nature_of_products',
-      'header_net_weight_unit'
-    ],
-    optional: ['country_of_origin', 'type_of_treatment', 'nirms']
+    validateCountryOfOrigin: true
   }
 }

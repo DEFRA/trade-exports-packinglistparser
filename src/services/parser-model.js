@@ -20,6 +20,9 @@ export default Object.freeze({
   ASDA3: 'ASDA3',
   ASDA4: 'ASDA4',
 
+  // Barton and Redman models
+  BARTONREDMAN1: 'BARTONREDMAN1',
+
   // B&M models
   BANDM1: 'BANDM1',
 

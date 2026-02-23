@@ -2,15 +2,23 @@ import { describe, it, expect } from 'vitest'
 import { parse, isHeaderRow } from './model1.js'
 import parserModel from '../../parser-model.js'
 
+const REGISTRATION_APPROVAL_NUMBER = 'RMS-GB-000156-001'
+const DESCRIPTION_OF_GOODS_HEADER = 'Description of Goods'
+const COMMODITY_CODE_HEADER = 'Commodity code'
+const NUMBER_OF_PACKAGES_HEADER = 'No. of pkgs'
+const ITEM_NET_WEIGHT_HEADER = 'Item Net Weight'
+const NATURE_OF_PRODUCT_HEADER = 'Nature of Product'
+const TYPE_OF_TREATMENT_HEADER = 'Type of Treatment'
+
 const validModel = {
   PackingList_Extract: [
     {
-      A: 'Description of Goods',
-      B: 'Commodity code',
-      C: 'No. of pkgs',
+      A: DESCRIPTION_OF_GOODS_HEADER,
+      B: COMMODITY_CODE_HEADER,
+      C: NUMBER_OF_PACKAGES_HEADER,
       D: 'Item Net Weight kg',
-      E: 'Nature of Product',
-      F: 'Type of Treatment',
+      E: NATURE_OF_PRODUCT_HEADER,
+      F: TYPE_OF_TREATMENT_HEADER,
       G: 'Country of Origin',
       H: 'NIRMS / NON NIRMS'
     },
@@ -23,7 +31,7 @@ const validModel = {
       F: 'Chilled',
       G: 'IE',
       H: 'NIRMS',
-      I: 'RMS-GB-000156-001'
+      I: REGISTRATION_APPROVAL_NUMBER
     }
   ]
 }
@@ -31,15 +39,15 @@ const validModel = {
 const validHeadersNoData = {
   PackingList_Extract: [
     {
-      I: 'RMS-GB-000156-001'
+      I: REGISTRATION_APPROVAL_NUMBER
     },
     {
-      A: 'Description of Goods',
-      B: 'Commodity code',
-      C: 'No. of pkgs',
-      D: 'Item Net Weight',
-      E: 'Nature of Product',
-      F: 'Type of Treatment',
+      A: DESCRIPTION_OF_GOODS_HEADER,
+      B: COMMODITY_CODE_HEADER,
+      C: NUMBER_OF_PACKAGES_HEADER,
+      D: ITEM_NET_WEIGHT_HEADER,
+      E: NATURE_OF_PRODUCT_HEADER,
+      F: TYPE_OF_TREATMENT_HEADER,
       G: 'Country of Origin',
       H: 'NIRMS / NON NIRMS'
     }
@@ -51,7 +59,9 @@ describe('TURNERS1 parser', () => {
     const result = parse(validModel)
 
     expect(result.parserModel).toBe(parserModel.TURNERS1)
-    expect(result.registration_approval_number).toBe('RMS-GB-000156-001')
+    expect(result.registration_approval_number).toBe(
+      REGISTRATION_APPROVAL_NUMBER
+    )
     expect(result.business_checks.all_required_fields_present).toBe(true)
     expect(result.items).toHaveLength(1)
     expect(result.items[0].description).toBe('Fresh Beef Mince')
@@ -62,20 +72,30 @@ describe('TURNERS1 parser', () => {
     const result = parse(validHeadersNoData)
 
     expect(result.parserModel).toBe(parserModel.TURNERS1)
-    expect(result.registration_approval_number).toBe('RMS-GB-000156-001')
+    expect(result.registration_approval_number).toBe(
+      REGISTRATION_APPROVAL_NUMBER
+    )
     expect(result.items).toHaveLength(0)
+  })
+
+  it('returns NOMATCH when parse throws', () => {
+    const result = parse(null)
+
+    expect(result.parserModel).toBe(parserModel.NOMATCH)
+    expect(result.items).toEqual([])
+    expect(result.registration_approval_number).toBeNull()
   })
 })
 
 describe('isHeaderRow function', () => {
   it('returns true when all headers match patterns', () => {
     const headerItem = {
-      description: 'Description of Goods',
-      commodity_code: 'Commodity code',
-      number_of_packages: 'No. of pkgs',
-      total_net_weight_kg: 'Item Net Weight',
-      nature_of_products: 'Nature of Product',
-      type_of_treatment: 'Type of Treatment'
+      description: DESCRIPTION_OF_GOODS_HEADER,
+      commodity_code: COMMODITY_CODE_HEADER,
+      number_of_packages: NUMBER_OF_PACKAGES_HEADER,
+      total_net_weight_kg: ITEM_NET_WEIGHT_HEADER,
+      nature_of_products: NATURE_OF_PRODUCT_HEADER,
+      type_of_treatment: TYPE_OF_TREATMENT_HEADER
     }
 
     expect(isHeaderRow(headerItem)).toBe(true)
@@ -83,12 +103,12 @@ describe('isHeaderRow function', () => {
 
   it('returns false when one header does not match pattern', () => {
     const item = {
-      description: 'Description of Goods',
+      description: DESCRIPTION_OF_GOODS_HEADER,
       commodity_code: 'Invalid Header',
-      number_of_packages: 'No. of pkgs',
-      total_net_weight_kg: 'Item Net Weight',
-      nature_of_products: 'Nature of Product',
-      type_of_treatment: 'Type of Treatment'
+      number_of_packages: NUMBER_OF_PACKAGES_HEADER,
+      total_net_weight_kg: ITEM_NET_WEIGHT_HEADER,
+      nature_of_products: NATURE_OF_PRODUCT_HEADER,
+      type_of_treatment: TYPE_OF_TREATMENT_HEADER
     }
 
     expect(isHeaderRow(item)).toBe(false)
@@ -97,11 +117,11 @@ describe('isHeaderRow function', () => {
   it('handles non-string values gracefully', () => {
     const item = {
       description: 123,
-      commodity_code: 'Commodity code',
-      number_of_packages: 'No. of pkgs',
-      total_net_weight_kg: 'Item Net Weight',
-      nature_of_products: 'Nature of Product',
-      type_of_treatment: 'Type of Treatment'
+      commodity_code: COMMODITY_CODE_HEADER,
+      number_of_packages: NUMBER_OF_PACKAGES_HEADER,
+      total_net_weight_kg: ITEM_NET_WEIGHT_HEADER,
+      nature_of_products: NATURE_OF_PRODUCT_HEADER,
+      type_of_treatment: TYPE_OF_TREATMENT_HEADER
     }
 
     expect(() => isHeaderRow(item)).not.toThrow()

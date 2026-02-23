@@ -19,6 +19,10 @@ import { parse as parseAsda4 } from './parsers/asda/model4.js'
 import { matches as matchesAsda3 } from './matchers/asda/model3.js'
 import { parse as parseAsda3 } from './parsers/asda/model3.js'
 
+// Barton and Redman Excel parsers
+import { matches as matchesBartonRedman1 } from './matchers/bartonredman/model1.js'
+import { parse as parseBartonRedman1 } from './parsers/bartonredman/model1.js'
+
 // B&M Excel parsers
 import { matches as matchesBandm1 } from './matchers/bandm/model1.js'
 import { parse as parseBandm1 } from './parsers/bandm/model1.js'
@@ -127,6 +131,10 @@ const parsersExcel = {
   ASDA3: {
     matches: matchesAsda3,
     parse: parseAsda3
+  },
+  BARTONREDMAN1: {
+    matches: matchesBartonRedman1,
+    parse: parseBartonRedman1
   },
   BANDM1: {
     matches: matchesBandm1,
