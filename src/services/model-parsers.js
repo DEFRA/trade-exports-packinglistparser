@@ -65,6 +65,10 @@ import { parse as parseNisa1 } from './parsers/nisa/model1.js'
 import { matches as matchesNisa2 } from './matchers/nisa/model2.js'
 import { parse as parseNisa2 } from './parsers/nisa/model2.js'
 
+// Nutricia Excel parsers
+import { matches as matchesNutricia2 } from './matchers/nutricia/model2.js'
+import { parse as parseNutricia2 } from './parsers/nutricia/model2.js'
+
 // Sainsburys Excel parsers
 import { matches as matchesSainsburys1 } from './matchers/sainsburys/model1.js'
 import { parse as parseSainsburys1 } from './parsers/sainsburys/model1.js'
@@ -167,6 +171,10 @@ const parsersExcel = {
   NISA2: {
     matches: matchesNisa2,
     parse: parseNisa2
+  },
+  NUTRICIA2: {
+    matches: matchesNutricia2,
+    parse: parseNutricia2
   },
   SAINSBURYS1: {
     matches: matchesSainsburys1,
