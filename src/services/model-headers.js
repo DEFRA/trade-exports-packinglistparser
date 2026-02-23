@@ -10,6 +10,7 @@ import { bandmHeaders } from './model-headers/bandm.js'
 import { buffaloadHeaders } from './model-headers/buffaload.js'
 import { bookerHeaders } from './model-headers/booker.js'
 import { bootsHeaders } from './model-headers/boots.js'
+import { cdsHeaders } from './model-headers/cds.js'
 import { coopHeaders } from './model-headers/coop.js'
 import { fowlerwelchHeaders } from './model-headers/fowlerwelch.js'
 import { giovanniHeaders } from './model-headers/giovanni.js'
@@ -31,6 +32,7 @@ const modelHeaders = {
   ...buffaloadHeaders,
   ...bookerHeaders,
   ...bootsHeaders,
+  ...cdsHeaders,
   ...coopHeaders,
   ...fowlerwelchHeaders,
   ...giovanniHeaders,
