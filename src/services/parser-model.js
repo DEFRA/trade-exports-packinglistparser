@@ -66,6 +66,7 @@ export default Object.freeze({
   COOP1: 'COOP1',
 
   // Fowler-Welch models
+  FOWLERWELCH1: 'FOWLERWELCH1',
   FOWLERWELCH2: 'FOWLERWELCH2',
 
   // Warrens models
