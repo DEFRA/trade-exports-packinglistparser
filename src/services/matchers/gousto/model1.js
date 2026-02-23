@@ -12,6 +12,7 @@ import { matchesHeader } from '../../matches-header.js'
 import { test } from '../../../utilities/regex.js'
 import headers from '../../model-headers.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
+import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 const currentFilename = fileURLToPath(import.meta.url)

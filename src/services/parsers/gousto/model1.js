@@ -2,8 +2,6 @@
  * Gousto Excel parser - Model 1
  * @module parsers/gousto/model1
  */
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 import { combine } from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers.js'
@@ -20,8 +18,6 @@ import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
-const currentFilename = fileURLToPath(import.meta.url)
-const filename = path.join('src', currentFilename.split('src')[1])
 
 /**
  * Parse the provided packing list JSON for Gousto model 1.

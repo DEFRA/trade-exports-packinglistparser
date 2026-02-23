@@ -2,8 +2,6 @@
  * CDS Excel parser - Model 2
  * @module parsers/cds/model2
  */
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 import parserModel from '../../parser-model.js'
 import { combine } from '../../parser-combine.js'
 import modelHeaders from '../../model-headers.js'
@@ -16,8 +14,6 @@ import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
-const currentFilename = fileURLToPath(import.meta.url)
-const filename = path.join('src', currentFilename.split('src')[1])
 
 /**
  * Parse the provided packing list JSON for CDS model 2.
