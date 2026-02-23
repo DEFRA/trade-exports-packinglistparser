@@ -20,7 +20,7 @@ const logger = createLogger()
  * @param {string} filename - Source filename for logging
  * @returns {string} - One of matcherResult codes
  */
-function matches(packingList, packingListFilename) {
+function matches(packingList, filename) {
   try {
     let result
     const sheets = Object.keys(packingList)
@@ -46,7 +46,9 @@ function matches(packingList, packingListFilename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info('Packing list matches Gousto Model 1')
+      logger.info(
+        `Packing list matches Gousto Model 1 with filename: ${filename}`
+      )
     }
 
     return result

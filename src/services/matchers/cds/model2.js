@@ -13,10 +13,10 @@ const logger = createLogger()
 /**
  * CDS matcher (model 2)
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
- * @param {string} packingListFilename - Source filename for logging
+ * @param {string} filename - Source filename for logging
  * @returns {string} matcherResult - One of the matcher result codes
  */
-function matches(packingList, packingListFilename) {
+function matches(packingList, filename) {
   try {
     let result
     const sheets = Object.keys(packingList)
@@ -42,12 +42,12 @@ function matches(packingList, packingListFilename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info('Packing list matches CDS Model 2')
+      logger.info(`Packing list matches CDS Model 2 with filename: ${filename}`)
     }
 
     return result
   } catch (err) {
-    logger.error(formatError(err), 'Error matching CDS model 2')
+    logger.error(formatError(err), 'Error in CDS Model 2 matcher')
     return matcherResult.GENERIC_ERROR
   }
 }
