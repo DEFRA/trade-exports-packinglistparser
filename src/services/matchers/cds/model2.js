@@ -1,8 +1,6 @@
 /**
  * CDS matcher (model 2)
  */
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 import matcherResult from '../../matcher-result.js'
 import { matchesHeader } from '../../matches-header.js'
 import { test } from '../../../utilities/regex.js'
@@ -11,8 +9,6 @@ import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
-const currentFilename = fileURLToPath(import.meta.url)
-const filename = path.join('src', currentFilename.split('src')[1])
 
 /**
  * CDS matcher (model 2)
@@ -46,9 +42,7 @@ function matches(packingList, packingListFilename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info(
-        `Packing list matches CDS Model 2 (filename: ${packingListFilename}, function: matches, file: ${filename})`
-      )
+      logger.info('Packing list matches CDS Model 2')
     }
 
     return result

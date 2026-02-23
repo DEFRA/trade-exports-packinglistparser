@@ -5,8 +5,6 @@
  * the Gousto Model 1 format by checking the establishment number and
  * header row patterns.
  */
-import { fileURLToPath } from 'node:url'
-import path from 'node:path'
 import matcherResult from '../../matcher-result.js'
 import { matchesHeader } from '../../matches-header.js'
 import { test } from '../../../utilities/regex.js'
@@ -15,8 +13,6 @@ import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
-const currentFilename = fileURLToPath(import.meta.url)
-const filename = path.join('src', currentFilename.split('src')[1])
 
 /**
  * Check whether the provided packing list matches Gousto Model 1.
@@ -50,15 +46,12 @@ function matches(packingList, packingListFilename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info(
-        `Packing list matches Gousto Model 1 with filename: ${packingListFilename} (filename: ${filename}, function: matches)`
-      )
+      logger.info('Packing list matches Gousto Model 1')
     }
 
     return result
   } catch (err) {
     logger.error(formatError(err), 'Error in Gousto Model 1 matcher')
-
     return matcherResult.GENERIC_ERROR
   }
 }
