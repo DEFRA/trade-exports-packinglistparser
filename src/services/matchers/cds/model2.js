@@ -53,14 +53,7 @@ function matches(packingList, packingListFilename) {
 
     return result
   } catch (err) {
-    logger.error(
-      {
-        ...formatError(err),
-        filename,
-        function: 'matches'
-      },
-      'Error matching CDS model 2'
-    )
+    logger.error(formatError(err), 'Error matching CDS model 2')
     return matcherResult.GENERIC_ERROR
   }
 }

@@ -56,18 +56,7 @@ function matches(packingList, packingListFilename) {
 
     return result
   } catch (err) {
-    logger.error(
-      {
-        error: {
-          message: err.message,
-          stack_trace: err.stack,
-          type: err.name
-        },
-        filename,
-        function: 'matches'
-      },
-      'Error in Gousto Model 1 matcher'
-    )
+    logger.error(formatError(err), 'Error in Gousto Model 1 matcher')
 
     return matcherResult.GENERIC_ERROR
   }
