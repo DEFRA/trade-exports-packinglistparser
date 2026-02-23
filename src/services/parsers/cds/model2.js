@@ -1,26 +1,22 @@
 /**
- * Gousto Excel parser - Model 1
- * @module parsers/gousto/model1
+ * CDS Excel parser - Model 2
+ * @module parsers/cds/model2
  */
-import { combine } from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
-import headers from '../../model-headers.js'
+import { combine } from '../../parser-combine.js'
+import modelHeaders from '../../model-headers.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { mapParser } from '../../parser-map.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
-import {
-  findMatch,
-  findAllMatches,
-  remosRegex
-} from '../../../utilities/regex.js'
+import { findMatch, findAllMatches } from '../../../utilities/regex.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
 /**
- * Parse the provided packing list JSON for Gousto model 1.
+ * Parse the provided packing list JSON for CDS model 2.
  * @param {Object} packingListJson - Workbook JSON keyed by sheet name.
  * @returns {Object} Combined parser result.
  */
@@ -28,49 +24,48 @@ function parse(packingListJson) {
   try {
     const sheets = Object.keys(packingListJson)
     let packingListContents = []
-    let packingListContentsTemp = []
+    let tempPackingListContents = []
     let establishmentNumbers = []
 
     const establishmentNumber = findMatch(
-      headers.GOUSTO1.establishmentNumber.regex,
+      modelHeaders.CDS2.establishmentNumber.regex,
       packingListJson[sheets[0]]
     )
 
-    const headerTitles = Object.values(headers.GOUSTO1.regex)
+    const headerTitles = Object.values(modelHeaders.CDS2.regex)
     const headerCallback = function (x) {
       return matchesHeader(headerTitles, [x]) === MatcherResult.CORRECT
     }
 
     for (const sheet of sheets) {
       establishmentNumbers = findAllMatches(
-        remosRegex,
+        /(RMS-GB-\d{6}-\d{3})/i,
         packingListJson[sheet],
         establishmentNumbers
       )
 
       const headerRow = rowFinder(packingListJson[sheet], headerCallback)
       const dataRow = headerRow + 1
-
-      packingListContentsTemp = mapParser(
+      tempPackingListContents = mapParser(
         packingListJson[sheet],
         headerRow,
         dataRow,
-        headers.GOUSTO1,
+        modelHeaders.CDS2,
         sheet
       )
-      packingListContents = packingListContents.concat(packingListContentsTemp)
+      packingListContents = packingListContents.concat(tempPackingListContents)
     }
 
     return combine(
       establishmentNumber,
       packingListContents,
       true,
-      parserModel.GOUSTO1,
+      parserModel.CDS2,
       establishmentNumbers,
-      headers.GOUSTO1
+      modelHeaders.CDS2
     )
   } catch (err) {
-    logger.error(formatError(err), 'Error in parse() for Gousto Model 1')
+    logger.error(formatError(err), 'Error in parse() for CDS Model 2')
     return combine(null, [], false, parserModel.NOMATCH)
   }
 }

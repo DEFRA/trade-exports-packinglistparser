@@ -1,24 +1,20 @@
 /**
- * Gousto Model 1 matcher
- *
- * Detects whether a provided Excel-converted packing list matches
- * the Gousto Model 1 format by checking the establishment number and
- * header row patterns.
+ * CDS matcher (model 2)
  */
 import matcherResult from '../../matcher-result.js'
 import { matchesHeader } from '../../matches-header.js'
 import { test } from '../../../utilities/regex.js'
-import headers from '../../model-headers.js'
+import modelHeaders from '../../model-headers.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { formatError } from '../../../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
 
 /**
- * Check whether the provided packing list matches Gousto Model 1.
+ * CDS matcher (model 2)
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {string} matcherResult - One of the matcher result codes
  */
 function matches(packingList, filename) {
   try {
@@ -31,13 +27,13 @@ function matches(packingList, filename) {
     for (const sheet of sheets) {
       // check for correct establishment number
       if (
-        !test(headers.GOUSTO1.establishmentNumber.regex, packingList[sheet])
+        !test(modelHeaders.CDS2.establishmentNumber.regex, packingList[sheet])
       ) {
         return matcherResult.WRONG_ESTABLISHMENT_NUMBER
       }
       // check for header values
       result = matchesHeader(
-        Object.values(headers.GOUSTO1.regex),
+        Object.values(modelHeaders.CDS2.regex),
         packingList[sheet]
       )
       if (result === matcherResult.WRONG_HEADER) {
@@ -46,14 +42,12 @@ function matches(packingList, filename) {
     }
 
     if (result === matcherResult.CORRECT) {
-      logger.info(
-        `Packing list matches Gousto Model 1 with filename: ${filename}`
-      )
+      logger.info(`Packing list matches CDS Model 2 with filename: ${filename}`)
     }
 
     return result
   } catch (err) {
-    logger.error(formatError(err), 'Error in Gousto Model 1 matcher')
+    logger.error(formatError(err), 'Error in CDS Model 2 matcher')
     return matcherResult.GENERIC_ERROR
   }
 }

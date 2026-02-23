@@ -35,6 +35,10 @@ import { parse as parseBooker2 } from './parsers/booker/model2.js'
 import { matches as matchesBoots1 } from './matchers/boots/model1.js'
 import { parse as parseBoots1 } from './parsers/boots/model1.js'
 
+// CDS Excel parsers
+import { matches as matchesCds2 } from './matchers/cds/model2.js'
+import { parse as parseCds2 } from './parsers/cds/model2.js'
+
 // Co-op Excel parsers
 import { matches as matchesCoop1 } from './matchers/coop/model1.js'
 import { parse as parseCoop1 } from './parsers/coop/model1.js'
@@ -139,6 +143,10 @@ const parsersExcel = {
   BOOTS1: {
     matches: matchesBoots1,
     parse: parseBoots1
+  },
+  CDS2: {
+    matches: matchesCds2,
+    parse: parseCds2
   },
   COOP1: {
     matches: matchesCoop1,
