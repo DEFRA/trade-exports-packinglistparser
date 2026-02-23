@@ -20,6 +20,9 @@ export default Object.freeze({
   ASDA3: 'ASDA3',
   ASDA4: 'ASDA4',
 
+  // Barton and Redman models
+  BARTONREDMAN1: 'BARTONREDMAN1',
+
   // B&M models
   BANDM1: 'BANDM1',
 
@@ -29,12 +32,19 @@ export default Object.freeze({
   // Booker models
   BOOKER2: 'BOOKER2',
 
+  // CDS models
+  CDS1: 'CDS1',
+  CDS2: 'CDS2',
+
   // Boots models
   BOOTS1: 'BOOTS1',
 
   // Giovanni models
   GIOVANNI1: 'GIOVANNI1',
   GIOVANNI3: 'GIOVANNI3',
+
+  // Gousto models
+  GOUSTO1: 'GOUSTO1',
 
   // M&S models
   MANDS1: 'MANDS1',

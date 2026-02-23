@@ -188,7 +188,7 @@ export function findNetWeightUnit(totalNetWeightHeader) {
  * @param {Object} model - Model header configuration
  * @returns {Array<number>} Unique Y coordinates for rows
  */
-function getYsForRows(pageContent, model) {
+export function getYsForRows(pageContent, model) {
   try {
     const pageNumberY = pageContent.find((item) =>
       model.pageNumber.test(item.str)

@@ -379,7 +379,7 @@ module.exports = {
 1. **Create header definition** in `model-headers/[retailer].js`
 2. **Create matcher** in `matchers/[retailer]/model1.js`
 3. **Create parser** in `parsers/[retailer]/model1.js`
-4. **Update parser-factory.js** to include new matcher/parser
+4. **Update model-parsers.js** to include new matcher/parser
 5. **Create unit tests** in `test/unit/services/parsers/[retailer]/`
 6. **Create integration tests** in `test/parser-service/[retailer]/`
 
@@ -856,7 +856,7 @@ Integration tests verify end-to-end parser discovery and execution.
 ```javascript
 // test/parser-service/retailer-name/model1.test.js
 import { describe, it, expect } from 'vitest'
-import { findParser } from '../../../src/services/parser-factory.js'
+import { findParser } from '../../../src/services/parsers/parser-factory.js'
 
 describe('Retailer Model 1 - Parser Discovery', () => {
   it('should discover and use correct parser', async () => {

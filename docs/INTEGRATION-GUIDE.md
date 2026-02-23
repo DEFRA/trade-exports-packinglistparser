@@ -127,6 +127,14 @@ export async function processPackingList(
 
 ### Integration Steps
 
+### HTTP Response Status Codes
+
+`POST /process-packing-list` returns:
+
+- `200 OK` for successful processing
+- `400 Bad Request` for payload validation failures (`errorType: "client"`)
+- `500 Internal Server Error` for unexpected processing failures (`errorType: "server"`)
+
 #### 1. Using the Parser Service
 
 The parser service is fully integrated and can be imported as follows:
@@ -382,7 +390,7 @@ The migrated code uses the existing logger from [src/utilities/logger.js](src/ut
 ## Documentation References
 
 - [Packing List Processing Implementation](PACKING-LIST-PROCESSING.md)
-- [Parsers README](src/services/parsers/README.md)
-- [Matchers README](src/services/matchers/README.md)
-- [Model Headers README](src/services/model-headers/README.md)
-- [Original Flow Documentation](docs/migration/original-adp-packing-list-processing-flow.md)
+- [Parsers README](../src/services/parsers/README.md)
+- [Matchers README](../src/services/matchers/README.md)
+- [Model Headers README](../src/services/model-headers/README.md)
+- [Original Flow Documentation](flow/original-adp-packing-list-processing-flow.md)

@@ -7,6 +7,8 @@
 import { describe, test, expect, afterEach, vi } from 'vitest'
 import model from '../../../../test/test-data-and-results/models-pdf/mands/model1.js'
 import test_results from '../../../../test/test-data-and-results/results-pdf/mands/model1.js'
+import headers from '../../model-headers-pdf.js'
+import * as parserMap from '../../parser-map.js'
 
 // Mock pdf-helper before importing the parser
 vi.mock('../../../utilities/pdf-helper.js', async () => {
@@ -19,11 +21,28 @@ vi.mock('../../../utilities/pdf-helper.js', async () => {
 
 // Import after mocking
 const { extractPdf } = await import('../../../utilities/pdf-helper.js')
-const { parse, findNetWeightUnit } = await import('./model1.js')
+const { parse, findNetWeightUnit, getYsForRows } = await import('./model1.js')
 
 describe('parseMandS1', () => {
   afterEach(() => {
     vi.clearAllMocks()
+  })
+
+  test('returns NOMATCH when extracted PDF has no pages', async () => {
+    extractPdf.mockImplementation(() => ({ pages: [] }))
+
+    const result = await parse(Buffer.from('empty-pages'))
+
+    expect(result).toMatchObject({
+      registration_approval_number: null,
+      items: [],
+      business_checks: {
+        all_required_fields_present: false,
+        failure_reasons: null
+      },
+      parserModel: 'NOMATCH',
+      establishment_numbers: []
+    })
   })
 
   test.each([
@@ -47,6 +66,68 @@ describe('parseMandS1', () => {
 
     // When an error is thrown, parser should return NOMATCH
     expect(result.parserModel).toBe('NOMATCH')
+  })
+
+  test('handles getYsForRows errors when page content includes invalid text values', async () => {
+    const parseSpy = vi
+      .spyOn(parserMap, 'mapPdfNonAiParser')
+      .mockImplementation(() => [])
+
+    const basePage = model.validModel.pages[0]
+    const invalidTextValue = {
+      [Symbol.toPrimitive]() {
+        throw new Error('bad text value')
+      }
+    }
+    const problematicPage = {
+      ...basePage,
+      content: [
+        { str: invalidTextValue, y: headers.MANDS1.maxHeadersY + 1 },
+        ...basePage.content
+      ]
+    }
+
+    extractPdf.mockImplementation(() => ({
+      pages: [basePage, problematicPage]
+    }))
+
+    const result = await parse(Buffer.from('bad-ys-page'))
+
+    expect(result.parserModel).toBe('MANDS1')
+    expect(result.items).toEqual([])
+    parseSpy.mockRestore()
+  })
+
+  test('filters rows that are completely empty', async () => {
+    const parseSpy = vi
+      .spyOn(parserMap, 'mapPdfNonAiParser')
+      .mockImplementation(() => [
+        {
+          description: null,
+          commodity_code: null,
+          number_of_packages: null,
+          total_net_weight_kg: null
+        },
+        {
+          description: 'Valid item',
+          commodity_code: '12345678',
+          number_of_packages: 1,
+          total_net_weight_kg: 10
+        }
+      ])
+
+    extractPdf.mockImplementation(() => model.validModel)
+
+    const result = await parse(Buffer.from('filter-empty-rows'))
+
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0]).toMatchObject({
+      description: 'Valid item',
+      commodity_code: '12345678',
+      number_of_packages: 1,
+      total_net_weight_kg: 10
+    })
+    parseSpy.mockRestore()
   })
 })
 
@@ -106,5 +187,13 @@ describe('findNetWeightUnit', () => {
     const header = 'Total Weight kg'
     const result = findNetWeightUnit(header)
     expect(result).toBeNull()
+  })
+})
+
+describe('getYsForRows', () => {
+  test('returns empty array when page content is malformed', () => {
+    const result = getYsForRows(null, headers.MANDS1)
+
+    expect(result).toEqual([])
   })
 })

@@ -857,6 +857,21 @@ describe('isValidIsoCode edge cases', () => {
 })
 
 describe('isIneligibleItem direct tests for MDM cache coverage', () => {
+  test.each([[null], ['']])(
+    'should return false when country_of_origin is null or empty: %p',
+    (countryOfOrigin) => {
+      vi.mocked(config.get).mockReturnValueOnce({ enabled: false })
+
+      const result = isIneligibleItem(
+        countryOfOrigin,
+        'INELIGIBLE_ITEM_COMMODITY_1',
+        'INELIGIBLE_ITEM_TREATMENT'
+      )
+
+      expect(result).toBe(false)
+    }
+  )
+
   test('should use MDM cache when enabled (array format)', () => {
     // Enable MDM and provide cache data
     vi.mocked(config.get).mockReturnValueOnce({ enabled: true })

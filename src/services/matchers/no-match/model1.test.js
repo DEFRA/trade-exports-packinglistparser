@@ -2,12 +2,14 @@ import { describe, test, expect, vi } from 'vitest'
 import { noRemosMatchCsv, noRemosMatch, noRemosMatchPdf } from './model1.js'
 import * as pdfHelper from '../../../utilities/pdf-helper.js'
 
+const STANDARD_RMS = 'RMS-GB-123456-789'
+
 describe('no-match model1 - noRemosMatchCsv', () => {
   test.each([
     [
       true,
       'standard RMS value present',
-      [{ col1: 'RMS-GB-123456-789' }, { col2: 'something' }]
+      [{ col1: STANDARD_RMS }, { col2: 'something' }]
     ],
     [true, 'lower-case rms (case-insensitive)', [{ c: 'rms-gb-000001-001' }]],
     [
@@ -46,7 +48,7 @@ describe('no-match model1 - noRemosMatchCsv', () => {
 describe('matchesNoMatch - sheet-based data', () => {
   test.each([
     [true, 'RMS-GB-000000-000', 'valid RMS format'],
-    [true, 'RMS-GB-123456-789', 'valid RMS with different numbers'],
+    [true, STANDARD_RMS, 'valid RMS with different numbers'],
     [true, 'rms-gb-000000-000', 'lowercase RMS (case-insensitive)'],
     [false, 'RMS-GB-0000000-000', 'invalid - too many establishment digits'],
     [false, 'RMS-GB-00000-000', 'invalid - too few establishment digits'],
@@ -130,14 +132,32 @@ describe('noRemosMatchPdf', () => {
     const extractPdfSpy = vi.spyOn(pdfHelper, 'extractPdf').mockResolvedValue({
       pages: [
         {
-          content: [{ A: 'RMS-GB-123456-789' }]
+          content: [{ A: STANDARD_RMS }]
         }
       ]
     })
 
     const result = await noRemosMatchPdf(Buffer.from('mock-pdf'))
 
-    expect(result).toBe('RMS-GB-123456-789')
+    expect(result).toBe(STANDARD_RMS)
+    extractPdfSpy.mockRestore()
+  })
+
+  test('returns false when PDF contains pages but no RMS matches', async () => {
+    const extractPdfSpy = vi.spyOn(pdfHelper, 'extractPdf').mockResolvedValue({
+      pages: [
+        {
+          content: [{ A: 'no remos here' }]
+        },
+        {
+          content: [{ B: 'still no match' }]
+        }
+      ]
+    })
+
+    const result = await noRemosMatchPdf(Buffer.from('mock-pdf-no-match'))
+
+    expect(result).toBe(false)
     extractPdfSpy.mockRestore()
   })
 

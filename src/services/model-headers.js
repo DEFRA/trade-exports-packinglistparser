@@ -5,13 +5,16 @@
  * Each retailer provides establishment number patterns and field mapping regex.
  */
 import { asdaHeaders } from './model-headers/asda.js'
+import { bartonRedmanHeaders } from './model-headers/bartonredman.js'
 import { bandmHeaders } from './model-headers/bandm.js'
 import { buffaloadHeaders } from './model-headers/buffaload.js'
 import { bookerHeaders } from './model-headers/booker.js'
 import { bootsHeaders } from './model-headers/boots.js'
+import { cdsHeaders } from './model-headers/cds.js'
 import { coopHeaders } from './model-headers/coop.js'
 import { fowlerwelchHeaders } from './model-headers/fowlerwelch.js'
 import { giovanniHeaders } from './model-headers/giovanni.js'
+import goustoHeaders from './model-headers/gousto.js'
 import { kepakHeaders } from './model-headers/kepak.js'
 import { marsHeaders } from './model-headers/mars.js'
 import { nisaHeaders } from './model-headers/nisa.js'
@@ -25,13 +28,16 @@ import { warrensHeaders } from './model-headers/warrens.js'
 
 const modelHeaders = {
   ...asdaHeaders,
+  ...bartonRedmanHeaders,
   ...bandmHeaders,
   ...buffaloadHeaders,
   ...bookerHeaders,
   ...bootsHeaders,
+  ...cdsHeaders,
   ...coopHeaders,
   ...fowlerwelchHeaders,
   ...giovanniHeaders,
+  ...goustoHeaders,
   ...kepakHeaders,
   ...marsHeaders,
   ...nisaHeaders,

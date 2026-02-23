@@ -252,6 +252,6 @@ These tests verify the full parser discovery flow including:
 
 ## See Also
 
-- [Original ADP Packing List Processing Flow](../../docs/migration/original-adp-packing-list-processing-flow.md)
+- [Original ADP Packing List Processing Flow](../../../docs/flow/original-adp-packing-list-processing-flow.md)
 - [Parser Discovery Extraction Detailed](../../../docs/flow/parser-discovery-extraction-detailed.md)
-- [Find Parser to Use](../../docs/migration/find-parser-to-use.md)
+- [Generic Parser Discovery and Extraction Flow](../../../docs/flow/parser-discovery-extraction-generic.md)

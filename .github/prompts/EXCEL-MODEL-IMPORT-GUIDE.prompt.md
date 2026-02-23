@@ -406,15 +406,6 @@ const sainsburysHeaders = {
     findUnitInHeader: false,
     // For models with invalid sheets to skip
     invalidSheets: [],
-    // Required and optional field lists
-    required: [
-      'description',
-      'nature_of_products',
-      'type_of_treatment',
-      'number_of_packages',
-      'total_net_weight_kg'
-    ],
-    optional: ['commodity_code', 'country_of_origin', 'nirms'],
     // Deprecated flag (if applicable)
     deprecated: false
   }
@@ -435,8 +426,7 @@ export default sainsburysHeaders
 
 1. **Required fields** → Place in `regex` object
 2. **Optional fields** → Place as direct properties (e.g., `country_of_origin: /regex/`)
-3. **Both lists** → Add `required: ['field1', 'field2']` and `optional: ['field3']` arrays
-4. **Validation flags** → Keep at root level (`validateCountryOfOrigin`, `findUnitInHeader`, etc.)
+3. **Validation flags** → Keep at root level (`validateCountryOfOrigin`, `findUnitInHeader`, etc.)
 
 #### 2.3 Export Headers in Excel Registry
 

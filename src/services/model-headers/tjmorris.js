@@ -23,15 +23,6 @@ const tjmorrisHeaders = {
     findUnitInHeader: true,
     country_of_origin: /Country of Origin/i,
     nirms: /NIRMS Eligible/i,
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg',
-      'type_of_treatment',
-      'nature_of_products'
-    ],
-    optional: ['country_of_origin', 'nirms'],
     validateCountryOfOrigin: true,
     invalidSheets: [],
     deprecated: false

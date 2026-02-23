@@ -20,24 +20,10 @@ export const tescoHeaders = {
       number_of_packages: noOfPackagesRegex,
       total_net_weight_kg: /Total Net Weight/i
     },
-    // List required fields
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg'
-    ],
-    // Optional fields
     nature_of_products: /Nature of Product/i,
     type_of_treatment: /Type of Treatment/i,
     country_of_origin: /Country of Origin/i,
     nirms: /NIRMS \/ Non NIRMS/i,
-    optional: [
-      'nature_of_products',
-      'type_of_treatment',
-      'country_of_origin',
-      'nirms'
-    ],
     // Validation flags
     findUnitInHeader: true,
     validateCountryOfOrigin: true,
@@ -55,18 +41,8 @@ export const tescoHeaders = {
       total_net_weight_kg: netWeight,
       type_of_treatment: /Treatment Type/i
     },
-    // List required fields
-    required: [
-      'description',
-      'commodity_code',
-      'number_of_packages',
-      'total_net_weight_kg',
-      'type_of_treatment'
-    ],
-    // Optional fields
     country_of_origin: /Country of Origin/i,
     nirms: /NIRMS \/ NON NIRMS/i,
-    optional: ['country_of_origin', 'nirms'],
     // Validation flags
     findUnitInHeader: true,
     validateCountryOfOrigin: true,

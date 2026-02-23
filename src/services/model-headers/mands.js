@@ -48,16 +48,6 @@ const pdfMandsHeaders = {
       x2: 435,
       regex: /NIRMS/i
     },
-    // Required fields
-    required: [
-      'description',
-      'commodity_code',
-      'type_of_treatment',
-      'number_of_packages',
-      'total_net_weight_kg'
-    ],
-    // Optional fields
-    optional: ['country_of_origin', 'nirms'],
     // Y-coordinate range for header row
     minHeadersY: 214,
     maxHeadersY: 225,
