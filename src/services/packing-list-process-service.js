@@ -12,6 +12,7 @@ import { v4 } from 'uuid'
 import { createLogger } from '../common/helpers/logging/logger.js'
 import { formatError } from '../common/helpers/logging/error-logger.js'
 import { config } from '../config.js'
+import parserModel from './parser-model.js'
 
 const { disableSend } = config.get('tradeServiceBus')
 
@@ -123,6 +124,10 @@ async function processPackingListResults(
   if (disableSend || stopDataExit) {
     logger.info(
       `Trade Service Bus sending is disabled. Skipping notification for application ${applicationId}`
+    )
+  } else if (packingList.parserModel === parserModel.NOMATCH) {
+    logger.info(
+      `Parser returned NOMATCH. Skipping Service Bus notification for application ${applicationId}`
     )
   } else {
     await notifyExternalApplications(packingList, applicationId)

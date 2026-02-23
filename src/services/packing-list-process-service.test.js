@@ -760,5 +760,28 @@ describe('packing-list-process-service', () => {
       expect(mockUploadJsonFileToS3).toHaveBeenCalled()
       expect(mockSendMessageToQueue).toHaveBeenCalled()
     })
+
+    it('should skip Service Bus notification when parserModel is NOMATCH', async () => {
+      const noMatchParsedData = {
+        ...mockParsedData,
+        parserModel: 'NOMATCH'
+      }
+      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+        mockPackingList
+      )
+      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+      mockParsePackingList.mockResolvedValue(noMatchParsedData)
+      mockUploadJsonFileToS3.mockResolvedValue(undefined)
+      mockSendMessageToQueue.mockResolvedValue(undefined)
+      mockIsNirms.mockReturnValue(true)
+
+      await processPackingList(mockPayload)
+
+      expect(mockUploadJsonFileToS3).toHaveBeenCalled()
+      expect(mockSendMessageToQueue).not.toHaveBeenCalled()
+      expect(mockLogger.info).toHaveBeenCalledWith(
+        `Parser returned NOMATCH. Skipping Service Bus notification for application ${mockApplicationId}`
+      )
+    })
   })
 })
