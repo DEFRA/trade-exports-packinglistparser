@@ -2,6 +2,7 @@
 
 Core delivery platform Node.js Backend Template.
 
+- [Documentation](./docs)
 - [Requirements](#requirements)
   - [Node.js](#nodejs)
 - [Local development](#local-development)
