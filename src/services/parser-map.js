@@ -8,9 +8,9 @@ import * as regex from '../utilities/regex.js'
 import headers from './model-headers-pdf.js'
 import * as pdfHelper from '../utilities/pdf-helper.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
 
 const logger = createLogger()
-const filenameForLogging = 'parser-map.js'
 
 /**
  * Find column keys matching header regex patterns.
@@ -156,7 +156,10 @@ function getBlanketValueFromOffset(packingListJson, blanketValue) {
     // return the value
     return packingListJson[row][col] ?? null
   } catch (error) {
-    logger.logError(filenameForLogging, 'getBlanketValueFromOffset()', error)
+    logger.error(
+      formatError(error),
+      'getBlanketValueFromOffset() - Position not found'
+    )
     return null
   }
 }

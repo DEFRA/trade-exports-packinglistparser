@@ -28,10 +28,14 @@ vi.mock('./model-headers-pdf.js', () => ({
 
 vi.mock('../common/helpers/logging/logger.js', () => ({
   createLogger: () => ({
-    logError: vi.fn(),
-    logInfo: vi.fn(),
-    logDebug: vi.fn()
+    error: vi.fn(),
+    info: vi.fn(),
+    debug: vi.fn()
   })
+}))
+
+vi.mock('../common/helpers/logging/error-logger.js', () => ({
+  formatError: vi.fn((err) => err)
 }))
 
 describe('mapParser', () => {
