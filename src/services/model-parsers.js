@@ -48,6 +48,8 @@ import { matches as matchesCoop1 } from './matchers/coop/model1.js'
 import { parse as parseCoop1 } from './parsers/coop/model1.js'
 
 // Fowler-Welch Excel parsers
+import { matches as matchesFowlerwelch1 } from './matchers/fowlerwelch/model1.js'
+import { parse as parseFowlerwelch1 } from './parsers/fowlerwelch/model1.js'
 import { matches as matchesFowlerwelch2 } from './matchers/fowlerwelch/model2.js'
 import { parse as parseFowlerwelch2 } from './parsers/fowlerwelch/model2.js'
 
@@ -163,6 +165,10 @@ const parsersExcel = {
   COOP1: {
     matches: matchesCoop1,
     parse: parseCoop1
+  },
+  FOWLERWELCH1: {
+    matches: matchesFowlerwelch1,
+    parse: parseFowlerwelch1
   },
   FOWLERWELCH2: {
     matches: matchesFowlerwelch2,
