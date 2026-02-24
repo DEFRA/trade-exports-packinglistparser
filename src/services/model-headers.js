@@ -18,6 +18,7 @@ import goustoHeaders from './model-headers/gousto.js'
 import { kepakHeaders } from './model-headers/kepak.js'
 import { marsHeaders } from './model-headers/mars.js'
 import { nisaHeaders } from './model-headers/nisa.js'
+import { nutriciaHeaders } from './model-headers/nutricia.js'
 import { sainsburysHeaders } from './model-headers/sainsburys.js'
 import { saversHeaders } from './model-headers/savers.js'
 import { tescoHeaders } from './model-headers/tesco.js'
@@ -40,6 +41,7 @@ const modelHeaders = {
   ...kepakHeaders,
   ...marsHeaders,
   ...nisaHeaders,
+  ...nutriciaHeaders,
   ...sainsburysHeaders,
   ...saversHeaders,
   ...tescoHeaders,
