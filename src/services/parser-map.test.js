@@ -5,7 +5,8 @@ import * as regex from '../utilities/regex.js'
 // Mock dependencies
 vi.mock('../utilities/regex.js', () => ({
   test: vi.fn(),
-  findUnit: vi.fn()
+  findUnit: vi.fn(),
+  positionFinder: vi.fn()
 }))
 
 vi.mock('../utilities/pdf-helper.js', () => ({
@@ -13,7 +14,24 @@ vi.mock('../utilities/pdf-helper.js', () => ({
 }))
 
 vi.mock('./model-headers-pdf.js', () => ({
-  default: {}
+  default: {
+    testModel: {
+      headers: {
+        description: { x1: 0, x2: 100, regex: /Description/i },
+        commodity_code: { x1: 100, x2: 200, regex: /Commodity/i },
+        total_net_weight_kg: { x1: 200, x2: 300, regex: /Weight/i }
+      },
+      findUnitInHeader: false
+    }
+  }
+}))
+
+vi.mock('../common/helpers/logging/logger.js', () => ({
+  createLogger: () => ({
+    logError: vi.fn(),
+    logInfo: vi.fn(),
+    logDebug: vi.fn()
+  })
 }))
 
 describe('mapParser', () => {
@@ -272,10 +290,215 @@ describe('mapParser', () => {
       number_of_packages: null
     })
   })
+
+  it('should extract blanket treatment type from coordinate offset when blanketTreatmentTypeValue is configured', () => {
+    const packingListJson = [
+      {
+        A: 'Description',
+        B: 'Commodity Code'
+      },
+      {
+        A: 'Test Item',
+        B: '1234567890'
+      },
+      {
+        A: 'Treatment Type:',
+        B: 'Frozen'
+      }
+    ]
+
+    const header = {
+      regex: {
+        description: /Description/i,
+        commodity_code: /Commodity Code/i
+      },
+      blanketTreatmentTypeValue: {
+        regex: /Treatment Type:/i,
+        valueCellOffset: { row: 0, col: 1 }
+      },
+      findUnitInHeader: false
+    }
+
+    // Mock positionFinder to return the position of "Treatment Type:"
+    vi.mocked(regex.positionFinder).mockReturnValue([2, 'A'])
+    vi.mocked(regex.test).mockReturnValue(false)
+
+    const result = mapParser(packingListJson, 0, 1, header)
+
+    expect(result[0].type_of_treatment).toBe('Frozen')
+    expect(regex.positionFinder).toHaveBeenCalledWith(
+      packingListJson,
+      /Treatment Type:/i
+    )
+  })
+
+  it('should return null for blanket treatment type when position is not found', () => {
+    const packingListJson = [
+      {
+        A: 'Description',
+        B: 'Commodity Code'
+      },
+      {
+        A: 'Test Item',
+        B: '1234567890'
+      }
+    ]
+
+    const header = {
+      regex: {
+        description: /Description/i,
+        commodity_code: /Commodity Code/i
+      },
+      blanketTreatmentTypeValue: {
+        regex: /Treatment Type:/i,
+        valueCellOffset: { row: 0, col: 1 }
+      },
+      findUnitInHeader: false
+    }
+
+    // Mock positionFinder to return null (position not found)
+    vi.mocked(regex.positionFinder).mockReturnValue([null, null])
+    vi.mocked(regex.test).mockReturnValue(false)
+
+    const result = mapParser(packingListJson, 0, 1, header)
+
+    expect(result[0].type_of_treatment).toBe(null)
+  })
+
+  it('should prefer blanketTreatmentType regex match over blanketTreatmentTypeValue', () => {
+    const packingListJson = [
+      {
+        A: 'Description',
+        B: 'Commodity Code'
+      },
+      {
+        A: 'Test Item',
+        B: '1234567890'
+      },
+      {
+        A: 'All items are processed',
+        B: ''
+      }
+    ]
+
+    const header = {
+      regex: {
+        description: /Description/i,
+        commodity_code: /Commodity Code/i
+      },
+      blanketTreatmentType: {
+        regex: /All items are processed/i,
+        value: 'Processed'
+      },
+      blanketTreatmentTypeValue: {
+        regex: /Treatment Type:/i,
+        valueCellOffset: { row: 0, col: 1 }
+      },
+      findUnitInHeader: false
+    }
+
+    // Mock regex.test to return true for blanketTreatmentType
+    vi.mocked(regex.test).mockReturnValue(true)
+
+    const result = mapParser(packingListJson, 0, 1, header)
+
+    // Should use blanketTreatmentType value, not call positionFinder
+    expect(result[0].type_of_treatment).toBe('Processed')
+  })
 })
 
 describe('mapPdfNonAiParser', () => {
   it('should be exported as a function', () => {
     expect(typeof mapPdfNonAiParser).toBe('function')
+  })
+
+  it('should extract commodity code digits and filter out 2-letter country codes', () => {
+    const packingListJson = {
+      content: [
+        { x: 50, y: 100, str: 'Test Product' },
+        { x: 150, y: 100, str: 'GB' }, // 2-letter country code should be filtered
+        { x: 250, y: 100, str: '10.5' }
+      ],
+      pageInfo: { num: 1 }
+    }
+
+    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
+
+    expect(result[0].commodity_code).toBe(null)
+  })
+
+  it('should keep valid commodity codes starting with digits', () => {
+    const packingListJson = {
+      content: [
+        { x: 50, y: 100, str: 'Test Product' },
+        { x: 150, y: 100, str: '1234567890' },
+        { x: 250, y: 100, str: '10.5' }
+      ],
+      pageInfo: { num: 1 }
+    }
+
+    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
+
+    expect(result[0].commodity_code).toBe('1234567890')
+  })
+
+  it('should extract first 4-14 digits from commodity code with trailing text', () => {
+    const packingListJson = {
+      content: [
+        { x: 50, y: 100, str: 'Test Product' },
+        { x: 150, y: 100, str: '02071290ABC' },
+        { x: 250, y: 100, str: '10.5' }
+      ],
+      pageInfo: { num: 1 }
+    }
+
+    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
+
+    expect(result[0].commodity_code).toBe('02071290')
+  })
+
+  it('should filter out lowercase 2-letter country codes', () => {
+    const packingListJson = {
+      content: [
+        { x: 50, y: 100, str: 'Test Product' },
+        { x: 150, y: 100, str: 'gb' }, // lowercase 2-letter country code
+        { x: 250, y: 100, str: '10.5' }
+      ],
+      pageInfo: { num: 1 }
+    }
+
+    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
+
+    expect(result[0].commodity_code).toBe(null)
+  })
+
+  it('should filter out mixed case 2-letter country codes', () => {
+    const packingListJson = {
+      content: [
+        { x: 50, y: 100, str: 'Test Product' },
+        { x: 150, y: 100, str: 'Gb' }, // mixed case 2-letter country code
+        { x: 250, y: 100, str: '10.5' }
+      ],
+      pageInfo: { num: 1 }
+    }
+
+    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
+
+    expect(result[0].commodity_code).toBe(null)
+  })
+
+  it('should keep 3-letter codes (not country codes)', () => {
+    const packingListJson = {
+      content: [
+        { x: 50, y: 100, str: 'Test Product' },
+        { x: 150, y: 100, str: 'ABC' }, // 3-letter code should be kept
+        { x: 250, y: 100, str: '10.5' }
+      ],
+      pageInfo: { num: 1 }
+    }
+
+    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
+
+    expect(result[0].commodity_code).toBe('ABC')
   })
 })

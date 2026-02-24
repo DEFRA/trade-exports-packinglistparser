@@ -7,6 +7,10 @@
 import * as regex from '../utilities/regex.js'
 import headers from './model-headers-pdf.js'
 import * as pdfHelper from '../utilities/pdf-helper.js'
+import { createLogger } from '../common/helpers/logging/logger.js'
+
+const logger = createLogger()
+const filenameForLogging = 'parser-map.js'
 
 /**
  * Find column keys matching header regex patterns.
@@ -111,10 +115,49 @@ function extractBlanketValues(header, packingListJson, headerCols, headerRow) {
     blanketTreatmentType = header.blanketTreatmentType.value
   }
 
+  if (blanketTreatmentType === null && header.blanketTreatmentTypeValue) {
+    blanketTreatmentType = getBlanketValueFromOffset(
+      packingListJson,
+      header.blanketTreatmentTypeValue
+    )
+  }
+
   return {
     netWeightUnit,
     blanketNirms,
     blanketTreatmentType
+  }
+}
+
+/**
+ * Extract blanket value from document using coordinate offsets.
+ * @param {Array<Object>} packingListJson - Raw packing list data
+ * @param {Object} blanketValue - Configuration with regex and offset
+ * @returns {string|null} Extracted value or null
+ */
+function getBlanketValueFromOffset(packingListJson, blanketValue) {
+  try {
+    // find position of blanket header value
+    const [headerRow, headerCol] = regex.positionFinder(
+      packingListJson,
+      blanketValue.regex
+    )
+
+    if (headerRow === null || headerCol === null) {
+      throw new Error('Position not found.')
+    }
+
+    // add offsets
+    const row = headerRow + blanketValue.valueCellOffset.row
+    const col = String.fromCodePoint(
+      headerCol.codePointAt(0) + blanketValue.valueCellOffset.col
+    )
+
+    // return the value
+    return packingListJson[row][col] ?? null
+  } catch (error) {
+    logger.logError(filenameForLogging, 'getBlanketValueFromOffset()', error)
+    return null
   }
 }
 
@@ -343,6 +386,11 @@ export function mapPdfNonAiParser(
  */
 function extractCommodityCodeDigits(input) {
   if (input === null) {
+    return null
+  }
+
+  // If input is only 2 alphabetic characters (ie the country of origin), return null
+  if (/^[A-Z]{2}$/i.test(input)) {
     return null
   }
 
