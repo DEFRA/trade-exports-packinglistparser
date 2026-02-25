@@ -135,10 +135,16 @@ describe('ineligible-items-mdm-s3-sync', () => {
       expect(getIneligibleItems).toHaveBeenCalledTimes(1)
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
         { filename: 'ineligible-items', schema: 'cache' },
-        JSON.stringify(mockData)
+        JSON.stringify({
+          ineligibleItems: [{ name: 'Item 1' }, { name: 'Item 2' }],
+          version: '1.0'
+        })
       )
       expect(setIneligibleItemsCache).toHaveBeenCalledTimes(1)
-      expect(setIneligibleItemsCache).toHaveBeenCalledWith(mockData)
+      expect(setIneligibleItemsCache).toHaveBeenCalledWith({
+        ineligibleItems: [{ name: 'Item 1' }, { name: 'Item 2' }],
+        version: '1.0'
+      })
     })
 
     it('should handle array data format', async () => {
@@ -161,7 +167,11 @@ describe('ineligible-items-mdm-s3-sync', () => {
       expect(result.itemCount).toBe(3)
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
         { filename: 'ineligible-items', schema: 'cache' },
-        JSON.stringify(mockData)
+        JSON.stringify([
+          { name: 'Item 1' },
+          { name: 'Item 2' },
+          { name: 'Item 3' }
+        ])
       )
     })
 
@@ -204,6 +214,7 @@ describe('ineligible-items-mdm-s3-sync', () => {
       expect(result.success).toBe(false)
       expect(result.error).toBe('S3 upload failed')
       expect(getIneligibleItems).toHaveBeenCalledTimes(1)
+      // Cache should not be updated on S3 failure
       expect(setIneligibleItemsCache).not.toHaveBeenCalled()
     })
 
@@ -217,7 +228,10 @@ describe('ineligible-items-mdm-s3-sync', () => {
       await syncMdmToS3()
 
       expect(setIneligibleItemsCache).toHaveBeenCalledTimes(1)
-      expect(setIneligibleItemsCache).toHaveBeenCalledWith(mockData)
+      // Cache should be updated with transformed data (id removed)
+      expect(setIneligibleItemsCache).toHaveBeenCalledWith({
+        ineligibleItems: [{ name: 'Item 1' }]
+      })
     })
 
     it('should handle empty ineligibleItems array', async () => {

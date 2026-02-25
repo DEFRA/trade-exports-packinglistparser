@@ -21,6 +21,34 @@ const checkMdmEnabled = createEnabledCheck(
 )
 
 /**
+ * Transforms MDM data to match local file format by removing MDM-specific fields
+ * @param {Array|Object} mdmData - Raw data from MDM (array or object with ineligibleItems)
+ * @returns {Array|Object} Transformed data with only required fields (country_of_origin, commodity_code, type_of_treatment)
+ */
+function transformMdmData(mdmData) {
+  const transformItem = (item) => {
+    // eslint-disable-next-line camelcase
+    const { id, last_modified, ...cleanItem } = item
+    return cleanItem
+  }
+
+  // Handle object format: {ineligibleItems: [...], ...otherProps}
+  if (mdmData?.ineligibleItems && Array.isArray(mdmData.ineligibleItems)) {
+    return {
+      ...mdmData,
+      ineligibleItems: mdmData.ineligibleItems.map(transformItem)
+    }
+  }
+
+  // Handle array format: [...]
+  if (Array.isArray(mdmData)) {
+    return mdmData.map(transformItem)
+  }
+
+  return mdmData
+}
+
+/**
  * Retrieve and validate MDM data
  * @returns {Promise<Object>} MDM data
  */
@@ -49,19 +77,24 @@ async function writeMdmDataToS3(mdmData) {
     schema: s3Schema
   }
 
+  // Transform MDM data to match local file format (remove id and last_modified)
+  const transformedData = transformMdmData(mdmData)
+
   // Deduplicate before storing to S3
   // IMPORTANT: This completely replaces S3 content with latest MDM data
   // If MDM removed an item, it will be removed from S3 too
   let deduplicatedData
-  if (mdmData?.ineligibleItems) {
+  if (transformedData?.ineligibleItems) {
     deduplicatedData = {
-      ...mdmData,
-      ineligibleItems: deduplicateIneligibleItems(mdmData.ineligibleItems)
+      ...transformedData,
+      ineligibleItems: deduplicateIneligibleItems(
+        transformedData.ineligibleItems
+      )
     }
-  } else if (Array.isArray(mdmData)) {
-    deduplicatedData = deduplicateIneligibleItems(mdmData)
+  } else if (Array.isArray(transformedData)) {
+    deduplicatedData = deduplicateIneligibleItems(transformedData)
   } else {
-    deduplicatedData = mdmData
+    deduplicatedData = transformedData
   }
 
   const originalCount =
