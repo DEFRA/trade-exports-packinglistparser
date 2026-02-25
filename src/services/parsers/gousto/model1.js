@@ -16,35 +16,20 @@ import {
 } from '../../../utilities/regex.js'
 import { createLogger } from '../../../common/helpers/logging/logger.js'
 import { formatError } from '../../../common/helpers/logging/error-logger.js'
+import {
+  nowNs,
+  durationNs,
+  durationMs,
+  measureSync,
+  toEventReason,
+  logEcsEvent
+} from '../../../common/helpers/logging/performance.js'
 
 const logger = createLogger()
-const NS_PER_MS = 1_000_000n
 const PARSER_ACTIONS = {
   parse: 'gousto_model1_parse',
   findEstablishmentNumber: 'gousto_model1_find_establishment_number',
   parseSheet: 'gousto_model1_parse_sheet'
-}
-
-function nowNs() {
-  return process.hrtime.bigint()
-}
-
-function getDurationNs(startNs) {
-  return Number(nowNs() - startNs)
-}
-
-function getDurationMs(durationNs) {
-  return durationNs / Number(NS_PER_MS)
-}
-
-function measureSync(work) {
-  const startNs = nowNs()
-  const result = work()
-
-  return {
-    result,
-    durationNs: getDurationNs(startNs)
-  }
 }
 
 function logParserEvent({
@@ -55,22 +40,82 @@ function logParserEvent({
   durationNs,
   parser
 }) {
-  logger.info(
-    {
-      event: {
-        category: 'application',
-        type,
-        action,
-        ...(outcome ? { outcome } : {}),
-        ...(durationNs !== undefined ? { duration: durationNs } : {})
-      },
-      parser: {
-        model: parserModel.GOUSTO1,
-        ...parser
-      }
-    },
-    message
+  logEcsEvent(logger, {
+    message,
+    type,
+    action,
+    outcome,
+    duration: durationNs,
+    reason: parser
+      ? toEventReason({
+          model: parserModel.GOUSTO1,
+          ...parser
+        })
+      : undefined
+  })
+}
+
+function processSheet(
+  sheet,
+  packingListJson,
+  headerCallback,
+  establishmentNumbers,
+  stageTotalsNs
+) {
+  const sheetStartNs = nowNs()
+
+  const {
+    result: matchedEstablishmentNumbers,
+    durationNs: findAllMatchesDurationNs
+  } = measureSync(() =>
+    findAllMatches(remosRegex, packingListJson[sheet], establishmentNumbers)
   )
+  stageTotalsNs.findAllMatches += findAllMatchesDurationNs
+
+  const { result: headerRow, durationNs: rowFinderDurationNs } = measureSync(
+    () => rowFinder(packingListJson[sheet], headerCallback)
+  )
+  stageTotalsNs.rowFinder += rowFinderDurationNs
+
+  const dataRow = headerRow + 1
+
+  const { result: mappedRows, durationNs: mapParserDurationNs } = measureSync(
+    () =>
+      mapParser(
+        packingListJson[sheet],
+        headerRow,
+        dataRow,
+        headers.GOUSTO1,
+        sheet
+      )
+  )
+  stageTotalsNs.mapParser += mapParserDurationNs
+
+  const sheetDurationNs = durationNs(sheetStartNs)
+
+  logParserEvent({
+    message: 'Gousto Model 1 sheet parse completed',
+    action: PARSER_ACTIONS.parseSheet,
+    type: 'info',
+    durationNs: sheetDurationNs,
+    parser: {
+      sheet,
+      headerRow,
+      dataRow,
+      rowsMapped: mappedRows.length,
+      durationMs: durationMs(sheetDurationNs),
+      stages: {
+        findAllMatchesDurationMs: durationMs(findAllMatchesDurationNs),
+        rowFinderDurationMs: durationMs(rowFinderDurationNs),
+        mapParserDurationMs: durationMs(mapParserDurationNs)
+      }
+    }
+  })
+
+  return {
+    mappedRows,
+    establishmentNumbers: matchedEstablishmentNumbers
+  }
 }
 
 /**
@@ -83,7 +128,6 @@ function parse(packingListJson) {
   try {
     const sheets = Object.keys(packingListJson)
     let packingListContents = []
-    let packingListContentsTemp = []
     let establishmentNumbers = []
     const stageTotalsNs = {
       findEstablishmentNumber: 0,
@@ -118,7 +162,7 @@ function parse(packingListJson) {
       type: 'info',
       durationNs: establishmentDurationNs,
       parser: {
-        durationMs: getDurationMs(establishmentDurationNs)
+        durationMs: durationMs(establishmentDurationNs)
       }
     })
 
@@ -128,57 +172,16 @@ function parse(packingListJson) {
     }
 
     for (const sheet of sheets) {
-      const sheetStartNs = nowNs()
-
-      const {
-        result: matchedEstablishmentNumbers,
-        durationNs: findAllMatchesDurationNs
-      } = measureSync(() =>
-        findAllMatches(remosRegex, packingListJson[sheet], establishmentNumbers)
+      const sheetResult = processSheet(
+        sheet,
+        packingListJson,
+        headerCallback,
+        establishmentNumbers,
+        stageTotalsNs
       )
-      establishmentNumbers = matchedEstablishmentNumbers
-      stageTotalsNs.findAllMatches += findAllMatchesDurationNs
 
-      const { result: headerRow, durationNs: rowFinderDurationNs } =
-        measureSync(() => rowFinder(packingListJson[sheet], headerCallback))
-      stageTotalsNs.rowFinder += rowFinderDurationNs
-
-      const dataRow = headerRow + 1
-
-      const { result: mappedRows, durationNs: mapParserDurationNs } =
-        measureSync(() =>
-          mapParser(
-            packingListJson[sheet],
-            headerRow,
-            dataRow,
-            headers.GOUSTO1,
-            sheet
-          )
-        )
-      packingListContentsTemp = mappedRows
-      stageTotalsNs.mapParser += mapParserDurationNs
-
-      packingListContents = packingListContents.concat(packingListContentsTemp)
-
-      const sheetDurationNs = getDurationNs(sheetStartNs)
-      logParserEvent({
-        message: 'Gousto Model 1 sheet parse completed',
-        action: PARSER_ACTIONS.parseSheet,
-        type: 'info',
-        durationNs: sheetDurationNs,
-        parser: {
-          sheet,
-          headerRow,
-          dataRow,
-          rowsMapped: packingListContentsTemp.length,
-          durationMs: getDurationMs(sheetDurationNs),
-          stages: {
-            findAllMatchesDurationMs: getDurationMs(findAllMatchesDurationNs),
-            rowFinderDurationMs: getDurationMs(rowFinderDurationNs),
-            mapParserDurationMs: getDurationMs(mapParserDurationNs)
-          }
-        }
-      })
+      establishmentNumbers = sheetResult.establishmentNumbers
+      packingListContents = packingListContents.concat(sheetResult.mappedRows)
     }
 
     const { result, durationNs: combineDurationNs } = measureSync(() =>
@@ -194,7 +197,7 @@ function parse(packingListJson) {
 
     stageTotalsNs.combine = combineDurationNs
 
-    const parseDurationNs = getDurationNs(parseStartNs)
+    const parseDurationNs = durationNs(parseStartNs)
     logParserEvent({
       message: 'Gousto Model 1 parse completed',
       action: PARSER_ACTIONS.parse,
@@ -205,22 +208,22 @@ function parse(packingListJson) {
         sheetsCount: sheets.length,
         parsedRowsCount: packingListContents.length,
         establishmentNumbersCount: establishmentNumbers.length,
-        durationMs: getDurationMs(parseDurationNs),
+        durationMs: durationMs(parseDurationNs),
         stages: {
-          findEstablishmentNumberDurationMs: getDurationMs(
+          findEstablishmentNumberDurationMs: durationMs(
             stageTotalsNs.findEstablishmentNumber
           ),
-          findAllMatchesDurationMs: getDurationMs(stageTotalsNs.findAllMatches),
-          rowFinderDurationMs: getDurationMs(stageTotalsNs.rowFinder),
-          mapParserDurationMs: getDurationMs(stageTotalsNs.mapParser),
-          combineDurationMs: getDurationMs(stageTotalsNs.combine)
+          findAllMatchesDurationMs: durationMs(stageTotalsNs.findAllMatches),
+          rowFinderDurationMs: durationMs(stageTotalsNs.rowFinder),
+          mapParserDurationMs: durationMs(stageTotalsNs.mapParser),
+          combineDurationMs: durationMs(stageTotalsNs.combine)
         }
       }
     })
 
     return result
   } catch (err) {
-    const parseDurationNs = getDurationNs(parseStartNs)
+    const parseDurationNs = durationNs(parseStartNs)
     logger.error(formatError(err), 'Error in parse() for Gousto Model 1')
     logParserEvent({
       message: 'Gousto Model 1 parse failed',
@@ -229,7 +232,7 @@ function parse(packingListJson) {
       outcome: 'failure',
       durationNs: parseDurationNs,
       parser: {
-        durationMs: getDurationMs(parseDurationNs)
+        durationMs: durationMs(parseDurationNs)
       }
     })
     return combine(null, [], false, parserModel.NOMATCH)

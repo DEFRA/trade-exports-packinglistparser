@@ -23,6 +23,42 @@ import {
 } from './packing-list-validator-utilities.js'
 import parserModel from '../parser-model.js'
 import failureReasonsDescriptions from './packing-list-failure-reasons.js'
+import { createLogger } from '../../common/helpers/logging/logger.js'
+import {
+  nowNs,
+  durationNs,
+  durationMs,
+  measureSync,
+  toEventReason,
+  logEcsEvent
+} from '../../common/helpers/logging/performance.js'
+
+const logger = createLogger()
+
+function logValidationCompleted({
+  packingList,
+  finalResult,
+  totalDurationNs,
+  indexAndTypeDurationNs,
+  failureGenerationDurationNs
+}) {
+  logEcsEvent(logger, {
+    message: 'Packing list validation completed',
+    type: 'end',
+    action: 'validate_packing_list',
+    outcome: finalResult.hasAllFields ? 'success' : 'failure',
+    duration: totalDurationNs,
+    reason: toEventReason({
+      itemCount: packingList.items?.length ?? 0,
+      hasAllFields: finalResult.hasAllFields,
+      durationMs: durationMs(totalDurationNs),
+      stages: {
+        validateByIndexAndTypeDurationMs: durationMs(indexAndTypeDurationNs),
+        generateFailuresDurationMs: durationMs(failureGenerationDurationNs)
+      }
+    })
+  })
+}
 
 /**
  * Validate a full packing list and produce final failure output.
@@ -30,8 +66,26 @@ import failureReasonsDescriptions from './packing-list-failure-reasons.js'
  * @returns {Object} result - Validation result containing either `hasAllFields: true` or `hasAllFields: false` and `failureReasons`.
  */
 function validatePackingList(packingList) {
-  const validationResult = validatePackingListByIndexAndType(packingList)
-  return generateFailuresByIndexAndTypes(validationResult, packingList)
+  const totalStartNs = nowNs()
+
+  const { result: validationResult, durationNs: indexAndTypeDurationNs } =
+    measureSync(() => validatePackingListByIndexAndType(packingList))
+
+  const { result: finalResult, durationNs: failureGenerationDurationNs } =
+    measureSync(() =>
+      generateFailuresByIndexAndTypes(validationResult, packingList)
+    )
+
+  const totalDurationNs = durationNs(totalStartNs)
+  logValidationCompleted({
+    packingList,
+    finalResult,
+    totalDurationNs,
+    indexAndTypeDurationNs,
+    failureGenerationDurationNs
+  })
+
+  return finalResult
 }
 
 /**

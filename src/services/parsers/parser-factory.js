@@ -16,8 +16,73 @@ import {
 } from '../validators/packing-list-validator-utilities.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { noMatchParsers } from '../model-parsers.js'
+import {
+  nowNs,
+  durationNs,
+  durationMs,
+  measureSync,
+  measureAsync,
+  toEventReason,
+  logEcsEvent
+} from '../../common/helpers/logging/performance.js'
 
 const logger = createLogger()
+
+function logExtractionCompleted(parseDurationNs) {
+  logEcsEvent(logger, {
+    message: 'Parser extraction completed',
+    type: 'info',
+    action: 'generate_parsed_packing_list_parse',
+    duration: parseDurationNs,
+    reason: toEventReason({
+      durationMs: durationMs(parseDurationNs)
+    })
+  })
+}
+
+function addFailureMessages(
+  parsedPackingList,
+  validateCountryOfOrigin,
+  unitInHeader
+) {
+  return parsedPackingList.items.map((item) => ({
+    ...item,
+    failure: getItemFailureMessage(item, validateCountryOfOrigin, unitInHeader)
+  }))
+}
+
+function logGenerateParsedPackingListCompleted({
+  totalDurationNs,
+  parsedPackingList,
+  validateCountryOfOrigin,
+  unitInHeader,
+  parseDurationNs,
+  removeEmptyDurationNs,
+  mapFailuresDurationNs,
+  validateDurationNs,
+  removeBadDataDurationNs
+}) {
+  logEcsEvent(logger, {
+    message: 'generateParsedPackingList completed',
+    type: 'end',
+    action: 'generate_parsed_packing_list',
+    outcome: 'success',
+    duration: totalDurationNs,
+    reason: toEventReason({
+      itemCount: parsedPackingList.items.length,
+      validateCountryOfOrigin,
+      unitInHeader,
+      durationMs: durationMs(totalDurationNs),
+      stages: {
+        parseDurationMs: durationMs(parseDurationNs),
+        removeEmptyItemsDurationMs: durationMs(removeEmptyDurationNs),
+        mapFailureMessagesDurationMs: durationMs(mapFailuresDurationNs),
+        validateDurationMs: durationMs(validateDurationNs),
+        removeBadDataDurationMs: durationMs(removeBadDataDurationNs)
+      }
+    })
+  })
+}
 
 /**
  * Find a parser suitable for the supplied packing list and filename.
@@ -83,16 +148,22 @@ async function generateParsedPackingList(
   dispatchLocation,
   sanitizedFullPackingList = null
 ) {
+  const totalStartNs = nowNs()
+
   // Data Extraction
-  const parsedPackingList = await parser.parse(
-    sanitisedPackingList,
-    sanitizedFullPackingList
-  )
+  const { result: parsedPackingList, durationNs: parseDurationNs } =
+    await measureAsync(() =>
+      parser.parse(sanitisedPackingList, sanitizedFullPackingList)
+    )
+
+  logExtractionCompleted(parseDurationNs)
 
   // Data Validation & Cleanup
 
   // Remove items with all null/undefined values
-  parsedPackingList.items = removeEmptyItems(parsedPackingList.items)
+  const { result: nonEmptyItems, durationNs: removeEmptyDurationNs } =
+    measureSync(() => removeEmptyItems(parsedPackingList.items))
+  parsedPackingList.items = nonEmptyItems
 
   // Generate item failure messages before removeBadData so validation can
   // distinguish between invalid and missing net weight/packages
@@ -100,14 +171,19 @@ async function generateParsedPackingList(
     parsedPackingList.validateCountryOfOrigin ?? false
   const unitInHeader = parsedPackingList.unitInHeader ?? false
 
-  parsedPackingList.items = parsedPackingList.items.map((item) => ({
-    ...item,
-    failure: getItemFailureMessage(item, validateCountryOfOrigin, unitInHeader)
-  }))
+  const {
+    result: itemsWithFailureMessages,
+    durationNs: mapFailuresDurationNs
+  } = measureSync(() =>
+    addFailureMessages(parsedPackingList, validateCountryOfOrigin, unitInHeader)
+  )
+  parsedPackingList.items = itemsWithFailureMessages
 
   // Run validation
-  const validationResults =
-    packingListValidator.validatePackingList(parsedPackingList)
+  const { result: validationResults, durationNs: validateDurationNs } =
+    measureSync(() =>
+      packingListValidator.validatePackingList(parsedPackingList)
+    )
 
   // Set validation flags
   parsedPackingList.business_checks.all_required_fields_present =
@@ -117,10 +193,25 @@ async function generateParsedPackingList(
     validationResults.failureReasons ? validationResults.failureReasons : null
 
   // Remove items with invalid or missing critical data
-  parsedPackingList.items = removeBadData(parsedPackingList.items)
+  const { result: cleanedItems, durationNs: removeBadDataDurationNs } =
+    measureSync(() => removeBadData(parsedPackingList.items))
+  parsedPackingList.items = cleanedItems
 
   // Add dispatch location
   parsedPackingList.dispatchLocationNumber = dispatchLocation
+
+  const totalDurationNs = durationNs(totalStartNs)
+  logGenerateParsedPackingListCompleted({
+    totalDurationNs,
+    parsedPackingList,
+    validateCountryOfOrigin,
+    unitInHeader,
+    parseDurationNs,
+    removeEmptyDurationNs,
+    mapFailuresDurationNs,
+    validateDurationNs,
+    removeBadDataDurationNs
+  })
 
   return parsedPackingList
 }
