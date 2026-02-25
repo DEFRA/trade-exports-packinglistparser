@@ -255,14 +255,23 @@ function calculateHasAllFields(
  * @returns {Object} results - Map of check names to arrays of matching `row_location` values.
  */
 function collectItemValidationResults(items, checks) {
-  const results = Object.fromEntries(
-    Object.keys(checks).map((checkName) => [checkName, []])
-  )
+  const results = {}
+  const activeChecks = []
+
+  for (const [checkName, check] of Object.entries(checks)) {
+    results[checkName] = []
+
+    if (check !== null) {
+      activeChecks.push({ checkName, check })
+    }
+  }
 
   for (const item of items) {
-    for (const [checkName, check] of Object.entries(checks)) {
-      if (check !== null && check(item)) {
-        results[checkName].push(item.row_location)
+    const { row_location: rowLocation } = item
+
+    for (const { checkName, check } of activeChecks) {
+      if (check(item)) {
+        results[checkName].push(rowLocation)
       }
     }
   }
