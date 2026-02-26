@@ -9,6 +9,7 @@ import headers from './model-headers-pdf.js'
 import * as pdfHelper from '../utilities/pdf-helper.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 import { formatError } from '../common/helpers/logging/error-logger.js'
+import { filterValidatableRows } from './validators/row-filter-utilities.js'
 
 const logger = createLogger()
 
@@ -80,6 +81,12 @@ function findHeaderCols(header, packingListHeader) {
         return header.regex.header_net_weight_unit.test(packingListHeader[key])
       }
     )
+  }
+
+  if (header.box_number) {
+    headerCols.box_number = Object.keys(packingListHeader).find((key) => {
+      return header.box_number.test(packingListHeader[key])
+    })
   }
 
   return headerCols
@@ -268,13 +275,34 @@ export function mapParser(
     headerRow
   )
 
-  // Create array of rows to process
-  const rowsToProcess = packingListJson.slice(dataRow).map((row, index) => ({
-    row,
-    originalIndex: dataRow + index,
-    actualRowNumber: dataRow + index + 1,
-    sheetName
-  }))
+  // Filter rows if configuration is present
+  let rowsToProcess
+  if (header.skipTotalsRows || header.skipRepeatedHeaders) {
+    rowsToProcess = filterValidatableRows(
+      packingListJson,
+      headerRow,
+      dataRow,
+      headerCols,
+      header,
+      sheetName
+    )
+  } else {
+    // Fallback to original behavior
+    rowsToProcess = packingListJson.slice(dataRow).map((row, index) => ({
+      row,
+      originalIndex: dataRow + index,
+      actualRowNumber: dataRow + index + 1,
+      sheetName
+    }))
+  }
+
+  // Filter out rows with box numbers if configured
+  if (header.skipBoxNumberRows && headerCols.box_number) {
+    rowsToProcess = rowsToProcess.filter(({ row }) => {
+      const boxNumberValue = row[headerCols.box_number]
+      return !boxNumberValue || String(boxNumberValue).trim() === ''
+    })
+  }
 
   // Parse the packing list contents based on columns identified
   const packingListContents = rowsToProcess.map(

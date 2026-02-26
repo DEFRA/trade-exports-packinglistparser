@@ -77,6 +77,39 @@ export default {
     parserModel: parserModel.NOMATCH
   },
 
+  boxNumberRowsFilteredResult: {
+    business_checks: {
+      all_required_fields_present: true,
+      failure_reasons: null
+    },
+    items: [
+      {
+        commodity_code: '0207141010',
+        description: 'Chicken Breast',
+        number_of_packages: 100,
+        total_net_weight_kg: 250.5,
+        nature_of_products: 'Fresh Poultry',
+        type_of_treatment: 'Chilled',
+        country_of_origin: 'VALID_ISO',
+        total_net_weight_unit: 'KG',
+        nirms: 'NIRMS'
+      },
+      {
+        commodity_code: '0201300090',
+        description: 'Beef Mince',
+        number_of_packages: 50,
+        total_net_weight_kg: 125.0,
+        nature_of_products: 'Fresh Meat',
+        type_of_treatment: 'Frozen',
+        country_of_origin: 'VALID_ISO',
+        total_net_weight_unit: 'KG',
+        nirms: 'NIRMS'
+      }
+    ],
+    registration_approval_number: 'RMS-GB-000483-001',
+    parserModel: parserModel.GOUSTO1
+  },
+
   invalidTestResult_MissingCells: {
     business_checks: {
       all_required_fields_present: false,
