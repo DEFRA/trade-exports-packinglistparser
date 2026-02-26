@@ -25,8 +25,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'VALID_ISO',
-        H: 'BOX001'
+        G: 'VALID_ISO'
       },
       {
         A: 'Beef Mince',
@@ -35,8 +34,7 @@ export default {
         D: 125.0,
         E: 'Fresh Meat',
         F: '0201300090',
-        G: 'VALID_ISO',
-        H: 'BOX002'
+        G: 'VALID_ISO'
       }
     ]
   },
@@ -67,8 +65,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'VALID_ISO',
-        H: 'BOX001'
+        G: 'VALID_ISO'
       }
     ],
     Sheet2: [
@@ -92,8 +89,68 @@ export default {
         D: 180.0,
         E: 'Fresh Fish',
         F: '0304410090',
+        G: 'VALID_ISO'
+      }
+    ]
+  },
+
+  modelWithBoxNumberRows: {
+    Sheet1: [
+      {
+        A: 'RMS-GB-000483-001'
+      },
+      {
+        A: 'All goods on this packing list are NIRMS'
+      },
+      {},
+      {
+        A: 'DESCRIPTION',
+        B: 'TYPE OF TREATMENT',
+        C: 'NUMBER OF PACKS',
+        D: 'NET WEIGHT (KG)',
+        E: 'NATURE',
+        F: 'COMMODITY CODE',
+        G: 'COUNTRY OF ORIGIN',
+        H: 'BOX NUMBER'
+      },
+      {
+        A: 'Chicken Breast',
+        B: 'Chilled',
+        C: 100,
+        D: 250.5,
+        E: 'Fresh Poultry',
+        F: '0207141010',
         G: 'VALID_ISO',
-        H: 'BOX003'
+        H: ''
+      },
+      {
+        A: 'Box 1 Contents',
+        B: 'Chilled',
+        C: 10,
+        D: 50.0,
+        E: 'Box Summary',
+        F: '0207141010',
+        G: 'VALID_ISO',
+        H: 'BOX001'
+      },
+      {
+        A: 'Beef Mince',
+        B: 'Frozen',
+        C: 50,
+        D: 125.0,
+        E: 'Fresh Meat',
+        F: '0201300090',
+        G: 'VALID_ISO'
+      },
+      {
+        A: 'Box 2 Contents',
+        B: 'Frozen',
+        C: 5,
+        D: 25.0,
+        E: 'Box Summary',
+        F: '0201300090',
+        G: 'VALID_ISO',
+        H: 'BOX002'
       }
     ]
   },
@@ -214,8 +271,7 @@ export default {
         D: null,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'VALID_ISO',
-        H: 'BOX001'
+        G: 'VALID_ISO'
       }
     ]
   },
@@ -245,8 +301,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'VALID_ISO',
-        H: 'BOX001'
+        G: 'VALID_ISO'
       }
     ]
   },
@@ -274,8 +329,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'VALID_ISO',
-        H: 'BOX001'
+        G: 'VALID_ISO'
       }
     ]
   },
@@ -306,8 +360,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: null,
-        H: 'BOX001'
+        G: null
       }
     ]
   },
@@ -338,8 +391,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'INVALID',
-        H: 'BOX001'
+        G: 'INVALID'
       }
     ]
   },
@@ -370,8 +422,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'INVALID1',
-        H: 'BOX001'
+        G: 'INVALID1'
       },
       {
         A: 'Item 2',
@@ -380,8 +431,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'INVALID2',
-        H: 'BOX002'
+        G: 'INVALID2'
       },
       {
         A: 'Item 3',
@@ -390,8 +440,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'INVALID3',
-        H: 'BOX003'
+        G: 'INVALID3'
       },
       {
         A: 'Item 4',
@@ -400,8 +449,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'INVALID4',
-        H: 'BOX004'
+        G: 'INVALID4'
       }
     ]
   },
@@ -432,8 +480,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'VALID_ISO',
-        H: 'BOX001'
+        G: 'VALID_ISO'
       }
     ]
   },
@@ -464,8 +511,7 @@ export default {
         D: 250.5,
         E: 'Fresh Poultry',
         F: '0207141010',
-        G: 'X',
-        H: 'BOX001'
+        G: 'X'
       },
       {
         A: 'Beef Mince',
@@ -474,8 +520,7 @@ export default {
         D: 125.0,
         E: 'Fresh Meat',
         F: '0201300090',
-        G: 'x',
-        H: 'BOX002'
+        G: 'x'
       }
     ]
   },
@@ -506,8 +551,7 @@ export default {
         D: 250.5,
         E: 'Fresh Meat',
         F: '0201',
-        G: 'INELIGIBLE_ITEM_ISO',
-        H: 'BOX001'
+        G: 'INELIGIBLE_ITEM_ISO'
       }
     ]
   },
@@ -538,8 +582,7 @@ export default {
         D: 250.5,
         E: 'Fresh Meat',
         F: '0201',
-        G: 'INELIGIBLE_ITEM_ISO',
-        H: 'BOX001'
+        G: 'INELIGIBLE_ITEM_ISO'
       },
       {
         A: 'Russian Beef 2',
@@ -548,8 +591,7 @@ export default {
         D: 250.5,
         E: 'Fresh Meat',
         F: '0201',
-        G: 'INELIGIBLE_ITEM_ISO',
-        H: 'BOX002'
+        G: 'INELIGIBLE_ITEM_ISO'
       },
       {
         A: 'Russian Beef 3',
@@ -558,8 +600,7 @@ export default {
         D: 250.5,
         E: 'Fresh Meat',
         F: '0201',
-        G: 'INELIGIBLE_ITEM_ISO',
-        H: 'BOX003'
+        G: 'INELIGIBLE_ITEM_ISO'
       },
       {
         A: 'Russian Beef 4',
@@ -568,8 +609,7 @@ export default {
         D: 250.5,
         E: 'Fresh Meat',
         F: '0201',
-        G: 'INELIGIBLE_ITEM_ISO',
-        H: 'BOX004'
+        G: 'INELIGIBLE_ITEM_ISO'
       }
     ]
   },
@@ -600,8 +640,7 @@ export default {
         D: 250.5,
         E: 'Fresh Meat',
         F: '0201',
-        G: 'INELIGIBLE_ITEM_ISO',
-        H: 'BOX001'
+        G: 'INELIGIBLE_ITEM_ISO'
       }
     ]
   }

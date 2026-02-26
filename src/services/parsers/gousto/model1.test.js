@@ -21,4 +21,15 @@ describe('parseGoustoModel1', () => {
 
     expect(result).toMatchObject(test_results.emptyTestResult)
   })
+
+  it('filters out rows with box numbers', () => {
+    const result = parse(model.modelWithBoxNumberRows)
+
+    expect(result).toMatchObject(test_results.boxNumberRowsFilteredResult)
+    expect(result.items).toHaveLength(2)
+    expect(result.items.map((i) => i.description)).toEqual([
+      'Chicken Breast',
+      'Beef Mince'
+    ])
+  })
 })
