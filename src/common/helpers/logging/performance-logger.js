@@ -24,6 +24,26 @@ async function measureAsync(work) {
   return { result, durationNs: durationNs(startNs) }
 }
 
+async function measureAndLog(logger, work, eventOptions) {
+  const { result, durationNs: duration } = await measureAsync(work)
+  const reason =
+    typeof eventOptions.reason === 'function'
+      ? eventOptions.reason(duration)
+      : eventOptions.reason
+  logEcsEvent(logger, { ...eventOptions, duration, reason })
+  return { result, durationNs: duration }
+}
+
+function measureSyncAndLog(logger, work, eventOptions) {
+  const { result, durationNs: duration } = measureSync(work)
+  const reason =
+    typeof eventOptions.reason === 'function'
+      ? eventOptions.reason(duration)
+      : eventOptions.reason
+  logEcsEvent(logger, { ...eventOptions, duration, reason })
+  return { result, durationNs: duration }
+}
+
 function toEventReason(data) {
   return data ? JSON.stringify(data) : undefined
 }
@@ -64,6 +84,8 @@ export {
   durationMs,
   measureSync,
   measureAsync,
+  measureAndLog,
+  measureSyncAndLog,
   toEventReason,
   logEcsEvent
 }

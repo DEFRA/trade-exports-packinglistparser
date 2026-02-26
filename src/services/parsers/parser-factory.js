@@ -21,24 +21,12 @@ import {
   durationNs,
   durationMs,
   measureSync,
-  measureAsync,
+  measureAndLog,
   toEventReason,
   logEcsEvent
-} from '../../common/helpers/logging/performance.js'
+} from '../../common/helpers/logging/performance-logger.js'
 
 const logger = createLogger()
-
-function logExtractionCompleted(parseDurationNs) {
-  logEcsEvent(logger, {
-    message: 'Parser extraction completed',
-    type: 'info',
-    action: 'generate_parsed_packing_list_parse',
-    duration: parseDurationNs,
-    reason: toEventReason({
-      durationMs: durationMs(parseDurationNs)
-    })
-  })
-}
 
 function addFailureMessages(
   parsedPackingList,
@@ -152,11 +140,16 @@ async function generateParsedPackingList(
 
   // Data Extraction
   const { result: parsedPackingList, durationNs: parseDurationNs } =
-    await measureAsync(() =>
-      parser.parse(sanitisedPackingList, sanitizedFullPackingList)
+    await measureAndLog(
+      logger,
+      () => parser.parse(sanitisedPackingList, sanitizedFullPackingList),
+      {
+        message: 'Parser extraction completed',
+        type: 'info',
+        action: 'generate_parsed_packing_list_parse',
+        reason: (dur) => toEventReason({ durationMs: durationMs(dur) })
+      }
     )
-
-  logExtractionCompleted(parseDurationNs)
 
   // Data Validation & Cleanup
 
