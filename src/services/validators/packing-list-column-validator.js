@@ -40,10 +40,14 @@ function validatePackingList(packingList) {
  * @returns {Object} validationSummary - Collections of failing locations grouped by failure type and a boolean `hasAllFields`.
  */
 function validatePackingListByIndexAndType(packingList) {
-  const basicValidationResults = getBasicValidationResults(packingList)
+  const itemValidationResults = getItemValidationResults(packingList)
+  const basicValidationResults = getBasicValidationResults(
+    itemValidationResults
+  )
   const packingListStatusResults = getPackingListStatusResults(packingList)
-  const countryOfOriginResults =
-    getCountryOfOriginValidationResults(packingList)
+  const countryOfOriginResults = getCountryOfOriginValidationResults(
+    itemValidationResults
+  )
   return {
     ...basicValidationResults,
     ...packingListStatusResults,
@@ -57,20 +61,54 @@ function validatePackingListByIndexAndType(packingList) {
 }
 
 /**
- * Run basic column-level validators against each item row and collect failing row locations.
+ * Run all relevant item-level validators in a single pass across rows.
  * @param {Object} packingList - The parsed packing list object.
+ * @returns {Object} itemValidationResults - Arrays of `row_location` values for all supported item-level checks.
+ */
+function getItemValidationResults(packingList) {
+  const checks = {
+    missingIdentifier: hasMissingIdentifier,
+    invalidProductCodes: hasInvalidProductCode,
+    missingDescription: hasMissingDescription,
+    missingPackages: hasMissingPackages,
+    invalidPackages: wrongTypeForPackages,
+    missingNetWeight: hasMissingNetWeight,
+    invalidNetWeight: wrongTypeNetWeight,
+    missingNetWeightUnit: hasMissingNetWeightUnit
+  }
+
+  if (packingList.validateCountryOfOrigin) {
+    checks.missingNirms = hasMissingNirms
+    checks.invalidNirms = hasInvalidNirms
+    checks.missingCoO = hasMissingCoO
+    checks.invalidCoO = hasInvalidCoO
+    checks.ineligibleItems = hasIneligibleItems
+  } else {
+    checks.missingNirms = null
+    checks.invalidNirms = null
+    checks.missingCoO = null
+    checks.invalidCoO = null
+    checks.ineligibleItems = null
+  }
+
+  return collectItemValidationResults(packingList.items, checks)
+}
+
+/**
+ * Run basic column-level validators against each item row and collect failing row locations.
+ * @param {Object} itemValidationResults - Aggregate item-level validation output.
  * @returns {Object} basicResults - Arrays of `row_location` values for each basic failure category.
  */
-function getBasicValidationResults(packingList) {
+function getBasicValidationResults(itemValidationResults) {
   return {
-    missingIdentifier: findItems(packingList.items, hasMissingIdentifier),
-    invalidProductCodes: findItems(packingList.items, hasInvalidProductCode),
-    missingDescription: findItems(packingList.items, hasMissingDescription),
-    missingPackages: findItems(packingList.items, hasMissingPackages),
-    invalidPackages: findItems(packingList.items, wrongTypeForPackages),
-    missingNetWeight: findItems(packingList.items, hasMissingNetWeight),
-    invalidNetWeight: findItems(packingList.items, wrongTypeNetWeight),
-    missingNetWeightUnit: findItems(packingList.items, hasMissingNetWeightUnit)
+    missingIdentifier: itemValidationResults.missingIdentifier,
+    invalidProductCodes: itemValidationResults.invalidProductCodes,
+    missingDescription: itemValidationResults.missingDescription,
+    missingPackages: itemValidationResults.missingPackages,
+    invalidPackages: itemValidationResults.invalidPackages,
+    missingNetWeight: itemValidationResults.missingNetWeight,
+    invalidNetWeight: itemValidationResults.invalidNetWeight,
+    missingNetWeightUnit: itemValidationResults.missingNetWeightUnit
   }
 }
 
@@ -99,26 +137,16 @@ function getPackingListStatusResults(packingList) {
 
 /**
  * Run country-of-origin related validators when enabled and collect failing locations.
- * @param {Object} packingList - The parsed packing list object.
+ * @param {Object} itemValidationResults - Aggregate item-level validation output.
  * @returns {Object} cooResults - Arrays of `row_location` values for country-of-origin related failures.
  */
-function getCountryOfOriginValidationResults(packingList) {
-  if (!packingList.validateCountryOfOrigin) {
-    return {
-      missingNirms: [],
-      invalidNirms: [],
-      missingCoO: [],
-      invalidCoO: [],
-      ineligibleItems: []
-    }
-  }
-
+function getCountryOfOriginValidationResults(itemValidationResults) {
   return {
-    missingNirms: findItems(packingList.items, hasMissingNirms),
-    invalidNirms: findItems(packingList.items, hasInvalidNirms),
-    missingCoO: findItems(packingList.items, hasMissingCoO),
-    invalidCoO: findItems(packingList.items, hasInvalidCoO),
-    ineligibleItems: findItems(packingList.items, hasIneligibleItems)
+    missingNirms: itemValidationResults.missingNirms,
+    invalidNirms: itemValidationResults.invalidNirms,
+    missingCoO: itemValidationResults.missingCoO,
+    invalidCoO: itemValidationResults.invalidCoO,
+    ineligibleItems: itemValidationResults.ineligibleItems
   }
 }
 
@@ -167,15 +195,34 @@ function calculateHasAllFields(
 }
 
 /**
- * Helper to map item rows to their `row_location` when a predicate matches.
+ * Execute all provided item-level checks in one pass through the item collection.
  * @param {Array} items - Array of packing list item objects.
- * @param {Function} fn - Predicate function that returns truthy for failing rows.
- * @returns {Array} locations - Array of `row_location` objects for matching rows.
+ * @param {Object} checks - Map of check names to predicate functions.
+ * @returns {Object} results - Map of check names to arrays of matching `row_location` values.
  */
-function findItems(items, fn) {
-  return items
-    .map((val) => (fn(val) ? val.row_location : null))
-    .filter((val) => val !== null)
+function collectItemValidationResults(items, checks) {
+  const results = {}
+  const activeChecks = []
+
+  for (const [checkName, check] of Object.entries(checks)) {
+    results[checkName] = []
+
+    if (check !== null) {
+      activeChecks.push({ checkName, check })
+    }
+  }
+
+  for (const item of items) {
+    const { row_location: rowLocation } = item
+
+    for (const { checkName, check } of activeChecks) {
+      if (check(item)) {
+        results[checkName].push(rowLocation)
+      }
+    }
+  }
+
+  return results
 }
 
 /**

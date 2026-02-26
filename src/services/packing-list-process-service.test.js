@@ -268,7 +268,9 @@ describe('packing-list-process-service', () => {
 
       await processPackingList(mockPayload)
 
-      const infoCalls = mockLogger.info.mock.calls.map((call) => call[0])
+      const infoCalls = mockLogger.info.mock.calls.map((call) =>
+        typeof call[0] === 'string' ? call[0] : call[1]
+      )
 
       expect(infoCalls).toContainEqual(
         expect.stringContaining('Processing packing list - received payload')
@@ -276,13 +278,19 @@ describe('packing-list-process-service', () => {
       expect(infoCalls).toContainEqual(
         `Downloading packing list from blob: ${mockBlobUrl}`
       )
-      expect(infoCalls).toContainEqual('Packing list downloaded successfully')
+      expect(infoCalls).toContainEqual(
+        expect.stringContaining('Packing list downloaded successfully')
+      )
       expect(infoCalls).toContainEqual('Starting packing list parsing')
-      expect(infoCalls).toContainEqual('Packing list parsed successfully')
+      expect(infoCalls).toContainEqual(
+        expect.stringContaining('Parser execution completed')
+      )
       expect(infoCalls).toContainEqual(
         `Processing results for application ${mockApplicationId}`
       )
-      expect(infoCalls).toContainEqual('Results processed successfully')
+      expect(infoCalls).toContainEqual(
+        expect.stringContaining('Results processed successfully')
+      )
       expect(infoCalls).toContainEqual(
         expect.stringContaining(
           'Packing list processing completed successfully'
@@ -308,9 +316,11 @@ describe('packing-list-process-service', () => {
         )
       )
 
-      const lastInfoCall = mockLogger.info.mock.calls.at(-1)[0]
-      expect(lastInfoCall).toContain(result.data.approvalStatus)
-      expect(lastInfoCall).toContain(result.data.parserModel)
+      const lastInfoCall = mockLogger.info.mock.calls.at(-1)
+      const lastInfoMsg =
+        typeof lastInfoCall[0] === 'string' ? lastInfoCall[0] : lastInfoCall[1]
+      expect(lastInfoMsg).toContain(result.data.approvalStatus)
+      expect(lastInfoMsg).toContain(result.data.parserModel)
     })
 
     it('should return validation failure when application_id is not a positive integer', async () => {

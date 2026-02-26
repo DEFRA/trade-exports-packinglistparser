@@ -5,12 +5,21 @@
  */
 
 import { findUnit } from '../../utilities/regex.js'
-import { config } from '../../config.js'
-import isoCodesData from '../data/data-iso-codes.json' with { type: 'json' }
-import { getIsoCodesCache } from '../cache/iso-codes-cache.js'
-import ineligibleItemsData from '../data/data-ineligible-items.json' with { type: 'json' }
-import { getIneligibleItemsCache } from '../cache/ineligible-items-cache.js'
+import { getNormalizedIsoCodeSet } from './iso-code-lookup-cache.js'
+import { getIneligibleIndexByCountry } from './ineligible-index-cache.js'
 import failureReasonsDescriptions from './packing-list-failure-reasons.js'
+
+function normalizeCountryCodes(countryOfOrigin) {
+  if (isNullOrEmptyString(countryOfOrigin)) {
+    return []
+  }
+
+  return countryOfOrigin
+    .toLowerCase()
+    .split(',')
+    .map((code) => code.trim())
+    .filter((code) => code !== '')
+}
 
 /**
  * Check whether a value is null, undefined or an empty string.
@@ -183,13 +192,8 @@ function isValidIsoCode(code) {
     return false
   }
 
-  // Try to get ISO codes from cache first, fallback to static data
-  const cachedIsoCodes = getIsoCodesCache()
-  const isoCodes =
-    (Array.isArray(cachedIsoCodes) ? cachedIsoCodes : null) || isoCodesData
-
   const normalizedCode = code.toLowerCase().trim()
-  return isoCodes.some((isoCode) => isoCode.toLowerCase() === normalizedCode)
+  return getNormalizedIsoCodeSet().has(normalizedCode)
 }
 
 /**
@@ -301,93 +305,83 @@ function stringMatchesPattern(value, ...patterns) {
  * @returns {boolean} True when item is ineligible
  */
 function isIneligibleItem(countryOfOrigin, commodityCode, typeOfTreatment) {
-  const normalizedTypeOfTreatment =
-    typeof typeOfTreatment === 'string' && typeOfTreatment.trim() !== ''
-      ? typeOfTreatment.trim()
-      : null
+  const normalizedTypeOfTreatment = normalizeTypeOfTreatment(typeOfTreatment)
+  const ineligibleByCountry = getIneligibleIndexByCountry()
+  const normalizedCommodityCode = commodityCode.toString().toLowerCase()
+  const countryCodes = normalizeCountryCodes(countryOfOrigin)
 
-  // Default to static file data
-  let ineligibleData = ineligibleItemsData
-
-  // Override with cached data only if MDM integration is explicitly enabled
-  const mdmIntegration = config.get('mdmIntegration')
-  if (mdmIntegration?.enabled) {
-    const cachedData = getIneligibleItemsCache()
-    if (cachedData) {
-      // Handle both array format and object with ineligibleItems property
-      ineligibleData = Array.isArray(cachedData)
-        ? cachedData
-        : cachedData.ineligibleItems || ineligibleItemsData
-    }
-  }
-
-  // Find matching entries based on country and commodity code
-  const matchingEntries = ineligibleData.filter(
-    (item) =>
-      isCountryOfOriginMatching(countryOfOrigin, item.country_of_origin) &&
-      commodityCode
-        .toString()
-        .toLowerCase()
-        .startsWith(item.commodity_code?.toLowerCase())
-  )
-
-  if (matchingEntries.length === 0) {
+  if (countryCodes.length === 0) {
     return false
   }
 
-  // Check for exception rules (prefixed with !)
-  const exceptionRules = matchingEntries.filter((item) =>
-    item.type_of_treatment?.startsWith('!')
-  )
-  const standardRules = matchingEntries.filter(
-    (item) => !item.type_of_treatment?.startsWith('!')
-  )
+  const matchState = createRuleMatchState(normalizedTypeOfTreatment)
 
-  if (exceptionRules.length > 0) {
-    const matchesException = matchesExceptionRule(
-      exceptionRules,
-      normalizedTypeOfTreatment
-    )
-    // Item is allowed if it matches an exception rule
-    return !matchesException
+  for (const countryCode of countryCodes) {
+    const countryRules = ineligibleByCountry.get(countryCode)
+    if (!countryRules) {
+      continue
+    }
+
+    evaluateCountryRules(countryRules, normalizedCommodityCode, matchState)
   }
 
-  return matchesStandardRule(standardRules, normalizedTypeOfTreatment)
+  return resolveRuleMatchState(matchState)
 }
 
-/**
- * Compare a country_of_origin value against an ineligible-item country which may
- * be a single code. Handles comma-separated COO values by testing any match.
- * @param {string} countryOfOrigin - Item's COO (may be comma separated).
- * @param {string} ineligibleItemCountryOfOrigin - Ineligible item COO from dataset.
- * @returns {boolean} True when any COO code matches the ineligible country.
- */
-function isCountryOfOriginMatching(
-  countryOfOrigin,
-  ineligibleItemCountryOfOrigin
+function normalizeTypeOfTreatment(typeOfTreatment) {
+  return typeof typeOfTreatment === 'string' && typeOfTreatment.trim() !== ''
+    ? typeOfTreatment.trim()
+    : null
+}
+
+function createRuleMatchState(normalizedTypeOfTreatment) {
+  return {
+    hasMatch: false,
+    normalizedTypeOfTreatment,
+    exceptionRules: [],
+    standardRules: []
+  }
+}
+
+function evaluateCountryRules(
+  countryRules,
+  normalizedCommodityCode,
+  matchState
 ) {
-  if (
-    isNullOrEmptyString(countryOfOrigin) ||
-    isNullOrEmptyString(ineligibleItemCountryOfOrigin)
-  ) {
+  for (const rule of countryRules) {
+    if (
+      !normalizedCommodityCode.startsWith(rule.commodity_code?.toLowerCase())
+    ) {
+      continue
+    }
+
+    matchState.hasMatch = true
+
+    if (rule.type_of_treatment?.startsWith('!')) {
+      matchState.exceptionRules.push(rule)
+    } else {
+      matchState.standardRules.push(rule)
+    }
+  }
+}
+
+function resolveRuleMatchState(matchState) {
+  if (!matchState.hasMatch) {
     return false
   }
 
-  const normalizedCountry = countryOfOrigin.toLowerCase()
-  const normalizedIneligibleItemCountry =
-    ineligibleItemCountryOfOrigin.toLowerCase()
-
-  // Check if countryOfOrigin contains comma-separated values
-  if (normalizedCountry.includes(',')) {
-    const countryCodes = normalizedCountry.split(',')
-    // Check if any of the country codes matches the ineligible item country
-    return countryCodes.some(
-      (code) => code.trim() === normalizedIneligibleItemCountry
+  if (matchState.exceptionRules.length > 0) {
+    // Item is allowed if it matches an exception rule
+    return !matchesExceptionRule(
+      matchState.exceptionRules,
+      matchState.normalizedTypeOfTreatment
     )
   }
 
-  // Single value case
-  return normalizedCountry === normalizedIneligibleItemCountry
+  return matchesStandardRule(
+    matchState.standardRules,
+    matchState.normalizedTypeOfTreatment
+  )
 }
 
 /**
