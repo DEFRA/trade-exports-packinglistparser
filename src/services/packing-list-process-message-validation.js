@@ -67,12 +67,16 @@ function validateEstablishmentId(payload) {
   return null
 }
 
-function isPositiveIntegerString(value) {
-  if (!isString(value)) {
-    return false
+function isPositiveInteger(value) {
+  if (typeof value === 'number') {
+    return Number.isInteger(value) && value > 0
   }
 
-  return /^[1-9]\d*$/.test(value)
+  if (isString(value)) {
+    return /^[1-9]\d*$/.test(value)
+  }
+
+  return false
 }
 
 export function validateProcessPackingListPayload(payload) {
@@ -87,8 +91,8 @@ export function validateProcessPackingListPayload(payload) {
     }
   }
 
-  if (!isPositiveIntegerString(payload.application_id)) {
-    validationErrors.push('application_id must be a positive integer string')
+  if (!isPositiveInteger(payload.application_id)) {
+    validationErrors.push('application_id must be a positive integer')
   }
 
   if (

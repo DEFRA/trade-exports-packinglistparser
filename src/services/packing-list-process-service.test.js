@@ -313,10 +313,10 @@ describe('packing-list-process-service', () => {
       expect(lastInfoCall).toContain(result.data.parserModel)
     })
 
-    it('should return validation failure when application_id is not a positive integer string', async () => {
+    it('should return validation failure when application_id is not a positive integer', async () => {
       const invalidPayload = {
         ...mockPayload,
-        application_id: 12345
+        application_id: -1
       }
 
       const result = await processPackingList(invalidPayload)
@@ -324,7 +324,7 @@ describe('packing-list-process-service', () => {
       expect(result).toEqual({
         result: 'failure',
         error: expect.stringContaining(
-          'Validation failed: application_id must be a positive integer string'
+          'Validation failed: application_id must be a positive integer'
         ),
         errorType: 'client'
       })
@@ -344,7 +344,7 @@ describe('packing-list-process-service', () => {
       expect(result).toEqual({
         result: 'failure',
         error: expect.stringContaining(
-          'Validation failed: application_id must be a positive integer string'
+          'Validation failed: application_id must be a positive integer'
         ),
         errorType: 'client'
       })
