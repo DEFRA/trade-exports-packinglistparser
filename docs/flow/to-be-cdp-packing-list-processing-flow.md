@@ -395,7 +395,7 @@ Content-Type: application/json
 ```json
 {
   "result": "failure",
-  "error": "Validation failed: application_id must be a positive integer string",
+  "error": "Validation failed: application_id must be a positive integer",
   "errorType": "client"
 }
 ```

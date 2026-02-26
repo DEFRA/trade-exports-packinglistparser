@@ -96,16 +96,13 @@ describe('packing-list-process-message-validation', () => {
     })
   })
 
-  it('returns error when application_id is not a positive integer string', () => {
+  it('returns valid when application_id is a positive integer number', () => {
     const result = validateProcessPackingListPayload({
       ...validPayload,
       application_id: 12345
     })
 
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(
-      'application_id must be a positive integer string'
-    )
+    expect(result.isValid).toBe(true)
   })
 
   it('returns error when application_id is a decimal number', () => {
@@ -116,7 +113,7 @@ describe('packing-list-process-message-validation', () => {
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(
-      'application_id must be a positive integer string'
+      'application_id must be a positive integer'
     )
   })
 
@@ -128,7 +125,7 @@ describe('packing-list-process-message-validation', () => {
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(
-      'application_id must be a positive integer string'
+      'application_id must be a positive integer'
     )
   })
 
@@ -140,7 +137,7 @@ describe('packing-list-process-message-validation', () => {
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(
-      'application_id must be a positive integer string'
+      'application_id must be a positive integer'
     )
   })
 
