@@ -27,20 +27,18 @@ function buildIneligibleIndexByCountry(ineligibleData) {
   const byCountry = new Map()
 
   for (const item of ineligibleData) {
-    if (typeof item?.country_of_origin !== 'string') {
-      continue
-    }
+    const normalizedCountry =
+      typeof item?.country_of_origin === 'string'
+        ? item.country_of_origin.toLowerCase().trim()
+        : ''
 
-    const normalizedCountry = item.country_of_origin.toLowerCase().trim()
-    if (normalizedCountry === '') {
-      continue
-    }
+    if (normalizedCountry !== '') {
+      if (!byCountry.has(normalizedCountry)) {
+        byCountry.set(normalizedCountry, [])
+      }
 
-    if (!byCountry.has(normalizedCountry)) {
-      byCountry.set(normalizedCountry, [])
+      byCountry.get(normalizedCountry).push(item)
     }
-
-    byCountry.get(normalizedCountry).push(item)
   }
 
   return byCountry
@@ -58,4 +56,4 @@ function getIneligibleIndexByCountry() {
   return ineligibleIndexCache.byCountry
 }
 
-export { getIneligibleIndexByCountry }
+export { getIneligibleIndexByCountry, buildIneligibleIndexByCountry }
