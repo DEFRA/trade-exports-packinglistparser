@@ -283,7 +283,7 @@ describe('packing-list-process-service', () => {
       )
       expect(infoCalls).toContainEqual('Starting packing list parsing')
       expect(infoCalls).toContainEqual(
-        expect.stringContaining('Packing list parsed successfully')
+        expect.stringContaining('Parser execution completed')
       )
       expect(infoCalls).toContainEqual(
         `Processing results for application ${mockApplicationId}`
@@ -311,7 +311,6 @@ describe('packing-list-process-service', () => {
       const result = await processPackingList(mockPayload)
 
       expect(mockLogger.info).toHaveBeenCalledWith(
-        expect.anything(),
         expect.stringContaining(
           'Packing list processing completed successfully'
         )

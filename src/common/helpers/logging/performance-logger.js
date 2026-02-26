@@ -70,7 +70,7 @@ function logEcsEvent(
         type,
         action,
         ...(outcome ? { outcome } : {}),
-        ...(duration !== undefined ? { duration } : {}),
+        ...(duration ? { duration } : {}),
         ...(reason ? { reason } : {})
       }
     },

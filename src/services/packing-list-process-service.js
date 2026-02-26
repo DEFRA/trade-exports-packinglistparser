@@ -33,87 +33,43 @@ export async function processPackingList(
   { stopDataExit = false } = {}
 ) {
   try {
-    const { result: successResult } = await measureAndLog(
-      logger,
-      async () => {
-        // Log the payload contents before processing starts
-        logger.info(
-          `Processing packing list - received payload: ${JSON.stringify(payload, null, 2)}`
-        )
-
-        const validation = validateProcessPackingListPayload(payload)
-        if (!validation.isValid) {
-          logger.error(
-            `Input validation failed for packing list payload: ${validation.description}`
-          )
-          return createFailureResult(
-            `Validation failed: ${validation.description}`,
-            'client'
-          )
-        }
-
-        // 1. Download packing list from blob storage
-        logger.info(
-          `Downloading packing list from blob: ${payload.packing_list_blob}`
-        )
-        const { result: packingList } = await measureAndLog(
-          logger,
-          () =>
-            downloadBlobFromApplicationFormsContainerAsJson(
-              payload.packing_list_blob
-            ),
-          {
-            message: 'Packing list downloaded successfully',
-            action: 'blob_download',
-            outcome: 'success'
-          }
-        )
-
-        // 2. Process packing list
-        logger.info('Starting packing list parsing')
-        const { result: parsedData } = await measureAndLog(
-          logger,
-          () => getParsedPackingList(packingList, payload),
-          {
-            message: 'Packing list parsed successfully',
-            action: 'parse_packing_list',
-            outcome: 'success'
-          }
-        )
-
-        // 3. Process results
-        logger.info(
-          `Processing results for application ${payload.application_id}`
-        )
-        const { result: persistedData } = await measureAndLog(
-          logger,
-          () =>
-            processPackingListResults(parsedData, payload.application_id, {
-              stopDataExit
-            }),
-          {
-            message: 'Results processed successfully',
-            action: 'process_results',
-            outcome: 'success'
-          }
-        )
-
-        return {
-          result: 'success',
-          data: {
-            approvalStatus: persistedData.approvalStatus,
-            reasonsForFailure: persistedData.reasonsForFailure,
-            parserModel: persistedData.parserModel
-          }
-        }
-      },
-      {
-        message: 'Packing list processing completed successfully',
-        action: 'process_packing_list',
-        outcome: 'success'
-      }
+    logger.info(
+      `Processing packing list - received payload: ${JSON.stringify(payload, null, 2)}`
     )
 
+    // 1. Validate the contents of the input message
+    const validation = validateProcessPackingListPayload(payload)
+    if (!validation.isValid) {
+      logger.error(
+        `Input validation failed for packing list payload: ${validation.description}`
+      )
+      return createFailureResult(
+        `Validation failed: ${validation.description}`,
+        'client'
+      )
+    }
+
+    // 2. Download packing list from blob storage
+    const packingList = await downloadPackingList(payload.packing_list_blob)
+
+    // 3. Parse packing list
+    const parsedData = await getParsedPackingList(packingList, payload)
+
+    // 4. Process results
+    const persistedData = await processPackingListResults(
+      parsedData,
+      payload.application_id,
+      { stopDataExit }
+    )
+
+    const successResult = {
+      result: 'success',
+      data: {
+        approvalStatus: persistedData.approvalStatus,
+        reasonsForFailure: persistedData.reasonsForFailure,
+        parserModel: persistedData.parserModel
+      }
+    }
     logger.info(
       `Packing list processing completed successfully: ${JSON.stringify(successResult, null, 2)}`
     )
@@ -127,7 +83,22 @@ export async function processPackingList(
   }
 }
 
+async function downloadPackingList(blobPath) {
+  logger.info(`Downloading packing list from blob: ${blobPath}`)
+  const { result } = await measureAndLog(
+    logger,
+    () => downloadBlobFromApplicationFormsContainerAsJson(blobPath),
+    {
+      message: 'Packing list downloaded successfully',
+      action: 'blob_download',
+      outcome: 'success'
+    }
+  )
+  return result
+}
+
 async function getParsedPackingList(packingList, payload) {
+  logger.info('Starting packing list parsing')
   let establishmentId = null
   try {
     establishmentId =
@@ -178,29 +149,41 @@ async function processPackingListResults(
   applicationId,
   { stopDataExit }
 ) {
-  const persistedData = mapPackingListForStorage(packingList, applicationId)
+  logger.info(`Processing results for application ${applicationId}`)
+  const { result } = await measureAndLog(
+    logger,
+    async () => {
+      const persistedData = mapPackingListForStorage(packingList, applicationId)
 
-  if (stopDataExit) {
-    logger.info(
-      `S3 storage is disabled. Skipping persisting data for application ${applicationId}`
-    )
-  } else {
-    await persistPackingList(persistedData, applicationId)
-  }
+      if (stopDataExit) {
+        logger.info(
+          `S3 storage is disabled. Skipping persisting data for application ${applicationId}`
+        )
+      } else {
+        await persistPackingList(persistedData, applicationId)
+      }
 
-  if (disableSend || stopDataExit) {
-    logger.info(
-      `Trade Service Bus sending is disabled. Skipping notification for application ${applicationId}`
-    )
-  } else if (packingList.parserModel === parserModel.NOMATCH) {
-    logger.info(
-      `Parser returned NOMATCH. Skipping Service Bus notification for application ${applicationId}`
-    )
-  } else {
-    await notifyExternalApplications(packingList, applicationId)
-  }
+      if (disableSend || stopDataExit) {
+        logger.info(
+          `Trade Service Bus sending is disabled. Skipping notification for application ${applicationId}`
+        )
+      } else if (packingList.parserModel === parserModel.NOMATCH) {
+        logger.info(
+          `Parser returned NOMATCH. Skipping Service Bus notification for application ${applicationId}`
+        )
+      } else {
+        await notifyExternalApplications(packingList, applicationId)
+      }
 
-  return persistedData
+      return persistedData
+    },
+    {
+      message: 'Results processed successfully',
+      action: 'process_results',
+      outcome: 'success'
+    }
+  )
+  return result
 }
 
 async function persistPackingList(parsedData, applicationId) {
