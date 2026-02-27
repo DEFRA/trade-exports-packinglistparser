@@ -5,7 +5,6 @@ import {
   getDispatchLocationRoute,
   dynamicsHealthCheck
 } from '../routes/dynamics.js'
-import { home } from '../routes/home.js'
 import { packingListProcessRoute } from '../routes/packing-list-process.js'
 import { sendtoqueue } from '../routes/trade-service-bus.js'
 import { getFileFromBlob, formsContainerExists } from '../routes/ehco-blob.js'
@@ -22,7 +21,6 @@ const router = {
     name: 'router',
     register: (server, _options) => {
       // Core routes available in all environments
-      server.route([home])
       server.route([health])
       server.route([connectivityCheck])
       server.route([packingListProcessRoute])
