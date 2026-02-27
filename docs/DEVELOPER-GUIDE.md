@@ -238,23 +238,32 @@ The following parsers are currently available in the system (as of February 2026
 
 #### Excel Format Parsers
 
-| Parser Model | Retailer/Supplier   | Notes                           |
-| ------------ | ------------------- | ------------------------------- |
-| ASDA3        | ASDA                | Model 3 format                  |
-| BANDM1       | B&M                 | Model 1 format                  |
-| BOOKER2      | Booker              | Model 2 format                  |
-| BUFFALOAD1   | Buffaload Logistics | Model 1 format                  |
-| COOP1        | Co-op               | Model 1 format                  |
-| FOWLERWELCH2 | Fowler-Welch        | Model 2 format (added Feb 2026) |
-| KEPAK1       | Kepak               | Model 1 format                  |
-| MARS1        | Mars                | Model 1 format                  |
-| NISA1        | Nisa                | Model 1 format                  |
-| SAINSBURYS1  | Sainsbury's         | Model 1 format                  |
-| SAVERS1      | Savers              | Model 1 format                  |
-| TESCO2       | Tesco               | Model 2 format (added Feb 2026) |
-| TESCO3       | Tesco               | Model 3 format                  |
-| TJMORRIS2    | TJ Morris           | Model 2 format                  |
-| TURNERS1     | Turners             | Model 1 format (added Feb 2026) |
+| Parser Model  | Retailer/Supplier   | Notes          |
+| ------------- | ------------------- | -------------- |
+| ASDA3         | ASDA                | Model 3 format |
+| BANDM1        | B&M                 | Model 1 format |
+| BARTONREDMAN1 | Barton and Redman   | Model 1 format |
+| BOOKER2       | Booker              | Model 2 format |
+| BOOTS1        | Boots               | Model 1 format |
+| BUFFALOAD1    | Buffaload Logistics | Model 1 format |
+| CDS2          | CDS                 | Model 2 format |
+| COOP1         | Co-op               | Model 1 format |
+| FOWLERWELCH1  | Fowler-Welch        | Model 1 format |
+| FOWLERWELCH2  | Fowler-Welch        | Model 2 format |
+| GIOVANNI1     | Giovanni            | Model 1 format |
+| GOUSTO1       | Gousto              | Model 1 format |
+| KEPAK1        | Kepak               | Model 1 format |
+| MARS1         | Mars                | Model 1 format |
+| NISA1         | Nisa                | Model 1 format |
+| NISA2         | Nisa                | Model 2 format |
+| NUTRICIA2     | Nutricia            | Model 2 format |
+| SAINSBURYS1   | Sainsbury's         | Model 1 format |
+| SAVERS1       | Savers              | Model 1 format |
+| TESCO2        | Tesco               | Model 2 format |
+| TESCO3        | Tesco               | Model 3 format |
+| TJMORRIS2     | TJ Morris           | Model 2 format |
+| TURNERS1      | Turners             | Model 1 format |
+| WARRENS2      | Warrens             | Model 2 format |
 
 #### CSV Format Parsers
 
@@ -276,27 +285,27 @@ The following parsers are currently available in the system (as of February 2026
 
 ### Matcher Implementation
 
-All matchers must return one of these constants from `matcher-result.js`:
+All matchers must return one of the numeric constants from `matcher-result.js`:
 
 ```javascript
-const matcherResult = require('../matcher-result')
-
-module.exports = {
-  CORRECT: 'CORRECT', // Packing list matches
-  EMPTY_FILE: 'EMPTY_FILE', // No data found
-  WRONG_ESTABLISHMENT_NUMBER: 'WRONG_ESTABLISHMENT_NUMBER', // Invalid RMS number
-  WRONG_HEADER: 'WRONG_HEADER', // Header mismatch
-  GENERIC_ERROR: 'GENERIC_ERROR' // Processing error
-}
+// src/services/matcher-result.js
+export default Object.freeze({
+  WRONG_EXTENSION: 0, // File type is not handled by this matcher
+  WRONG_ESTABLISHMENT_NUMBER: 1, // Invalid or missing RMS number
+  WRONG_HEADER: 2, // Header structure mismatch
+  GENERIC_ERROR: 3, // Processing error
+  CORRECT: 4, // Packing list matches
+  EMPTY_FILE: 5 // No data found
+})
 ```
 
 **Example Matcher:**
 
 ```javascript
 // matchers/retailer-name/model1.js
-const matcherResult = require('../matcher-result')
+import matcherResult from '../matcher-result.js'
 
-function matches(packingList, filename) {
+export function matches(packingList, filename) {
   try {
     // 1. Check for empty file
     if (!packingList || Object.keys(packingList).length === 0) {
@@ -326,8 +335,6 @@ function matches(packingList, filename) {
     return matcherResult.GENERIC_ERROR
   }
 }
-
-module.exports = { matches }
 ```
 
 ### Model Headers
@@ -336,7 +343,7 @@ Header definitions map column names to standard fields:
 
 ```javascript
 // model-headers/retailer-name.js
-module.exports = {
+export default {
   RETAILER1: {
     // Required field regex patterns
     regex: {
@@ -618,15 +625,20 @@ import {
   isSchedulerRunning
 } from './services/cache/sync-scheduler.js'
 
-// Start scheduler (called during server startup)
+// Start all schedulers (ineligible items + ISO codes) — called during server startup
 startSyncScheduler()
+// Returns: { ineligibleItems: scheduler, isoCodes: scheduler }
 
-// Check status
-if (isSchedulerRunning()) {
-  console.log('Sync scheduler is active')
+// Check status — returns { ineligibleItems: boolean, isoCodes: boolean }
+const status = isSchedulerRunning()
+if (status.ineligibleItems) {
+  console.log('Ineligible items sync scheduler is active')
+}
+if (status.isoCodes) {
+  console.log('ISO codes sync scheduler is active')
 }
 
-// Stop scheduler (graceful shutdown)
+// Stop all schedulers (graceful shutdown)
 stopSyncScheduler()
 ```
 

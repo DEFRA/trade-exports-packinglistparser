@@ -59,7 +59,7 @@ For detailed information about the complete packing list processing workflow, se
 
 The implementation includes complete directories with working parsers:
 
-- `src/services/parsers/` - Retailer-specific parser implementations (ASDA, Tesco, B&M, Fowler-Welch, Turners, Mars, Kepak, Savers, Iceland, Booker, Co-op, Giovanni, Nisa, Sainsbury's, TJ Morris, M&S, Buffaload Logistics)
+- `src/services/parsers/` - Retailer-specific parser implementations (ASDA, B&M, Barton and Redman, Booker, Boots, Buffaload Logistics, CDS, Co-op, Fowler-Welch, Giovanni, Gousto, Iceland, Kepak, Mars, M&S, Nisa, Nutricia, Sainsbury's, Savers, Tesco, TJ Morris, Turners, Warrens)
 - `src/services/matchers/` - Retailer-specific matcher implementations
 - `src/services/model-headers/` - Retailer header definitions
 - `src/services/model-parsers.js` - Parser registry with all models registered
@@ -106,22 +106,39 @@ export async function processPackingList(
   payload,
   { stopDataExit = false } = {}
 ) {
-  // 1. Download packing list from blob storage
+  // 1. Validate the contents of the input message
+  const validation = validateProcessPackingListPayload(payload)
+  if (!validation.isValid) {
+    return {
+      result: 'failure',
+      error: `Validation failed: ${validation.description}`,
+      errorType: 'client'
+    }
+  }
+
+  // 2. Download packing list from blob storage
   const packingList = await downloadBlobFromApplicationFormsContainerAsJson(
     payload.packing_list_blob
   )
 
-  // 2. Process packing list
+  // 3. Parse packing list
   const parsedData = await getParsedPackingList(packingList, payload)
 
-  // 3. Process results
+  // 4. Process results
   const persistedData = await processPackingListResults(
     parsedData,
     payload.application_id,
     { stopDataExit }
   )
 
-  return { result: 'success', data: persistedData }
+  return {
+    result: 'success',
+    data: {
+      approvalStatus: persistedData.approvalStatus,
+      reasonsForFailure: persistedData.reasonsForFailure,
+      parserModel: persistedData.parserModel
+    }
+  }
 }
 ```
 
@@ -176,7 +193,7 @@ const excelData = convertExcelToJson({ sourceFile: filePath })
 // CSV files
 const csvData = await convertCsvToJson(bufferOrFilename)
 
-// PDF files
+// PDF files (returns pdf.js-extract JSON structure)
 const pdfData = await extractPdf(buffer)
 ```
 
@@ -188,10 +205,10 @@ const pdfData = await extractPdf(buffer)
 
 ```javascript
 // src/utilities/excel-utility.js
-const excelToJson = require('@boterop/convert-excel-to-json')
+import convertExcelToJsonLib from '@boterop/convert-excel-to-json'
 
-function convertExcelToJson(options) {
-  const result = excelToJson({
+export function convertExcelToJson(options) {
+  const result = convertExcelToJsonLib({
     ...options,
     includeEmptyLines: true
   })
@@ -207,19 +224,17 @@ function convertExcelToJson(options) {
 
   return result
 }
-
-module.exports = { convertExcelToJson }
 ```
 
 ### CSV Utility
 
 ```javascript
 // src/utilities/csv-utility.js
-const { parse } = require('csv-parse')
-const fs = require('node:fs')
-const { Readable } = require('node:stream')
+import { parse } from 'csv-parse'
+import fs from 'node:fs'
+import { Readable } from 'node:stream'
 
-async function convertCsvToJson(bufferOrFilename) {
+export async function convertCsvToJson(bufferOrFilename) {
   const parser = createInputStream(bufferOrFilename).pipe(
     parse({
       columns: false,
@@ -246,44 +261,38 @@ function createInputStream(bufferOrFilename) {
   }
   return fs.createReadStream(bufferOrFilename)
 }
-
-module.exports = { convertCsvToJson }
 ```
 
 ### PDF Helper
 
 ```javascript
 // src/utilities/pdf-helper.js
-const { PDFExtract } = require('pdf.js-extract')
+import { PDFExtract } from 'pdf.js-extract'
 const pdfExtract = new PDFExtract()
 
-async function extractPdf(buffer) {
+export async function extractPdf(buffer) {
   const pdfJson = await pdfExtract.extractBuffer(buffer)
   return sanitise(pdfJson)
 }
 
-function sanitise(pdfJson) {
-  for (const page in pdfJson.pages) {
-    if (pdfJson.pages.hasOwnProperty(page)) {
-      // Remove empty string elements
-      pdfJson.pages[page].content = pdfJson.pages[page].content.filter(
-        (item) => item.width !== 0
-      )
+export function sanitise(pdfJson) {
+  for (const page of Object.keys(pdfJson.pages)) {
+    // Remove empty string elements
+    pdfJson.pages[page].content = pdfJson.pages[page].content.filter(
+      (item) => item.width !== 0
+    )
 
-      // Sort by y then x
-      pdfJson.pages[page].content.sort((a, b) => {
-        if (a.y === b.y) {
-          return a.x - b.x
-        }
-        return a.y - b.y
-      })
-    }
+    // Sort by y then x
+    pdfJson.pages[page].content.sort((a, b) => {
+      if (a.y === b.y) {
+        return a.x - b.x
+      }
+      return a.y - b.y
+    })
   }
 
   return pdfJson
 }
-
-module.exports = { extractPdf, sanitise }
 ```
 
 ## Testing the Integration
@@ -292,7 +301,8 @@ module.exports = { extractPdf, sanitise }
 
 ```javascript
 // src/services/packing-list-process-service.test.js
-const packingListParser = require('./packing-list-process-service')
+import { describe, test, expect } from 'vitest'
+import { parsePackingList } from './parser-service.js'
 
 describe('parsePackingList', () => {
   test('successfully parses Excel file', async () => {
@@ -303,7 +313,7 @@ describe('parsePackingList', () => {
       ]
     }
 
-    const result = await packingListParser.parsePackingList(
+    const result = await parsePackingList(
       mockPackingList,
       'test.xlsx',
       'LOC123'
@@ -320,21 +330,18 @@ describe('parsePackingList', () => {
 
 ```javascript
 // test/integration/packing-list-processing.test.js
-const {
-  processPackingList
-} = require('../../src/services/packing-list-process-service')
+import { describe, test, expect } from 'vitest'
+import { processPackingList } from '../../src/services/packing-list-process-service.js'
 
 describe('Packing List Processing Integration', () => {
   test('complete flow from message to parsed result', async () => {
     const mockMessage = {
-      body: {
-        application_id: 'APP123',
-        packing_list_blob: 'https://storage.example.com/file.xlsx',
-        SupplyChainConsignment: {
-          DispatchLocation: {
-            IDCOMS: {
-              EstablishmentId: 'EST123'
-            }
+      application_id: 123,
+      packing_list_blob: 'https://storage.example.com/container/file.xlsx',
+      SupplyChainConsignment: {
+        DispatchLocation: {
+          IDCOMS: {
+            EstablishmentId: '00000000-0000-0000-0000-000000000000'
           }
         }
       }
@@ -342,7 +349,9 @@ describe('Packing List Processing Integration', () => {
 
     const result = await processPackingList(mockMessage)
 
-    expect(result.status).toBe('complete')
+    expect(result.result).toBe('success')
+    expect(result.data).toHaveProperty('approvalStatus')
+    expect(result.data).toHaveProperty('parserModel')
   })
 })
 ```
@@ -369,11 +378,20 @@ npm install
 
 ## Logging Integration
 
-The migrated code uses the existing logger from [src/utilities/logger.js](src/utilities/logger.js). Ensure it has these methods:
+The service uses the structured logger from [src/common/helpers/logging/logger.js](../src/common/helpers/logging/logger.js) and [src/common/helpers/logging/error-logger.js](../src/common/helpers/logging/error-logger.js):
 
-- `logger.logInfo(filename, function, message)`
-- `logger.logError(filename, function, error)`
-- `logger.logWarning(filename, function, message)`
+```javascript
+import { createLogger } from '../common/helpers/logging/logger.js'
+import { formatError } from '../common/helpers/logging/error-logger.js'
+
+const logger = createLogger()
+
+logger.info('message')
+logger.info({ key: 'value' }, 'message with context')
+logger.error(formatError(err), 'Error message')
+```
+
+See the [Developer Guide](DEVELOPER-GUIDE.md#error-handling-and-logging) for full usage guidance.
 
 ## Implementation Status
 
@@ -383,7 +401,7 @@ The migrated code uses the existing logger from [src/utilities/logger.js](src/ut
 2. ✅ Created model structure for parsers, matchers, and headers
 3. ✅ Implemented file conversion utilities (Excel, CSV, PDF)
 4. ✅ Implemented no-match parsers (NOREMOS, NOREMOSCSV, NOREMOSPDF)
-5. ✅ Added multiple retailer parsers (ASDA, Tesco, B&M, Fowler-Welch, Turners, Mars, Kepak, Savers, Iceland, Booker, Co-op, Giovanni, Nisa, Sainsbury's, TJ Morris, M&S)
+5. ✅ Added multiple retailer parsers (ASDA, Tesco, B&M, Barton and Redman, Boots, Booker, Buffaload Logistics, CDS, Co-op, Fowler-Welch, Giovanni, Gousto, Iceland, Kepak, Mars, M&S, Nisa, Nutricia, Sainsbury's, Savers, TJ Morris, Turners, Warrens)
 6. ✅ Comprehensive test coverage for all components
 7. ✅ parser-factory.js fully operational with all parsers
 

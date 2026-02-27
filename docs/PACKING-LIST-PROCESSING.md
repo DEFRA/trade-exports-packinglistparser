@@ -80,19 +80,32 @@ src/services/
   ├── model-headers.js           # Excel header registry (aggregates retailer headers)
   ├── parsers/
   │   ├── README.md               # Instructions for adding new parsers
-  │   ├── asda/                   # ASDA parsers (model3.js, model4.js)
-  │   ├── tesco/                  # Tesco parsers
-  │   ├── bandm/                  # B&M parsers
-  │   ├── fowlerwelch/            # Fowler-Welch parsers
+  │   ├── asda/                   # ASDA parsers (model3.js Excel, model4.js CSV)
+  │   ├── bandm/                  # B&M parsers (model1.js)
+  │   ├── bartonredman/           # Barton and Redman parsers (model1.js)
+  │   ├── booker/                 # Booker parsers (model2.js)
+  │   ├── boots/                  # Boots parsers (model1.js)
+  │   ├── buffaload-logistics/    # Buffaload Logistics parsers (model1.js)
+  │   ├── cds/                    # CDS parsers (model2.js)
+  │   ├── coop/                   # Co-op parsers (model1.js)
+  │   ├── fowlerwelch/            # Fowler-Welch parsers (model1.js, model2.js)
+  │   ├── giovanni/               # Giovanni parsers (model1.js Excel, model3.js PDF)
+  │   ├── gousto/                 # Gousto parsers (model1.js)
+  │   ├── iceland/                # Iceland parsers (model2.js CSV)
+  │   ├── kepak/                  # Kepak parsers (model1.js)
+  │   ├── mands/                  # M&S parsers (model1.js PDF)
+  │   ├── mars/                   # Mars parsers (model1.js)
+  │   ├── nisa/                   # Nisa parsers (model1.js, model2.js)
+  │   ├── nutricia/               # Nutricia parsers (model2.js)
+  │   ├── sainsburys/             # Sainsbury's parsers (model1.js)
+  │   ├── savers/                 # Savers parsers (model1.js)
+  │   ├── tesco/                  # Tesco parsers (model2.js, model3.js)
+  │   ├── tjmorris/               # TJ Morris parsers (model2.js)
+  │   ├── turners/                # Turners parsers (model1.js)
   │   ├── warrens/                # Warrens parsers (model2.js)
-  │   ├── turners/                # Turners parsers
-  │   ├── mars/                   # Mars parsers
-  │   ├── kepak/                  # Kepak parsers
-  │   ├── and more retailers...
   │   └── no-match/               # No-match parsers (NOREMOS, NOREMOSCSV, NOREMOSPDF)
   ├── matchers/
   │   ├── README.md               # Instructions for adding new matchers
-  │   ├── matcher-result.js       # Result constants
   │   └── [retailer]/             # Retailer-specific matchers for all parsers
   └── model-headers/
       ├── README.md               # Instructions for header definitions
@@ -203,7 +216,7 @@ async function processPackingList(packingListData, fileName, dispatchLocation) {
 Create `src/services/model-headers/retailer-name.js`:
 
 ```javascript
-module.exports = {
+export default {
   RETAILER1: {
     regex: {
       description: /description|item/i,
@@ -225,7 +238,7 @@ Update `src/services/model-headers.js` to export the new headers.
 Create `src/services/matchers/retailer-name/model1.js`:
 
 ```javascript
-import { matcherResult } from '../matcher-result.js'
+import matcherResult from '../matcher-result.js'
 
 export function matches(packingList, filename) {
   // Implement matcher logic:
@@ -311,11 +324,15 @@ export const excelMatchers = [
    - `src/services/parsers/no-match/noremoscsv.js`
    - `src/services/parsers/no-match/noremospdf.js`
 
-3. ✅ Retailer-Specific Parsers (16+ retailers implemented)
+3. ✅ Retailer-Specific Parsers (20+ parsers across 19 retailers/suppliers)
 
-   - ASDA, Tesco, B&M, Fowler-Welch, Turners, Mars, Kepak, Savers
-   - Iceland, Booker, Co-op, Giovanni, Nisa, Sainsbury's, TJ Morris, M&S
-   - Buffaload Logistics
+   - Excel: ASDA (ASDA3), B&M (BANDM1), Barton and Redman (BARTONREDMAN1), Booker (BOOKER2), Boots (BOOTS1),
+     Buffaload Logistics (BUFFALOAD1), CDS (CDS2), Co-op (COOP1), Fowler-Welch (FOWLERWELCH1, FOWLERWELCH2),
+     Giovanni (GIOVANNI1), Gousto (GOUSTO1), Kepak (KEPAK1), Mars (MARS1),
+     Nisa (NISA1, NISA2), Nutricia (NUTRICIA2), Sainsbury's (SAINSBURYS1), Savers (SAVERS1),
+     Tesco (TESCO2, TESCO3), TJ Morris (TJMORRIS2), Turners (TURNERS1), Warrens (WARRENS2)
+   - CSV: ASDA (ASDA4), Iceland (ICELAND2)
+   - PDF (non-AI): Giovanni (GIOVANNI3), M&S (MANDS1)
 
 4. ✅ Parser Mapping Utilities
 

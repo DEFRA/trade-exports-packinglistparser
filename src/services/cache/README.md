@@ -1,14 +1,27 @@
-# Ineligible Items Cache
+# Cache Services
 
 ## Overview
 
-The ineligible items cache service provides in-memory caching of ineligible items data fetched from S3 on application startup. This feature improves performance by avoiding repeated S3 calls and ensures the latest ineligible items data is available throughout the application lifecycle.
+This directory contains in-memory cache services for reference data used by the packing list parser. Each cache is loaded from S3 on server startup and kept up-to-date by an hourly MDM synchronization scheduler.
+
+### Caches
+
+- **Ineligible Items Cache** (`ineligible-items-cache.js`) — Prohibited/restricted items used by the packing list validator
+- **ISO Codes Cache** (`iso-codes-cache.js`) — Country ISO codes used for country-of-origin validation
+
+Both caches follow the same pattern: S3 initialization on startup with retry logic, hourly MDM-to-S3 sync via `sync-scheduler.js`, and fallback to static JSON data if unavailable.
+
+For detailed documentation see:
+
+- [docs/INELIGIBLE-ITEMS-CACHE.md](../../../docs/INELIGIBLE-ITEMS-CACHE.md)
+- [docs/ISO-CODES-CACHE.md](../../../docs/ISO-CODES-CACHE.md)
 
 ## Features
 
-- **Automatic S3 Fetch on Startup**: Fetches ineligible items data from S3 when the application starts
-- **Retry Mechanism**: Configurable retry logic with exponential backoff for resilient S3 connections
-- **In-Memory Storage**: Fast access to ineligible items data without network calls
+- **Automatic S3 Fetch on Startup**: Fetches cache data from S3 when the application starts
+- **Retry Mechanism**: Configurable retry logic for resilient S3 connections
+- **In-Memory Storage**: Fast access to reference data without repeated network calls
+- **Hourly MDM Sync**: Cache is kept current via a scheduled MDM-to-S3 synchronisation
 - **Error Handling**: Comprehensive error logging with CDP-compatible error messages
 
 ## Configuration
@@ -19,19 +32,27 @@ The cache is configured through environment variables:
 
 | Variable                          | Description                                                | Default            | Required |
 | --------------------------------- | ---------------------------------------------------------- | ------------------ | -------- |
+| `MDM_INTEGRATION_ENABLED`         | Enable/disable MDM integration, caching, and sync          | `true`             | No       |
 | `INELIGIBLE_ITEMS_S3_FILE_NAME`   | S3 file name for ineligible items data (without extension) | `ineligible-items` | No       |
-| `INELIGIBLE_ITEMS_S3_SCHEMA`      | S3 schema/prefix for ineligible items file                 | `null`             | No       |
+| `CACHE_S3_SCHEMA`                 | S3 schema/prefix shared by all cache files                 | `cache`            | No       |
 | `INELIGIBLE_ITEMS_MAX_RETRIES`    | Maximum number of retry attempts                           | `3`                | No       |
 | `INELIGIBLE_ITEMS_RETRY_DELAY_MS` | Delay in milliseconds between retry attempts               | `2000`             | No       |
+| `ISO_CODES_S3_FILE_NAME`          | S3 file name for ISO codes data (without extension)        | `iso-codes`        | No       |
+| `ISO_CODES_MAX_RETRIES`           | Maximum number of retry attempts for ISO codes             | `3`                | No       |
+| `ISO_CODES_RETRY_DELAY_MS`        | Delay in milliseconds between ISO codes retry attempts     | `2000`             | No       |
 
 ### Configuration Example
 
 ```bash
 # .env file
+MDM_INTEGRATION_ENABLED=true
 INELIGIBLE_ITEMS_S3_FILE_NAME=ineligible-items
-INELIGIBLE_ITEMS_S3_SCHEMA=cache
+CACHE_S3_SCHEMA=cache
 INELIGIBLE_ITEMS_MAX_RETRIES=3
 INELIGIBLE_ITEMS_RETRY_DELAY_MS=2000
+ISO_CODES_S3_FILE_NAME=iso-codes
+INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE=0 * * * *
+ISO_CODES_SYNC_CRON_SCHEDULE=0 * * * *
 ```
 
 ## Usage
@@ -223,11 +244,17 @@ The test suite covers:
 
 ## Related Files
 
-- [ineligible-items-cache.js](./ineligible-items-cache.js) - Main cache service
-- [ineligible-items-cache.test.js](./ineligible-items-cache.test.js) - Test suite
+- [cache-common.js](./cache-common.js) - Shared S3 fetch and retry utilities used by both caches
+- [cache-common.test.js](./cache-common.test.js) - Shared utilities test suite
+- [ineligible-items-cache.js](./ineligible-items-cache.js) - Ineligible items cache service
+- [ineligible-items-cache.test.js](./ineligible-items-cache.test.js) - Ineligible items cache test suite
 - [ineligible-items-mdm-s3-sync.js](./ineligible-items-mdm-s3-sync.js) - Ineligible items MDM to S3 synchronization service
 - [ineligible-items-mdm-s3-sync.test.js](./ineligible-items-mdm-s3-sync.test.js) - Sync test suite
-- [sync-scheduler.js](./sync-scheduler.js) - Hourly sync scheduler
+- [iso-codes-cache.js](./iso-codes-cache.js) - ISO codes cache service
+- [iso-codes-cache.test.js](./iso-codes-cache.test.js) - ISO codes cache test suite
+- [iso-codes-mdm-s3-sync.js](./iso-codes-mdm-s3-sync.js) - ISO codes MDM to S3 synchronization service
+- [iso-codes-mdm-s3-sync.test.js](./iso-codes-mdm-s3-sync.test.js) - ISO codes sync test suite
+- [sync-scheduler.js](./sync-scheduler.js) - Hourly sync scheduler (manages both ineligible items and ISO codes)
 - [sync-scheduler.test.js](./sync-scheduler.test.js) - Scheduler test suite
 - [start-server.js](../common/helpers/start-server.js) - Server startup integration
 - [config.js](../../config.js) - Configuration definitions
@@ -243,14 +270,16 @@ The system includes automated hourly synchronization from MDM (Master Data Manag
 
 ```bash
 # .env file
-INELIGIBLE_ITEMS_SYNC_ENABLED=true
+MDM_INTEGRATION_ENABLED=true              # controls both caches and both sync schedulers
 INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE=0 * * * *
+ISO_CODES_SYNC_CRON_SCHEDULE=0 * * * *
 ```
 
-| Variable                              | Description                              | Default     | Required |
-| ------------------------------------- | ---------------------------------------- | ----------- | -------- |
-| `INELIGIBLE_ITEMS_SYNC_ENABLED`       | Enable/disable hourly MDM to S3 sync     | `true`      | No       |
-| `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE` | Cron schedule for sync (default: hourly) | `0 * * * *` | No       |
+| Variable                              | Description                                               | Default     | Required |
+| ------------------------------------- | --------------------------------------------------------- | ----------- | -------- |
+| `MDM_INTEGRATION_ENABLED`             | Enable/disable all MDM sync and cache initialization      | `true`      | No       |
+| `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE` | Cron schedule for ineligible items sync (default: hourly) | `0 * * * *` | No       |
+| `ISO_CODES_SYNC_CRON_SCHEDULE`        | Cron schedule for ISO codes sync (default: hourly)        | `0 * * * *` | No       |
 
 ### Sync Process
 
@@ -296,7 +325,7 @@ Check logs for sync operations:
 [INFO] Starting MDM to S3 synchronization
 [INFO] Retrieving ineligible items from MDM
 [INFO] Writing ineligible items to S3
-[INFO] Invalidating in-memory cache
+[INFO] Updating in-memory cache with fresh data
 [INFO] Successfully completed MDM to S3 synchronization {
   success: true,
   timestamp: "2026-01-29T10:00:00.123Z",
