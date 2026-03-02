@@ -1470,6 +1470,16 @@
     "type_of_treatment": "!dried"
   },
   {
+    "country_of_origin": "ZA",
+    "commodity_code": "0809400500",
+    "type_of_treatment": "!processed"
+  },
+  {
+    "country_of_origin": "ZA",
+    "commodity_code": "0809400500",
+    "type_of_treatment": "!dried"
+  },
+  {
     "country_of_origin": "AD",
     "commodity_code": "0805",
     "type_of_treatment": "!processed"
