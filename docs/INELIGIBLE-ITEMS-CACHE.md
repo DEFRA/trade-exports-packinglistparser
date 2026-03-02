@@ -16,7 +16,7 @@ The following environment variables control the ineligible items cache behavior:
 | --------------------------------- | ------------------------------------------ | ------------------ | ----------------------- |
 | `MDM_INTEGRATION_ENABLED`         | Enable/disable MDM integration and caching | `true`             | `true` or `false`       |
 | `INELIGIBLE_ITEMS_S3_FILE_NAME`   | S3 file name (without extension)           | `ineligible-items` | `ineligible-items`      |
-| `INELIGIBLE_ITEMS_S3_SCHEMA`      | S3 schema/prefix for the file              | `cache`            | `cache`                 |
+| `CACHE_S3_SCHEMA`                 | S3 schema/prefix for all cache files       | `cache`            | `cache`                 |
 | `INELIGIBLE_ITEMS_MAX_RETRIES`    | Max retry attempts on S3 failure           | `3`                | `3`                     |
 | `INELIGIBLE_ITEMS_RETRY_DELAY_MS` | Delay between retries (ms)                 | `2000`             | `2000`                  |
 | `AWS_ENDPOINT_URL`                | AWS S3 endpoint (LocalStack for local dev) | `null`             | `http://localhost:4566` |
@@ -161,13 +161,13 @@ When MDM API failures occur:
 
 ### Disabling Synchronization
 
-To disable automatic synchronization (for development or troubleshooting):
+To disable automatic synchronization and cache initialization (for development or troubleshooting):
 
 ```env
-INELIGIBLE_ITEMS_SYNC_ENABLED=false
+MDM_INTEGRATION_ENABLED=false
 ```
 
-The cache will still load from S3 on startup, but won't be automatically updated.
+> **Note:** There is no separate `INELIGIBLE_ITEMS_SYNC_ENABLED` flag. Both cache initialization and the hourly MDM sync are controlled by `MDM_INTEGRATION_ENABLED`. When disabled, the cache will not load from S3 on startup, and the hourly sync will not run; the service falls back to the static `data-ineligible-items.json` file.
 
 ## Local Development with LocalStack
 
@@ -204,7 +204,7 @@ AWS_S3_BUCKET=my-bucket
 
 # Ineligible items configuration
 INELIGIBLE_ITEMS_S3_FILE_NAME=ineligible-items
-INELIGIBLE_ITEMS_S3_SCHEMA=v1
+CACHE_S3_SCHEMA=v1
 ```
 
 ### 3. Upload Test Data to LocalStack
@@ -303,10 +303,10 @@ The cache is initialized:
 
 ### When Cache is Updated
 
-The cache is **NOT** automatically updated after startup. It remains in memory until:
+The cache is updated:
 
-1. **Server restart** - Cache is reloaded from S3 on next startup
-2. **Manual update** - Deploy a new version of the file to S3 and restart the server
+1. **On server startup** - Loaded from S3
+2. **Hourly MDM sync** - Automatically updated with fresh data from MDM (when `MDM_INTEGRATION_ENABLED=true`). The sync performs a complete replacement, so items removed from MDM are also removed from the cache.
 
 ### Disabling Cache
 
@@ -325,28 +325,38 @@ With this setting:
 
 ## File Structure
 
-The ineligible items file should follow this JSON structure:
+The ineligible items file is an array of rules (stored in S3 as JSON). Each rule has these fields:
 
 ```json
-{
-  "ineligibleItems": [
-    {
-      "id": "string",
-      "itemName": "string",
-      "category": "string",
-      "reason": "string",
-      "regulationReference": "string"
-    }
-  ],
-  "lastUpdated": "YYYY-MM-DD",
-  "version": "string"
-}
+[
+  {
+    "country_of_origin": "BR",
+    "commodity_code": "0207",
+    "type_of_treatment": null
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "Chilled"
+  },
+  {
+    "country_of_origin": "CN",
+    "commodity_code": "07061000",
+    "type_of_treatment": "!Raw"
+  }
+]
 ```
 
-**Location in S3:**
+**Field Definitions:**
 
-- Bucket: Defined by `AWS_S3_BUCKET`
-- Key: `{schema}/{filename}.json` (e.g., `v1/ineligible-items.json`)
+- `country_of_origin` - ISO 2-letter country code
+- `commodity_code` - Commodity code prefix (matched with `startsWith`)
+- `type_of_treatment` - Treatment restriction:
+  - `null` — Item is ineligible regardless of treatment (blanket ban)
+  - `"Chilled"` — Item is ineligible only for this treatment
+  - `"!Raw"` — Exception rule: item is **allowed** if treatment matches the suffix
+
+This matches the format in `src/services/data/data-ineligible-items.json` (the static fallback file).
 
 ## Troubleshooting
 

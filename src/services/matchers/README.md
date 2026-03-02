@@ -18,7 +18,8 @@ matchers/
   │   ├── model1.js          # Matcher for format variant 1
   │   ├── model2.js          # Matcher for format variant 2
   │   └── ...
-  └── matcher-result.js      # Result constants
+src/services/
+  └── matcher-result.js      # Result constants (shared, not inside matchers/)
 ```
 
 ## Adding a New Matcher
@@ -27,10 +28,21 @@ See the main [parsers README](../parsers/README.md#example-matcher-implementatio
 
 ## Matcher Results
 
-All matchers must return one of these constants from `matcher-result.js`:
+All matchers must return one of these numeric constants from `src/services/matcher-result.js`:
 
-- `CORRECT` - Packing list matches this parser
-- `EMPTY_FILE` - File has no data
-- `WRONG_ESTABLISHMENT_NUMBER` - RMS number doesn't match expected pattern
-- `WRONG_HEADER` - Header row doesn't match expected structure
-- `GENERIC_ERROR` - Error occurred during matching
+```javascript
+export default Object.freeze({
+  WRONG_EXTENSION: 0, // File type not handled by this matcher
+  WRONG_ESTABLISHMENT_NUMBER: 1, // Invalid or missing RMS number
+  WRONG_HEADER: 2, // Header structure mismatch
+  GENERIC_ERROR: 3, // Processing error
+  CORRECT: 4, // Packing list matches
+  EMPTY_FILE: 5 // No data found
+})
+```
+
+Import with:
+
+```javascript
+import matcherResult from '../../matcher-result.js'
+```

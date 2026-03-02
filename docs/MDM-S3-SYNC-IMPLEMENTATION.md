@@ -12,39 +12,51 @@ Successfully implemented:
 
 ### Components Created
 
-1. **MDM to S3 Sync Service** (`src/services/cache/mdm-s3-sync.js`)
+1. **MDM to S3 Sync Service** (`src/services/cache/ineligible-items-mdm-s3-sync.js`)
 
    - Retrieves latest ineligible items data from MDM
    - Writes data to configured S3 bucket
-   - Invalidates in-memory cache after successful sync
+   - Updates in-memory cache with fresh data after successful sync (complete replacement, not invalidation)
    - Comprehensive error handling and logging
 
 2. **Sync Scheduler** (`src/services/cache/sync-scheduler.js`)
 
-   - Cron-based scheduler for hourly execution
-   - Configurable schedule via environment variables
-   - Timezone-aware (UTC)
+   - Manages both ineligible items and ISO codes MDM-to-S3 sync schedulers
+   - Delegates to the shared `createSyncScheduler` factory (`src/common/helpers/sync-scheduler-factory.js`)
    - Start/stop/status management functions
+   - Configurable schedule per cache type via environment variables
 
-3. **Configuration** (`src/config.js`)
+3. **Shared Sync Scheduler Factory** (`src/common/helpers/sync-scheduler-factory.js`)
 
-   - Added `ineligibleItemsSync` configuration section
-   - `INELIGIBLE_ITEMS_SYNC_ENABLED`: Enable/disable sync (default: true)
-   - `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE`: Cron schedule (default: `0 * * * *`)
+   - Reusable `createSyncScheduler()` factory used by both MDM cache sync and TDS sync schedulers
+   - Validates cron schedule expression, manages the node-cron task lifecycle
+   - Consistent logging for start/stop/trigger/error events across all schedulers
 
-4. **Server Integration** (`src/common/helpers/start-server.js`)
-   - Scheduler starts automatically on server startup
-   - Graceful error handling - server continues if scheduler fails
+4. **Shared Sync Helpers** (`src/common/helpers/sync-helpers.js`, `src/common/helpers/sync-result-builders.js`)
+
+   - `createEnabledCheck()` — feature-flag check with consistent logging across sync services
+   - `buildSyncSuccessResult()`, `buildSyncErrorResult()`, `buildSyncSkippedResult()` — standardised result objects used by all sync operations
+
+5. **Configuration** (`src/config.js`)
+
+   - Added `ineligibleItemsSync` and `isoCodesSync` configuration sections
+   - `MDM_INTEGRATION_ENABLED`: Enable/disable all MDM sync and cache initialization (default: `true`). There is no separate per-sync enable flag.
+   - `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE`: Cron schedule for ineligible items sync (default: `0 * * * *`)
+   - `ISO_CODES_SYNC_CRON_SCHEDULE`: Cron schedule for ISO codes sync (default: `0 * * * *`)
+
+6. **Server Integration** (`src/common/helpers/start-server.js`)
+   - MDM cache sync scheduler and TDS sync scheduler both start automatically on server startup
+   - Graceful error handling - server continues if either scheduler fails to start
 
 ### Test Coverage
 
-1. **MDM to S3 Sync Tests** (`src/services/cache/mdm-s3-sync.test.js`)
+1. **MDM to S3 Sync Tests** (`src/services/cache/ineligible-items-mdm-s3-sync.test.js`)
 
    - ✅ 15/15 tests passing
    - Tests for MDM integration flag disabled
    - Tests for successful sync, array/object data formats
    - Error handling for MDM and S3 failures
-   - Cache invalidation verification
+   - Cache update verification (complete replacement)
    - **AC3 Error Logging tests**:
      - MDM API failure with detailed error information
      - S3 data preservation on failure
@@ -106,8 +118,8 @@ Successfully implemented:
     - `itemCount`: number of items synced
     - `s3Location`: target location
     - `etag`: S3 response ETag
-- ✅ Any existing in-memory cache is invalidated
-  - Implementation: `clearIneligibleItemsCache()` called after successful S3 write
+- ✅ In-memory cache is updated with fresh data
+  - Implementation: `setIneligibleItemsCache()` called with new data after successful S3 write (complete replacement ensures removed items don't persist)
 
 ### AC2 - MDM Integration Feature Flag ✅
 
@@ -163,15 +175,14 @@ Successfully implemented:
 ### Environment Variables
 
 ```bash
-# Enable/disable MDM integration
+# Enable/disable MDM integration (controls both sync and cache initialization)
 MDM_INTEGRATION_ENABLED=true
-
-# Enable/disable hourly sync
-INELIGIBLE_ITEMS_SYNC_ENABLED=true
 
 # Cron schedule (default: hourly at minute 0)
 INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE=0 * * * *
 ```
+
+> **Note:** There is no separate `INELIGIBLE_ITEMS_SYNC_ENABLED` flag. Both cache initialization and sync are controlled by `MDM_INTEGRATION_ENABLED`.
 
 ### Cron Schedule Examples
 
@@ -186,8 +197,10 @@ INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE=0 * * * *
 
 1. Server starts
 2. Ineligible items cache loads from S3
-3. Sync scheduler initializes (if enabled)
-4. First scheduled sync runs at next hour boundary
+3. ISO codes cache loads from S3
+4. MDM cache sync scheduler initializes (if `MDM_INTEGRATION_ENABLED=true`)
+5. TDS sync scheduler initializes (if `TDS_SYNC_ENABLED=true`)
+6. First scheduled syncs run at next configured cron boundary
 
 ### Sync Flow
 
@@ -198,7 +211,7 @@ Retrieve from MDM
   ↓
 Write to S3
   ↓
-Invalidate Cache
+Update Cache (complete replacement)
   ↓
 Log Success/Failure
 ```
@@ -206,7 +219,7 @@ Log Success/Failure
 ### Error Handling
 
 - **MDM Unavailable**: Sync fails, logged, next attempt at next scheduled time
-- **S3 Write Failure**: Sync fails, cache not invalidated, logged
+- **S3 Write Failure**: Sync fails, cache not updated, logged
 - **Scheduler Error**: Server continues running, sync operations disabled
 - All errors logged with full context for troubleshooting
 
@@ -224,24 +237,32 @@ Check application logs for:
 To trigger manual sync:
 
 ```javascript
-import { syncMdmToS3 } from './services/cache/mdm-s3-sync.js'
+import { syncMdmToS3 } from './services/cache/ineligible-items-mdm-s3-sync.js'
 const result = await syncMdmToS3()
 ```
 
-To disable scheduling:
+To disable all MDM sync and cache initialization:
 
 ```bash
-INELIGIBLE_ITEMS_SYNC_ENABLED=false
+MDM_INTEGRATION_ENABLED=false
 ```
 
 ## Files Modified/Created
 
 ### Created
 
-- `src/services/cache/mdm-s3-sync.js` - Sync service
-- `src/services/cache/mdm-s3-sync.test.js` - Sync tests
-- `src/services/cache/sync-scheduler.js` - Scheduler service
+- `src/services/cache/ineligible-items-mdm-s3-sync.js` - Ineligible items sync service
+- `src/services/cache/ineligible-items-mdm-s3-sync.test.js` - Sync tests
+- `src/services/cache/iso-codes-mdm-s3-sync.js` - ISO codes sync service
+- `src/services/cache/iso-codes-mdm-s3-sync.test.js` - ISO codes sync tests
+- `src/services/cache/sync-scheduler.js` - Scheduler entry point (manages both MDM cache sync jobs)
 - `src/services/cache/sync-scheduler.test.js` - Scheduler tests
+- `src/common/helpers/sync-scheduler-factory.js` - Reusable cron scheduler factory (shared by MDM and TDS schedulers)
+- `src/common/helpers/sync-scheduler-factory.test.js` - Factory tests
+- `src/common/helpers/sync-helpers.js` - Shared enabled-check helper
+- `src/common/helpers/sync-helpers.test.js` - Sync helpers tests
+- `src/common/helpers/sync-result-builders.js` - Standardised sync result object builders
+- `src/common/helpers/sync-result-builders.test.js` - Result builder tests
 
 ### Modified
 
@@ -257,9 +278,11 @@ INELIGIBLE_ITEMS_SYNC_ENABLED=false
 Run all sync-related tests:
 
 ```bash
-npx vitest run src/services/cache/mdm-s3-sync.test.js
+npx vitest run src/services/cache/ineligible-items-mdm-s3-sync.test.js
+npx vitest run src/services/cache/iso-codes-mdm-s3-sync.test.js
 npx vitest run src/services/cache/sync-scheduler.test.js
 npx vitest run src/services/cache/ineligible-items-cache.test.js
+npx vitest run src/services/cache/iso-codes-cache.test.js
 ```
 
 All tests passing: ✅ 40/40
@@ -270,7 +293,7 @@ All tests passing: ✅ 40/40
 2. Verify S3 bucket permissions include write access
 3. Configure appropriate cron schedule for production workload
 4. Monitor logs for sync operations after deployment
-5. Consider disabling sync during initial deployment/testing by setting `INELIGIBLE_ITEMS_SYNC_ENABLED=false`
+5. Consider disabling MDM sync during initial deployment/testing by setting `MDM_INTEGRATION_ENABLED=false`
 
 ## Future Enhancements
 

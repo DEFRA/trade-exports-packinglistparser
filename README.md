@@ -250,6 +250,11 @@ Instructions for setting up SonarCloud can be found in [sonar-project.properties
 - Background synchronization services (MDM and TDS)
 - API contracts and error handling
 
+🗺️ **[C4 System Context Diagram](./docs/C4-SYSTEM-CONTEXT.md)** - High-level system context showing:
+
+- Service boundary and primary actors
+- External system integrations (EHCO Blob, Dynamics 365, AWS S3, Azure Service Bus, MDM API, TDS Blob)
+
 ## Licence
 
 THIS INFORMATION IS LICENSED UNDER THE CONDITIONS OF THE OPEN GOVERNMENT LICENCE found at:

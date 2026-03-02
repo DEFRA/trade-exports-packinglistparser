@@ -12,18 +12,18 @@ The system also supports automated hourly synchronization from MDM to S3, ensuri
 
 The following environment variables control the ISO codes cache behavior:
 
-| Variable                   | Description                                | Default     | Example                 |
-| -------------------------- | ------------------------------------------ | ----------- | ----------------------- |
-| `MDM_INTEGRATION_ENABLED`  | Enable/disable MDM integration and caching | `true`      | `true` or `false`       |
-| `ISO_CODES_S3_FILE_NAME`   | S3 file name (without extension)           | `iso-codes` | `iso-codes`             |
-| `ISO_CODES_S3_SCHEMA`      | S3 schema/prefix for the file              | `cache`     | `cache`                 |
-| `ISO_CODES_MAX_RETRIES`    | Max retry attempts on S3 failure           | `3`         | `3`                     |
-| `ISO_CODES_RETRY_DELAY_MS` | Delay between retries (ms)                 | `2000`      | `2000`                  |
-| `AWS_ENDPOINT_URL`         | AWS S3 endpoint (LocalStack for local dev) | `null`      | `http://localhost:4566` |
-| `AWS_S3_BUCKET`            | S3 bucket name                             | -           | `my-bucket`             |
-| `AWS_REGION`               | AWS region                                 | `eu-west-2` | `eu-west-2`             |
-| `AWS_ACCESS_KEY_ID`        | AWS access key (use `test` for LocalStack) | -           | `test`                  |
-| `AWS_SECRET_ACCESS_KEY`    | AWS secret key (use `test` for LocalStack) | -           | `test`                  |
+| Variable                   | Description                                | Default                              | Example                 |
+| -------------------------- | ------------------------------------------ | ------------------------------------ | ----------------------- | ------- |
+| `MDM_INTEGRATION_ENABLED`  | Enable/disable MDM integration and caching | `true`                               | `true` or `false`       |
+| `ISO_CODES_S3_FILE_NAME`   | S3 file name (without extension)           | `iso-codes`                          | `iso-codes`             |
+| yes                        | `CACHE_S3_SCHEMA`                          | S3 schema/prefix for all cache files | `cache`                 | `cache` |
+| `ISO_CODES_MAX_RETRIES`    | Max retry attempts on S3 failure           | `3`                                  | `3`                     |
+| `ISO_CODES_RETRY_DELAY_MS` | Delay between retries (ms)                 | `2000`                               | `2000`                  |
+| `AWS_ENDPOINT_URL`         | AWS S3 endpoint (LocalStack for local dev) | `null`                               | `http://localhost:4566` |
+| `AWS_S3_BUCKET`            | S3 bucket name                             | -                                    | `my-bucket`             |
+| `AWS_REGION`               | AWS region                                 | `eu-west-2`                          | `eu-west-2`             |
+| `AWS_ACCESS_KEY_ID`        | AWS access key (use `test` for LocalStack) | -                                    | `test`                  |
+| `AWS_SECRET_ACCESS_KEY`    | AWS secret key (use `test` for LocalStack) | -                                    | `test`                  |
 
 ### MDM to S3 Synchronization Configuration
 
@@ -117,28 +117,73 @@ Server Start → Fetch from S3 (with retries) → Cache Loaded
 
 ### Getting ISO Codes from Cache
 
-The packing list validator automatically uses cached ISO codes when validating country of origin:
+The packing list validator uses ISO codes via `iso-code-lookup-cache.js`, which wraps the cache in a `Set` for O(1) lookup performance and automatically falls back to the static `data-iso-codes.json` when the cache is empty:
 
 ```javascript
+// src/services/validators/iso-code-lookup-cache.js
 import { getIsoCodesCache } from '../cache/iso-codes-cache.js'
 import isoCodesData from '../data/data-iso-codes.json' with { type: 'json' }
+
+function getNormalizedIsoCodeSet() {
+  const isoCodes = getIsoCodesCache() || isoCodesData
+  // Returns a lazily-rebuilt Set of lowercased codes
+  // Re-built only when the underlying data reference changes
+  return buildNormalizedIsoCodeSet(isoCodes)
+}
+
+export { getNormalizedIsoCodeSet }
+```
+
+Validators call:
+
+```javascript
+import { getNormalizedIsoCodeSet } from './iso-code-lookup-cache.js'
 
 function isValidIsoCode(code) {
   if (!code || typeof code !== 'string') {
     return false
   }
-
-  // Try to get ISO codes from cache first, fallback to static data
-  const isoCodes = getIsoCodesCache() || isoCodesData
-
   const normalizedCode = code.toLowerCase().trim()
-  return isoCodes.some((isoCode) => isoCode.toLowerCase() === normalizedCode)
+  return getNormalizedIsoCodeSet().has(normalizedCode)
 }
 ```
 
 ### Fallback to Static Data
 
-If the cache is not initialized (e.g., both S3 and MDM failed), the validator falls back to the static `data-iso-codes.json` file, ensuring the service remains operational.
+If the cache is not initialized (e.g., both S3 and MDM failed), `getNormalizedIsoCodeSet()` falls back to the static `data-iso-codes.json` file, ensuring the service remains operational.
+
+### Manual Cache Operations
+
+For testing or administrative purposes, the cache can be manipulated directly:
+
+```javascript
+import {
+  getIsoCodesCache,
+  setIsoCodesCache,
+  clearIsoCodesCache
+} from './services/cache/iso-codes-cache.js'
+
+// Get current cache contents
+const isoCodes = getIsoCodesCache()
+
+// Set cache manually (e.g. in tests)
+setIsoCodesCache(['GB', 'US', 'FR'])
+
+// Clear the cache
+clearIsoCodesCache()
+```
+
+### Triggering Manual Sync
+
+To trigger an immediate MDM-to-S3 sync outside of the scheduled cron job:
+
+```javascript
+import { syncIsoCodesMdmToS3 } from './services/cache/iso-codes-mdm-s3-sync.js'
+
+const result = await syncIsoCodesMdmToS3()
+console.log(result)
+// { success: true, itemCount: 249, timestamp: '2026-01-29T10:00:00.123Z', duration: 1234 }
+```
 
 ## Testing
 
@@ -246,10 +291,9 @@ WARN: ISO codes S3 file does not exist (NoSuchKey), will attempt MDM fallback
 
 ### Sync Not Running
 
-1. Verify `ISO_CODES_SYNC_ENABLED` is set to `true`
-2. Check `MDM_INTEGRATION_ENABLED` is enabled
-3. Validate cron schedule format
-4. Review scheduler logs
+1. Verify `MDM_INTEGRATION_ENABLED` is set to `true` (controls both cache initialization and sync)
+2. Validate cron schedule format (`ISO_CODES_SYNC_CRON_SCHEDULE`)
+3. Review scheduler logs
 
 ### Validation Failures
 
@@ -260,8 +304,19 @@ If country codes are being incorrectly rejected:
 3. Check MDM data source for accuracy
 4. Review validator logs
 
+## Deployment Checklist
+
+Before deploying to a new environment:
+
+1. Configure MDM endpoint: `AZURE_MDM_GET_ISO_CODES_ENDPOINT`
+2. Verify S3 bucket access and write permissions (`AWS_S3_BUCKET`)
+3. Set cache configuration environment variables (`ISO_CODES_S3_FILE_NAME`, `ISO_CODES_MAX_RETRIES`, etc.)
+4. Enable MDM integration: `MDM_INTEGRATION_ENABLED=true` (controls both cache initialization and sync)
+5. Monitor logs after startup for successful cache initialization
+6. Verify ISO codes are being validated correctly in packing list processing
+
 ## Related Documentation
 
 - [Ineligible Items Cache](./INELIGIBLE-ITEMS-CACHE.md): Similar caching pattern for prohibited items
-- [MDM S3 Sync Implementation](../../MDM-S3-SYNC-IMPLEMENTATION.md): General MDM sync documentation
-- [Config](../config.js): Configuration schema and defaults
+- [MDM S3 Sync Implementation](../MDM-S3-SYNC-IMPLEMENTATION.md): General MDM sync documentation
+- [Config](../src/config.js): Configuration schema and defaults
