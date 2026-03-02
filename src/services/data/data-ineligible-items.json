@@ -8785,11 +8785,6 @@
     "type_of_treatment": "!dried"
   },
   {
-    "country_of_origin": "MX",
-    "commodity_code": "080410",
-    "type_of_treatment": "!processed"
-  },
-  {
     "country_of_origin": "NA",
     "commodity_code": "080410",
     "type_of_treatment": "!processed"
@@ -8798,6 +8793,11 @@
     "country_of_origin": "NA",
     "commodity_code": "080410",
     "type_of_treatment": "!dried"
+  },
+  {
+    "country_of_origin": "MX",
+    "commodity_code": "080410",
+    "type_of_treatment": "!processed"
   },
   {
     "country_of_origin": "MX",
