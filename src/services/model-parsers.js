@@ -113,6 +113,10 @@ import { parse as parseTjmorris2 } from './parsers/tjmorris/model2.js'
 import { matches as matchesTurners1 } from './matchers/turners/model1.js'
 import { parse as parseTurners1 } from './parsers/turners/model1.js'
 
+// Burbank Excel parsers
+import { matches as matchesBurbank1 } from './matchers/burbank/model1.js'
+import { parse as parseBurbank1 } from './parsers/burbank/model1.js'
+
 // No-match matchers and parsers
 import {
   noRemosMatch,
@@ -229,6 +233,10 @@ const parsersExcel = {
   TESCO3: {
     matches: matchesTesco3,
     parse: parseTesco3
+  },
+  BURBANK1: {
+    matches: matchesBurbank1,
+    parse: parseBurbank1
   }
 }
 
