@@ -236,7 +236,7 @@ async function notifyExternalApplications(parsedData, applicationId) {
  * @param {number|string} applicationId - Primary id to assign to the record
  * @returns {Object|undefined} - Mapped packing list object or undefined
  */
-export function mapPackingListForStorage(packingListJson, applicationId) {
+function mapPackingListForStorage(packingListJson, applicationId) {
   try {
     return {
       applicationId,
