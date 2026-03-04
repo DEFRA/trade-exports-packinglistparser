@@ -547,5 +547,279 @@ export default {
       }
     ],
     ...lookupSheets
+  },
+
+  // ─── AC2: Valid model with empty and partial rows that should be ignored ───
+  validModel_EmptyAndPartialRows: {
+    Revised: [
+      ...emptyRows,
+      headerRow,
+      {},
+      { A: '1' },
+      {
+        A: '2',
+        C: '709999090',
+        F: 'Herb Lovage x1kg',
+        G: 'VALID_ISO',
+        H: '2',
+        I: 'Cases',
+        K: '2',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw',
+        P: 'Green'
+      },
+      {},
+      {
+        A: '3',
+        C: '702000007',
+        F: 'Tomato Cherry Mixed x9x250gm',
+        G: 'VALID_ISO',
+        H: '10',
+        I: 'Cases',
+        K: '22.5',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw',
+        P: 'Green'
+      }
+    ],
+    ...lookupSheets
+  },
+
+  // ─── AC7: More than 3 null NIRMS lane values ──────────────────────────────
+  missingNirms_MoreThan3: {
+    Revised: [
+      ...emptyRows,
+      headerRow,
+      {
+        A: '1',
+        C: '709999090',
+        F: 'Herb Lovage x1kg',
+        G: 'VALID_ISO',
+        H: '2',
+        I: 'Cases',
+        K: '2',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw'
+      },
+      {
+        A: '2',
+        C: '702000007',
+        F: 'Tomato Cherry Mixed',
+        G: 'VALID_ISO',
+        H: '10',
+        I: 'Cases',
+        K: '22.5',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw'
+      },
+      {
+        A: '3',
+        C: '709601000',
+        F: 'Red Peppers',
+        G: 'VALID_ISO',
+        H: '5',
+        I: 'Cases',
+        K: '5',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw'
+      },
+      {
+        A: '4',
+        C: '706100000',
+        F: 'Carrots',
+        G: 'VALID_ISO',
+        H: '3',
+        I: 'Cases',
+        K: '3',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw'
+      }
+    ],
+    ...lookupSheets
+  },
+
+  // ─── AC8: More than 3 invalid NIRMS lane values ───────────────────────────
+  invalidNirms_MoreThan3: {
+    Revised: [
+      ...emptyRows,
+      headerRow,
+      {
+        A: '1',
+        C: '709999090',
+        F: 'Herb Lovage x1kg',
+        G: 'VALID_ISO',
+        H: '2',
+        I: 'Cases',
+        K: '2',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw',
+        P: 'INVALID'
+      },
+      {
+        A: '2',
+        C: '702000007',
+        F: 'Tomato Cherry Mixed',
+        G: 'VALID_ISO',
+        H: '10',
+        I: 'Cases',
+        K: '22.5',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw',
+        P: 'INVALID'
+      },
+      {
+        A: '3',
+        C: '709601000',
+        F: 'Red Peppers',
+        G: 'VALID_ISO',
+        H: '5',
+        I: 'Cases',
+        K: '5',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw',
+        P: 'INVALID'
+      },
+      {
+        A: '4',
+        C: '706100000',
+        F: 'Carrots',
+        G: 'VALID_ISO',
+        H: '3',
+        I: 'Cases',
+        K: '3',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'Raw',
+        P: 'INVALID'
+      }
+    ],
+    ...lookupSheets
+  },
+
+  // ─── AC15: More than 3 prohibited items with treatment type ────────────────
+  ineligibleItems_MoreThan3_WithTreatment: {
+    Revised: [
+      ...emptyRows,
+      headerRow,
+      {
+        A: '1',
+        C: '012',
+        F: 'Prohibited Item 1',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '2',
+        I: 'Cases',
+        K: '2',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'INELIGIBLE_ITEM_TREATMENT',
+        P: 'Green'
+      },
+      {
+        A: '2',
+        C: '012',
+        F: 'Prohibited Item 2',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '3',
+        I: 'Cases',
+        K: '3',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'INELIGIBLE_ITEM_TREATMENT',
+        P: 'Green'
+      },
+      {
+        A: '3',
+        C: '012',
+        F: 'Prohibited Item 3',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '5',
+        I: 'Cases',
+        K: '5',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'INELIGIBLE_ITEM_TREATMENT',
+        P: 'Green'
+      },
+      {
+        A: '4',
+        C: '012',
+        F: 'Prohibited Item 4',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '4',
+        I: 'Cases',
+        K: '4',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        O: 'INELIGIBLE_ITEM_TREATMENT',
+        P: 'Green'
+      }
+    ],
+    ...lookupSheets
+  },
+
+  // ─── AC17: More than 3 prohibited items without treatment type ─────────────
+  ineligibleItems_MoreThan3_NoTreatment: {
+    Revised: [
+      ...emptyRows,
+      headerRow,
+      {
+        A: '1',
+        C: '012',
+        F: 'Prohibited Item No Treatment 1',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '2',
+        I: 'Cases',
+        K: '2',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        P: 'Green'
+      },
+      {
+        A: '2',
+        C: '012',
+        F: 'Prohibited Item No Treatment 2',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '3',
+        I: 'Cases',
+        K: '3',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        P: 'Green'
+      },
+      {
+        A: '3',
+        C: '012',
+        F: 'Prohibited Item No Treatment 3',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '5',
+        I: 'Cases',
+        K: '5',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        P: 'Green'
+      },
+      {
+        A: '4',
+        C: '012',
+        F: 'Prohibited Item No Treatment 4',
+        G: 'INELIGIBLE_ITEM_ISO',
+        H: '4',
+        I: 'Cases',
+        K: '4',
+        M: ESTABLISHMENT_NUMBER,
+        N: 'Chilled',
+        P: 'Green'
+      }
+    ],
+    ...lookupSheets
   }
 }

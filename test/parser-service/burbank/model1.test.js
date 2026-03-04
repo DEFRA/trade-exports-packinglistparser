@@ -97,6 +97,30 @@ describe('BURBANK1 CoO Validation Tests - NIRMS', () => {
       `${failureReasons.NIRMS_MISSING} in sheet "Revised" row 45.\n`
     )
   })
+
+  test('Null NIRMS value, more than 3 - validation errors with summary', async () => {
+    const result = await parserService.findParser(
+      model.missingNirms_MoreThan3,
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(false)
+    expect(result.business_checks.failure_reasons).toBe(
+      `${failureReasons.NIRMS_MISSING} in sheet "Revised" row 45, sheet "Revised" row 46, sheet "Revised" row 47 ${ERROR_SUMMARY_TEXT} 1 other locations.\n`
+    )
+  })
+
+  test('Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
+    const result = await parserService.findParser(
+      model.invalidNirms_MoreThan3,
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(false)
+    expect(result.business_checks.failure_reasons).toBe(
+      `${failureReasons.NIRMS_INVALID} in sheet "Revised" row 45, sheet "Revised" row 46, sheet "Revised" row 47 ${ERROR_SUMMARY_TEXT} 1 other locations.\n`
+    )
+  })
 })
 
 describe('BURBANK1 CoO Validation Tests - Country of Origin', () => {
@@ -133,5 +157,41 @@ describe('BURBANK1 CoO Validation Tests - Ineligible Items', () => {
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasons.PROHIBITED_ITEM} in sheet "Revised" row 45 and sheet "Revised" row 47.\n`
     )
+  })
+
+  test('Prohibited items with treatment type, more than 3 - validation errors with summary', async () => {
+    const result = await parserService.findParser(
+      model.ineligibleItems_MoreThan3_WithTreatment,
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(false)
+    expect(result.business_checks.failure_reasons).toBe(
+      `${failureReasons.PROHIBITED_ITEM} in sheet "Revised" row 45, sheet "Revised" row 46, sheet "Revised" row 47 ${ERROR_SUMMARY_TEXT} 1 other locations.\n`
+    )
+  })
+
+  test('Prohibited items without treatment type, more than 3 - validation errors with summary', async () => {
+    const result = await parserService.findParser(
+      model.ineligibleItems_MoreThan3_NoTreatment,
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(false)
+    expect(result.business_checks.failure_reasons).toBe(
+      `${failureReasons.PROHIBITED_ITEM} in sheet "Revised" row 45, sheet "Revised" row 46, sheet "Revised" row 47 ${ERROR_SUMMARY_TEXT} 1 other locations.\n`
+    )
+  })
+})
+
+describe('BURBANK1 Empty and Partial Row Handling', () => {
+  test('Empty and partial rows are ignored - passes validation', async () => {
+    const result = await parserService.findParser(
+      model.validModel_EmptyAndPartialRows,
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(true)
+    expect(result.items.length).toBe(2)
   })
 })
