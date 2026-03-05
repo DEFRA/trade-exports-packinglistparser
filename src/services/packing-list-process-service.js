@@ -250,6 +250,7 @@ function mapPackingListForStorage(packingListJson, applicationId) {
         packingListJson.business_checks.all_required_fields_present,
         packingListJson.business_checks.failure_reasons
       ),
+      createdAt: new Date().toISOString().replace('Z', ''),
       items: packingListJson.items.map((n) => itemsMapper(n))
     }
   } catch (err) {
@@ -301,7 +302,7 @@ function itemsMapper(o) {
       nirms: getNirmsBooleanValue(o.nirms),
       row: o.row_location.rowNumber,
       location: o.row_location.sheetName ?? o.row_location.pageNumber ?? null,
-      failureReason: o.failure
+      failure: o.failure
     }
   } catch (err) {
     logger.error(formatError(err), 'Error mapping packing list item')
