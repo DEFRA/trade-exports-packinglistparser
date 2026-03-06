@@ -87,7 +87,7 @@ describe('Test Parse Route', () => {
       })
       expect(parsePackingList).toHaveBeenCalledWith(
         mockPayload,
-        expectedFilePath
+        'test-file.xlsx'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         success: true,
@@ -112,7 +112,7 @@ describe('Test Parse Route', () => {
       })
       expect(parsePackingList).toHaveBeenCalledWith(
         mockPayload,
-        expectedFilePath
+        'different-file.xls'
       )
     })
 
@@ -152,11 +152,12 @@ describe('Test Parse Route', () => {
       )
     })
 
-    it('should handle file path construction correctly', async () => {
+    it('should sanitize path traversal attempts in filename', async () => {
       mockRequest.query.filename = 'subdir/nested-file.xlsx'
       const mockPayload = { Sheet1: [] }
       const mockResult = { items: [] }
-      const expectedFilePath = path.join(plDirectory, 'subdir/nested-file.xlsx')
+      // path.basename strips directory components for security
+      const expectedFilePath = path.join(plDirectory, 'nested-file.xlsx')
 
       convertExcelToJson.mockReturnValue(mockPayload)
       parsePackingList.mockResolvedValue(mockResult)
@@ -250,7 +251,7 @@ describe('Test Parse Route', () => {
       expect(convertCsvToJson).toHaveBeenCalledWith(mockCsvBuffer)
       expect(parsePackingList).toHaveBeenCalledWith(
         mockPayload,
-        expectedFilePath
+        'test-file.csv'
       )
       expect(mockH.response).toHaveBeenCalledWith({
         success: true,
@@ -325,7 +326,7 @@ describe('Test Parse Route', () => {
         expect(fs.readFileSync).toHaveBeenCalledWith(expectedFilePath)
         expect(parsePackingList).toHaveBeenCalledWith(
           mockPdfBuffer,
-          expectedFilePath
+          'test-packing-list.pdf'
         )
         expect(mockH.response).toHaveBeenCalledWith({
           success: true,

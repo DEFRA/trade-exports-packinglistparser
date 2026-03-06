@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import crypto from 'node:crypto'
 
 // Mock AWS SDK
 const mockSend = vi.fn()
@@ -48,8 +49,8 @@ const TEST_IDS = {
 }
 
 const TEST_TOKENS = {
-  TOKEN_123: 'test-token-123',
-  TOKEN_GENERIC: 'test-token'
+  TOKEN_123: crypto.randomUUID(),
+  TOKEN_GENERIC: crypto.randomUUID()
 }
 
 const TEST_AWS_CONFIG = {

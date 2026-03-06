@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import crypto from 'node:crypto'
 import {
   callAzureApiWithToken,
   callAzureApiJson,
@@ -39,7 +40,7 @@ const TEST_CONFIG = {
   ISO_CODES_PATH: '/api/iso-codes'
 }
 
-const TEST_TOKEN = 'test-access-token-12345'
+const TEST_TOKEN = crypto.randomUUID()
 
 const TEST_RESPONSE_DATA = {
   items: [
