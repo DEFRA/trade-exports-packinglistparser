@@ -13,7 +13,7 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: null
+        type_of_treatment: 'FRESH'
       }
     ],
     registration_approval_number: 'RMS-GB-000149-002',
@@ -31,7 +31,7 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: null
+        type_of_treatment: 'FRESH'
       }
     ],
     registration_approval_number: 'RMS-GB-000149-002',
@@ -50,7 +50,7 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: null,
-        type_of_treatment: null
+        type_of_treatment: 'FRESH'
       }
     ],
     establishment_numbers: ['RMS-GB-000149-002'],
@@ -70,7 +70,7 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: null
+        type_of_treatment: 'FRESH'
       }
     ],
     establishment_numbers: ['RMS-GB-000149-002', 'RMS-GB-000149-003'],
@@ -98,7 +98,7 @@ export default {
         number_of_packages: null,
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: null
+        type_of_treatment: 'FRESH'
       }
     ],
     registration_approval_number: 'RMS-GB-000149-002',

@@ -16,6 +16,24 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 375,
+            y: 195,
+            str: 'Type of Treatment',
+            dir: 'ltr',
+            width: 50,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 210,
+            str: 'FRESH',
+            dir: 'ltr',
+            width: 25,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 174.38,
             y: 285.29,
             str: 'DESCRIPTION',
@@ -169,7 +187,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 376.15,
+            x: 340,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -187,7 +205,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 422.98,
+            x: 380,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -240,6 +258,24 @@ export default {
             dir: 'ltr',
             width: 69.7464000000003,
             height: 7.2,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 195,
+            str: 'Type of Treatment',
+            dir: 'ltr',
+            width: 50,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 210,
+            str: 'FRESH',
+            dir: 'ltr',
+            width: 25,
+            height: 5.28,
             fontName: 'Helvetica'
           },
           {
@@ -396,7 +432,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 376.15,
+            x: 340,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -414,7 +450,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 422.98,
+            x: 380,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -467,6 +503,24 @@ export default {
             dir: 'ltr',
             width: 69.7464000000003,
             height: 7.2,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 195,
+            str: 'Type of Treatment',
+            dir: 'ltr',
+            width: 50,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 210,
+            str: 'FRESH',
+            dir: 'ltr',
+            width: 25,
+            height: 5.28,
             fontName: 'Helvetica'
           },
           {
@@ -623,7 +677,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 376.15,
+            x: 340,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -641,7 +695,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 422.98,
+            x: 380,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -703,6 +757,24 @@ export default {
             dir: 'ltr',
             width: 69.7464000000003,
             height: 7.2,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 195,
+            str: 'Type of Treatment',
+            dir: 'ltr',
+            width: 50,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 210,
+            str: 'FRESH',
+            dir: 'ltr',
+            width: 25,
+            height: 5.28,
             fontName: 'Helvetica'
           },
           {
@@ -859,7 +931,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 376.15,
+            x: 340,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -877,7 +949,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 422.98,
+            x: 380,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -1024,6 +1096,24 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 375,
+            y: 195,
+            str: 'Type of Treatment',
+            dir: 'ltr',
+            width: 50,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 375,
+            y: 210,
+            str: 'FRESH',
+            dir: 'ltr',
+            width: 25,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 174.38,
             y: 285.29,
             str: 'DESCRIPTION',
@@ -1177,7 +1267,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 376.15,
+            x: 340,
             y: 303.77,
             str: ' ',
             dir: 'ltr',
@@ -1195,7 +1285,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 422.98,
+            x: 380,
             y: 303.77,
             str: '48',
             dir: 'ltr',

@@ -5,6 +5,9 @@ import { convertCsvToJson } from '../utilities/csv-utility.js'
 import { isCsv, isPdf } from '../utilities/file-extension.js'
 import path from 'node:path'
 import fs from 'node:fs'
+// Uncomment to see pdf elements positions
+//import { PDFExtract } from "pdf.js-extract";
+//const pdfExtract = new PDFExtract();
 
 const testRoute = {
   method: 'GET',
@@ -30,6 +33,16 @@ async function processPackingListHandler(request, h) {
     }
 
     const result = await parsePackingList(payload, filePath)
+
+    // Uncomment to see pdf elements positions
+    // let pdfResult = {};
+    // try {
+    //   pdfResult = fs.readFileSync(filePath);
+    // } catch (err) {
+    //   console.error(err);
+    // }
+    // const packing = await pdfExtract.extractBuffer(pdfResult);
+
     return h.response({ success: true, result }).code(STATUS_CODES.OK)
   } catch (err) {
     return h

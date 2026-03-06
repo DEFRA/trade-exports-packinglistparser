@@ -83,18 +83,38 @@ function findHeader(model, pageContent) {
       return isHeader
     }
     const matchHeader = headers[model].headers[x]
-    for (const i in header) {
-      if (
-        matchHeader.regex.test(header[i]) &&
-        i >= matchHeader.x1 &&
-        i <= matchHeader.x2
-      ) {
+
+    // If header has its own y range, search pageContent directly
+    if (matchHeader.minHeadersY !== undefined) {
+      const matchedItems = pageContent.filter(
+        (item) =>
+          matchHeader.regex.test(item.str) &&
+          item.x >= matchHeader.x1 &&
+          item.x <= matchHeader.x2 &&
+          item.y >= matchHeader.minHeadersY &&
+          item.y <= matchHeader.maxHeadersY
+      )
+      if (matchedItems.length > 0) {
         isHeader = matcherResult.CORRECT
-        break
       } else {
         isHeader = matcherResult.WRONG_HEADER
       }
+    } else {
+      // Original behavior - match against header object
+      for (const i in header) {
+        if (
+          matchHeader.regex.test(header[i]) &&
+          i >= matchHeader.x1 &&
+          i <= matchHeader.x2
+        ) {
+          isHeader = matcherResult.CORRECT
+          break
+        } else {
+          isHeader = matcherResult.WRONG_HEADER
+        }
+      }
     }
+
     if (isHeader === matcherResult.WRONG_HEADER) {
       break
     }
