@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import crypto from 'node:crypto'
 import { STATUS_CODES } from '../routes/statuscodes.js'
 import {
   getDispatchLocation,
@@ -7,9 +8,18 @@ import {
 } from './dynamics-service.js'
 
 // Test constants for repeated literals
-const TEST_TOKEN = 'test-token'
+const TEST_TOKEN = crypto.randomUUID()
 const TEST_REMOS_ID = 'REMOS-12345'
 const TEST_APPLICATION_ID = 'TEST-APP-123'
+
+const RESPONSE_FIELDS = {
+  ACCESS_TOKEN: 'access_token'
+}
+
+const createTokenResponse = (token = TEST_TOKEN) => ({
+  ok: true,
+  json: vi.fn().mockResolvedValue({ [RESPONSE_FIELDS.ACCESS_TOKEN]: token })
+})
 
 const ERROR_MESSAGES = {
   UNAUTHORIZED: 'Unauthorized',
@@ -57,10 +67,7 @@ describe('dynamics-service', () => {
 
   describe('bearerTokenRequest', () => {
     it('should successfully obtain bearer token', async () => {
-      const mockResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const mockResponse = createTokenResponse()
       globalThis.fetch.mockResolvedValue(mockResponse)
 
       const token = await bearerTokenRequest()
@@ -113,10 +120,7 @@ describe('dynamics-service', () => {
 
   describe('getDispatchLocation', () => {
     it('should successfully retrieve dispatch location on first attempt', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: true,
@@ -134,10 +138,7 @@ describe('dynamics-service', () => {
     })
 
     it('should return null on HTTP error (404)', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: false,
@@ -156,10 +157,7 @@ describe('dynamics-service', () => {
     })
 
     it('should return null on HTTP error (401)', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: false,
@@ -178,10 +176,7 @@ describe('dynamics-service', () => {
     })
 
     it('should retry on network failure and succeed on second attempt', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: true,
@@ -201,10 +196,7 @@ describe('dynamics-service', () => {
     })
 
     it('should return null after max retries on network failures', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)
@@ -221,10 +213,7 @@ describe('dynamics-service', () => {
     })
 
     it('should return null if bearer token is invalid', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: 'Error: Invalid' })
-      }
+      const tokenResponse = createTokenResponse('Error: Invalid')
 
       globalThis.fetch.mockResolvedValueOnce(tokenResponse)
 
@@ -249,10 +238,7 @@ describe('dynamics-service', () => {
     })
 
     it('should use correct Dynamics API endpoint', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: true,
@@ -281,10 +267,7 @@ describe('dynamics-service', () => {
     })
 
     it('should include application ID in API URL', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: true,
@@ -305,10 +288,7 @@ describe('dynamics-service', () => {
     })
 
     it('should select rms_remosid field in query', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: true,
@@ -331,10 +311,7 @@ describe('dynamics-service', () => {
 
   describe('checkDynamicsDispatchLocationConnection', () => {
     it('should successfully check connection to Dynamics dispatch locations', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: true,
@@ -356,10 +333,7 @@ describe('dynamics-service', () => {
     })
 
     it('should return error status on connection failure', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: false,
@@ -380,10 +354,7 @@ describe('dynamics-service', () => {
     })
 
     it('should use correct endpoint for connection check', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       const dynamicsResponse = {
         ok: true,
@@ -424,10 +395,7 @@ describe('dynamics-service', () => {
     })
 
     it('should throw error on network failure during connection check', async () => {
-      const tokenResponse = {
-        ok: true,
-        json: vi.fn().mockResolvedValue({ access_token: TEST_TOKEN })
-      }
+      const tokenResponse = createTokenResponse()
 
       globalThis.fetch
         .mockResolvedValueOnce(tokenResponse)

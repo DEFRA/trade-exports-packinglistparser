@@ -2,33 +2,33 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import { convertExcelToJson } from './excel-utility.js'
-import ExcelJS from 'exceljs'
+import * as XLSX from 'xlsx'
+
+// Set up fs for xlsx in Node.js
+XLSX.set_fs(fs)
 
 describe('excel-utility', () => {
   const tmpDir = path.join(process.cwd(), 'test-output')
   const tmpFile = path.join(tmpDir, 'test-excel-utility.xlsx')
 
-  beforeAll(async () => {
+  beforeAll(() => {
     // Create test directory if it doesn't exist
     if (!fs.existsSync(tmpDir)) {
       fs.mkdirSync(tmpDir, { recursive: true })
     }
 
-    // Create a test Excel file using ExcelJS
-    const workbook = new ExcelJS.Workbook()
-    const worksheet = workbook.addWorksheet('Sheet1')
-
-    // Add headers
-    worksheet.addRow(['Name', 'Age'])
-    // Add data rows
-    worksheet.addRow(['Alice', 30])
-    worksheet.addRow(['Bob', 25])
-    // Add empty row
-    worksheet.addRow([])
-    // Add another data row
-    worksheet.addRow(['Charlie', 35])
-
-    await workbook.xlsx.writeFile(tmpFile)
+    // Create a test Excel file using xlsx
+    const wsData = [
+      ['Name', 'Age'],
+      ['Alice', 30],
+      ['Bob', 25],
+      [],
+      ['Charlie', 35]
+    ]
+    const ws = XLSX.utils.aoa_to_sheet(wsData)
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1')
+    XLSX.writeFile(wb, tmpFile)
   })
 
   afterAll(() => {

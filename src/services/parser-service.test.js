@@ -1,7 +1,8 @@
-import { describe, test, expect } from 'vitest'
+import { describe, test, expect, vi } from 'vitest'
 import * as parserService from './parser-service.js'
 import parserModel from './parser-model.js'
 import failureReasonsDescriptions from './validators/packing-list-failure-reasons.js'
+import * as parserFactory from './parsers/parser-factory.js'
 
 describe('findParser', () => {
   const filename = 'packinglist.xls'
@@ -335,5 +336,110 @@ describe('sanitizeInput', () => {
     expect(result.Sheet1[1].L).toBe('Description')
     expect(result.Sheet1[1].N).toBe('Description')
     expect(result.Sheet1[1].T).toBeNull()
+  })
+
+  test('sanitize a CSV file', async () => {
+    const filename = 'packinglist.csv'
+    const packingListJson = [
+      {
+        A: ' Leading space',
+        B: 'Trailing space ',
+        C: '',
+        D: 'Normal'
+      }
+    ]
+
+    const result = parserService.sanitizeInput(packingListJson, filename)
+
+    expect(result[0].A).toBe('Leading space')
+    expect(result[0].B).toBe('Trailing space')
+    expect(result[0].C).toBeNull()
+    expect(result[0].D).toBe('Normal')
+  })
+})
+
+describe('parsePackingList error handling', () => {
+  test('returns empty object when parsing throws an error', async () => {
+    // Pass data that will cause parser to throw
+    const invalidPackingList = null
+    const filename = 'invalid.xlsx'
+
+    const result = await parserService.parsePackingList(
+      invalidPackingList,
+      filename
+    )
+
+    expect(result).toEqual({})
+  })
+})
+
+describe('parsePackingList PDF AI path', () => {
+  test('uses AI-extracted document when PDF parser returns CORRECT match', async () => {
+    const pdfBuffer = Buffer.from('mock pdf content')
+    const filename = 'packing-list.pdf'
+    const mockExtractedDocument = { items: [{ description: 'AI extracted' }] }
+    const mockParsedResult = {
+      parserModel: 'GIOVANNI3',
+      items: [{ description: 'AI extracted' }]
+    }
+    const mockParser = {
+      parse: vi.fn().mockResolvedValue(mockParsedResult)
+    }
+
+    const findParserSpy = vi
+      .spyOn(parserFactory, 'findParser')
+      .mockResolvedValue({
+        parser: mockParser,
+        result: {
+          isMatched: 'CORRECT',
+          document: mockExtractedDocument
+        }
+      })
+
+    const generateSpy = vi
+      .spyOn(parserFactory, 'generateParsedPackingList')
+      .mockResolvedValue(mockParsedResult)
+
+    const result = await parserService.parsePackingList(pdfBuffer, filename)
+
+    expect(findParserSpy).toHaveBeenCalledWith(pdfBuffer, filename)
+    expect(generateSpy).toHaveBeenCalledWith(
+      mockParser,
+      mockExtractedDocument,
+      undefined,
+      pdfBuffer
+    )
+    expect(result).toEqual(mockParsedResult)
+
+    findParserSpy.mockRestore()
+    generateSpy.mockRestore()
+  })
+
+  test('uses standard path when PDF parser does not return CORRECT match', async () => {
+    const pdfBuffer = Buffer.from('mock pdf content')
+    const filename = 'packing-list.pdf'
+    const mockParser = {
+      parse: vi.fn()
+    }
+    const mockParsedResult = {
+      parserModel: parserModel.NOMATCH,
+      items: []
+    }
+
+    const findParserSpy = vi
+      .spyOn(parserFactory, 'findParser')
+      .mockResolvedValue(mockParser)
+
+    const generateSpy = vi
+      .spyOn(parserFactory, 'generateParsedPackingList')
+      .mockResolvedValue(mockParsedResult)
+
+    const result = await parserService.parsePackingList(pdfBuffer, filename)
+
+    expect(generateSpy).toHaveBeenCalledWith(mockParser, pdfBuffer, undefined)
+    expect(result).toEqual(mockParsedResult)
+
+    findParserSpy.mockRestore()
+    generateSpy.mockRestore()
   })
 })
