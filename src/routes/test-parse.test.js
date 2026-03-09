@@ -152,11 +152,29 @@ describe('Test Parse Route', () => {
       )
     })
 
-    it('should handle file path construction correctly', async () => {
+    it('should sanitize file path to prevent traversal attacks', async () => {
       mockRequest.query.filename = 'subdir/nested-file.xlsx'
       const mockPayload = { Sheet1: [] }
       const mockResult = { items: [] }
-      const expectedFilePath = path.join(plDirectory, 'subdir/nested-file.xlsx')
+      // Should strip the subdirectory and only use basename
+      const expectedFilePath = path.join(plDirectory, 'nested-file.xlsx')
+
+      convertExcelToJson.mockReturnValue(mockPayload)
+      parsePackingList.mockResolvedValue(mockResult)
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(convertExcelToJson).toHaveBeenCalledWith({
+        sourceFile: expectedFilePath
+      })
+    })
+
+    it('should prevent path traversal attacks', async () => {
+      mockRequest.query.filename = '../../etc/passwd'
+      const mockPayload = { Sheet1: [] }
+      const mockResult = { items: [] }
+      // Should strip the path traversal and only use basename
+      const expectedFilePath = path.join(plDirectory, 'passwd')
 
       convertExcelToJson.mockReturnValue(mockPayload)
       parsePackingList.mockResolvedValue(mockResult)
