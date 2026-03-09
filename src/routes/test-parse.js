@@ -3,6 +3,7 @@ import { STATUS_CODES } from './statuscodes.js'
 import { convertExcelToJson } from '../utilities/excel-utility.js'
 import { convertCsvToJson } from '../utilities/csv-utility.js'
 import { isCsv, isPdf } from '../utilities/file-extension.js'
+import Joi from 'joi'
 import path from 'node:path'
 import fs from 'node:fs'
 // Uncomment to see pdf elements positions
@@ -12,6 +13,14 @@ const pdfExtract = new PDFExtract()
 const testRoute = {
   method: 'GET',
   path: '/test-parse',
+  options: {
+    validate: {
+      query: Joi.object({
+        filename: Joi.string().min(1).required(),
+        returnPdfJson: Joi.string().valid('true', 'false').optional()
+      }).unknown(true)
+    }
+  },
   handler: processPackingListHandler
 }
 
@@ -24,11 +33,23 @@ function resolvePackingListFilePath(plDirectory, requestedFilename) {
 
   const baseDirectoryPath = path.resolve(plDirectory)
   const resolvedFilePath = path.resolve(baseDirectoryPath, requestedFilename)
-  const isInsideBaseDirectory =
-    resolvedFilePath === baseDirectoryPath ||
-    resolvedFilePath.startsWith(`${baseDirectoryPath}${path.sep}`)
+  const isInsideBaseDirectory = resolvedFilePath.startsWith(
+    `${baseDirectoryPath}${path.sep}`
+  )
 
-  return isInsideBaseDirectory ? resolvedFilePath : null
+  if (!isInsideBaseDirectory) {
+    return null
+  }
+
+  try {
+    return fs.statSync(resolvedFilePath).isFile() ? resolvedFilePath : null
+  } catch {
+    return null
+  }
+}
+
+function isTrueQueryFlag(queryValue) {
+  return queryValue === true || String(queryValue).toLowerCase() === 'true'
 }
 
 async function parsePackingListResult(requestedFilename, filePath) {
@@ -72,7 +93,7 @@ async function processPackingListHandler(request, h) {
         .code(STATUS_CODES.BAD_REQUEST)
     }
 
-    const returnPdfJson = request.query.returnPdfJson === 'true'
+    const returnPdfJson = isTrueQueryFlag(request.query.returnPdfJson)
 
     if (returnPdfJson && !isPdf(requestedFilename)) {
       return h

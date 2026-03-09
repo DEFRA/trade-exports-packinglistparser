@@ -63,9 +63,6 @@ describe('ASDA Model 4 CSV Matcher', () => {
   })
 
   test('should log error details when exception occurs', () => {
-    // Spy on logger.error to verify it's called with correct parameters
-    const loggerSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
     // Create data that will throw during processing
     const problematicData = new Proxy([], {
       get() {
@@ -76,8 +73,5 @@ describe('ASDA Model 4 CSV Matcher', () => {
     const result = matches(problematicData, filename)
 
     expect(result).toBe(matcherResult.GENERIC_ERROR)
-
-    // Clean up
-    loggerSpy.mockRestore()
   })
 })

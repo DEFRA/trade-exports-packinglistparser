@@ -108,6 +108,7 @@ Each local rule should include a brief reason for the deviation.
 - Prefer `logger.info({ context }, 'message')` style for business events with relevant context.
 - Use `formatError(error)` when logging exceptions to keep error shape consistent.
 - Avoid logging full sensitive payloads.
+- Local data-classification note: the `processPackingList` input payload currently logged at info level in `src/services/packing-list-process-service.js` has been classified for this service as non-sensitive operational data.
 
 ## Testing
 
@@ -144,6 +145,7 @@ Each local rule should include a brief reason for the deviation.
 
 - Production exposes core endpoints such as `/health`, `/connectivity-check`, and `/process-packing-list`.
 - Test/development-only routes (for example S3, Dynamics test routes, cache test routes, and `/test-parse`) are conditionally registered by environment.
+- For this project, `perf-test` and `ext-test` are not considered test environments for route exposure.
 
 ## Security
 

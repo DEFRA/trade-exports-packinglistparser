@@ -710,8 +710,10 @@ describe('packing-list-process-service', () => {
       const result = await processPackingList(mockPayload)
 
       expect(result.result).toBe('failure')
-      expect(result.error).toBeDefined()
+      expect(result.error).toContain('Unable to map parsed data')
       expect(result.errorType).toBe('server')
+      expect(mockUploadJsonFileToS3).not.toHaveBeenCalled()
+      expect(mockSendMessageToQueue).not.toHaveBeenCalled()
       expect(mockLogger.error).toHaveBeenCalled()
       // The error is logged both in mapPackingListForStorage and in the catch block
       const errorCalls = mockLogger.error.mock.calls
@@ -871,10 +873,9 @@ describe('packing-list-process-service', () => {
       )
 
       const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
-      // Should have 2 items: 1 good item and 1 undefined (becomes null in JSON)
-      expect(uploadedData.items.length).toBe(2)
+      // Invalid mapped rows are removed before persistence.
+      expect(uploadedData.items.length).toBe(1)
       expect(uploadedData.items[0].description).toBe('Good Item')
-      expect(uploadedData.items[1]).toBeNull()
     })
 
     it('should skip sending message when disableSend is true', async () => {

@@ -76,8 +76,8 @@ export async function processPackingList(
     return successResult
   } catch (err) {
     logger.error(
-      `Error processing packing list: ${err.message}`,
-      formatError(err)
+      formatError(err),
+      `Error processing packing list: ${err.message}`
     )
     return createFailureResult(err.message, 'server')
   }
@@ -154,6 +154,12 @@ async function processPackingListResults(
     logger,
     async () => {
       const persistedData = mapPackingListForStorage(packingList, applicationId)
+
+      if (!persistedData) {
+        throw new Error(
+          `Unable to map parsed data for application ${applicationId}`
+        )
+      }
 
       if (stopDataExit) {
         logger.info(
@@ -251,7 +257,9 @@ function mapPackingListForStorage(packingListJson, applicationId) {
         packingListJson.business_checks.failure_reasons
       ),
       createdAt: new Date().toISOString().replace('Z', ''),
-      items: packingListJson.items.map((n) => itemsMapper(n))
+      items: packingListJson.items
+        .map((n) => itemsMapper(n))
+        .filter((item) => item !== undefined)
     }
   } catch (err) {
     logger.error(

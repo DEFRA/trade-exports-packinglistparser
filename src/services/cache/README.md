@@ -2,7 +2,7 @@
 
 ## Overview
 
-This directory contains in-memory cache services for reference data used by the packing list parser. Each cache is loaded from S3 on server startup and kept up-to-date by an hourly MDM synchronization scheduler.
+This directory contains in-memory cache services for reference data used by the packing list parser. When `MDM_INTEGRATION_ENABLED=true`, each cache is loaded from S3 on server startup and kept up-to-date by an hourly MDM synchronization scheduler.
 
 ### Caches
 
@@ -59,7 +59,7 @@ ISO_CODES_SYNC_CRON_SCHEDULE=0 * * * *
 
 ### Initialization
 
-The cache is automatically initialized when the server starts. See [start-server.js](../common/helpers/start-server.js):
+The cache is automatically initialized when the server starts. See [start-server.js](../../common/helpers/start-server.js):
 
 ```javascript
 import { initializeIneligibleItemsCache } from '../../services/cache/ineligible-items-cache.js'
@@ -71,7 +71,7 @@ await initializeIneligibleItemsCache()
 ### Accessing Cached Data
 
 ```javascript
-import { getIneligibleItemsCache } from './services/cache/ineligible-items-cache.js'
+import { getIneligibleItemsCache } from './ineligible-items-cache.js'
 
 // Get cached ineligible items
 const items = getIneligibleItemsCache()
@@ -91,7 +91,7 @@ if (items === null) {
 import {
   setIneligibleItemsCache,
   clearIneligibleItemsCache
-} from './services/cache/ineligible-items-cache.js'
+} from './ineligible-items-cache.js'
 
 // Manually set cache (useful in tests)
 setIneligibleItemsCache([{ country_of_origin: 'CN', commodity_code: '0207' }])
@@ -112,7 +112,7 @@ clearIneligibleItemsCache()
 
 **Implementation**:
 
-- Cache initialization happens in [start-server.js](../common/helpers/start-server.js)
+- Cache initialization happens in [start-server.js](../../common/helpers/start-server.js)
 - Data is fetched from S3 using `getFileFromS3()` function
 - Data is stored in module-level variable `ineligibleItemsCache`
 
@@ -256,7 +256,7 @@ The test suite covers:
 - [iso-codes-mdm-s3-sync.test.js](./iso-codes-mdm-s3-sync.test.js) - ISO codes sync test suite
 - [sync-scheduler.js](./sync-scheduler.js) - Hourly sync scheduler (manages both ineligible items and ISO codes)
 - [sync-scheduler.test.js](./sync-scheduler.test.js) - Scheduler test suite
-- [start-server.js](../common/helpers/start-server.js) - Server startup integration
+- [start-server.js](../../common/helpers/start-server.js) - Server startup integration
 - [config.js](../../config.js) - Configuration definitions
 - [s3-service.js](../s3-service.js) - S3 interaction utilities
 
@@ -264,7 +264,7 @@ The test suite covers:
 
 ### Overview
 
-The system includes automated hourly synchronization from MDM (Master Data Management) to S3. This ensures the ineligible items cache stays up-to-date with the latest master data.
+The system includes automated hourly synchronization from MDM (Master Data Management) to S3. This keeps both ineligible items and ISO codes caches up-to-date with the latest master data.
 
 ### Configuration
 
@@ -283,9 +283,9 @@ ISO_CODES_SYNC_CRON_SCHEDULE=0 * * * *
 
 ### Sync Process
 
-1. **Retrieve** latest data from MDM via `getIneligibleItems()`
+1. **Retrieve** latest data from MDM (ineligible items and ISO codes)
 2. **Write** data to S3 via `uploadJsonFileToS3()`
-3. **Update** in-memory cache with fresh data via `setIneligibleItemsCache(mdmData)`
+3. **Update** in-memory caches with fresh data (`setIneligibleItemsCache()` / `setIsoCodesCache()`)
 4. **Log** operation with success status and timestamp
 
 ### Usage
@@ -293,7 +293,7 @@ ISO_CODES_SYNC_CRON_SCHEDULE=0 * * * *
 The sync scheduler starts automatically when the server starts:
 
 ```javascript
-import { startSyncScheduler } from './services/cache/sync-scheduler.js'
+import { startSyncScheduler } from './sync-scheduler.js'
 
 // Started during server initialization
 startSyncScheduler()
@@ -304,7 +304,7 @@ startSyncScheduler()
 You can trigger a manual sync programmatically:
 
 ```javascript
-import { syncMdmToS3 } from './services/cache/ineligible-items-mdm-s3-sync.js'
+import { syncMdmToS3 } from './ineligible-items-mdm-s3-sync.js'
 
 // Trigger manual sync
 const result = await syncMdmToS3()

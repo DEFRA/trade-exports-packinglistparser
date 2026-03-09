@@ -136,10 +136,6 @@ describe('MDM Routes', () => {
       error.status = 404
       getIneligibleItems.mockRejectedValue(error)
 
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-
       await ineligibleItems.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
@@ -148,8 +144,6 @@ describe('MDM Routes', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(
         STATUS_CODES.INTERNAL_SERVER_ERROR
       )
-
-      consoleErrorSpy.mockRestore()
     })
 
     /**
@@ -160,10 +154,6 @@ describe('MDM Routes', () => {
       error.status = 401
       getIneligibleItems.mockRejectedValue(error)
 
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-
       await ineligibleItems.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
@@ -172,8 +162,6 @@ describe('MDM Routes', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(
         STATUS_CODES.INTERNAL_SERVER_ERROR
       )
-
-      consoleErrorSpy.mockRestore()
     })
 
     /**
@@ -258,10 +246,6 @@ describe('MDM Routes', () => {
     it('should return error response with correct structure', async () => {
       getIneligibleItems.mockRejectedValue(new Error('Test error'))
 
-      const consoleErrorSpy = vi
-        .spyOn(console, 'error')
-        .mockImplementation(() => {})
-
       await ineligibleItems.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith(
@@ -269,8 +253,6 @@ describe('MDM Routes', () => {
           error: expect.any(String)
         })
       )
-
-      consoleErrorSpy.mockRestore()
     })
   })
 })

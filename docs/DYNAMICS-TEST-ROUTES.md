@@ -2,19 +2,43 @@
 
 ## Overview
 
-Two safe test routes have been created to validate the Dynamics 365 service integration without exposing sensitive operations or data.
+Two test routes are implemented to validate Dynamics 365 integration behavior:
+
+- `GET /dynamics/health`
+- `GET /dynamics/dispatch-location/{applicationId}`
+
+These routes are environment-gated by router registration and are only exposed in:
+
+- `local`
+- `infra-dev`
+- `management`
+- `dev`
+- `test`
+
+They are not registered in `perf-test`, `ext-test`, or `prod`.
+
+## Route Exposure
+
+The routes are registered via `src/plugins/router.js` only when `cdpEnvironment` is one of:
+
+- `local`
+- `infra-dev`
+- `management`
+- `dev`
+- `test`
+
+In unsupported environments, requests to these endpoints return route-not-found behavior (typically `404`), because the routes are not mounted.
+
+---
 
 ## Routes
 
 ### 1. Health Check: `GET /dynamics/health`
 
-**Purpose:** Validate Dynamics 365 configuration without making external requests
+**Purpose:** Validate Dynamics 365 configuration without making external requests.
 
-**URL:** `/dynamics/health`
-
+**URL:** `/dynamics/health`  
 **Method:** `GET`
-
-**Security:** Available in all environments
 
 **Response Example (Configured):**
 
@@ -57,34 +81,26 @@ Two safe test routes have been created to validate the Dynamics 365 service inte
 - `200` - Service is fully configured
 - `503` - Service is not configured or partially configured
 
-**Use Cases:**
-
-- Pre-flight checks before deployment
-- Health monitoring in CDP environments
-- Configuration validation during setup
-- Debugging configuration issues
-
 ---
 
-### 2. Test Dispatch Location: `GET /dynamics/dispatch-location/{applicationId}`
+### 2. Dispatch Location Test: `GET /dynamics/dispatch-location/{applicationId}`
 
-**Purpose:** Test Dynamics 365 integration by retrieving a REMOS ID for a given establishment
+**Purpose:** Test Dynamics 365 integration by retrieving a REMOS ID for a given establishment/application ID.
 
-**URL:** `/dynamics/dispatch-location/{applicationId}`
-
+**URL:** `/dynamics/dispatch-location/{applicationId}`  
 **Method:** `GET`
 
-**Security Features:**
+**Security/validation features:**
 
-- ✅ **Disabled in production** - Returns 403 in prod environment
-- ✅ **Input validation** - Only alphanumeric, hyphens, underscores allowed
-- ✅ **Length limits** - Max 100 characters
-- ✅ **Sanitized errors** - No sensitive data in error messages
-- ✅ **Logging** - All requests logged with context
+- Input validation via Joi
+- Allowed characters: alphanumeric, hyphen, underscore
+- Max length: 100
+- Sanitized internal error response (`Internal server error`)
+- Structured logging
 
 **Parameters:**
 
-- `applicationId` (path) - Establishment or Application ID
+- `applicationId` (path)
   - Format: `^[a-zA-Z0-9\-_]+$`
   - Min length: 1
   - Max length: 100
@@ -102,7 +118,7 @@ Two safe test routes have been created to validate the Dynamics 365 service inte
 }
 ```
 
-**Response Example (Not Found):**
+**Response Example (REMOS ID Not Found):**
 
 ```json
 {
@@ -114,33 +130,26 @@ Two safe test routes have been created to validate the Dynamics 365 service inte
 }
 ```
 
-**Response Example (Production Block):**
+**Response Example (Service Error):**
 
 ```json
 {
-  "error": "This endpoint is not available in production environments",
   "applicationId": "TEST-123",
-  "success": false,
   "remosId": null,
-  "environment": "prod",
-  "timestamp": "2025-11-11T11:00:00.000Z"
+  "success": false,
+  "environment": "local",
+  "timestamp": "2025-11-11T11:00:00.000Z",
+  "error": "Internal server error"
 }
 ```
 
 **Status Codes:**
 
-- `200` - REMOS ID found successfully
-- `400` - Invalid application ID format
-- `403` - Endpoint disabled in production
-- `404` - REMOS ID not found (not an error, just doesn't exist)
-- `500` - Internal server error (Dynamics service failure)
-
-**Use Cases:**
-
-- Manual testing of Dynamics integration
-- Validation of establishment IDs
-- Debugging REMOS ID lookups
-- Integration testing in dev/test environments
+- `200` - REMOS ID found
+- `400` - Invalid `applicationId` format
+- `404` - REMOS ID not found for a valid request
+- `500` - Internal server error
+- `404` (unsupported environments) - Route not registered
 
 ---
 
@@ -202,72 +211,60 @@ GET http://localhost:3001/dynamics/dispatch-location/DOES-NOT-EXIST
 
 ## Environment Behavior
 
-| Environment | Health Check | Dispatch Location |
-| ----------- | ------------ | ----------------- |
-| `local`     | ✅ Available | ✅ Available      |
-| `dev`       | ✅ Available | ✅ Available      |
-| `test`      | ✅ Available | ✅ Available      |
-| `perf-test` | ✅ Available | ✅ Available      |
-| `ext-test`  | ✅ Available | ✅ Available      |
-| `prod`      | ✅ Available | ❌ Disabled (403) |
+| Environment  | `/dynamics/health` | `/dynamics/dispatch-location/{applicationId}` |
+| ------------ | ------------------ | --------------------------------------------- |
+| `local`      | Available          | Available                                     |
+| `infra-dev`  | Available          | Available                                     |
+| `management` | Available          | Available                                     |
+| `dev`        | Available          | Available                                     |
+| `test`       | Available          | Available                                     |
+| `perf-test`  | Not registered     | Not registered                                |
+| `ext-test`   | Not registered     | Not registered                                |
+| `prod`       | Not registered     | Not registered                                |
 
 ---
 
 ## Security Considerations
 
-### What's Safe ✅
+### What's Safe
 
-- **No data modification** - Both routes are read-only
-- **Input validation** - Strict format checking on application IDs
-- **Production protection** - Test route disabled in prod
-- **Error sanitization** - No sensitive data leaked in errors
-- **Rate limiting** - Inherits application-level rate limits
-- **Logging** - All access logged for audit
+- No data modification, both routes are read-only
+- Input validation for application IDs
+- Error responses are sanitized
+- Route exposure is restricted by environment
+- Requests are logged
 
-### What's NOT Exposed ❌
+### What's Not Exposed
 
-- ❌ Client secrets or credentials
-- ❌ Bearer tokens
-- ❌ Internal Dynamics URLs (only in config)
-- ❌ Full error stack traces
-- ❌ Database queries or internal logic
+- Client secrets or credentials
+- Bearer tokens
+- Full internal error details in responses
 
 ### Recommendations
 
-1. **Remove in production** - Consider removing test route entirely in prod builds
-2. **Add authentication** - Consider adding API key or OAuth for test route
-3. **Rate limiting** - Add specific rate limits for test endpoints
-4. **Monitoring** - Monitor usage and alert on suspicious patterns
-5. **Time limits** - Consider adding time-based access (e.g., only during business hours)
+1. Keep route exposure restricted to non-production support environments.
+2. Consider auth controls if broader exposure is required in future.
+3. Monitor request patterns and failure rates for abuse detection.
 
 ---
 
 ## Testing
 
-**Test Files:** `src/routes/dynamics.test.js`
+**Test file:** `src/routes/dynamics.test.js`
 
-**Coverage:** 100% (14 tests)
+Current route tests cover:
 
-**Test Scenarios:**
+- Health check configured and unconfigured paths
+- Dispatch-location success path
+- Dispatch-location not-found path
+- Dispatch-location internal-error path
+- Request validation failures
+- ID format edge cases
+- Behavior in `dev` and `test` environments
 
-- ✅ Health check with full configuration
-- ✅ Health check with missing configuration
-- ✅ Health check with partial configuration
-- ✅ Successful REMOS ID retrieval
-- ✅ REMOS ID not found (404)
-- ✅ Service error handling (500)
-- ✅ Production environment block (403)
-- ✅ Input validation (400)
-- ✅ Empty application ID rejection
-- ✅ Application IDs with hyphens
-- ✅ Application IDs with underscores
-- ✅ Application IDs over length limit
-- ✅ Dev environment behavior
-- ✅ Test environment behavior
+Run:
 
-**Run Tests:**
-
-```powershell
+```bash
 npm test src/routes/dynamics.test.js
 ```
 
@@ -275,121 +272,51 @@ npm test src/routes/dynamics.test.js
 
 ## Troubleshooting
 
-### Health Check Returns 503
+### `GET /dynamics/health` returns `503`
 
-**Problem:** Service configured: false
+Check Dynamics configuration variables:
 
-**Solution:**
+```bash
+DYNAMICS_URL=
+DYNAMICS_TOKEN_URL=
+DYNAMICS_CLIENT_ID=
+DYNAMICS_CLIENT_SECRET=
+DYNAMICS_RESOURCE=
+```
 
-1. Check environment variables are set:
-   ```bash
-   DYNAMICS_URL=
-   DYNAMICS_TOKEN_URL=
-   DYNAMICS_CLIENT_ID=
-   DYNAMICS_CLIENT_SECRET=
-   DYNAMICS_RESOURCE=
-   ```
-2. Verify `.env` file is loaded
-3. Check config validation didn't fail on startup
+### Dispatch route returns `404`
 
-### Dispatch Location Returns 404
+There are two common causes:
 
-**Problem:** REMOS ID not found
+1. The route is active, but no REMOS ID exists for the supplied ID.
+2. The route is not registered in the current environment (`perf-test`, `ext-test`, `prod`).
 
-**Possible Causes:**
+### Dispatch route returns `500`
 
-- Establishment ID doesn't exist in Dynamics
-- Incorrect ID format
-- Dynamics environment mismatch (dev vs prod data)
-
-**Solution:**
-
-1. Verify establishment ID exists in your Dynamics instance
-2. Check Dynamics URL points to correct environment
-3. Use health check to verify configuration
-4. Check application logs for Dynamics errors
-
-### Dispatch Location Returns 500
-
-**Problem:** Internal server error
-
-**Possible Causes:**
-
-- Dynamics service is down
-- Network connectivity issues
+- Dynamics service unavailable
 - Authentication failure
-- Invalid credentials
+- Network connectivity issues
 
-**Solution:**
-
-1. Check Dynamics service health directly
-2. Verify credentials haven't expired
-3. Check network/firewall rules
-4. Review application logs for detailed error
-5. Test bearer token request separately
-
-### Request Returns 403 in Non-Prod
-
-**Problem:** Shouldn't happen - test route should work in dev/test
-
-**Solution:**
-
-1. Check `ENVIRONMENT` variable is set correctly
-2. Verify not accidentally pointing to prod config
-3. Check application logs
+Check application logs for details.
 
 ---
 
 ## Integration with Message Processing
 
-These test routes validate the same Dynamics service used in message processing:
+These routes validate the same Dynamics service used in message processing:
 
 ```
 Message Processing Flow:
 1. Receive packing list message
 2. Extract establishment ID
-3. Call getDispatchLocation(establishmentId) ← Same function as test route
-4. Use REMOS ID to find parser
-5. Process packing list
+3. Call getDispatchLocation(establishmentId)
+4. Use REMOS ID in downstream processing
 
 Test Route:
-GET /dynamics/dispatch-location/{id} ← Tests same function
+GET /dynamics/dispatch-location/{id}
 ```
 
-If the test route works, the message processing Dynamics integration should work too.
-
----
-
-## Monitoring & Alerts
-
-Recommended monitoring:
-
-1. **Health Check:**
-
-   - Alert if returns 503 in production
-   - Monitor for configuration drift
-
-2. **Test Route Usage:**
-
-   - Track request frequency
-   - Alert on unusual patterns (potential abuse)
-   - Monitor error rates
-
-3. **Performance:**
-   - Track response times
-   - Alert on slow Dynamics responses (>5s)
-   - Monitor retry patterns
-
----
-
-## Future Enhancements
-
-1. **Batch Testing** - Add endpoint to test multiple IDs at once
-2. **Authentication** - Add API key or OAuth requirement
-3. **Caching** - Cache results to reduce Dynamics load
-4. **Metrics** - Add detailed metrics endpoint
-5. **Mock Mode** - Add mock data for demo purposes
-6. **Admin UI** - Simple web UI for non-technical testing
+If the test route works in an enabled environment, the Dynamics lookup integration path is functioning.
 
 ---
 

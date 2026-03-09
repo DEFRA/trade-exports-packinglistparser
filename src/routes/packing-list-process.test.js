@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import Hapi from '@hapi/hapi'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { STATUS_CODES } from './statuscodes.js'
 import { packingListProcessRoute } from './packing-list-process.js'
 import { processPackingList } from '../services/packing-list-process-service.js'
@@ -8,235 +9,40 @@ vi.mock('../services/packing-list-process-service.js', () => ({
   processPackingList: vi.fn()
 }))
 
-let mockRequest
-let mockH
-let mockResponse
+let server
 
-function initialiseRouteTestContext() {
-  mockResponse = {
-    code: vi.fn().mockReturnThis()
-  }
-  mockH = {
-    response: vi.fn().mockReturnValue(mockResponse)
-  }
-  mockRequest = {
-    payload: {},
-    query: {}
+const validPayload = {
+  application_id: '12345',
+  packing_list_blob:
+    'https://testaccount.blob.core.windows.net/container/file.xlsx',
+  SupplyChainConsignment: {
+    DispatchLocation: {
+      IDCOMS: {
+        EstablishmentId: '550e8400-e29b-41d4-a716-446655440000'
+      }
+    }
   }
 }
 
-function defineResponseTests() {
-  it('should return success response when processing succeeds', async () => {
-    const mockMessage = {
-      filename: 'test-packing-list.pdf',
-      data: 'test-data'
-    }
-    const mockResult = {
-      result: 'success',
-      data: {
-        parserModel: 'MODEL1',
-        approvalStatus: 'approved',
-        reasonsForFailure: []
-      }
-    }
-
-    mockRequest.payload = mockMessage
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
-      stopDataExit: false
-    })
-    expect(mockH.response).toHaveBeenCalledWith({
-      result: 'success',
-      data: {
-        parserModel: 'MODEL1',
-        approvalStatus: 'approved',
-        reasonsForFailure: []
-      }
-    })
-    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+async function injectProcessPackingList(payload, query = '') {
+  const queryString = query ? `?${query}` : ''
+  return server.inject({
+    method: 'POST',
+    url: `/process-packing-list${queryString}`,
+    payload
   })
-
-  it('should return error response when processing fails', async () => {
-    const mockResult = {
-      result: 'failure',
-      error: 'Failed to process packing list'
-    }
-
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(mockH.response).toHaveBeenCalledWith({
-      result: 'failure',
-      error: 'Failed to process packing list'
-    })
-    expect(mockResponse.code).toHaveBeenCalledWith(
-      STATUS_CODES.INTERNAL_SERVER_ERROR
-    )
-  })
-
-  it('should return bad request response when processing fails with client error', async () => {
-    const mockResult = {
-      result: 'failure',
-      error: 'Validation failed: application_id must be a number',
-      errorType: 'client'
-    }
-
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(mockH.response).toHaveBeenCalledWith(mockResult)
-    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST)
-  })
-}
-
-function definePayloadTests() {
-  it('should handle empty payload', async () => {
-    const mockResult = {
-      result: 'success',
-      data: {
-        parserModel: 'NOMATCH',
-        approvalStatus: 'rejected_other',
-        reasonsForFailure: []
-      }
-    }
-
-    mockRequest.payload = {}
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(processPackingList).toHaveBeenCalledWith({}, { stopDataExit: false })
-    expect(mockH.response).toHaveBeenCalledWith({
-      result: 'success',
-      data: {
-        parserModel: 'NOMATCH',
-        approvalStatus: 'rejected_other',
-        reasonsForFailure: []
-      }
-    })
-    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
-  })
-
-  it('should handle service throwing generic error', async () => {
-    const mockResult = {
-      result: 'failure',
-      error: 'Database connection failed'
-    }
-
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(mockH.response).toHaveBeenCalledWith({
-      result: 'failure',
-      error: 'Database connection failed'
-    })
-    expect(mockResponse.code).toHaveBeenCalledWith(
-      STATUS_CODES.INTERNAL_SERVER_ERROR
-    )
-  })
-
-  it('should pass through all payload properties to service', async () => {
-    const mockMessage = {
-      filename: 'complex-file.xlsx',
-      data: 'base64-encoded-data',
-      metadata: {
-        source: 'test-source',
-        timestamp: '2026-01-05T12:00:00Z'
-      }
-    }
-    const mockResult = {
-      result: 'success',
-      data: {}
-    }
-
-    mockRequest.payload = mockMessage
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
-      stopDataExit: false
-    })
-    expect(processPackingList).toHaveBeenCalledTimes(1)
-  })
-}
-
-function defineStopDataExitTests() {
-  it('should pass stopDataExit=true when query parameter is set', async () => {
-    const mockMessage = { filename: 'test.pdf' }
-    const mockResult = {
-      result: 'success',
-      data: {}
-    }
-
-    mockRequest.payload = mockMessage
-    mockRequest.query.stopDataExit = 'true'
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
-      stopDataExit: true
-    })
-    expect(mockH.response).toHaveBeenCalledWith(mockResult)
-    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
-  })
-
-  it('should pass stopDataExit=false when query parameter is not true', async () => {
-    const mockMessage = { filename: 'test.pdf' }
-    const mockResult = {
-      result: 'success',
-      data: {}
-    }
-
-    mockRequest.payload = mockMessage
-    mockRequest.query.stopDataExit = 'false'
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
-      stopDataExit: false
-    })
-  })
-
-  it('should pass stopDataExit=false when query parameter is not set', async () => {
-    const mockMessage = { filename: 'test.pdf' }
-    const mockResult = {
-      result: 'success',
-      data: {}
-    }
-
-    mockRequest.payload = mockMessage
-    processPackingList.mockResolvedValue(mockResult)
-
-    await packingListProcessRoute.handler(mockRequest, mockH)
-
-    expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
-      stopDataExit: false
-    })
-    expect(mockH.response).toHaveBeenCalledWith(mockResult)
-    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
-  })
-}
-
-function defineHandlerTests() {
-  defineResponseTests()
-  definePayloadTests()
-  defineStopDataExitTests()
 }
 
 describe('Packing List Process Route', () => {
-  beforeEach(() => {
-    initialiseRouteTestContext()
-
+  beforeEach(async () => {
     vi.clearAllMocks()
+    server = Hapi.server()
+    server.route(packingListProcessRoute)
+    await server.initialize()
+  })
+
+  afterEach(async () => {
+    await server.stop()
   })
 
   it('should have correct route configuration', () => {
@@ -245,7 +51,97 @@ describe('Packing List Process Route', () => {
     expect(typeof packingListProcessRoute.handler).toBe('function')
   })
 
-  describe('handler', () => {
-    defineHandlerTests()
+  describe('handler via server.inject', () => {
+    it('returns success response when processing succeeds', async () => {
+      const mockResult = {
+        result: 'success',
+        data: {
+          parserModel: 'MODEL1',
+          approvalStatus: 'approved',
+          reasonsForFailure: []
+        }
+      }
+      processPackingList.mockResolvedValue(mockResult)
+
+      const response = await injectProcessPackingList(validPayload)
+
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
+      expect(JSON.parse(response.payload)).toEqual(mockResult)
+      expect(processPackingList).toHaveBeenCalledWith(validPayload, {
+        stopDataExit: false
+      })
+    })
+
+    it('returns 500 when processing fails with server error', async () => {
+      const mockResult = {
+        result: 'failure',
+        error: 'Database connection failed'
+      }
+      processPackingList.mockResolvedValue(mockResult)
+
+      const response = await injectProcessPackingList(validPayload)
+
+      expect(response.statusCode).toBe(STATUS_CODES.INTERNAL_SERVER_ERROR)
+      expect(JSON.parse(response.payload)).toEqual(mockResult)
+    })
+
+    it('returns 400 when processing fails with client error', async () => {
+      const mockResult = {
+        result: 'failure',
+        error: 'Validation failed: application_id must be a number',
+        errorType: 'client'
+      }
+      processPackingList.mockResolvedValue(mockResult)
+
+      const response = await injectProcessPackingList(validPayload)
+
+      expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
+      expect(JSON.parse(response.payload)).toEqual(mockResult)
+    })
+
+    it('passes stopDataExit=true when query parameter is set', async () => {
+      processPackingList.mockResolvedValue({ result: 'success', data: {} })
+
+      const response = await injectProcessPackingList(
+        validPayload,
+        'stopDataExit=true'
+      )
+
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
+      expect(processPackingList).toHaveBeenCalledWith(validPayload, {
+        stopDataExit: true
+      })
+    })
+
+    it('passes stopDataExit=false when query parameter is false', async () => {
+      processPackingList.mockResolvedValue({ result: 'success', data: {} })
+
+      const response = await injectProcessPackingList(
+        validPayload,
+        'stopDataExit=false'
+      )
+
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
+      expect(processPackingList).toHaveBeenCalledWith(validPayload, {
+        stopDataExit: false
+      })
+    })
+
+    it('returns 400 when payload fails route validation', async () => {
+      const response = await injectProcessPackingList({})
+
+      expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
+      expect(processPackingList).not.toHaveBeenCalled()
+    })
+
+    it('returns 400 when query validation fails', async () => {
+      const response = await injectProcessPackingList(
+        validPayload,
+        'stopDataExit=invalid'
+      )
+
+      expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
+      expect(processPackingList).not.toHaveBeenCalled()
+    })
   })
 })
