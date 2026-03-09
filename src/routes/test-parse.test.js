@@ -13,6 +13,7 @@ const { mockPdfExtractBuffer } = vi.hoisted(() => ({
 }))
 const MOCK_PDF_CONTENT = 'mock pdf content'
 const FILE_NOT_FOUND_ERROR_MESSAGE = 'ENOENT: no such file or directory'
+const INVALID_FILENAME_ERROR_MESSAGE = 'Invalid filename'
 
 // Mock the dependencies - must be before imports
 vi.mock('../services/parser-service.js', () => ({
@@ -200,6 +201,88 @@ describe('Test Parse Route', () => {
       expect(mockResponse.code).toHaveBeenCalledWith(
         STATUS_CODES.INTERNAL_SERVER_ERROR
       )
+    })
+
+    it('should reject path traversal filename', async () => {
+      mockRequest.query.filename = '../secrets.txt'
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: INVALID_FILENAME_ERROR_MESSAGE
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST)
+      expect(convertExcelToJson).not.toHaveBeenCalled()
+      expect(convertCsvToJson).not.toHaveBeenCalled()
+      expect(parsePackingList).not.toHaveBeenCalled()
+      expect(fs.readFileSync).not.toHaveBeenCalled()
+    })
+
+    it('should reject absolute path filename', async () => {
+      mockRequest.query.filename = '/etc/passwd'
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: INVALID_FILENAME_ERROR_MESSAGE
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST)
+      expect(convertExcelToJson).not.toHaveBeenCalled()
+      expect(convertCsvToJson).not.toHaveBeenCalled()
+      expect(parsePackingList).not.toHaveBeenCalled()
+      expect(fs.readFileSync).not.toHaveBeenCalled()
+    })
+
+    it('should reject empty filename', async () => {
+      mockRequest.query.filename = ''
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: INVALID_FILENAME_ERROR_MESSAGE
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST)
+      expect(convertExcelToJson).not.toHaveBeenCalled()
+      expect(convertCsvToJson).not.toHaveBeenCalled()
+      expect(parsePackingList).not.toHaveBeenCalled()
+      expect(fs.readFileSync).not.toHaveBeenCalled()
+    })
+
+    it('should reject returnPdfJson when filename is not a PDF', async () => {
+      mockRequest.query.filename = 'test-file.csv'
+      mockRequest.query.returnPdfJson = 'true'
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: INVALID_FILENAME_ERROR_MESSAGE
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST)
+      expect(convertExcelToJson).not.toHaveBeenCalled()
+      expect(convertCsvToJson).not.toHaveBeenCalled()
+      expect(parsePackingList).not.toHaveBeenCalled()
+      expect(fs.readFileSync).not.toHaveBeenCalled()
+      expect(mockPdfExtractBuffer).not.toHaveBeenCalled()
+    })
+
+    it('should reject when filename is missing', async () => {
+      mockRequest.query = {}
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: INVALID_FILENAME_ERROR_MESSAGE
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST)
+      expect(convertExcelToJson).not.toHaveBeenCalled()
+      expect(convertCsvToJson).not.toHaveBeenCalled()
+      expect(parsePackingList).not.toHaveBeenCalled()
+      expect(fs.readFileSync).not.toHaveBeenCalled()
     })
 
     it('should process complete workflow for valid packing list', async () => {
@@ -406,10 +489,7 @@ describe('Test Parse Route', () => {
 
         await testRoute.handler(mockRequest, mockH)
 
-        expect(parsePackingList).toHaveBeenCalledWith(
-          mockPdfBuffer,
-          path.join(plDirectory, 'test-packing-list.pdf')
-        )
+        expect(parsePackingList).not.toHaveBeenCalled()
         expect(mockPdfExtractBuffer).toHaveBeenCalledWith(mockPdfBuffer)
         expect(mockH.response).toHaveBeenCalledWith({
           success: true,
@@ -418,38 +498,28 @@ describe('Test Parse Route', () => {
         expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
       })
 
-      it('should still return PDF JSON when second file read fails for returnPdfJson', async () => {
+      it('should return error when file read fails for returnPdfJson', async () => {
         mockRequest.query.filename = 'test-packing-list.pdf'
         mockRequest.query.returnPdfJson = 'true'
-        const mockPdfBuffer = Buffer.from(MOCK_PDF_CONTENT)
         const secondReadError = new Error(FILE_NOT_FOUND_ERROR_MESSAGE)
-        const mockPdfJsonResult = { pages: [] }
-        const consoleErrorSpy = vi
-          .spyOn(console, 'error')
-          .mockImplementation(() => {})
-        try {
-          isCsv.mockReturnValue(false)
-          isPdf.mockReturnValue(true)
-          fs.readFileSync
-            .mockReturnValueOnce(mockPdfBuffer)
-            .mockImplementationOnce(() => {
-              throw secondReadError
-            })
-          parsePackingList.mockResolvedValue({ parserModel: 'GIOVANNI3' })
-          mockPdfExtractBuffer.mockResolvedValue(mockPdfJsonResult)
 
-          await testRoute.handler(mockRequest, mockH)
+        isCsv.mockReturnValue(false)
+        isPdf.mockReturnValue(true)
+        fs.readFileSync.mockImplementation(() => {
+          throw secondReadError
+        })
 
-          expect(consoleErrorSpy).toHaveBeenCalledWith(secondReadError)
-          expect(mockPdfExtractBuffer).toHaveBeenCalledWith({})
-          expect(mockH.response).toHaveBeenCalledWith({
-            success: true,
-            result: mockPdfJsonResult
-          })
-          expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
-        } finally {
-          consoleErrorSpy.mockRestore()
-        }
+        await testRoute.handler(mockRequest, mockH)
+
+        expect(parsePackingList).not.toHaveBeenCalled()
+        expect(mockPdfExtractBuffer).not.toHaveBeenCalled()
+        expect(mockH.response).toHaveBeenCalledWith({
+          success: false,
+          error: 'Failed to extract PDF JSON'
+        })
+        expect(mockResponse.code).toHaveBeenCalledWith(
+          STATUS_CODES.INTERNAL_SERVER_ERROR
+        )
       })
 
       it('should return error response when returnPdfJson extraction fails', async () => {
