@@ -25,7 +25,7 @@ function initialiseRouteTestContext() {
   }
 }
 
-function defineHandlerTests() {
+function defineResponseTests() {
   it('should return success response when processing succeeds', async () => {
     const mockMessage = {
       filename: 'test-packing-list.pdf',
@@ -92,7 +92,9 @@ function defineHandlerTests() {
     expect(mockH.response).toHaveBeenCalledWith(mockResult)
     expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.BAD_REQUEST)
   })
+}
 
+function definePayloadTests() {
   it('should handle empty payload', async () => {
     const mockResult = {
       result: 'success',
@@ -163,7 +165,9 @@ function defineHandlerTests() {
     })
     expect(processPackingList).toHaveBeenCalledTimes(1)
   })
+}
 
+function defineStopDataExitTests() {
   it('should pass stopDataExit=true when query parameter is set', async () => {
     const mockMessage = { filename: 'test.pdf' }
     const mockResult = {
@@ -217,7 +221,15 @@ function defineHandlerTests() {
     expect(processPackingList).toHaveBeenCalledWith(mockMessage, {
       stopDataExit: false
     })
+    expect(mockH.response).toHaveBeenCalledWith(mockResult)
+    expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
   })
+}
+
+function defineHandlerTests() {
+  defineResponseTests()
+  definePayloadTests()
+  defineStopDataExitTests()
 }
 
 describe('Packing List Process Route', () => {
