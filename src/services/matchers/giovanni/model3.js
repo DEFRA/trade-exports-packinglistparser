@@ -120,8 +120,8 @@ function findHeader(model, pageContent) {
     const hasYRange = matchHeader.minHeadersY !== undefined
 
     const isMatch = hasYRange
-      ? matchHeaderWithYRange(matchHeader, pageContent)
-      : matchHeaderWithXRange(matchHeader, header)
+      ? matchHeaderWithYRange(matchHeader, pageContent) // use this to match blanket headers
+      : matchHeaderWithXRange(matchHeader, header) // use this to match normal column headers
 
     if (!isMatch) {
       return matcherResult.WRONG_HEADER
