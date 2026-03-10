@@ -71,9 +71,14 @@ vi.mock('./validators/packing-list-validator-utilities.js', () => ({
   isNotNirms: mockIsNotNirms
 }))
 
-// Mock uuid
+// Mock uuid - uses vi.hoisted so the function reference is available for per-test setup,
+// ensuring messageId and correlationId receive distinct values.
+const { mockV4 } = vi.hoisted(() => ({
+  mockV4: vi.fn()
+}))
+
 vi.mock('uuid', () => ({
-  v4: vi.fn(() => 'test-uuid')
+  v4: mockV4
 }))
 
 // Mock logger
@@ -152,6 +157,11 @@ describe('packing-list-process-service', () => {
     mockLogger.debug.mockClear()
     mockIsNirms.mockReturnValue(false)
     mockIsNotNirms.mockReturnValue(false)
+    // Reset and queue distinct UUID values so messageId and correlationId differ
+    mockV4.mockReset()
+    mockV4
+      .mockReturnValueOnce('test-message-uuid')
+      .mockReturnValueOnce('test-correlation-uuid')
   })
 
   describe('processPackingList', () => {
@@ -664,8 +674,12 @@ describe('packing-list-process-service', () => {
       expect(messageCall).toHaveProperty('body')
       expect(messageCall).toHaveProperty('type', 'uk.gov.trade.plp')
       expect(messageCall).toHaveProperty('source', 'trade-exportscore-plp')
-      expect(messageCall).toHaveProperty('messageId', 'test-uuid')
-      expect(messageCall).toHaveProperty('correlationId', 'test-uuid')
+      expect(messageCall).toHaveProperty('messageId', 'test-message-uuid')
+      expect(messageCall).toHaveProperty(
+        'correlationId',
+        'test-correlation-uuid'
+      )
+      expect(messageCall.messageId).not.toBe(messageCall.correlationId)
       expect(messageCall).toHaveProperty('subject', 'plp.idcoms.parsed')
       expect(messageCall).toHaveProperty('contentType', 'application/json')
       expect(messageCall).toHaveProperty('applicationProperties')

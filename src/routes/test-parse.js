@@ -6,7 +6,6 @@ import { isCsv, isPdf } from '../utilities/file-extension.js'
 import Joi from 'joi'
 import path from 'node:path'
 import fs from 'node:fs'
-// Uncomment to see pdf elements positions
 import { PDFExtract } from 'pdf.js-extract'
 const pdfExtract = new PDFExtract()
 

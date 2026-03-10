@@ -1,9 +1,7 @@
 import Joi from 'joi'
 import { processPackingList } from '../services/packing-list-process-service.js'
 import { STATUS_CODES } from './statuscodes.js'
-
-const GUID_FORMAT_REGEX =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+import { GUID_FORMAT_REGEX } from '../services/packing-list-process-message-validation.js'
 
 const positiveIntegerId = Joi.alternatives(
   Joi.number().integer().positive(),

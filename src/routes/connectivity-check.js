@@ -72,7 +72,7 @@ async function connectivityCheckHandler(_request, h) {
     .code(STATUS_CODES.OK)
 }
 
-/*
+/**
  * Check if we can connect to Trade Service Bus
  * @returns {Promise<boolean>} True if connected, false otherwise
  */

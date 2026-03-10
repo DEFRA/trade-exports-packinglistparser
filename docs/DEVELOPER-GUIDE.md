@@ -95,30 +95,27 @@ try {
 
 **Error logging with additional context:**
 
+CDP only surfaces the specific ECS fields produced by `formatError` (`error.message`, `error.stack_trace`, `error.type`). Additional properties spread alongside `formatError` will not appear in OpenSearch. Include contextual detail in the log message string instead:
+
 ```javascript
 try {
   await uploadToS3(fileKey)
 } catch (error) {
   logger.error(
-    {
-      ...formatError(error),
-      fileKey,
-      bucket: 's3-bucket-name'
-    },
-    'Failed to upload file to S3'
+    formatError(error),
+    `Failed to upload file to S3 (fileKey: ${fileKey}, bucket: ${bucket})`
   )
 }
 ```
 
 **Info logging with context:**
 
+CDP only surfaces specific ECS fields from the context object. Include contextual detail in the message string so it appears in OpenSearch:
+
 ```javascript
 logger.info(
-  {
-    filename: 'packing-list.xlsx',
-    parserModel: 'TESCO1'
-  },
-  'Successfully parsed packing list'
+  {},
+  `Successfully parsed packing list (filename: packing-list.xlsx, parserModel: TESCO1)`
 )
 ```
 

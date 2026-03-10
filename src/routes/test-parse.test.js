@@ -250,5 +250,67 @@ describe('Test Parse Route', () => {
       expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
       expect(parsePackingList).not.toHaveBeenCalled()
     })
+
+    it('should return 400 when filename is not a string (direct handler call covers non-string guard)', async () => {
+      const mockResponseObj = { code: vi.fn() }
+      const mockH = {
+        response: vi.fn().mockReturnValue(mockResponseObj)
+      }
+      const mockRequest = { query: { filename: null } }
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: INVALID_FILENAME_ERROR_MESSAGE
+      })
+      expect(mockResponseObj.code).toHaveBeenCalledWith(
+        STATUS_CODES.BAD_REQUEST
+      )
+    })
+
+    it('should return 400 when fs.statSync throws during file resolution', async () => {
+      fs.statSync.mockImplementation(() => {
+        throw new Error('ENOENT: no such file or directory')
+      })
+
+      const response = await injectTestParse(DEFAULT_FILENAME_QUERY)
+
+      expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
+      expect(JSON.parse(response.payload)).toEqual({
+        success: false,
+        error: INVALID_FILENAME_ERROR_MESSAGE
+      })
+    })
+
+    it('should parse pdf file and return result when returnPdfJson is not set', async () => {
+      const mockPdfBuffer = Buffer.from('mock pdf bytes')
+      const mockResult = {
+        parserModel: 'MANDS1',
+        items: [{ description: 'PDF Item' }]
+      }
+      const expectedFilePath = path.join(
+        process.cwd(),
+        '/src/packing-lists/test-file.pdf'
+      )
+
+      isPdf.mockReturnValue(true)
+      isCsv.mockReturnValue(false)
+      fs.readFileSync.mockReturnValue(mockPdfBuffer)
+      parsePackingList.mockResolvedValue(mockResult)
+
+      const response = await injectTestParse(PDF_FILENAME_QUERY)
+
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
+      expect(JSON.parse(response.payload)).toEqual({
+        success: true,
+        result: mockResult
+      })
+      expect(fs.readFileSync).toHaveBeenCalledWith(expectedFilePath)
+      expect(parsePackingList).toHaveBeenCalledWith(
+        mockPdfBuffer,
+        expectedFilePath
+      )
+    })
   })
 })
