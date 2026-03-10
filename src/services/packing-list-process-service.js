@@ -320,7 +320,6 @@ function itemsMapper(o) {
 
 /**
  * Build a message envelope for the parsed PLP result.
- * @param {Object|null} parsedResult - Truthy when parsing succeeded
  * @param {string} applicationId - Identifier of the application being updated
  * @param {Array|null} failureReasons - Array of error reasons when parsing failed
  * @returns {Object} Message envelope with body and metadata properties

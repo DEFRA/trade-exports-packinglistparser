@@ -33,7 +33,7 @@ const packingListProcessPayloadSchema = Joi.object({
 
 const packingListProcessQuerySchema = Joi.object({
   stopDataExit: Joi.string().valid('true', 'false').optional()
-}).unknown(true)
+})
 
 const packingListProcessRoute = {
   method: 'POST',

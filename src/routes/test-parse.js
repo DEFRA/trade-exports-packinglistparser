@@ -17,7 +17,7 @@ const testRoute = {
       query: Joi.object({
         filename: Joi.string().min(1).required(),
         returnPdfJson: Joi.string().valid('true', 'false').optional()
-      }).unknown(true)
+      })
     }
   },
   handler: processPackingListHandler
