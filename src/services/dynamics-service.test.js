@@ -7,7 +7,7 @@ import {
 } from './dynamics-service.js'
 
 // Test constants for repeated literals
-const TEST_TOKEN = 'test-token'
+const TEST_TOKEN = crypto.randomUUID()
 const TEST_REMOS_ID = 'REMOS-12345'
 const TEST_APPLICATION_ID = 'TEST-APP-123'
 

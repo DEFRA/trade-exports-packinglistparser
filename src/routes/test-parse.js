@@ -83,8 +83,10 @@ async function extractPdfJsonResult(filePath) {
 async function processPackingListHandler(request, h) {
   try {
     const plDirectory = path.join(process.cwd(), '/src/packing-lists/')
-    const requestedFilename = request.query?.filename
-    const filePath = resolvePackingListFilePath(plDirectory, requestedFilename)
+    const rawFilename = request.query.filename
+    const sanitizedFilename =
+      typeof rawFilename === 'string' ? path.basename(rawFilename) : null
+    const filePath = resolvePackingListFilePath(plDirectory, sanitizedFilename)
 
     if (!filePath) {
       return h
@@ -94,7 +96,7 @@ async function processPackingListHandler(request, h) {
 
     const returnPdfJson = isTrueQueryFlag(request.query.returnPdfJson)
 
-    if (returnPdfJson && !isPdf(requestedFilename)) {
+    if (returnPdfJson && !isPdf(sanitizedFilename)) {
       return h
         .response({ success: false, error: INVALID_FILENAME_ERROR })
         .code(STATUS_CODES.BAD_REQUEST)
@@ -102,7 +104,7 @@ async function processPackingListHandler(request, h) {
 
     const result = returnPdfJson
       ? await extractPdfJsonResult(filePath)
-      : await parsePackingListResult(requestedFilename, filePath)
+      : await parsePackingListResult(sanitizedFilename, filePath)
 
     return h.response({ success: true, result }).code(STATUS_CODES.OK)
   } catch (err) {

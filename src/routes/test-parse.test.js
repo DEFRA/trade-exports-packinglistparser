@@ -49,6 +49,7 @@ vi.mock('pdf.js-extract', () => ({
 }))
 
 let server
+let mockRequest, mockH, mockResponse, plDirectory
 
 async function injectTestParse(query = DEFAULT_FILENAME_QUERY) {
   return server.inject({
@@ -69,6 +70,11 @@ describe('Test Parse Route', () => {
     isCsv.mockReturnValue(false)
     isPdf.mockReturnValue(false)
     fs.statSync.mockReturnValue({ isFile: () => true })
+
+    plDirectory = path.join(process.cwd(), '/src/packing-lists/')
+    mockResponse = { code: vi.fn() }
+    mockH = { response: vi.fn().mockReturnValue(mockResponse) }
+    mockRequest = { query: { filename: 'test-file.xlsx' } }
   })
 
   afterEach(async () => {
@@ -120,7 +126,138 @@ describe('Test Parse Route', () => {
       )
     })
 
-    it('should handle csv files correctly', async () => {
+    it('should return error response when convertExcelToJson throws error', async () => {
+      const error = new Error('Failed to read Excel file')
+
+      convertExcelToJson.mockImplementation(() => {
+        throw error
+      })
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: 'Failed to read Excel file'
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
+    })
+
+    it('should return error response when parsePackingList throws error', async () => {
+      const mockPayload = { Sheet1: [] }
+      const error = new Error('Parsing failed')
+
+      convertExcelToJson.mockReturnValue(mockPayload)
+      parsePackingList.mockRejectedValue(error)
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: 'Parsing failed'
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
+    })
+
+    it('should sanitize file path to prevent traversal attacks', async () => {
+      mockRequest.query.filename = 'subdir/nested-file.xlsx'
+      const mockPayload = { Sheet1: [] }
+      const mockResult = { items: [] }
+      // Should strip the subdirectory and only use basename
+      const expectedFilePath = path.join(plDirectory, 'nested-file.xlsx')
+
+      convertExcelToJson.mockReturnValue(mockPayload)
+      parsePackingList.mockResolvedValue(mockResult)
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(convertExcelToJson).toHaveBeenCalledWith({
+        sourceFile: expectedFilePath
+      })
+    })
+
+    it('should prevent path traversal attacks', async () => {
+      mockRequest.query.filename = '../../etc/passwd'
+      const mockPayload = { Sheet1: [] }
+      const mockResult = { items: [] }
+      // Should strip the path traversal and only use basename
+      const expectedFilePath = path.join(plDirectory, 'passwd')
+
+      convertExcelToJson.mockReturnValue(mockPayload)
+      parsePackingList.mockResolvedValue(mockResult)
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(convertExcelToJson).toHaveBeenCalledWith({
+        sourceFile: expectedFilePath
+      })
+    })
+
+    it('should handle generic errors gracefully', async () => {
+      const error = new Error('Unexpected error')
+
+      convertExcelToJson.mockImplementation(() => {
+        throw error
+      })
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: false,
+        error: 'Unexpected error'
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(
+        STATUS_CODES.INTERNAL_SERVER_ERROR
+      )
+    })
+
+    it('should process complete workflow for valid packing list', async () => {
+      const mockPayload = {
+        Sheet1: [
+          { A: 'Description', B: 'Quantity', C: 'Weight' },
+          { A: 'Product 1', B: '10', C: '50.5' },
+          { A: 'Product 2', B: '5', C: '25.0' }
+        ]
+      }
+      const mockResult = {
+        parserModel: 'ASDA3',
+        items: [
+          {
+            description: 'Product 1',
+            number_of_packages: '10',
+            total_net_weight_kg: '50.5'
+          },
+          {
+            description: 'Product 2',
+            number_of_packages: '5',
+            total_net_weight_kg: '25.0'
+          }
+        ],
+        business_checks: {
+          all_required_fields_present: true,
+          failure_reasons: null
+        }
+      }
+
+      convertExcelToJson.mockReturnValue(mockPayload)
+      parsePackingList.mockResolvedValue(mockResult)
+
+      await testRoute.handler(mockRequest, mockH)
+
+      expect(convertExcelToJson).toHaveBeenCalledTimes(1)
+      expect(parsePackingList).toHaveBeenCalledTimes(1)
+      expect(mockH.response).toHaveBeenCalledWith({
+        success: true,
+        result: mockResult
+      })
+      expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+    })
+
+    it('should handle CSV files correctly', async () => {
+      mockRequest.query.filename = 'test-file.csv'
       const mockCsvBuffer = Buffer.from('header1,header2\nvalue1,value2')
       const mockCsvPayload = [{ header1: 'value1', header2: 'value2' }]
       const mockResult = {
@@ -192,6 +329,10 @@ describe('Test Parse Route', () => {
     })
 
     it('should return 400 for invalid filename path traversal', async () => {
+      fs.statSync.mockImplementation(() => {
+        throw new Error('ENOENT: no such file or directory')
+      })
+
       const response = await injectTestParse('filename=../secrets.txt')
 
       expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
