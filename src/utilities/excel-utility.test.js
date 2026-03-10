@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import fs from 'node:fs'
 import path from 'node:path'
 import { convertExcelToJson } from './excel-utility.js'
-import ExcelJS from 'exceljs'
+import * as XLSX from 'xlsx'
 
 describe('excel-utility', () => {
   const tmpDir = path.join(process.cwd(), 'test-output')
@@ -14,21 +14,21 @@ describe('excel-utility', () => {
       fs.mkdirSync(tmpDir, { recursive: true })
     }
 
-    // Create a test Excel file using ExcelJS
-    const workbook = new ExcelJS.Workbook()
-    const worksheet = workbook.addWorksheet('Sheet1')
+    // Create a test Excel file using xlsx
+    const workbook = XLSX.utils.book_new()
+    const worksheetData = [
+      ['Name', 'Age'],
+      ['Alice', 30],
+      ['Bob', 25],
+      [],
+      ['Charlie', 35]
+    ]
+    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1')
 
-    // Add headers
-    worksheet.addRow(['Name', 'Age'])
-    // Add data rows
-    worksheet.addRow(['Alice', 30])
-    worksheet.addRow(['Bob', 25])
-    // Add empty row
-    worksheet.addRow([])
-    // Add another data row
-    worksheet.addRow(['Charlie', 35])
-
-    await workbook.xlsx.writeFile(tmpFile)
+    // Write file using buffer approach
+    const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' })
+    fs.writeFileSync(tmpFile, buffer)
   })
 
   afterAll(() => {

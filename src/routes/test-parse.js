@@ -17,14 +17,15 @@ const testRoute = {
 
 async function processPackingListHandler(request, h) {
   try {
+    const sanitizedFilename = path.basename(request.query.filename)
     const plDirectory = path.join(process.cwd(), '/src/packing-lists/')
-    const filePath = path.join(plDirectory, request.query.filename)
+    const filePath = path.join(plDirectory, sanitizedFilename)
 
     let payload
-    if (isCsv(request.query.filename)) {
+    if (isCsv(sanitizedFilename)) {
       const csvBuffer = fs.readFileSync(filePath)
       payload = await convertCsvToJson(csvBuffer)
-    } else if (isPdf(request.query.filename)) {
+    } else if (isPdf(sanitizedFilename)) {
       payload = fs.readFileSync(filePath)
     } else {
       payload = convertExcelToJson({
