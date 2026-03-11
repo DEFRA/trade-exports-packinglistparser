@@ -11,13 +11,16 @@ const filename = 'packinglist-boots-model1.xlsx'
 
 describe('matchesBootsModel1', () => {
   it('matches valid Boots Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(testData.validModel, filename)
+    const result = await parserService.parsePackingList(
+      testData.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   it('matches valid Boots Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.invalidModel_MissingColumnCells,
       filename
     )
@@ -37,13 +40,16 @@ describe('matchesBootsModel1', () => {
       parserModel: ParserModel.NOMATCH
     }
 
-    const result = await parserService.findParser(testData.validModel, filename)
+    const result = await parserService.parsePackingList(
+      testData.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(invalidTestResult_NoMatch)
   })
 
   it('matches valid Boots Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.multipleRms,
       filename
     )
@@ -52,7 +58,7 @@ describe('matchesBootsModel1', () => {
   })
 
   it('matches valid Boots Model 1 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.missingKgunit,
       filename
     )
@@ -61,7 +67,7 @@ describe('matchesBootsModel1', () => {
   })
 
   it('matches valid Boots Model 1 file with multiple sheets where headers are on different rows, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.validModelMultipleSheetsHeadersOnDifferentRows,
       filename
     )

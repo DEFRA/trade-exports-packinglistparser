@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
-import { findParser } from '../../../src/services/parser-service.js'
+import { parsePackingList } from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models-pdf/mands/model1.js'
 import test_results from '../../test-data-and-results/results-pdf/mands/model1.js'
 import failureReasonsDescriptions from '../../../src/services/validators/packing-list-failure-reasons.js'
@@ -34,7 +34,7 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
   ]
 }))
 
-describe('findParser', () => {
+describe('parsePackingList', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -46,7 +46,7 @@ describe('findParser', () => {
   test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.validModel)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
     expect(result).toMatchObject(test_results.validTestResult)
   })
 
@@ -55,13 +55,13 @@ describe('findParser', () => {
       model.invalidModel_MissingColumnCells
     )
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
 
     expect(result).toMatchObject(test_results.invalidTestResult_MissingCells)
   })
 
   test('wrong file extension', async () => {
-    const result = await findParser(model.validModel, INVALID_FILENAME)
+    const result = await parsePackingList(model.validModel, INVALID_FILENAME)
 
     expect(result).toMatchObject(NO_MATCH_RESULT)
   })
@@ -69,7 +69,7 @@ describe('findParser', () => {
   test('matches valid MandS Model 1 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.missingKgunit)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
     expect(result.business_checks.failure_reasons).toBe(
       'Net Weight Unit of Measure (kg) not found.\n'
     )
@@ -88,7 +88,7 @@ describe('MANDS1 CoO Validation Tests - Type 1 - Nirms', () => {
   test('NOT within NIRMS Scheme - passes validation', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.nonNirms)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
 
     expect(result.business_checks.all_required_fields_present).toBeTruthy()
   })
@@ -96,7 +96,7 @@ describe('MANDS1 CoO Validation Tests - Type 1 - Nirms', () => {
   test('Invalid NIRMS value - validation errors', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.invalidNirms)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
       failureReasonsDescriptions.NIRMS_INVALID + ' in page 1 row 1.\n'
@@ -106,7 +106,7 @@ describe('MANDS1 CoO Validation Tests - Type 1 - Nirms', () => {
   test('Null NIRMS value - validation errors', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.missingNirms)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
       failureReasonsDescriptions.NIRMS_MISSING + ' in page 1 row 1.\n'
@@ -126,7 +126,7 @@ describe('MANDS1 CoO Validation Tests - Type 1 - CoO', () => {
   test('Null CoO Value - validation errors with summary', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.missingCoO)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasonsDescriptions.COO_MISSING} in page 1 row 1, page 1 row 2, page 1 row 3 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
@@ -136,7 +136,7 @@ describe('MANDS1 CoO Validation Tests - Type 1 - CoO', () => {
   test('Invalid CoO Value - validation errors with summary', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.invalidCoO)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
 
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasonsDescriptions.COO_INVALID} in page 1 row 1, page 1 row 2, page 1 row 3 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
@@ -146,7 +146,7 @@ describe('MANDS1 CoO Validation Tests - Type 1 - CoO', () => {
   test('CoO Value is X - passes validation', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.xCoO)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
 
     expect(result.business_checks.all_required_fields_present).toBeTruthy()
   })
@@ -164,7 +164,7 @@ describe('MANDS1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   test('Ineligible items detected - validation errors', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.ineligibleItems)
 
-    const result = await findParser({}, filename)
+    const result = await parsePackingList({}, filename)
     expect(result.business_checks.failure_reasons).toBe(
       failureReasonsDescriptions.PROHIBITED_ITEM +
         ' in page 1 row 1 and page 1 row 3.\n'

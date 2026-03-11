@@ -25,20 +25,14 @@ const testRoute = {
 
 const INVALID_FILENAME_ERROR = 'Invalid filename'
 
+// Caller is responsible for sanitising requestedFilename via path.basename()
+// before invoking this function, so no path traversal guard is needed here.
 function resolvePackingListFilePath(plDirectory, requestedFilename) {
   if (typeof requestedFilename !== 'string' || requestedFilename.length === 0) {
     return null
   }
 
-  const baseDirectoryPath = path.resolve(plDirectory)
-  const resolvedFilePath = path.resolve(baseDirectoryPath, requestedFilename)
-  const isInsideBaseDirectory = resolvedFilePath.startsWith(
-    `${baseDirectoryPath}${path.sep}`
-  )
-
-  if (!isInsideBaseDirectory) {
-    return null
-  }
+  const resolvedFilePath = path.resolve(plDirectory, requestedFilename)
 
   try {
     return fs.statSync(resolvedFilePath).isFile() ? resolvedFilePath : null

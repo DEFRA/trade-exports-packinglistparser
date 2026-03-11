@@ -1,7 +1,7 @@
 import parserModel from '../../../../src/services/parser-model.js'
 import failureReasonsDescriptions from '../../../../src/services/validators/packing-list-failure-reasons.js'
 
-module.exports = {
+export default {
   validTestResult: {
     business_checks: {
       all_required_fields_present: true,

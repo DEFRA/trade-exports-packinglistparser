@@ -50,8 +50,8 @@ const RESPONSE_MESSAGES = {
 }
 
 const RESPONSE_PROPERTIES = {
-  MESSAGE: 'Message',
-  DETAILS: 'Details'
+  MESSAGE: 'message',
+  DETAILS: 'details'
 }
 
 const SERVICE_NAMES = {

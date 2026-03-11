@@ -59,15 +59,15 @@ async function connectivityCheckHandler(_request, h) {
   if (!allConnected) {
     return h
       .response({
-        Message: 'Connectivity Check Failed',
-        Details: connectionChecks
+        message: 'Connectivity Check Failed',
+        details: connectionChecks
       })
       .code(STATUS_CODES.SERVICE_UNAVAILABLE)
   }
   return h
     .response({
-      Message: 'Connectivity Check Passed',
-      Details: connectionChecks
+      message: 'Connectivity Check Passed',
+      details: connectionChecks
     })
     .code(STATUS_CODES.OK)
 }

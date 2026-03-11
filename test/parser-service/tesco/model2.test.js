@@ -21,13 +21,16 @@ const filename = 'PackingListTesco2.xlsx'
 
 describe('matchesTescoModel2', () => {
   it('matches valid Tesco Model 2 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.validTestResult)
   })
 
   it('matches valid Tesco Model 2 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -36,7 +39,7 @@ describe('matchesTescoModel2', () => {
   })
 
   it("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -45,19 +48,28 @@ describe('matchesTescoModel2', () => {
   })
 
   it('matches valid Tesco Model 2 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(model.multipleRms, filename)
+    const result = await parserService.parsePackingList(
+      model.multipleRms,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.multipleRms)
   })
 
   it('matches valid Tesco Model 2 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(model.missingKgunit, filename)
+    const result = await parserService.parsePackingList(
+      model.missingKgunit,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.missingKgunit)
   })
 
   it('matches valid Tesco Model 2 file, calls parser and returns all_required_fields_present as true for missing row', async () => {
-    const result = await parserService.findParser(model.missingRow, filename)
+    const result = await parserService.parsePackingList(
+      model.missingRow,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.missingRow)
   })
@@ -82,12 +94,15 @@ describe('Tesco2 CoO Validation Tests', () => {
   // Order tests by BAC sequence for maintainability
 
   it('BAC1: NOT within NIRMS Scheme - passes validation', async () => {
-    const result = await parserService.findParser(model.nonNirmsModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nonNirmsModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   it('BAC2: Null NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsModel,
       filename
     )
@@ -97,7 +112,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC3: Invalid NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsModel,
       filename
     )
@@ -107,7 +122,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC4: Null NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsMultipleModel,
       filename
     )
@@ -115,7 +130,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC5: Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsMultipleModel,
       filename
     )
@@ -123,14 +138,17 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC6: Null CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(model.nullCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nullCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toContain(
       'Missing Country of Origin'
     )
   })
 
   it('BAC7: Invalid CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooModel,
       filename
     )
@@ -140,7 +158,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC8: Null CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullCooMultipleModel,
       filename
     )
@@ -148,7 +166,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC9: Invalid CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooMultipleModel,
       filename
     )
@@ -156,7 +174,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC10: CoO Value is X or x - passes validation', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.cooPlaceholderXModel,
       filename
     )
@@ -164,7 +182,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC11: Item Present on Prohibited Item List (Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.prohibitedItemsWithTreatmentModel,
       filename
     )
@@ -174,7 +192,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC12: Item Present on Prohibited Item List, more than 3 (Treatment Type specified) - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.prohibitedItemsMultipleWithTreatmentModel,
       filename
     )
@@ -182,7 +200,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC13: Item Present on Prohibited Item List (no Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.prohibitedItemsNoTreatmentModel,
       filename
     )
@@ -192,7 +210,7 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('BAC14: Item Present on Prohibited Item List, more than 3 (no Treatment Type specified) - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.prohibitedItemsMultipleNoTreatmentModel,
       filename
     )
@@ -200,7 +218,10 @@ describe('Tesco2 CoO Validation Tests', () => {
   })
 
   it('Valid CoO Validation: Complete packing list with all fields valid', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
     expect(result.items.every((item) => item.country_of_origin)).toBe(true)
     expect(result.items.every((item) => item.commodity_code)).toBe(true)

@@ -35,7 +35,7 @@ This repository contains the **trade-exports-packinglistparser** service, a Node
 ## Standards
 
 - Runtime and tooling baseline: `.github/instructions/node-backend.instructions.md` — apply by default for implementation, security, logging, and testing.
-- Where this service intentionally deviates from the baseline, those overrides are documented in `.github/instructions/local-standards-overrides.instructions.md` with the affected area, the override applied, and the reason it is permitted.
+- Where this service intentionally deviates from the baseline, those overrides are documented in `.github/instructions/local-standards-overrides.instructions.md` with the affected area, the override applied, and the reason it is permitted. This should ALWAYS be used
 
 ## Code standards
 

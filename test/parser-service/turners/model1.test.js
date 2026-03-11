@@ -13,13 +13,16 @@ const filename = 'packinglist-turners-model1.xlsx'
 
 describe('matchesTurnersModel1', () => {
   test('matches valid TURNERS Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   test('matches valid TURNERS Model 1 file with multiple sheets, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelMultipleSheets,
       filename
     )
@@ -28,7 +31,7 @@ describe('matchesTurnersModel1', () => {
   })
 
   test('matches valid TURNERS Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -49,7 +52,7 @@ describe('matchesTurnersModel1', () => {
       parserModel: parserModel.NOMATCH
     }
 
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )

@@ -8,7 +8,7 @@ vi.mock('../services/trade-service-bus-service.js', () => ({
 }))
 
 // Import after mocks
-const { sendtoqueue } = await import('./trade-service-bus.js')
+const { sendToQueue } = await import('./trade-service-bus.js')
 
 // Test constants
 const ERROR_MESSAGES = {
@@ -35,18 +35,18 @@ describe('trade-service-bus routes', () => {
     }
   })
 
-  describe('sendtoqueue', () => {
+  describe('sendToQueue', () => {
     it('should have correct route configuration', () => {
-      expect(sendtoqueue.method).toBe('GET')
-      expect(sendtoqueue.path).toBe('/trade-service-bus')
-      expect(sendtoqueue.handler).toBeDefined()
-      expect(typeof sendtoqueue.handler).toBe('function')
+      expect(sendToQueue.method).toBe('GET')
+      expect(sendToQueue.path).toBe('/trade-service-bus')
+      expect(sendToQueue.handler).toBeDefined()
+      expect(typeof sendToQueue.handler).toBe('function')
     })
 
     it('should send message to queue and return success', async () => {
       mockSendMessageToQueue.mockResolvedValue(undefined)
 
-      const result = await sendtoqueue.handler(mockRequest, mockH)
+      const result = await sendToQueue.handler(mockRequest, mockH)
 
       expect(mockSendMessageToQueue).toHaveBeenCalledWith({
         text: 'Hello, Service Bus!'
@@ -60,7 +60,7 @@ describe('trade-service-bus routes', () => {
       const error = new Error('Queue send failed')
       mockSendMessageToQueue.mockRejectedValue(error)
 
-      const result = await sendtoqueue.handler(mockRequest, mockH)
+      const result = await sendToQueue.handler(mockRequest, mockH)
 
       expect(mockRequest.logger.error).toHaveBeenCalledWith(
         {
@@ -85,7 +85,7 @@ describe('trade-service-bus routes', () => {
       const timeoutError = new Error('Operation timeout')
       mockSendMessageToQueue.mockRejectedValue(timeoutError)
 
-      const result = await sendtoqueue.handler(mockRequest, mockH)
+      const result = await sendToQueue.handler(mockRequest, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
         error: ERROR_MESSAGES.FAILED_SEND
@@ -100,7 +100,7 @@ describe('trade-service-bus routes', () => {
       const authError = new Error('Authentication failed')
       mockSendMessageToQueue.mockRejectedValue(authError)
 
-      const result = await sendtoqueue.handler(mockRequest, mockH)
+      const result = await sendToQueue.handler(mockRequest, mockH)
 
       expect(mockRequest.logger.error).toHaveBeenCalledWith(
         {

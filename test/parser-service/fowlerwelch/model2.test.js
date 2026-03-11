@@ -22,13 +22,16 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 
 describe('matchesFowlerwelchModel2', () => {
   test('matches valid Fowlerwelch Model 2 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   test('matches valid Fowlerwelch Model 2 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -48,19 +51,28 @@ describe('matchesFowlerwelchModel2', () => {
       parserModel: parserModel.NOMATCH
     }
 
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(invalidTestResult_NoMatch)
   })
 
   test('matches valid Fowlerwelch Model 2 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(model.multipleRms, filename)
+    const result = await parserService.parsePackingList(
+      model.multipleRms,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.multipleRms)
   })
 
   test('matches valid Fowlerwelch Model 2 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(model.missingKgunit, filename)
+    const result = await parserService.parsePackingList(
+      model.missingKgunit,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.missingKgunit)
   })
@@ -68,12 +80,15 @@ describe('matchesFowlerwelchModel2', () => {
 
 describe('Fowlerwelch 2 CoO Validation Tests', () => {
   test('BAC1: NOT within NIRMS Scheme - passes validation', async () => {
-    const result = await parserService.findParser(model.nonNirmsModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nonNirmsModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   test('BAC2: Null NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsModel,
       filename
     )
@@ -83,7 +98,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC3: Invalid NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsModel,
       filename
     )
@@ -93,7 +108,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC4: Null NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsMultipleModel,
       filename
     )
@@ -101,7 +116,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC5: Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsMultipleModel,
       filename
     )
@@ -109,14 +124,17 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC6: Null CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(model.nullCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nullCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toContain(
       'Missing Country of Origin'
     )
   })
 
   test('BAC7: Invalid CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooModel,
       filename
     )
@@ -126,7 +144,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC8: Null CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullCooMultipleModel,
       filename
     )
@@ -134,7 +152,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC9: Invalid CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooMultipleModel,
       filename
     )
@@ -142,12 +160,12 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC10: CoO Value is X or x - passes validation', async () => {
-    const result = await parserService.findParser(model.xCoO, filename)
+    const result = await parserService.parsePackingList(model.xCoO, filename)
     expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   test('BAC11: Item Present on Ineligible Item List (Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsWithTreatment,
       filename
     )
@@ -157,7 +175,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC12: Item Present on Ineligible Item List, more than 3 (Treatment Type specified) - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultipleWithTreatment,
       filename
     )
@@ -165,7 +183,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC13: Item Present on Ineligible Item List (no Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsNoTreatment,
       filename
     )
@@ -175,7 +193,7 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('BAC14: Item Present on Ineligible Item List, more than 3 (no Treatment Type specified) - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultipleNoTreatment,
       filename
     )
@@ -183,7 +201,10 @@ describe('Fowlerwelch 2 CoO Validation Tests', () => {
   })
 
   test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
     expect(result.items.every((item) => item.country_of_origin)).toBe(true)
     expect(result.items.every((item) => item.commodity_code)).toBe(true)

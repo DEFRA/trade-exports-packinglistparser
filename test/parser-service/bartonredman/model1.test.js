@@ -24,7 +24,7 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 
 describe('Parser Service - Barton and Redman Model 1', () => {
   test('matches valid Barton and Redman Model 1 file and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       BARTONREDMAN_FILENAME
     )
@@ -34,7 +34,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
   })
 
   test('matches valid Barton and Redman Model 1 file with multiple sheets where headers are on different rows', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelMultipleSheetsHeadersOnDifferentRows,
       BARTONREDMAN_FILENAME
     )
@@ -51,7 +51,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
       'Input Packing Sheet': model.validModel['Input Packing Sheet']
     }
 
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       packingListWithInvalidSheets,
       BARTONREDMAN_FILENAME
     )
@@ -67,7 +67,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
   })
 
   test('returns all_required_fields_present as false when required cells are missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       BARTONREDMAN_FILENAME
     )
@@ -76,7 +76,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -87,7 +87,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
 
 describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
   test('RED lane (non-NIRMS) passes validation without CoO', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nonNirms,
       BARTONREDMAN_FILENAME
     )
@@ -96,7 +96,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('Invalid NIRMS value returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirms,
       BARTONREDMAN_FILENAME
     )
@@ -107,7 +107,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('Null NIRMS value returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.missingNirms,
       BARTONREDMAN_FILENAME
     )
@@ -120,7 +120,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
 
 describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
   test('GREEN lane with missing CoO returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.missingCoO,
       BARTONREDMAN_FILENAME
     )
@@ -131,7 +131,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('GREEN lane with invalid CoO returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCoO,
       BARTONREDMAN_FILENAME
     )
@@ -142,7 +142,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('GREEN lane with CoO value X passes validation', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.xCoO,
       BARTONREDMAN_FILENAME
     )
@@ -153,7 +153,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
 
 describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   test('Ineligible items detected returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItems,
       BARTONREDMAN_FILENAME
     )
