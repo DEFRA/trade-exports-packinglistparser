@@ -35,16 +35,7 @@ This repository contains the **trade-exports-packinglistparser** service, a Node
 ## Standards
 
 - Runtime and tooling baseline: `.github/instructions/node-backend.instructions.md` — apply by default for implementation, security, logging, and testing.
-- Where this file intentionally differs, its rule takes precedence and is documented in `## Local Standards (Service-Specific)` below.
-
-## Local Standards (Service-Specific)
-
-- Service shape: this is an API/backend parsing service (no server-rendered UI in scope for core flows). Reason: this service is machine-to-machine and does not render user-facing pages.
-- Logging implementation: use pino for structured JSON logging via project logging helpers under `src/common/helpers/logging/`, and avoid logging full sensitive payloads. Reason: this has been specified by the CDP platform the application is built on.
-- Testing framework: use Vitest for unit and integration tests. Reason: this technology is specified by CDP.
-- Route testing: use Hapi `server.inject()` (or project-standard route test helpers) for route testing. Reason: this technology is specified by CDP.
-- Route exposure: keep test/development routes environment-gated; production only exposes core operational routes. Reason: minimizes production attack surface.
-- Parser conventions: keep parser/matcher model naming and format-specific parsing patterns aligned with existing `src/services/parsers/`, `src/services/matchers/`, and `src/services/model-headers/` structures. Reason: preserves parser discoverability and avoids model drift. Full detail is in `.github/instructions/parsers-matchers-model-headers.instructions.md`.
+- Where this service intentionally deviates from the baseline, those overrides are documented in `.github/instructions/local-standards-overrides.instructions.md` with the affected area, the override applied, and the reason it is permitted.
 
 ## Code standards
 

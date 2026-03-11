@@ -60,8 +60,7 @@ function defineDisabledFeatureTests(getContext) {
       expect(result.skipped).toBe(true)
       expect(result.reason).toBe(`${TEST_FEATURE_NAME} is disabled`)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        result,
-        `${TEST_FEATURE_NAME} synchronization skipped - ${TEST_FEATURE_NAME} is disabled`
+        `${TEST_FEATURE_NAME} synchronization skipped - ${TEST_FEATURE_NAME} is disabled (reason: ${result.reason})`
       )
     })
 
@@ -99,8 +98,7 @@ function defineConfigShapeTests(getContext) {
       expect(mockConfig.get).toHaveBeenCalledWith(MDM_INTEGRATION_KEY)
       expect(result.reason).toBe(`${MDM_INTEGRATION_NAME} is disabled`)
       expect(mockLogger.info).toHaveBeenCalledWith(
-        result,
-        `${MDM_INTEGRATION_NAME} synchronization skipped - ${MDM_INTEGRATION_NAME} is disabled`
+        `${MDM_INTEGRATION_NAME} synchronization skipped - ${MDM_INTEGRATION_NAME} is disabled (reason: ${result.reason})`
       )
     })
 

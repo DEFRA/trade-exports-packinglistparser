@@ -2,14 +2,14 @@
 description: Builds Defra-compliant applications following all software development standards
 tools:
   [
-    codebase,
-    editFiles,
+    search/codebase,
+    edit/editFiles,
     runTerminal,
-    fetch,
+    web/fetch,
     findTestFiles,
-    githubRepo,
-    problems,
-    usages,
+    web/githubRepo,
+    read/problems,
+    search/usages,
     thinking
   ]
 ---
