@@ -45,6 +45,8 @@ export async function parse(packingList) {
       headers.GIOVANNI3.country_of_origin.regex.test(item.str)
     )
 
+    const blanketNirms = null
+
     for (const page of pdfJson.pages) {
       const ys = getYsForRows(page.content, model)
       packingListContentsTemp = mapPdfNonAiParser(
@@ -52,7 +54,8 @@ export async function parse(packingList) {
         model,
         ys,
         nirmsHeaderExists,
-        coHeaderExists
+        coHeaderExists,
+        blanketNirms
       )
       packingListContents = packingListContents.concat(packingListContentsTemp)
     }
@@ -65,7 +68,10 @@ export async function parse(packingList) {
       true,
       parserModel.GIOVANNI3,
       establishmentNumbers,
-      headers.GIOVANNI3
+      {
+        ...headers.GIOVANNI3,
+        blanketNirms: false
+      }
     )
   } catch (err) {
     logger.error(formatError(err), 'Error in parse()')
