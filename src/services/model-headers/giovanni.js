@@ -90,14 +90,20 @@ const pdfGiovanniHeaders = {
       }
     },
     country_of_origin: {
-      x1: 305,
-      x2: 335,
+      x1: 285,
+      x2: 320,
       regex: /Country of/i
     },
     nirms: {
-      x1: 405,
-      x2: 430,
-      regex: /(NIRMS\s*ONLY|NIRMS\/Non-NIRMS)/i
+      x1: 475,
+      x2: 520,
+      regex: /NIRMS\s*ONLY/i
+    },
+    blanketNirmsValue: {
+      x1: 475,
+      x2: 520,
+      maxHeadersY: 340,
+      regex: /NIRMS\s*ONLY/i
     },
     minHeadersY: 280,
     maxHeadersY: 300,

@@ -107,7 +107,7 @@ function createGiovanni3PdfModel(rows, options = {}) {
 
   if (includeNirmsHeader) {
     content.push({
-      x: 410,
+      x: 480,
       y: 285.77,
       str: nirmsHeaderText,
       dir: 'ltr',
@@ -209,7 +209,7 @@ function createGiovanni3PdfModel(rows, options = {}) {
 
     if (row.nirms !== null && row.nirms !== undefined) {
       content.push({
-        x: 410,
+        x: 480,
         y,
         str: row.nirms,
         dir: 'ltr',

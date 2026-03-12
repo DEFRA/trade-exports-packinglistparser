@@ -20,6 +20,7 @@ vi.mock('../../../utilities/pdf-helper.js', async () => {
 
 describe('Giovanni Model 3 PDF Parser', () => {
   beforeEach(() => {
+    vi.restoreAllMocks()
     vi.clearAllMocks()
   })
 
@@ -81,7 +82,8 @@ describe('Giovanni Model 3 PDF Parser', () => {
       'GIOVANNI3',
       [],
       false,
-      false
+      false,
+      null
     )
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
@@ -107,8 +109,76 @@ describe('Giovanni Model 3 PDF Parser', () => {
       'GIOVANNI3',
       [],
       false,
-      false
+      false,
+      null
     )
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
+  })
+
+  test('applies blanket NIRMS value from NIRMS Only header when row-level NIRMS is absent', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue({
+      pages: [
+        {
+          pageInfo: { num: 1 },
+          content: [
+            { x: 471.46, y: 147.26, str: 'RMS-GB-000149-002' },
+            { x: 480, y: 285.77, str: 'NIRMS Only' },
+            { x: 480, y: 303.77, str: 'N' },
+            { x: 174.38, y: 285.29, str: 'DESCRIPTION' },
+            { x: 257.33, y: 285.77, str: 'Commodity Code' },
+            { x: 317.11, y: 282.29, str: 'Country of' },
+            { x: 322.75, y: 289.25, str: 'Origin' },
+            { x: 357.55, y: 285.77, str: 'Quantity' },
+            { x: 389.59, y: 285.77, str: 'Net Weight (KG)' },
+            { x: 30, y: 303.77, str: '1' },
+            { x: 145.22, y: 303.77, str: 'HAM AND CHEESE TORT' },
+            { x: 265.13, y: 303.77, str: '1902209990' },
+            { x: 312.67, y: 303.77, str: 'IT' },
+            { x: 340, y: 303.77, str: '20' },
+            { x: 380, y: 303.77, str: '48' }
+          ]
+        }
+      ]
+    })
+
+    const result = await parse(Buffer.from('mock-pdf'))
+
+    expect(result.parserModel).toBe(parserModel.GIOVANNI3)
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0].nirms).toBe('N')
+  })
+
+  test('detects NIRMS Only header with spacing variation', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue({
+      pages: [
+        {
+          pageInfo: { num: 1 },
+          content: [
+            { x: 471.46, y: 147.26, str: 'RMS-GB-000149-002' },
+            { x: 480, y: 285.77, str: 'NIRMS  ONLY' },
+            { x: 480, y: 303.77, str: 'NIRMS' },
+            { x: 174.38, y: 285.29, str: 'DESCRIPTION' },
+            { x: 257.33, y: 285.77, str: 'Commodity Code' },
+            { x: 317.11, y: 282.29, str: 'Country of' },
+            { x: 322.75, y: 289.25, str: 'Origin' },
+            { x: 357.55, y: 285.77, str: 'Quantity' },
+            { x: 389.59, y: 285.77, str: 'Net Weight (KG)' },
+            { x: 30, y: 303.77, str: '1' },
+            { x: 145.22, y: 303.77, str: 'HAM AND CHEESE TORT' },
+            { x: 265.13, y: 303.77, str: '1902209990' },
+            { x: 312.67, y: 303.77, str: 'IT' },
+            { x: 340, y: 303.77, str: '20' },
+            { x: 380, y: 303.77, str: '48' }
+          ]
+        }
+      ]
+    })
+
+    const result = await parse(Buffer.from('mock-pdf'))
+
+    expect(result.parserModel).toBe(parserModel.GIOVANNI3)
+    expect(result.items).toHaveLength(1)
+    expect(result.items[0].nirms).toBe('NIRMS')
+    expect(result.blanketNirms).toBe(false)
   })
 })

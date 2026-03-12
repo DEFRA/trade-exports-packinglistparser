@@ -1404,9 +1404,9 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 410,
+            x: 480,
             y: 285.77,
-            str: 'NIRMS/Non-NIRMS',
+            str: 'NIRMS Only',
             dir: 'ltr',
             width: 55,
             height: 5.28,
@@ -1458,7 +1458,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 410,
+            x: 480,
             y: 303.77,
             str: 'NIRMS',
             dir: 'ltr',
