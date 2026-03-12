@@ -7,7 +7,22 @@ import { findParser } from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models-pdf/giovanni/model3.js'
 import test_results from '../../test-data-and-results/results-pdf/giovanni/model3.js'
 import * as pdfHelper from '../../../src/utilities/pdf-helper.js'
+import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
 import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
+
+vi.mock('../../../src/services/data/data-iso-codes.json', () => ({
+  default: ['IT', 'GB', 'X']
+}))
+
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'IT',
+      commodity_code: '190220',
+      type_of_treatment: 'FRESH'
+    }
+  ]
+}))
 
 const filename = 'test.pdf'
 
@@ -37,7 +52,7 @@ describe('findParser - Giovanni Model 3', () => {
     vi.clearAllMocks()
   })
 
-  test('matches valid Giovanni Model 3 file, calls parser and returns all_required_fields_present as true', async () => {
+  test('matches valid Giovanni Model 3 file, calls parser and extracts country_of_origin', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.validModel)
     const result = await findParser({}, filename)
     expect(result).toMatchObject(test_results.validTestResult)
@@ -65,6 +80,16 @@ describe('findParser - Giovanni Model 3', () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.missingKgunit)
     const result = await findParser({}, filename)
     expect(result).toMatchObject(test_results.missingKgTestResult)
+  })
+
+  test('returns prohibited item failure when ineligible item is found', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.ineligibleItemModel)
+    const result = await findParser({}, filename)
+
+    expect(result).toMatchObject(test_results.ineligibleItemTestResult)
+    expect(result.business_checks.failure_reasons).toContain(
+      failureReasons.PROHIBITED_ITEM
+    )
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {

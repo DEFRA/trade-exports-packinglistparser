@@ -37,9 +37,23 @@ export async function parse(packingList) {
 
     const model = 'GIOVANNI3'
 
+    const nirmsHeaderExists = pdfJson.pages[0].content.some((item) =>
+      headers.GIOVANNI3.nirms.regex.test(item.str)
+    )
+
+    const coHeaderExists = pdfJson.pages[0].content.some((item) =>
+      headers.GIOVANNI3.country_of_origin.regex.test(item.str)
+    )
+
     for (const page of pdfJson.pages) {
       const ys = getYsForRows(page.content, model)
-      packingListContentsTemp = mapPdfNonAiParser(page, model, ys)
+      packingListContentsTemp = mapPdfNonAiParser(
+        page,
+        model,
+        ys,
+        nirmsHeaderExists,
+        coHeaderExists
+      )
       packingListContents = packingListContents.concat(packingListContentsTemp)
     }
 

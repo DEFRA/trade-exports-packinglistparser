@@ -5,7 +5,6 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { parse } from './model3.js'
 import model from '../../../../test/test-data-and-results/models-pdf/giovanni/model3.js'
-import expectedResults from '../../../../test/test-data-and-results/results-pdf/giovanni/model3.js'
 import parserModel from '../../parser-model.js'
 import * as pdfHelper from '../../../utilities/pdf-helper.js'
 import * as parserMap from '../../parser-map.js'
@@ -27,11 +26,22 @@ describe('Giovanni Model 3 PDF Parser', () => {
   test('parses valid Giovanni Model 3 PDF correctly', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.validModel)
     const result = await parse(Buffer.from('mock-pdf'))
-    expect(result).toMatchObject(expectedResults.validTestResult)
-    expect(result.items).toHaveLength(
-      expectedResults.validTestResult.items.length
-    )
+    expect(result.parserModel).toBe(parserModel.GIOVANNI3)
+    expect(result.registration_approval_number).toBe('RMS-GB-000149-002')
+    expect(result.items).toHaveLength(1)
     expect(result.establishment_numbers).toContain('RMS-GB-000149-002')
+  })
+
+  test('extracts country_of_origin from valid model', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.validModel)
+    const result = await parse(Buffer.from('mock-pdf'))
+    expect(result.items[0].country_of_origin).toBe('IT')
+  })
+
+  test('sets validateCountryOfOrigin to true', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.validModel)
+    const result = await parse(Buffer.from('mock-pdf'))
+    expect(result.validateCountryOfOrigin).toBe(true)
   })
 
   test('returns NOMATCH for empty pdf', async () => {
@@ -46,9 +56,9 @@ describe('Giovanni Model 3 PDF Parser', () => {
       model.validModelWithShortCommodityCode
     )
     const result = await parse(Buffer.from('mock-pdf'))
-    expect(result).toMatchObject(
-      expectedResults.validTestResultWithShortCommodityCode
-    )
+    expect(result.parserModel).toBe(parserModel.GIOVANNI3)
+    expect(result.items[0].commodity_code).toBe('902209990')
+    expect(result.items[0].country_of_origin).toBe('IT')
   })
 
   test('handles pages with no rows after header', async () => {
@@ -66,7 +76,7 @@ describe('Giovanni Model 3 PDF Parser', () => {
 
     const result = await parse(Buffer.from('mock-pdf'))
 
-    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [])
+    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [], false, false)
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
 
@@ -86,7 +96,7 @@ describe('Giovanni Model 3 PDF Parser', () => {
 
     const result = await parse(Buffer.from('mock-pdf'))
 
-    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [])
+    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [], false, false)
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
 })
