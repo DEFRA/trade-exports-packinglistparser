@@ -419,6 +419,19 @@ export function mapPdfNonAiParser(
     })
   }
 
+  // set nirms to blanket value if row nirms is null and blanket value exists
+  if (headers[model].blanketNirmsValue) {
+    const blanketNirmsValue = extractBlanketValuesPdf(
+      packingListJson.content,
+      headers[model].blanketNirmsValue
+    )
+    packingListContents.forEach((item) => {
+      if (!item.nirms) {
+        item.nirms = blanketNirmsValue
+      }
+    })
+  }
+
   return packingListContents
 }
 
