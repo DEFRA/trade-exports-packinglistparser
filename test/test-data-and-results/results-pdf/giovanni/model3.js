@@ -3,8 +3,8 @@ import parserModel from '../../../../src/services/parser-model.js'
 export default {
   validTestResult: {
     business_checks: {
-      all_required_fields_present: true,
-      failure_reasons: null
+      all_required_fields_present: false,
+      failure_reasons: 'NIRMS/Non-NIRMS goods not specified in page 1 row 1.\n'
     },
     items: [
       {
@@ -13,7 +13,8 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: 'FRESH'
+        type_of_treatment: 'FRESH',
+        country_of_origin: 'IT'
       }
     ],
     registration_approval_number: 'RMS-GB-000149-002',
@@ -21,8 +22,8 @@ export default {
   },
   validTestResultWithShortCommodityCode: {
     business_checks: {
-      all_required_fields_present: true,
-      failure_reasons: null
+      all_required_fields_present: false,
+      failure_reasons: 'NIRMS/Non-NIRMS goods not specified in page 1 row 1.\n'
     },
     items: [
       {
@@ -31,7 +32,8 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: 'FRESH'
+        type_of_treatment: 'FRESH',
+        country_of_origin: 'IT'
       }
     ],
     registration_approval_number: 'RMS-GB-000149-002',
@@ -40,8 +42,7 @@ export default {
   missingKgTestResult: {
     business_checks: {
       all_required_fields_present: false,
-      failure_reasons: `Net Weight Unit of Measure (kg) not found.
-`
+      failure_reasons: `Net Weight Unit of Measure (kg) not found.\nNIRMS/Non-NIRMS goods not specified in page 1 row 1.\n`
     },
     items: [
       {
@@ -50,7 +51,8 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: null,
-        type_of_treatment: 'FRESH'
+        type_of_treatment: 'FRESH',
+        country_of_origin: 'IT'
       }
     ],
     establishment_numbers: ['RMS-GB-000149-002'],
@@ -60,8 +62,7 @@ export default {
   multipleRmsTestResult: {
     business_checks: {
       all_required_fields_present: false,
-      failure_reasons: `Multiple GB Place of Dispatch (Establishment) numbers found on packing list.
-`
+      failure_reasons: `Multiple GB Place of Dispatch (Establishment) numbers found on packing list.\nNIRMS/Non-NIRMS goods not specified in page 1 row 1.\n`
     },
     items: [
       {
@@ -70,7 +71,8 @@ export default {
         number_of_packages: '20',
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: 'FRESH'
+        type_of_treatment: 'FRESH',
+        country_of_origin: 'IT'
       }
     ],
     establishment_numbers: ['RMS-GB-000149-002', 'RMS-GB-000149-003'],
@@ -89,7 +91,8 @@ export default {
   invalidTestResult_MissingCells: {
     business_checks: {
       all_required_fields_present: false,
-      failure_reasons: 'No of packages is missing in page 1 row 1.\n'
+      failure_reasons:
+        'No of packages is missing in page 1 row 1.\nNIRMS/Non-NIRMS goods not specified in page 1 row 1.\n'
     },
     items: [
       {
@@ -98,7 +101,29 @@ export default {
         number_of_packages: null,
         total_net_weight_kg: '48',
         total_net_weight_unit: 'KG',
-        type_of_treatment: 'FRESH'
+        type_of_treatment: 'FRESH',
+        country_of_origin: 'IT'
+      }
+    ],
+    registration_approval_number: 'RMS-GB-000149-002',
+    parserModel: parserModel.GIOVANNI3
+  },
+  ineligibleItemTestResult: {
+    business_checks: {
+      all_required_fields_present: false,
+      failure_reasons:
+        'Prohibited item identified on the packing list in page 1 row 1.\n'
+    },
+    items: [
+      {
+        description: 'HAM AND CHEESE TORT',
+        commodity_code: '1902209990',
+        number_of_packages: '20',
+        total_net_weight_kg: '48',
+        total_net_weight_unit: 'KG',
+        type_of_treatment: 'FRESH',
+        country_of_origin: 'IT',
+        nirms: 'NIRMS'
       }
     ],
     registration_approval_number: 'RMS-GB-000149-002',
