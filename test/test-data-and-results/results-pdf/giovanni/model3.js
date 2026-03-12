@@ -91,7 +91,8 @@ export default {
   invalidTestResult_MissingCells: {
     business_checks: {
       all_required_fields_present: false,
-      failure_reasons: 'No of packages is missing in page 1 row 1.\nNIRMS/Non-NIRMS goods not specified in page 1 row 1.\n'
+      failure_reasons:
+        'No of packages is missing in page 1 row 1.\nNIRMS/Non-NIRMS goods not specified in page 1 row 1.\n'
     },
     items: [
       {

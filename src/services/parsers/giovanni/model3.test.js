@@ -76,7 +76,13 @@ describe('Giovanni Model 3 PDF Parser', () => {
 
     const result = await parse(Buffer.from('mock-pdf'))
 
-    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [], false, false)
+    expect(mapSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      'GIOVANNI3',
+      [],
+      false,
+      false
+    )
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
 
@@ -96,7 +102,13 @@ describe('Giovanni Model 3 PDF Parser', () => {
 
     const result = await parse(Buffer.from('mock-pdf'))
 
-    expect(mapSpy).toHaveBeenCalledWith(expect.any(Object), 'GIOVANNI3', [], false, false)
+    expect(mapSpy).toHaveBeenCalledWith(
+      expect.any(Object),
+      'GIOVANNI3',
+      [],
+      false,
+      false
+    )
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
 })

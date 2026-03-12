@@ -97,7 +97,7 @@ const pdfGiovanniHeaders = {
     nirms: {
       x1: 405,
       x2: 430,
-      regex: /NIRMS\/Non-NIRMS/i
+      regex: /(NIRMS\s*ONLY|NIRMS\/Non-NIRMS)/i
     },
     minHeadersY: 280,
     maxHeadersY: 300,
