@@ -36,6 +36,8 @@ function createGiovanni3PdfModel(rows, options = {}) {
     includeNirmsHeader = true,
     includeBlanketTreatment = true,
     treatmentValue = 'FRESH',
+    includeBlanketNirms = false,
+    blanketNirmsValue = null,
     includeTrailingZeroRow = true
   } = options
 
@@ -134,6 +136,29 @@ function createGiovanni3PdfModel(rows, options = {}) {
         str: treatmentValue,
         dir: 'ltr',
         width: 25,
+        height: 5.28,
+        fontName: 'Helvetica'
+      }
+    )
+  }
+
+  if (includeBlanketNirms && blanketNirmsValue) {
+    content.push(
+      {
+        x: 480,
+        y: 285.77,
+        str: 'NIRMS Only',
+        dir: 'ltr',
+        width: 35,
+        height: 5.28,
+        fontName: 'Helvetica'
+      },
+      {
+        x: 480,
+        y: 295,
+        str: blanketNirmsValue,
+        dir: 'ltr',
+        width: 10,
         height: 5.28,
         fontName: 'Helvetica'
       }
@@ -353,6 +378,34 @@ describe('Giovanni Model 3 CoO Validation Acceptance Criteria', () => {
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasons.NIRMS_MISSING} in page 1 row 1.\n`
     )
+  })
+
+  test('AC2a - Blanket NIRMS value N applies to rows without explicit NIRMS', async () => {
+    const modelAc2a = createGiovanni3PdfModel(
+      [
+        {
+          description: 'ITEM WITH BLANKET NIRMS',
+          commodity_code: '1234567890',
+          country_of_origin: 'IT',
+          number_of_packages: '20',
+          total_net_weight_kg: '48'
+        }
+      ],
+      {
+        includeNirmsHeader: false,
+        includeBlanketNirms: true,
+        blanketNirmsValue: 'N'
+      }
+    )
+
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(modelAc2a)
+    const result = await parsePackingList({}, filename)
+
+    expect(result.items).toBeDefined()
+    expect(result.items.length).toBe(1)
+    expect(result.items[0].nirms).toBe('N')
+    expect(result.business_checks.all_required_fields_present).toBe(true)
+    expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   test('AC3 - Invalid NIRMS value fails with invalid NIRMS reason', async () => {

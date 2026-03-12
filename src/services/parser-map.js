@@ -407,6 +407,18 @@ export function mapPdfNonAiParser(
     packingListContents.push(plRow)
   }
 
+  applyBlanketValues(packingListJson, model, packingListContents)
+
+  return packingListContents
+}
+
+/**
+ * Apply blanket values (treatment type and NIRMS) to packing list items.
+ * @param {Object} packingListJson - PDF page with content coordinates
+ * @param {string} model - Parser model identifier
+ * @param {Array<Object>} packingListContents - Array of packing list items
+ */
+function applyBlanketValues(packingListJson, model, packingListContents) {
   // set all type of treatment values to blanket value if it exists
   if (headers[model].blanketTreatmentTypeValue) {
     const blanketTreatmentType = extractBlanketValuesPdf(
@@ -419,7 +431,18 @@ export function mapPdfNonAiParser(
     })
   }
 
-  return packingListContents
+  // set nirms to blanket value if row nirms is null and blanket value exists
+  if (headers[model].blanketNirmsValue) {
+    const blanketNirmsValue = extractBlanketValuesPdf(
+      packingListJson.content,
+      headers[model].blanketNirmsValue
+    )
+    packingListContents.forEach((item) => {
+      if (!item.nirms) {
+        item.nirms = blanketNirmsValue
+      }
+    })
+  }
 }
 
 /**
