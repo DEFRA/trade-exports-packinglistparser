@@ -144,4 +144,134 @@ describe('Packing List Process Route', () => {
       expect(processPackingList).not.toHaveBeenCalled()
     })
   })
+
+  describe('payload schema validation', () => {
+    it.each([
+      { label: 'null', value: null },
+      { label: 'zero', value: 0 },
+      { label: 'negative', value: -1 },
+      { label: 'decimal', value: 1.5 },
+      { label: 'non-numeric string', value: 'abc' }
+    ])('returns 400 when application_id is $label', async ({ value }) => {
+      const response = await injectProcessPackingList({
+        ...validPayload,
+        application_id: value
+      })
+
+      expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
+      expect(processPackingList).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      { label: 'positive integer number', value: 42 },
+      { label: 'numeric string', value: '99' }
+    ])('accepts application_id as $label', async ({ value }) => {
+      processPackingList.mockResolvedValue({ result: 'success', data: {} })
+
+      const response = await injectProcessPackingList({
+        ...validPayload,
+        application_id: value
+      })
+
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
+    })
+
+    it.each([
+      { label: 'null', value: null },
+      { label: 'not a URI', value: 'not-a-uri' },
+      { label: 'an empty string', value: '' }
+    ])('returns 400 when packing_list_blob is $label', async ({ value }) => {
+      const response = await injectProcessPackingList({
+        ...validPayload,
+        packing_list_blob: value
+      })
+
+      expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
+      expect(processPackingList).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      {
+        label: 'SupplyChainConsignment is null',
+        override: { SupplyChainConsignment: null }
+      },
+      {
+        label: 'DispatchLocation is missing',
+        override: { SupplyChainConsignment: {} }
+      },
+      {
+        label: 'IDCOMS is missing',
+        override: { SupplyChainConsignment: { DispatchLocation: {} } }
+      },
+      {
+        label: 'EstablishmentId is missing',
+        override: {
+          SupplyChainConsignment: { DispatchLocation: { IDCOMS: {} } }
+        }
+      },
+      {
+        label: 'EstablishmentId is not a valid GUID',
+        override: {
+          SupplyChainConsignment: {
+            DispatchLocation: {
+              IDCOMS: { EstablishmentId: 'not-a-guid' }
+            }
+          }
+        }
+      }
+    ])('returns 400 when $label', async ({ override }) => {
+      const response = await injectProcessPackingList({
+        ...validPayload,
+        ...override
+      })
+
+      expect(response.statusCode).toBe(STATUS_CODES.BAD_REQUEST)
+      expect(processPackingList).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      {
+        label: 'SupplyChainConsignment',
+        override: {
+          SupplyChainConsignment: {
+            ...validPayload.SupplyChainConsignment,
+            extraField: 'someValue'
+          }
+        }
+      },
+      {
+        label: 'DispatchLocation',
+        override: {
+          SupplyChainConsignment: {
+            DispatchLocation: {
+              ...validPayload.SupplyChainConsignment.DispatchLocation,
+              extraField: 'someValue'
+            }
+          }
+        }
+      },
+      {
+        label: 'IDCOMS',
+        override: {
+          SupplyChainConsignment: {
+            DispatchLocation: {
+              IDCOMS: {
+                ...validPayload.SupplyChainConsignment.DispatchLocation.IDCOMS,
+                extraField: 'someValue'
+              }
+            }
+          }
+        }
+      }
+    ])('accepts unknown extra fields on $label', async ({ override }) => {
+      processPackingList.mockResolvedValue({ result: 'success', data: {} })
+
+      const response = await injectProcessPackingList({
+        ...validPayload,
+        ...override
+      })
+
+      expect(response.statusCode).toBe(STATUS_CODES.OK)
+    })
+  })
 })

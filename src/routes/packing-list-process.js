@@ -26,9 +26,15 @@ const packingListProcessPayloadSchema = Joi.object({
     DispatchLocation: Joi.object({
       IDCOMS: Joi.object({
         EstablishmentId: Joi.string().pattern(GUID_FORMAT_REGEX).required()
-      }).required()
-    }).required()
-  }).required()
+      })
+        .unknown(true)
+        .required()
+    })
+      .unknown(true)
+      .required()
+  })
+    .unknown(true)
+    .required()
 }).required()
 
 const packingListProcessQuerySchema = Joi.object({
