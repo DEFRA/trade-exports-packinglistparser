@@ -32,13 +32,16 @@ const filename = 'packinglist.csv'
 
 describe('matchesAsdaModel4', () => {
   test('matches valid ASDA Model 4 CSV file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.validTestResult)
   })
 
   test('matches valid ASDA Model 4 CSV file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -47,7 +50,7 @@ describe('matchesAsdaModel4', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -56,7 +59,7 @@ describe('matchesAsdaModel4', () => {
   })
 
   test('matches valid ASDA Model 4 CSV file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MultipleRms,
       filename
     )

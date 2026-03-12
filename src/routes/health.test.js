@@ -1,17 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import Hapi from '@hapi/hapi'
 import { health } from './health.js'
+import { STATUS_CODES } from './statuscodes.js'
 
 describe('Health Route', () => {
-  let mockH
-  let mockResponse
+  let server
 
-  beforeEach(() => {
-    mockResponse = {}
-    mockH = {
-      response: vi.fn().mockReturnValue(mockResponse)
-    }
+  beforeEach(async () => {
+    server = Hapi.server()
+    server.route(health)
+    await server.initialize()
+  })
 
-    vi.clearAllMocks()
+  afterEach(async () => {
+    await server.stop()
   })
 
   it('should have correct route configuration', () => {
@@ -20,10 +22,10 @@ describe('Health Route', () => {
     expect(typeof health.handler).toBe('function')
   })
 
-  it('should return success message', () => {
-    const result = health.handler({}, mockH)
+  it('should return success response', async () => {
+    const response = await server.inject({ method: 'GET', url: '/health' })
 
-    expect(mockH.response).toHaveBeenCalledWith({ message: 'success' })
-    expect(result).toBe(mockResponse)
+    expect(response.statusCode).toBe(STATUS_CODES.OK)
+    expect(JSON.parse(response.payload)).toEqual({ message: 'success' })
   })
 })

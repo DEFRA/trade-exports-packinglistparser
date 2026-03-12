@@ -6,7 +6,7 @@ import {
   dynamicsHealthCheck
 } from '../routes/dynamics.js'
 import { packingListProcessRoute } from '../routes/packing-list-process.js'
-import { sendtoqueue } from '../routes/trade-service-bus.js'
+import { sendToQueue } from '../routes/trade-service-bus.js'
 import { getFileFromBlob, formsContainerExists } from '../routes/ehco-blob.js'
 import { ineligibleItems } from '../routes/mdm.js'
 import { testRoute } from '../routes/test-parse.js'
@@ -38,7 +38,7 @@ const router = {
       if (isTestEnvironment) {
         server.route([getListFromS3, getFromS3, addFileToS3])
         server.route([getDispatchLocationRoute, dynamicsHealthCheck])
-        server.route([sendtoqueue])
+        server.route([sendToQueue])
         server.route([getFileFromBlob, formsContainerExists])
         server.route([ineligibleItems])
         server.route([testRoute])

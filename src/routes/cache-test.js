@@ -24,7 +24,6 @@ function getIneligibleItemsCacheHandler(_request, h) {
   const cachedData = getIneligibleItemsCache()
 
   if (cachedData === null) {
-    console.log('Ineligible items cache is empty or not initialized')
     return h
       .response({
         message: 'Cache is empty or not initialized',
@@ -36,8 +35,6 @@ function getIneligibleItemsCacheHandler(_request, h) {
   const itemCount =
     cachedData?.ineligibleItems?.length ||
     (Array.isArray(cachedData) ? cachedData.length : 0)
-  console.log(`Ineligible items cache contains ${itemCount} items`)
-  console.log('Cache data:', JSON.stringify(cachedData, null, 2))
 
   return h
     .response({
@@ -58,7 +55,6 @@ function getIsoCodesCacheHandler(_request, h) {
   const cachedData = getIsoCodesCache()
 
   if (cachedData === null) {
-    console.log('ISO codes cache is empty or not initialized')
     return h
       .response({
         message: 'Cache is empty or not initialized',
@@ -68,8 +64,6 @@ function getIsoCodesCacheHandler(_request, h) {
   }
 
   const itemCount = Array.isArray(cachedData) ? cachedData.length : 0
-  console.log(`ISO codes cache contains ${itemCount} items`)
-  console.log('Cache data:', JSON.stringify(cachedData, null, 2))
 
   return h
     .response({

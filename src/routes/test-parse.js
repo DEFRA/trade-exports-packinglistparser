@@ -3,49 +3,102 @@ import { STATUS_CODES } from './statuscodes.js'
 import { convertExcelToJson } from '../utilities/excel-utility.js'
 import { convertCsvToJson } from '../utilities/csv-utility.js'
 import { isCsv, isPdf } from '../utilities/file-extension.js'
+import Joi from 'joi'
 import path from 'node:path'
 import fs from 'node:fs'
-// Uncomment to see pdf elements positions
 import { PDFExtract } from 'pdf.js-extract'
 const pdfExtract = new PDFExtract()
 
 const testRoute = {
   method: 'GET',
   path: '/test-parse',
+  options: {
+    validate: {
+      query: Joi.object({
+        filename: Joi.string().min(1).required(),
+        returnPdfJson: Joi.string().valid('true', 'false').optional()
+      })
+    }
+  },
   handler: processPackingListHandler
+}
+
+const INVALID_FILENAME_ERROR = 'Invalid filename'
+
+// Caller is responsible for sanitising requestedFilename via path.basename()
+// before invoking this function, so no path traversal guard is needed here.
+function resolvePackingListFilePath(plDirectory, requestedFilename) {
+  if (typeof requestedFilename !== 'string' || requestedFilename.length === 0) {
+    return null
+  }
+
+  const resolvedFilePath = path.resolve(plDirectory, requestedFilename)
+
+  try {
+    return fs.statSync(resolvedFilePath).isFile() ? resolvedFilePath : null
+  } catch {
+    return null
+  }
+}
+
+function isTrueQueryFlag(queryValue) {
+  return queryValue === true || String(queryValue).toLowerCase() === 'true'
+}
+
+async function parsePackingListResult(requestedFilename, filePath) {
+  let payload
+
+  if (isCsv(requestedFilename)) {
+    const csvBuffer = fs.readFileSync(filePath)
+    payload = await convertCsvToJson(csvBuffer)
+  } else if (isPdf(requestedFilename)) {
+    payload = fs.readFileSync(filePath)
+  } else {
+    payload = convertExcelToJson({
+      sourceFile: filePath
+    })
+  }
+
+  return parsePackingList(payload, filePath)
+}
+
+async function extractPdfJsonResult(filePath) {
+  let pdfResult = {}
+
+  try {
+    pdfResult = fs.readFileSync(filePath)
+  } catch {
+    throw new Error('Failed to extract PDF JSON')
+  }
+
+  return pdfExtract.extractBuffer(pdfResult)
 }
 
 async function processPackingListHandler(request, h) {
   try {
-    const sanitizedFilename = path.basename(request.query.filename)
     const plDirectory = path.join(process.cwd(), '/src/packing-lists/')
-    const filePath = path.join(plDirectory, sanitizedFilename)
+    const rawFilename = request.query.filename
+    const sanitizedFilename =
+      typeof rawFilename === 'string' ? path.basename(rawFilename) : null
+    const filePath = resolvePackingListFilePath(plDirectory, sanitizedFilename)
 
-    let payload
-    if (isCsv(sanitizedFilename)) {
-      const csvBuffer = fs.readFileSync(filePath)
-      payload = await convertCsvToJson(csvBuffer)
-    } else if (isPdf(sanitizedFilename)) {
-      payload = fs.readFileSync(filePath)
-    } else {
-      payload = convertExcelToJson({
-        sourceFile: filePath
-      })
+    if (!filePath) {
+      return h
+        .response({ success: false, error: INVALID_FILENAME_ERROR })
+        .code(STATUS_CODES.BAD_REQUEST)
     }
 
-    let result = await parsePackingList(payload, filePath)
+    const returnPdfJson = isTrueQueryFlag(request.query.returnPdfJson)
 
-    // To see pdf elements positions
-    const returnPdfJson = request.query.returnPdfJson === 'true'
-    if (returnPdfJson) {
-      let pdfResult = {}
-      try {
-        pdfResult = fs.readFileSync(filePath)
-      } catch (err) {
-        console.error(err)
-      }
-      result = await pdfExtract.extractBuffer(pdfResult)
+    if (returnPdfJson && !isPdf(sanitizedFilename)) {
+      return h
+        .response({ success: false, error: INVALID_FILENAME_ERROR })
+        .code(STATUS_CODES.BAD_REQUEST)
     }
+
+    const result = returnPdfJson
+      ? await extractPdfJsonResult(filePath)
+      : await parsePackingListResult(sanitizedFilename, filePath)
 
     return h.response({ success: true, result }).code(STATUS_CODES.OK)
   } catch (err) {

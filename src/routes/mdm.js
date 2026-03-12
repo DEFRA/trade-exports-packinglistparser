@@ -9,7 +9,7 @@ export const ineligibleItems = {
 }
 
 /**
- * Handler for downloading a blob from EHCO application forms container
+ * Handler for retrieving ineligible items from the MDM API
  * @param {Object} request - Hapi request object
  * @param {Object} h - Hapi response toolkit
  * @returns {Promise<Object>} Response indicating success or error

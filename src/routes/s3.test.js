@@ -40,7 +40,6 @@ describe('S3 Routes', () => {
     }
 
     vi.clearAllMocks()
-    vi.spyOn(console, 'log').mockImplementation(() => {})
   })
 
   describe('getListFromS3', () => {
@@ -240,10 +239,6 @@ describe('S3 Routes', () => {
 
       await addFileToS3.handler(mockRequest, mockH)
 
-      expect(console.log).toHaveBeenCalledWith(
-        'Payload received for S3 upload:',
-        testPayload
-      )
       expect(uploadJsonFileToS3).toHaveBeenCalledWith(
         { filename: testFilename, schema: 'v2' },
         JSON.stringify(testPayload)
