@@ -4,7 +4,11 @@ import { STATUS_CODES } from './statuscodes.js'
 import path from 'node:path'
 import { testRoute } from './test-parse.js'
 import { parsePackingList } from '../services/parser-service.js'
-import { convertExcelToJson } from '../utilities/excel-utility.js'
+import {
+  convertExcelToJson,
+  restoreFormattedValues
+} from '../utilities/excel-utility.js'
+import { parsersRequiringFormattedValues } from '../services/model-parsers.js'
 import { convertCsvToJson } from '../utilities/csv-utility.js'
 import { isCsv, isPdf } from '../utilities/file-extension.js'
 import fs from 'node:fs'
@@ -14,6 +18,7 @@ const { mockPdfExtractBuffer } = vi.hoisted(() => ({
 }))
 
 const MOCK_PDF_CONTENT = 'mock pdf content'
+const MOCK_EXCEL_BUFFER = Buffer.from('mock excel content')
 const INVALID_FILENAME_ERROR_MESSAGE = 'Invalid filename'
 const DEFAULT_FILENAME_QUERY = 'filename=test-file.xlsx'
 const PDF_FILENAME_QUERY = 'filename=test-file.pdf'
@@ -23,7 +28,22 @@ vi.mock('../services/parser-service.js', () => ({
 }))
 
 vi.mock('../utilities/excel-utility.js', () => ({
-  convertExcelToJson: vi.fn()
+  convertExcelToJson: vi.fn(),
+  restoreFormattedValues: vi.fn()
+}))
+
+vi.mock('../services/model-parsers.js', () => ({
+  parsersRequiringFormattedValues: [{ matches: vi.fn() }]
+}))
+
+vi.mock('../services/matcher-result.js', () => ({
+  default: {
+    CORRECT: 'CORRECT',
+    WRONG_HEADER: 'WRONG_HEADER',
+    WRONG_ESTABLISHMENT_NUMBER: 'WRONG_ESTABLISHMENT_NUMBER',
+    EMPTY_FILE: 'EMPTY_FILE',
+    GENERIC_ERROR: 'GENERIC_ERROR'
+  }
 }))
 
 vi.mock('../utilities/csv-utility.js', () => ({
@@ -49,7 +69,7 @@ vi.mock('pdf.js-extract', () => ({
 }))
 
 let server
-let mockRequest, mockH, mockResponse, plDirectory
+let mockRequest, mockH, mockResponse
 
 async function injectTestParse(query = DEFAULT_FILENAME_QUERY) {
   return server.inject({
@@ -70,8 +90,8 @@ describe('Test Parse Route', () => {
     isCsv.mockReturnValue(false)
     isPdf.mockReturnValue(false)
     fs.statSync.mockReturnValue({ isFile: () => true })
+    fs.readFileSync.mockReturnValue(MOCK_EXCEL_BUFFER)
 
-    plDirectory = path.join(process.cwd(), '/src/packing-lists/')
     mockResponse = { code: vi.fn() }
     mockH = { response: vi.fn().mockReturnValue(mockResponse) }
     mockRequest = { query: { filename: 'test-file.xlsx' } }
@@ -118,7 +138,7 @@ describe('Test Parse Route', () => {
         result: mockResult
       })
       expect(convertExcelToJson).toHaveBeenCalledWith({
-        sourceFile: expectedFilePath
+        source: MOCK_EXCEL_BUFFER
       })
       expect(parsePackingList).toHaveBeenCalledWith(
         mockPayload,
@@ -166,8 +186,6 @@ describe('Test Parse Route', () => {
       mockRequest.query.filename = 'subdir/nested-file.xlsx'
       const mockPayload = { Sheet1: [] }
       const mockResult = { items: [] }
-      // Should strip the subdirectory and only use basename
-      const expectedFilePath = path.join(plDirectory, 'nested-file.xlsx')
 
       convertExcelToJson.mockReturnValue(mockPayload)
       parsePackingList.mockResolvedValue(mockResult)
@@ -175,7 +193,7 @@ describe('Test Parse Route', () => {
       await testRoute.handler(mockRequest, mockH)
 
       expect(convertExcelToJson).toHaveBeenCalledWith({
-        sourceFile: expectedFilePath
+        source: MOCK_EXCEL_BUFFER
       })
     })
 
@@ -183,8 +201,6 @@ describe('Test Parse Route', () => {
       mockRequest.query.filename = '../../etc/passwd'
       const mockPayload = { Sheet1: [] }
       const mockResult = { items: [] }
-      // Should strip the path traversal and only use basename
-      const expectedFilePath = path.join(plDirectory, 'passwd')
 
       convertExcelToJson.mockReturnValue(mockPayload)
       parsePackingList.mockResolvedValue(mockResult)
@@ -192,7 +208,7 @@ describe('Test Parse Route', () => {
       await testRoute.handler(mockRequest, mockH)
 
       expect(convertExcelToJson).toHaveBeenCalledWith({
-        sourceFile: expectedFilePath
+        source: MOCK_EXCEL_BUFFER
       })
     })
 
@@ -254,6 +270,24 @@ describe('Test Parse Route', () => {
         result: mockResult
       })
       expect(mockResponse.code).toHaveBeenCalledWith(STATUS_CODES.OK)
+    })
+
+    it('should call restoreFormattedValues when a parser in parsersRequiringFormattedValues matches', async () => {
+      const mockPayload = {
+        Sheet1: [{ A: 'Code' }, { A: '0810100000' }]
+      }
+      const mockResult = { parserModel: 'BURBANK1', items: [] }
+
+      convertExcelToJson.mockReturnValue(mockPayload)
+      parsePackingList.mockResolvedValue(mockResult)
+      parsersRequiringFormattedValues[0].matches.mockReturnValue('CORRECT')
+
+      await injectTestParse(DEFAULT_FILENAME_QUERY)
+
+      expect(restoreFormattedValues).toHaveBeenCalledWith(
+        mockPayload,
+        MOCK_EXCEL_BUFFER
+      )
     })
 
     it('should handle CSV files correctly', async () => {

@@ -3,7 +3,13 @@ import { getAzureCredentials } from '../utilities/get-azure-credentials.js'
 import { getClientProxyOptions } from '../utilities/proxy-helper.js'
 import { createLogger } from '../../common/helpers/logging/logger.js'
 import { formatError } from '../../common/helpers/logging/error-logger.js'
-import { isExcel, convertExcelToJson } from '../../utilities/excel-helper.js'
+import {
+  isExcel,
+  convertExcelToJson,
+  restoreFormattedValues
+} from '../../utilities/excel-helper.js'
+import { parsersRequiringFormattedValues } from '../model-parsers.js'
+import matcherResult from '../matcher-result.js'
 import { isCsv, convertCsvToJson } from '../../utilities/csv-helper.js'
 import { streamToBuffer } from '../../common/helpers/stream-helpers.js'
 
@@ -105,6 +111,16 @@ async function downloadBlobAsJson(blobUri, storageConfig) {
     let result
     if (isExcel(blobUri)) {
       result = convertExcelToJson({ source: buffer })
+      // Restore formatted display strings for parsers that use custom number
+      // formats (e.g. Burbank commodity codes with leading zeros). The buffer
+      // is already in memory so no extra I/O is needed.
+      if (
+        parsersRequiringFormattedValues.some(
+          (p) => p.matches(result, blobUri) === matcherResult.CORRECT
+        )
+      ) {
+        restoreFormattedValues(result, buffer)
+      }
     } else if (isCsv(blobUri)) {
       result = await convertCsvToJson(buffer)
     } else {

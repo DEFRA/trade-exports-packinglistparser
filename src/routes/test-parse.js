@@ -1,8 +1,13 @@
 import { parsePackingList } from '../services/parser-service.js'
 import { STATUS_CODES } from './statuscodes.js'
-import { convertExcelToJson } from '../utilities/excel-utility.js'
+import {
+  convertExcelToJson,
+  restoreFormattedValues
+} from '../utilities/excel-utility.js'
 import { convertCsvToJson } from '../utilities/csv-utility.js'
 import { isCsv, isPdf } from '../utilities/file-extension.js'
+import { parsersRequiringFormattedValues } from '../services/model-parsers.js'
+import matcherResult from '../services/matcher-result.js'
 import Joi from 'joi'
 import path from 'node:path'
 import fs from 'node:fs'
@@ -54,9 +59,22 @@ async function parsePackingListResult(requestedFilename, filePath) {
   } else if (isPdf(requestedFilename)) {
     payload = fs.readFileSync(filePath)
   } else {
+    const excelBuffer = fs.readFileSync(filePath)
     payload = convertExcelToJson({
-      sourceFile: filePath
+      source: excelBuffer
     })
+    // @boterop/convert-excel-to-json discards the formatted .w string for
+    // numeric cells (e.g. a commodity code stored as 810902010 but displayed
+    // as '0810902010'). Only restore for parsers that require it to avoid
+    // re-reading the file unnecessarily. See parsersRequiringFormattedValues
+    // in model-parsers.js to add further parsers.
+    if (
+      parsersRequiringFormattedValues.some(
+        (p) => p.matches(payload, requestedFilename) === matcherResult.CORRECT
+      )
+    ) {
+      restoreFormattedValues(payload, excelBuffer)
+    }
   }
 
   return parsePackingList(payload, filePath)

@@ -50,9 +50,22 @@ vi.mock('../../common/helpers/logging/logger.js', () => ({
 // Mock excel-helper
 const mockIsExcel = vi.fn()
 const mockConvertExcelToJson = vi.fn()
+const mockRestoreFormattedValues = vi.fn()
 vi.mock('../../utilities/excel-helper.js', () => ({
   isExcel: mockIsExcel,
-  convertExcelToJson: mockConvertExcelToJson
+  convertExcelToJson: mockConvertExcelToJson,
+  restoreFormattedValues: mockRestoreFormattedValues
+}))
+
+// Mock model-parsers — use a mutable array so individual tests can push matchers in
+const mockParsersRequiringFormattedValues = []
+vi.mock('../../services/model-parsers.js', () => ({
+  parsersRequiringFormattedValues: mockParsersRequiringFormattedValues
+}))
+
+// Mock matcher-result
+vi.mock('../../services/matcher-result.js', () => ({
+  default: { CORRECT: 'CORRECT' }
 }))
 
 // Mock csv-helper
@@ -132,6 +145,8 @@ const createMockStream = (data) => {
 describe('blob-storage-service', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    // Reset mutable parsers list so tests are independent
+    mockParsersRequiringFormattedValues.splice(0)
 
     // Mock streamToBuffer to convert stream content to buffer
     streamToBuffer.mockImplementation(async (stream) => {
@@ -266,6 +281,30 @@ describe('blob-storage-service', () => {
 
       await expect(service.downloadBlobAsJson('test.xlsx')).rejects.toThrow(
         'Failed to download and convert blob: Failed to download blob: Download failed'
+      )
+    })
+
+    it('should call restoreFormattedValues when a parser matches with CORRECT result', async () => {
+      const service = createBlobStorageService(TEST_BLOB_CONFIG)
+      const testData = Buffer.from('excel content')
+      const expectedJson = { Sheet1: [{ A: 'Code' }, { A: '0810100000' }] }
+      const mockMatches = vi.fn().mockReturnValue('CORRECT')
+      mockParsersRequiringFormattedValues.push({ matches: mockMatches })
+
+      mockDownload.mockResolvedValue({
+        readableStreamBody: createMockStream(testData)
+      })
+      mockIsExcel.mockReturnValue(true)
+      mockIsCsv.mockReturnValue(false)
+      mockConvertExcelToJson.mockReturnValue(expectedJson)
+
+      const result = await service.downloadBlobAsJson('test.xlsx')
+
+      expect(result).toEqual(expectedJson)
+      expect(mockMatches).toHaveBeenCalledWith(expectedJson, 'test.xlsx')
+      expect(mockRestoreFormattedValues).toHaveBeenCalledWith(
+        expectedJson,
+        testData
       )
     })
   })

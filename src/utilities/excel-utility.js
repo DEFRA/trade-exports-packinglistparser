@@ -17,6 +17,8 @@
  */
 
 import excelToJson from '@boterop/convert-excel-to-json'
+import * as XLSX from 'xlsx'
+import fs from 'node:fs'
 
 /**
  * Convert an Excel file to JSON with project-specific normalisation.
@@ -49,4 +51,49 @@ export function convertExcelToJson(options) {
   }
 
   return result
+}
+
+/**
+ * Restore formatted display strings (.w) for numeric cells where
+ * `@boterop/convert-excel-to-json` discarded them in favour of the raw
+ * number (.v). This is needed for cells with custom number formats such as
+ * a commodity code stored as 810902010 but displayed as '0810902010'.
+ *
+ * Uses fs.readFileSync + XLSX.read(buffer) rather than XLSX.readFile() to
+ * avoid the ESM build of xlsx failing to access the filesystem.
+ *
+ * Call this explicitly after convertExcelToJson only where formatted display
+ * values matter — it re-reads the source, so avoid calling it in hot
+ * paths unless required.
+ *
+ * @param {Object} result - Sheet map produced by convertExcelToJson
+ * @param {string|Buffer} source - Path to the original Excel file, or the raw file Buffer
+ */
+export function restoreFormattedValues(result, source) {
+  const buffer = Buffer.isBuffer(source) ? source : fs.readFileSync(source)
+  const workbook = XLSX.read(buffer, {
+    sheetStubs: true,
+    cellDates: true
+  })
+
+  for (const sheetName of Object.keys(result)) {
+    const sheet = workbook.Sheets[sheetName]
+    if (!sheet) continue
+
+    for (const addr of Object.keys(sheet)) {
+      if (addr.startsWith('!')) continue
+      const cell = sheet[addr]
+      if ((cell.t !== 'n' && cell.t !== 'd') || cell.w == null) continue
+
+      const match = /^([A-Z]+)(\d+)$/.exec(addr)
+      if (!match) continue
+
+      const col = match[1]
+      const rowIdx = parseInt(match[2], 10) - 1 // result rows are 0-based
+      const row = result[sheetName]?.[rowIdx]
+      if (row && row[col] != null && String(row[col]) !== cell.w.trim()) {
+        row[col] = cell.w.trim()
+      }
+    }
+  }
 }

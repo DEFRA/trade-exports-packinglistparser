@@ -298,4 +298,20 @@ const noMatchParsers = {
   }
 }
 
-export { parsersExcel, parsersCsv, parsersPdfNonAi, noMatchParsers }
+/**
+ * Matchers for Excel parsers that use custom-formatted numeric cells.
+ * @boterop/convert-excel-to-json discards the formatted display string (.w)
+ * for numeric cells, returning the raw number instead. Any parser listed here
+ * needs the formatted value restored (e.g. commodity codes with leading zeros)
+ * before parsing. Add a matcher here when a new parser relies on custom
+ * Excel number formats.
+ */
+const parsersRequiringFormattedValues = [{ matches: matchesBurbank1 }]
+
+export {
+  parsersExcel,
+  parsersCsv,
+  parsersPdfNonAi,
+  noMatchParsers,
+  parsersRequiringFormattedValues
+}
