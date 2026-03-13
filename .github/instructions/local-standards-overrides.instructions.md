@@ -1,3 +1,8 @@
+---
+description: Provides a description of where DEFRA standards have been overriden and why
+applyTo: '**/*.js'
+---
+
 # Local Standards Overrides (Service-Specific)
 
 This file documents where this service intentionally deviates from the baseline standards defined in `node-backend.instructions.md`. Each row describes the area affected, the override applied, and the reason it is permitted.

@@ -1,4 +1,5 @@
 ---
+description: Defra NodeJs backend development standards
 applyTo: '**/*.js,**/*.mjs'
 ---
 
