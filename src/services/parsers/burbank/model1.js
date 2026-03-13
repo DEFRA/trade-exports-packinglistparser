@@ -87,11 +87,8 @@ export function parse(packingListJson) {
 
     // Pad 9-digit commodity codes to the required 10-digit length
     packingListContents = packingListContents.map((item) => {
-      const code =
-        item.commodity_code != null
-          ? String(item.commodity_code)
-          : item.commodity_code
-      if (code != null && code.length === COMMODITY_CODE_SHORT_LENGTH) {
+      const code = item.commodity_code?.toString()
+      if (code?.length === COMMODITY_CODE_SHORT_LENGTH) {
         return { ...item, commodity_code: `0${code}` }
       }
       return item
