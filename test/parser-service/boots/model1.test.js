@@ -5,7 +5,7 @@ import { describe, it, expect } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import testData from '../../test-data-and-results/models/boots/model1.js'
 import testResults from '../../test-data-and-results/results/boots/model1.js'
-import ParserModel from '../../../src/services/parser-model.js'
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
 
 const filename = 'packinglist-boots-model1.xlsx'
 
@@ -29,23 +29,12 @@ describe('matchesBootsModel1', () => {
   })
 
   it("returns 'No Match' for incorrect file extension", async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: ParserModel.NOMATCH
-    }
-
     const result = await parserService.parsePackingList(
       testData.validModel,
-      filename
+      INVALID_FILENAME
     )
 
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   it('matches valid Boots Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {

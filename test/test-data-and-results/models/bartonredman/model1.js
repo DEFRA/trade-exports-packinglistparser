@@ -257,5 +257,93 @@ export default {
         H: 'INELIGIBLE_ITEM_ISO'
       }
     ]
+  },
+  packingListWithInvalidSheets: {
+    References: [{ A: 'reference data' }],
+    Lookups: [{ A: 'lookup data' }],
+    'Input Packing Sheet': [
+      { ...HEADER_ROW },
+      {
+        A: ESTABLISHMENT_NUMBER,
+        B: '0709601000',
+        C: RED_PEPPERS_DESCRIPTION,
+        D: 10,
+        E: 12.5,
+        F: 'CHILLED',
+        G: 'GREEN',
+        H: 'GB'
+      },
+      {
+        A: ESTABLISHMENT_NUMBER,
+        B: '0707000599',
+        C: CUCUMBERS_DESCRIPTION,
+        D: 6,
+        E: 8,
+        F: 'CHILLED',
+        G: 'RED',
+        H: null
+      }
+    ]
+  },
+  packingListWithoutNirmsColumn: {
+    'Input Packing Sheet': [
+      {
+        B: COMMODITY_CODE_HEADER,
+        C: DESCRIPTION_OF_GOODS_HEADER,
+        D: NUMBER_OF_PACKAGES_HEADER,
+        E: ITEM_NET_WEIGHT_HEADER,
+        F: TYPE_OF_TREATMENT_HEADER,
+        H: COUNTRY_OF_ORIGIN_HEADER
+      },
+      {
+        A: ESTABLISHMENT_NUMBER,
+        B: '0709601000',
+        C: RED_PEPPERS_DESCRIPTION,
+        D: 10,
+        E: 12.5,
+        F: 'CHILLED',
+        H: 'GB'
+      }
+    ]
+  },
+  packingListWithoutCooColumn: {
+    'Input Packing Sheet': [
+      {
+        B: COMMODITY_CODE_HEADER,
+        C: DESCRIPTION_OF_GOODS_HEADER,
+        D: NUMBER_OF_PACKAGES_HEADER,
+        E: ITEM_NET_WEIGHT_HEADER,
+        F: TYPE_OF_TREATMENT_HEADER,
+        G: NIRMS_LANE_HEADER
+      },
+      {
+        A: ESTABLISHMENT_NUMBER,
+        B: '0709601000',
+        C: RED_PEPPERS_DESCRIPTION,
+        D: 10,
+        E: 12.5,
+        F: 'CHILLED',
+        G: 'RED'
+      }
+    ]
+  },
+  packingListWithoutNirmsAndCooColumns: {
+    'Input Packing Sheet': [
+      {
+        B: COMMODITY_CODE_HEADER,
+        C: DESCRIPTION_OF_GOODS_HEADER,
+        D: NUMBER_OF_PACKAGES_HEADER,
+        E: ITEM_NET_WEIGHT_HEADER,
+        F: TYPE_OF_TREATMENT_HEADER
+      },
+      {
+        A: ESTABLISHMENT_NUMBER,
+        B: '0709601000',
+        C: RED_PEPPERS_DESCRIPTION,
+        D: 10,
+        E: 12.5,
+        F: 'CHILLED'
+      }
+    ]
   }
 }
