@@ -90,11 +90,25 @@ describe('BURBANK1 parser', () => {
     expect(result.validateCountryOfOrigin).toBe(true)
   })
 
-  it('extracts commodity_code for each item', () => {
+  it('pads 9-digit commodity codes to 10 digits by appending 0', () => {
     const result = parse(validModel)
 
-    expect(result.items[0].commodity_code).toBe('709999090')
-    expect(result.items[1].commodity_code).toBe('702000007')
+    expect(result.items[0].commodity_code).toBe('0709999090')
+    expect(result.items[1].commodity_code).toBe('0702000007')
+  })
+
+  it('pads numeric 9-digit commodity code (as returned from Excel) to 10 digits', () => {
+    const model = buildModelWithItems([buildItem({ C: 709999090 })])
+    const result = parse(model)
+
+    expect(result.items[0].commodity_code).toBe('0709999090')
+  })
+
+  it('does not modify a 10-digit commodity code', () => {
+    const model = buildModelWithItems([buildItem({ C: '7099990900' })])
+    const result = parse(model)
+
+    expect(result.items[0].commodity_code).toBe('7099990900')
   })
 
   it('extracts country_of_origin for each item', () => {

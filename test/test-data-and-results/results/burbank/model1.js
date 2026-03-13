@@ -15,7 +15,7 @@ export default {
     },
     items: [
       {
-        commodity_code: '709999090',
+        commodity_code: '0709999090',
         description: 'Herb Lovage x1kg',
         nature_of_products: 'Chilled',
         number_of_packages: '2',
@@ -26,7 +26,7 @@ export default {
         nirms: 'Green'
       },
       {
-        commodity_code: '702000007',
+        commodity_code: '0702000007',
         description: 'Tomato Cherry Mixed x9x250gm',
         nature_of_products: 'Chilled',
         number_of_packages: '10',
@@ -49,7 +49,7 @@ export default {
     },
     items: [
       {
-        commodity_code: '709999090',
+        commodity_code: '0709999090',
         description: 'Herb Lovage x1kg',
         nature_of_products: 'Chilled',
         number_of_packages: '2',
@@ -71,7 +71,7 @@ export default {
     },
     items: [
       {
-        commodity_code: '709999090',
+        commodity_code: '0709999090',
         description: 'Herb Lovage x1kg',
         nature_of_products: 'Chilled',
         number_of_packages: '2',
@@ -82,7 +82,7 @@ export default {
         nirms: 'Green'
       },
       {
-        commodity_code: '702000007',
+        commodity_code: '0702000007',
         description: 'Tomato Cherry Mixed x9x250gm',
         nature_of_products: 'Chilled',
         number_of_packages: '10',
@@ -104,7 +104,7 @@ export default {
     },
     items: [
       {
-        commodity_code: '709999090',
+        commodity_code: '0709999090',
         description: 'Herb Lovage x1kg',
         nature_of_products: 'Chilled',
         number_of_packages: '2',
