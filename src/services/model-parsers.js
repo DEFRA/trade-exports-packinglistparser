@@ -305,6 +305,8 @@ const noMatchParsers = {
  * needs the formatted value restored (e.g. commodity codes with leading zeros)
  * before parsing. Add a matcher here when a new parser relies on custom
  * Excel number formats.
+ *
+ * @type {Array<{matches: (packingList: Object, filename: string) => number}>}
  */
 const parsersRequiringFormattedValues = [{ matches: matchesBurbank1 }]
 

@@ -20,6 +20,8 @@ import excelToJson from '@boterop/convert-excel-to-json'
 import * as XLSX from 'xlsx'
 import fs from 'node:fs'
 
+const CELL_ADDR_RE = /^([A-Z]+)(\d+)$/
+
 /**
  * Convert an Excel file to JSON with project-specific normalisation.
  *
@@ -69,6 +71,22 @@ export function convertExcelToJson(options) {
  * @param {Object} result - Sheet map produced by convertExcelToJson
  * @param {string|Buffer} source - Path to the original Excel file, or the raw file Buffer
  */
+function patchCell(result, sheetName, cell, addr) {
+  if ((cell.t !== 'n' && cell.t !== 'd') || cell.w == null) {
+    return
+  }
+  const match = CELL_ADDR_RE.exec(addr)
+  if (!match) {
+    return
+  }
+  const col = match[1]
+  const rowIdx = Number.parseInt(match[2], 10) - 1 // result rows are 0-based
+  const row = result[sheetName]?.[rowIdx]
+  if (row?.[col] != null && String(row[col]) !== cell.w.trim()) {
+    row[col] = cell.w.trim()
+  }
+}
+
 export function restoreFormattedValues(result, source) {
   const buffer = Buffer.isBuffer(source) ? source : fs.readFileSync(source)
   const workbook = XLSX.read(buffer, {
@@ -78,21 +96,12 @@ export function restoreFormattedValues(result, source) {
 
   for (const sheetName of Object.keys(result)) {
     const sheet = workbook.Sheets[sheetName]
-    if (!sheet) continue
-
+    if (!sheet) {
+      continue
+    }
     for (const addr of Object.keys(sheet)) {
-      if (addr.startsWith('!')) continue
-      const cell = sheet[addr]
-      if ((cell.t !== 'n' && cell.t !== 'd') || cell.w == null) continue
-
-      const match = /^([A-Z]+)(\d+)$/.exec(addr)
-      if (!match) continue
-
-      const col = match[1]
-      const rowIdx = parseInt(match[2], 10) - 1 // result rows are 0-based
-      const row = result[sheetName]?.[rowIdx]
-      if (row && row[col] != null && String(row[col]) !== cell.w.trim()) {
-        row[col] = cell.w.trim()
+      if (!addr.startsWith('!')) {
+        patchCell(result, sheetName, sheet[addr], addr)
       }
     }
   }
