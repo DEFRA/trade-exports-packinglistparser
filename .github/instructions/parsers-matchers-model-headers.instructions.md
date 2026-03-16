@@ -1,4 +1,5 @@
 ---
+description: Instructions for how to create new models
 applyTo: 'src/services/parsers/**,src/services/matchers/**,src/services/model-headers/**'
 ---
 
@@ -119,7 +120,7 @@ Each matcher must:
 
 ## Model Headers
 
-Each model-headers file must define a named export and a default export. Required fields for the `regex` map:
+Each model-headers file must define a named export. Required fields for the `regex` map:
 
 | Field                 | Purpose                                |
 | --------------------- | -------------------------------------- |
@@ -128,12 +129,38 @@ Each model-headers file must define a named export and a default export. Require
 | `number_of_packages`  | Package count column                   |
 | `total_net_weight_kg` | Net weight column                      |
 
-Additional optional fields: `country_of_origin`, `total_net_weight_unit`, `type_of_treatment`, `nature_of_products`, `nirms`.
+Additional optional fields inside `regex`: `total_net_weight_unit`, `type_of_treatment`, `nature_of_products`.
+
+### `regex` vs top-level properties
+
+`nirms` and `country_of_origin` must be defined as **top-level properties on the model object**, not inside the `regex` map:
+
+```js
+const exampleHeaders = {
+  EXAMPLE1: {
+    establishmentNumber: { regex: /^RMS-GB-000000-\d{3}$/i },
+    regex: {
+      description: /Description of goods/i,
+      commodity_code: /Commodity code/i,
+      number_of_packages: /No\.? of packages/i,
+      total_net_weight_kg: /Item Net Weight/i
+    },
+    nirms: /NIRMS Red\/Green Lane/i, // top-level, NOT inside regex
+    country_of_origin: /Country of Origin/i, // top-level, NOT inside regex
+    findUnitInHeader: true,
+    validateCountryOfOrigin: true,
+    invalidSheets: []
+  }
+}
+```
+
+**Why this matters:** the matcher calls `matchesHeader()` against `Object.values(headers.MODEL.regex)`. Fields inside `regex` are all checked during header matching — if a required header is missing, the file is rejected. `nirms` and `country_of_origin` columns are expected in the packing list and are consumed by the parser, but their absence must not prevent the model from matching. Keeping them at the top level means the matcher can confirm the model without depending on those columns being present.
 
 Also include:
 
 - `establishmentNumber.regex` — the REMOS establishment number pattern for this retailer.
-- Validation flags where applicable: `findUnitInHeader`, `validateCountryOfOrigin`.
+- `findUnitInHeader` — when `true`, the parser reads the weight unit from the `total_net_weight_kg` header cell value (for example `"Item Net Weight (kgs)"`). Set to `false` when the unit is fixed or not present in the header.
+- `validateCountryOfOrigin` — when `true`, the parser validates each item's `country_of_origin` value against the ISO codes reference list. Requires `country_of_origin` to be defined as a top-level property on the model.
 - Excel-specific: `invalidSheets` array (list sheet names to skip).
 - PDF-specific: coordinate bounds (`x`, `x1`, `x2`) and totals-row filtering config.
 
@@ -176,3 +203,5 @@ After implementing parser and matcher files, register the new model in:
 - Add parser-service integration tests under `test/parser-service/[retailer]/` for end-to-end parser discovery behaviour.
 - Cover: correct match, wrong establishment number, wrong header, empty file, and error-path scenarios for matchers.
 - Cover: happy-path item extraction, empty/totals row filtering, and missing sheet handling for parsers.
+- **All model data and expected results** used in `test/parser-service/` tests must be sourced from `test/test-data-and-results/models/` (or `models-csv/` / `models-pdf/`) and `test/test-data-and-results/results/` (or `results-csv/` / `results-pdf/`) respectively — never define test model data or expected result objects inline in the test file. Add new variants to the appropriate `test-data-and-results` file when a test requires data not already exported.
+- **Shared test constants** (`INVALID_FILENAME`, `NO_MATCH_RESULT`, `ERROR_SUMMARY_TEXT`, etc.) must be imported from `test/test-constants.js` — never duplicate these inline in individual test files.

@@ -4,6 +4,7 @@ import model from '../../test-data-and-results/models/nutricia/model2.js'
 import ParserModel from '../../../src/services/parser-model.js'
 import test_results from '../../test-data-and-results/results/nutricia/model2.js'
 import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
+import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
 
 const filename = 'packinglist-nutricia-model2.xlsx'
 
@@ -27,23 +28,12 @@ describe('matchesNutriciaModel2', () => {
   })
 
   test('returns No Match for incorrect file extension', async () => {
-    const filename = 'packinglist.wrong'
-    const invalidTestResult_NoMatch = {
-      business_checks: {
-        all_required_fields_present: false,
-        failure_reasons: null
-      },
-      items: [],
-      registration_approval_number: null,
-      parserModel: ParserModel.NOMATCH
-    }
-
     const result = await parserService.parsePackingList(
       model.validModel,
-      filename
+      INVALID_FILENAME
     )
 
-    expect(result).toMatchObject(invalidTestResult_NoMatch)
+    expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   test('matches valid Nutricia Model 2 file', async () => {

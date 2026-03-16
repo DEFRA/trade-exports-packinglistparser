@@ -1,3 +1,7 @@
+---
+description: Instructions that describe the behaviour and standards of teh PLP application
+---
+
 # Copilot Instructions
 
 ## Project Purpose
