@@ -420,21 +420,6 @@ describe('mapPdfNonAiParser', () => {
     expect(typeof mapPdfNonAiParser).toBe('function')
   })
 
-  it('should extract commodity code digits and filter out 2-letter country codes', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: 'GB' }, // 2-letter country code should be filtered
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe(null)
-  })
-
   it('should keep valid commodity codes starting with digits', () => {
     const packingListJson = {
       content: [
@@ -448,51 +433,6 @@ describe('mapPdfNonAiParser', () => {
     const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
 
     expect(result[0].commodity_code).toBe('1234567890')
-  })
-
-  it('should extract first 4-14 digits from commodity code with trailing text', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: '02071290ABC' },
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe('02071290')
-  })
-
-  it('should filter out lowercase 2-letter country codes', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: 'gb' }, // lowercase 2-letter country code
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe(null)
-  })
-
-  it('should filter out mixed case 2-letter country codes', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: 'Gb' }, // mixed case 2-letter country code
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe(null)
   })
 
   it('should keep 3-letter codes (not country codes)', () => {

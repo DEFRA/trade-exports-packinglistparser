@@ -403,7 +403,7 @@ export function mapPdfNonAiParser(
       rowNumber: row + 1,
       pageNumber: packingListJson.pageInfo.num
     }
-    plRow.commodity_code = extractCommodityCodeDigits(plRow.commodity_code)
+
     packingListContents.push(plRow)
   }
 
@@ -425,7 +425,7 @@ function applyBlanketValues(packingListJson, model, packingListContents) {
       packingListJson.content,
       headers[model].blanketTreatmentTypeValue
     )
-    console.log('Extracted blanket treatment type:', blanketTreatmentType) // Debug log
+
     packingListContents.forEach((item) => {
       item.type_of_treatment = blanketTreatmentType
     })
@@ -443,29 +443,6 @@ function applyBlanketValues(packingListJson, model, packingListContents) {
       }
     })
   }
-}
-
-/**
- * Extract 4-14 digit commodity code from input string.
- * @param {string|null} input - Input string to extract from
- * @returns {string|null} Extracted digits or original input
- */
-function extractCommodityCodeDigits(input) {
-  if (input === null) {
-    return null
-  }
-
-  // If input is only 2 alphabetic characters (ie the country of origin), return null
-  if (/^[A-Z]{2}$/i.test(input)) {
-    return null
-  }
-
-  // Match if input starts with 4 to 14 digits
-  const match = /^(\d{4,14})/.exec(input)
-  if (match) {
-    return match[1]
-  }
-  return input
 }
 
 /**
