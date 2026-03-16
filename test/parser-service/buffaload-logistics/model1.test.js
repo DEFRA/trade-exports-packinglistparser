@@ -32,13 +32,16 @@ const EXPECTED_SECOND_DATA_ROW = 4
 
 describe('matchesBuffaloadModel1', () => {
   test('matches valid Buffaload Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.validTestResult)
   })
 
   test('matches valid Buffaload Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -47,7 +50,7 @@ describe('matchesBuffaloadModel1', () => {
   })
 
   test('matches valid Buffaload Model 1 file, calls parser, but returns all_required_fields_present as false when multiple rms numbers', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidMultipleRMS,
       filename
     )
@@ -56,7 +59,7 @@ describe('matchesBuffaloadModel1', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -65,7 +68,7 @@ describe('matchesBuffaloadModel1', () => {
   })
 
   test('matches valid Buffaload Model 1 file with multiple sheets where headers are on different rows, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelMultipleSheetsHeadersOnDifferentRows,
       filename
     )
@@ -82,14 +85,17 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
   // Order tests by BAC sequence for maintainability
 
   test('NOT within NIRMS Scheme - passes validation', async () => {
-    const result = await parserService.findParser(model.nonNirmsModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nonNirmsModel,
+      filename
+    )
 
     expect(result.business_checks.all_required_fields_present).toBe(true)
     expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   test('Null NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsModel,
       filename
     )
@@ -101,7 +107,7 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
   })
 
   test('Null NIRMS value multiple - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsMultipleModel,
       filename
     )
@@ -113,7 +119,7 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
   })
 
   test('Invalid NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsModel,
       filename
     )
@@ -125,7 +131,7 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
   })
 
   test('Invalid NIRMS value multiple - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsMultipleModel,
       filename
     )
@@ -137,7 +143,7 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
   })
 
   test('Item Present on Ineligible Item List (Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsWithTreatmentModel,
       filename
     )
@@ -149,7 +155,7 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
   })
 
   test('Item Present on Ineligible Item List (Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultipleWithTreatmentModel,
       filename
     )
@@ -162,7 +168,10 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
   })
 
   test('Valid CoO Validation - Complete packing list with all fields valid', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validCooModel,
+      filename
+    )
 
     expect(result.business_checks.all_required_fields_present).toBe(true)
     expect(result.business_checks.failure_reasons).toBeNull()
@@ -171,7 +180,10 @@ describe('BUFFALOAD1 CoO Validation Tests - nirms', () => {
 
 describe('BUFFALOAD1 CoO Validation Tests - CoO', () => {
   test('Null CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(model.nullCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nullCooModel,
+      filename
+    )
 
     expect(result.business_checks.all_required_fields_present).toBe(false)
     expect(result.business_checks.failure_reasons).toBe(
@@ -180,7 +192,7 @@ describe('BUFFALOAD1 CoO Validation Tests - CoO', () => {
   })
 
   test('Null CoO Value multiple - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullCooMultipleModel,
       filename
     )
@@ -192,7 +204,7 @@ describe('BUFFALOAD1 CoO Validation Tests - CoO', () => {
   })
 
   test('Invalid CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooModel,
       filename
     )
@@ -204,7 +216,7 @@ describe('BUFFALOAD1 CoO Validation Tests - CoO', () => {
   })
 
   test('Invalid CoO Value multiple - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooMultipleModel,
       filename
     )
@@ -216,7 +228,7 @@ describe('BUFFALOAD1 CoO Validation Tests - CoO', () => {
   })
 
   test('CoO Value is X or x - passes validation', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.cooPlaceholderXModel,
       filename
     )
@@ -228,7 +240,7 @@ describe('BUFFALOAD1 CoO Validation Tests - CoO', () => {
 
 describe('BUFFALOAD1 CoO Validation Tests - Ineligible Item List', () => {
   test('Item Present on Ineligible Item List (no Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsNoTreatmentModel,
       filename
     )
@@ -240,7 +252,7 @@ describe('BUFFALOAD1 CoO Validation Tests - Ineligible Item List', () => {
   })
 
   test('Item Present on Ineligible Item List (no Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultipleNoTreatmentModel,
       filename
     )

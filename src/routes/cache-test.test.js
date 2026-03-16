@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { cacheTestIneligibleItems, cacheTestIsoCodes } from './cache-test.js'
+import { STATUS_CODES } from './statuscodes.js'
+
+const CACHE_RETRIEVED_SUCCESSFULLY = 'Cache retrieved successfully'
 
 // Mock dependencies
 vi.mock('../services/cache/ineligible-items-cache.js', () => ({
@@ -44,7 +47,7 @@ describe('cache-test route', () => {
         message: 'Cache is empty or not initialized',
         data: null
       })
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should return cached data when cache has items', () => {
@@ -57,11 +60,11 @@ describe('cache-test route', () => {
       cacheTestIneligibleItems.handler({}, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        message: 'Cache retrieved successfully',
+        message: CACHE_RETRIEVED_SUCCESSFULLY,
         itemCount: 2,
         data: mockCachedData
       })
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should handle empty array from cache', () => {
@@ -70,11 +73,11 @@ describe('cache-test route', () => {
       cacheTestIneligibleItems.handler({}, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        message: 'Cache retrieved successfully',
+        message: CACHE_RETRIEVED_SUCCESSFULLY,
         itemCount: 0,
         data: []
       })
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should handle non-array cached data', () => {
@@ -84,11 +87,11 @@ describe('cache-test route', () => {
       cacheTestIneligibleItems.handler({}, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        message: 'Cache retrieved successfully',
+        message: CACHE_RETRIEVED_SUCCESSFULLY,
         itemCount: 0,
         data: mockCachedData
       })
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
   })
 
@@ -108,7 +111,7 @@ describe('cache-test route', () => {
         message: 'Cache is empty or not initialized',
         data: null
       })
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should return cached ISO codes data when cache has items', () => {
@@ -122,11 +125,11 @@ describe('cache-test route', () => {
       cacheTestIsoCodes.handler({}, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        message: 'Cache retrieved successfully',
+        message: CACHE_RETRIEVED_SUCCESSFULLY,
         itemCount: 3,
         data: mockCachedData
       })
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
 
     it('should handle empty array from ISO codes cache', () => {
@@ -135,11 +138,11 @@ describe('cache-test route', () => {
       cacheTestIsoCodes.handler({}, mockH)
 
       expect(mockH.response).toHaveBeenCalledWith({
-        message: 'Cache retrieved successfully',
+        message: CACHE_RETRIEVED_SUCCESSFULLY,
         itemCount: 0,
         data: []
       })
-      expect(mockH.code).toHaveBeenCalledWith(200)
+      expect(mockH.code).toHaveBeenCalledWith(STATUS_CODES.OK)
     })
   })
 })

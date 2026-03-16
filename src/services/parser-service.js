@@ -13,18 +13,6 @@ import { formatError } from '../common/helpers/logging/error-logger.js'
 const logger = createLogger()
 
 /**
- * Find appropriate parser and parse packing list document.
- *
- * @param {Object|Buffer} packingList - Raw packing list data
- * @param {string} fileName - Original filename for type detection
- * @param {string} dispatchLocation - Dispatch location identifier
- * @returns {Promise<Object>} Parsed result with validation
- */
-async function findParser(packingList, fileName, dispatchLocation) {
-  return parsePackingList(packingList, fileName, dispatchLocation)
-}
-
-/**
  * Parse packing list with sanitization and format-specific handling.
  *
  * Flow:
@@ -95,4 +83,4 @@ function sanitizeInput(packingList, fileName) {
   }
 }
 
-export { findParser, parsePackingList, sanitizeInput }
+export { parsePackingList, sanitizeInput }

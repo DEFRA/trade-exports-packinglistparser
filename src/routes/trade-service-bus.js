@@ -2,7 +2,7 @@ import { sendMessageToQueue } from '../services/trade-service-bus-service.js'
 import { formatError } from '../common/helpers/logging/error-logger.js'
 import { STATUS_CODES } from './statuscodes.js'
 
-export const sendtoqueue = {
+export const sendToQueue = {
   method: 'GET',
   path: '/trade-service-bus',
   handler

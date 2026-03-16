@@ -50,8 +50,8 @@ const RESPONSE_MESSAGES = {
 }
 
 const RESPONSE_PROPERTIES = {
-  MESSAGE: 'Message',
-  DETAILS: 'Details'
+  MESSAGE: 'message',
+  DETAILS: 'details'
 }
 
 const SERVICE_NAMES = {
@@ -79,6 +79,18 @@ const ERROR_MESSAGES = {
   MDM_ERROR: 'MDM error',
   MDM_SERVICE_UNAVAILABLE: 'MDM service unavailable',
   TRADE_SERVICE_BUS_ERROR: 'Trade Service Bus error'
+}
+
+const TIMER_DELAYS_MS = {
+  ROUTE_TIMEOUT: 10000,
+  SLOW_S3: 15000,
+  SLOW_DYNAMICS_DATA: 20000,
+  FAST_S3: 5000,
+  FAST_DYNAMICS_LOGIN: 3000,
+  FAST_DYNAMICS_DATA: 4000,
+  FAST_EHCO_BLOB_STORAGE: 2000,
+  FAST_MDM: 1000,
+  FAST_TDS_BLOB_STORAGE: 2500
 }
 
 describe('Connectivity Check Route', () => {
@@ -407,7 +419,7 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve([]), 15000)
+          setTimeout(() => resolve([]), TIMER_DELAYS_MS.SLOW_S3)
         })
     )
     bearerTokenRequest.mockResolvedValue({})
@@ -420,7 +432,7 @@ describe('Connectivity Check Route', () => {
     const handlerPromise = connectivityCheck.handler({}, mockH)
 
     // Fast-forward time to trigger timeout
-    await vi.advanceTimersByTimeAsync(10000)
+    await vi.advanceTimersByTimeAsync(TIMER_DELAYS_MS.ROUTE_TIMEOUT)
 
     await handlerPromise
 
@@ -450,14 +462,14 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve([]), 15000)
+          setTimeout(() => resolve([]), TIMER_DELAYS_MS.SLOW_S3)
         })
     )
     bearerTokenRequest.mockResolvedValue({})
     checkDynamicsDispatchLocationConnection.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve({}), 20000)
+          setTimeout(() => resolve({}), TIMER_DELAYS_MS.SLOW_DYNAMICS_DATA)
         })
     )
     checkApplicationFormsContainerExists.mockResolvedValue(true)
@@ -468,7 +480,7 @@ describe('Connectivity Check Route', () => {
     const handlerPromise = connectivityCheck.handler({}, mockH)
 
     // Fast-forward time to trigger timeout
-    await vi.advanceTimersByTimeAsync(10000)
+    await vi.advanceTimersByTimeAsync(TIMER_DELAYS_MS.ROUTE_TIMEOUT)
 
     await handlerPromise
 
@@ -498,37 +510,40 @@ describe('Connectivity Check Route', () => {
     listS3Objects.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve([]), 5000)
+          setTimeout(() => resolve([]), TIMER_DELAYS_MS.FAST_S3)
         })
     )
     bearerTokenRequest.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve({}), 3000)
+          setTimeout(() => resolve({}), TIMER_DELAYS_MS.FAST_DYNAMICS_LOGIN)
         })
     )
     checkDynamicsDispatchLocationConnection.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve({}), 4000)
+          setTimeout(() => resolve({}), TIMER_DELAYS_MS.FAST_DYNAMICS_DATA)
         })
     )
     checkApplicationFormsContainerExists.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve(true), 2000)
+          setTimeout(
+            () => resolve(true),
+            TIMER_DELAYS_MS.FAST_EHCO_BLOB_STORAGE
+          )
         })
     )
     checkTdsContainerExists.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve(true), 2500)
+          setTimeout(() => resolve(true), TIMER_DELAYS_MS.FAST_TDS_BLOB_STORAGE)
         })
     )
     getIneligibleItems.mockImplementation(
       () =>
         new Promise((resolve) => {
-          setTimeout(() => resolve([]), 1000)
+          setTimeout(() => resolve([]), TIMER_DELAYS_MS.FAST_MDM)
         })
     )
     checkTradeServiceBusConnection.mockImplementation(
@@ -541,7 +556,7 @@ describe('Connectivity Check Route', () => {
     const handlerPromise = connectivityCheck.handler({}, mockH)
 
     // Fast-forward time but not enough to trigger timeout
-    await vi.advanceTimersByTimeAsync(5000)
+    await vi.advanceTimersByTimeAsync(TIMER_DELAYS_MS.FAST_S3)
 
     await handlerPromise
 

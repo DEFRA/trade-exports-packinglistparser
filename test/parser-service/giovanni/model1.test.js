@@ -50,12 +50,15 @@ const filename = 'packinglist-giovanni-model1.xlsx'
 describe('Parser Service - Giovanni Model 1', () => {
   describe('Valid packing lists', () => {
     test('matches valid Giovanni Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-      const result = await parserService.findParser(model.validModel, filename)
+      const result = await parserService.parsePackingList(
+        model.validModel,
+        filename
+      )
       expect(result).toMatchObject(test_results.validTestResult)
     })
 
     test('matches valid Giovanni Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         model.invalidModel_MissingColumnCells,
         filename
       )
@@ -63,12 +66,15 @@ describe('Parser Service - Giovanni Model 1', () => {
     })
 
     test('matches valid Giovanni Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-      const result = await parserService.findParser(model.multipleRms, filename)
+      const result = await parserService.parsePackingList(
+        model.multipleRms,
+        filename
+      )
       expect(result).toMatchObject(test_results.multipleRms)
     })
 
     test('matches valid Giovanni Model 1 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         model.missingKgunit,
         filename
       )
@@ -77,7 +83,7 @@ describe('Parser Service - Giovanni Model 1', () => {
   })
 
   test(`returns 'No Match' for incorrect file extension`, async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -88,7 +94,7 @@ describe('Parser Service - Giovanni Model 1', () => {
 // CoO Validation Tests - AB#591527
 describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   test('BAC1: Missing dynamic blanket statement - validation fails', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.missingBlanketStatement,
       filename
     )
@@ -99,7 +105,7 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   })
 
   test('BAC2: Missing CoO values with blanket statement - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.missingCooValues,
       filename
     )
@@ -110,7 +116,7 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   })
 
   test('BAC3: Invalid CoO format - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooFormat,
       filename
     )
@@ -121,7 +127,7 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   })
 
   test(`BAC4-5: Multiple CoO errors aggregation - shows first 3 and "${ERROR_SUMMARY_TEXT}" message`, async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.multipleCooErrors,
       filename
     )
@@ -130,13 +136,16 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   })
 
   test('BAC6: Valid packing list with dynamic blanket statement passes validation', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
     expect(result.business_checks.all_required_fields_present).toBe(true)
   })
 
   test('BAC6: CoO placeholder X/x values pass validation', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.cooPlaceholderX,
       filename
     )
@@ -145,12 +154,15 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   })
 
   test('Dynamic blanket statement sets all items to NIRMS', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validCooModel,
+      filename
+    )
     expect(result.items.every((item) => item.nirms === 'NIRMS')).toBe(true)
   })
 
   test('BAC7: ineligible items validation with treatment type', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsWithTreatment,
       filename
     )
@@ -161,7 +173,7 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   })
 
   test(`BAC8,10: Multiple ineligible items aggregation - shows first 3 and "${ERROR_SUMMARY_TEXT}" message`, async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultiple,
       filename
     )
@@ -173,7 +185,7 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
   })
 
   test('BAC9: ineligible items validation without treatment type', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItems,
       filename
     )

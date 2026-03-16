@@ -16,8 +16,6 @@ import { measureAndLog } from '../common/helpers/logging/performance-logger.js'
 import { config } from '../config.js'
 import parserModel from './parser-model.js'
 
-const { disableSend } = config.get('tradeServiceBus')
-
 const logger = createLogger()
 
 function createFailureResult(description, errorType = 'server') {
@@ -76,8 +74,8 @@ export async function processPackingList(
     return successResult
   } catch (err) {
     logger.error(
-      `Error processing packing list: ${err.message}`,
-      formatError(err)
+      formatError(err),
+      `Error processing packing list: ${err.message}`
     )
     return createFailureResult(err.message, 'server')
   }
@@ -155,6 +153,12 @@ async function processPackingListResults(
     async () => {
       const persistedData = mapPackingListForStorage(packingList, applicationId)
 
+      if (!persistedData) {
+        throw new Error(
+          `Unable to map parsed data for application ${applicationId}`
+        )
+      }
+
       if (stopDataExit) {
         logger.info(
           `S3 storage is disabled. Skipping persisting data for application ${applicationId}`
@@ -163,6 +167,7 @@ async function processPackingListResults(
         await persistPackingList(persistedData, applicationId)
       }
 
+      const { disableSend } = config.get('tradeServiceBus')
       if (disableSend || stopDataExit) {
         logger.info(
           `Trade Service Bus sending is disabled. Skipping notification for application ${applicationId}`
@@ -207,8 +212,8 @@ async function persistPackingList(parsedData, applicationId) {
 
 /**
  * Notify external applications of parsed packing list result.
- * @param {*} parsedData -Data that was parsed for storage
- * @param {*} applicationId - Primary id to assign to the record
+ * @param {Object} parsedData - Data that was parsed for storage
+ * @param {string|number} applicationId - Primary id to assign to the record
  */
 async function notifyExternalApplications(parsedData, applicationId) {
   logger.info(
@@ -251,7 +256,9 @@ function mapPackingListForStorage(packingListJson, applicationId) {
         packingListJson.business_checks.failure_reasons
       ),
       createdAt: new Date().toISOString().replace('Z', ''),
-      items: packingListJson.items.map((n) => itemsMapper(n))
+      items: packingListJson.items
+        .map((n) => itemsMapper(n))
+        .filter((item) => item !== undefined)
     }
   } catch (err) {
     logger.error(
@@ -263,32 +270,32 @@ function mapPackingListForStorage(packingListJson, applicationId) {
 }
 
 /**
+ * Convert NIRMS string value to boolean using validation utilities.
+ * Returns null for NIRMS when the input is neither a recognised true nor
+ * false value so that callers can distinguish between explicit false and unknown.
+ *
+ * @param {string} nirmsValue - NIRMS value to convert
+ * @returns {boolean|null} True for NIRMS, false for not-NIRMS, null for invalid
+ */
+function getNirmsBooleanValue(nirmsValue) {
+  if (isNirms(nirmsValue)) {
+    return true
+  } else if (isNotNirms(nirmsValue)) {
+    return false
+  } else {
+    return null
+  }
+}
+
+/**
  * Map a single parser item row into the `item` storage shape.
  *
  * Normalises special fields such as NIRMS using validator utilities.
- * The helper returns `null` for NIRMS when the input is neither a
- * recognised true nor false value so that callers can distinguish
- * between explicit false and unknown.
  *
  * @param {Object} o - Single item object from the parser JSON
  * @returns {Object|undefined} - Mapped item object or undefined on error
  */
 function itemsMapper(o) {
-  /**
-   * Convert NIRMS string value to boolean using validation utilities.
-   * @param {string} nirmsValue - NIRMS value to convert
-   * @returns {boolean|null} True for NIRMS, false for not-NIRMS, null for invalid
-   */
-  const getNirmsBooleanValue = (nirmsValue) => {
-    if (isNirms(nirmsValue)) {
-      return true
-    } else if (isNotNirms(nirmsValue)) {
-      return false
-    } else {
-      return null
-    } // For invalid or missing values
-  }
-
   try {
     return {
       description: o.description,
@@ -312,7 +319,6 @@ function itemsMapper(o) {
 
 /**
  * Build a message envelope for the parsed PLP result.
- * @param {Object|null} parsedResult - Truthy when parsing succeeded
  * @param {string} applicationId - Identifier of the application being updated
  * @param {Array|null} failureReasons - Array of error reasons when parsing failed
  * @returns {Object} Message envelope with body and metadata properties

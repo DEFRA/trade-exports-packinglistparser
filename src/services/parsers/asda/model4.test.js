@@ -71,10 +71,7 @@ describe('ASDA Model 4 CSV Parser', () => {
     expect(result.business_checks.all_required_fields_present).toBe(false)
   })
 
-  test('should log error when exception occurs during parsing', async () => {
-    // Mock the logger to track error calls
-    const loggerSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
-
+  test('should handle malformed data without throwing', async () => {
     // Create data structure that will cause an internal error
     const malformedData = {
       // Wrong structure - object instead of array
@@ -82,9 +79,8 @@ describe('ASDA Model 4 CSV Parser', () => {
       1: ['data']
     }
 
-    parse(malformedData)
+    const result = parse(malformedData)
 
-    // Restore mock
-    loggerSpy.mockRestore()
+    expect(result.parserModel).toBe(parserModel.NOMATCH)
   })
 })

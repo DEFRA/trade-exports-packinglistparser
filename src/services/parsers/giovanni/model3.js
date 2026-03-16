@@ -37,9 +37,26 @@ export async function parse(packingList) {
 
     const model = 'GIOVANNI3'
 
+    const nirmsHeaderExists = pdfJson.pages[0].content.some((item) =>
+      headers.GIOVANNI3.nirms.regex.test(item.str)
+    )
+
+    const coHeaderExists = pdfJson.pages[0].content.some((item) =>
+      headers.GIOVANNI3.country_of_origin.regex.test(item.str)
+    )
+
+    const blanketNirms = null
+
     for (const page of pdfJson.pages) {
       const ys = getYsForRows(page.content, model)
-      packingListContentsTemp = mapPdfNonAiParser(page, model, ys)
+      packingListContentsTemp = mapPdfNonAiParser(
+        page,
+        model,
+        ys,
+        nirmsHeaderExists,
+        coHeaderExists,
+        blanketNirms
+      )
       packingListContents = packingListContents.concat(packingListContentsTemp)
     }
 
@@ -51,7 +68,10 @@ export async function parse(packingList) {
       true,
       parserModel.GIOVANNI3,
       establishmentNumbers,
-      headers.GIOVANNI3
+      {
+        ...headers.GIOVANNI3,
+        blanketNirms: false
+      }
     )
   } catch (err) {
     logger.error(formatError(err), 'Error in parse()')

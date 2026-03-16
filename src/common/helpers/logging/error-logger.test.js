@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { formatError, logError } from './error-logger.js'
 
-describe('error-logger', () => {
+function defineFormatErrorTests() {
   describe('formatError', () => {
     it('should format error object with message, stack_trace, and type', () => {
       const error = new Error('Test error message')
@@ -53,12 +53,13 @@ describe('error-logger', () => {
           type: 'Error'
         }
       })
-      // Custom properties are not included in the formatted output
       expect(result.error).not.toHaveProperty('code')
       expect(result.error).not.toHaveProperty('customProp')
     })
   })
+}
 
+function defineLogErrorTests() {
   describe('logError', () => {
     let mockLogger
 
@@ -124,4 +125,9 @@ describe('error-logger', () => {
       )
     })
   })
+}
+
+describe('error-logger', () => {
+  defineFormatErrorTests()
+  defineLogErrorTests()
 })

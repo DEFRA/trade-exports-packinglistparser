@@ -31,13 +31,16 @@ const EXPECTED_SECOND_DATA_ROW = 3
 
 describe('matchesSainsburysModel1', () => {
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.validTestResult)
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -46,7 +49,7 @@ describe('matchesSainsburysModel1', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -55,19 +58,28 @@ describe('matchesSainsburysModel1', () => {
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(model.multipleRms, filename)
+    const result = await parserService.parsePackingList(
+      model.multipleRms,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.multipleRms)
   })
 
   test('matches valid Sainsburys Model 1 file file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(model.missingKgunit, filename)
+    const result = await parserService.parsePackingList(
+      model.missingKgunit,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.missingKgunit)
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as false for invalid NIRMS', async () => {
-    const result = await parserService.findParser(model.invalidNirms, filename)
+    const result = await parserService.parsePackingList(
+      model.invalidNirms,
+      filename
+    )
 
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasons.NIRMS_INVALID} in sheet "Sheet1" row 2.\n`
@@ -75,13 +87,19 @@ describe('matchesSainsburysModel1', () => {
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as true for valid NIRMS', async () => {
-    const result = await parserService.findParser(model.nonNirms, filename)
+    const result = await parserService.parsePackingList(
+      model.nonNirms,
+      filename
+    )
 
     expect(result.business_checks.all_required_fields_present).toBeTruthy()
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as false for missing NIRMS', async () => {
-    const result = await parserService.findParser(model.missingNirms, filename)
+    const result = await parserService.parsePackingList(
+      model.missingNirms,
+      filename
+    )
 
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasons.NIRMS_MISSING} in sheet "Sheet1" row 2.\n`
@@ -89,7 +107,10 @@ describe('matchesSainsburysModel1', () => {
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as false for missing CoO', async () => {
-    const result = await parserService.findParser(model.missingCoO, filename)
+    const result = await parserService.parsePackingList(
+      model.missingCoO,
+      filename
+    )
 
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasons.COO_MISSING} in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
@@ -97,7 +118,10 @@ describe('matchesSainsburysModel1', () => {
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as false for invalid CoO', async () => {
-    const result = await parserService.findParser(model.invalidCoO, filename)
+    const result = await parserService.parsePackingList(
+      model.invalidCoO,
+      filename
+    )
 
     expect(result.business_checks.failure_reasons).toBe(
       `${failureReasons.COO_INVALID} in sheet "Sheet1" row 2, sheet "Sheet1" row 3, sheet "Sheet1" row 4 ${ERROR_SUMMARY_TEXT} 2 other locations.\n`
@@ -105,13 +129,13 @@ describe('matchesSainsburysModel1', () => {
   })
 
   test('matches valid Sainsburys Model 1 file, calls parser and returns all_required_fields_present as true for X CoO', async () => {
-    const result = await parserService.findParser(model.xCoO, filename)
+    const result = await parserService.parsePackingList(model.xCoO, filename)
 
     expect(result.business_checks.all_required_fields_present).toBeTruthy()
   })
 
   test('matches valid Sainsburys Model 1 file with multiple sheets where headers are on different rows', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelMultipleSheetsHeadersOnDifferentRows,
       filename
     )

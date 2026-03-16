@@ -1,6 +1,6 @@
 import { config } from '../config.js'
 
-const GUID_FORMAT_REGEX =
+export const GUID_FORMAT_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 function isString(value) {
