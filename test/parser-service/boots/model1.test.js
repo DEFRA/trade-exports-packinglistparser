@@ -1,11 +1,29 @@
 /**
  * Boots Model 1 parser-service integration tests
  */
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import testData from '../../test-data-and-results/models/boots/model1.js'
 import testResults from '../../test-data-and-results/results/boots/model1.js'
 import { INVALID_FILENAME, NO_MATCH_RESULT } from '../../test-constants.js'
+
+// Mock deprecated to false for testing
+vi.mock('../../../src/services/model-headers.js', async () => {
+  const originalModule = await vi.importActual(
+    '../../../src/services/model-headers.js'
+  )
+
+  return {
+    ...originalModule,
+    default: {
+      ...originalModule.default,
+      BOOTS1: {
+        ...originalModule.default.BOOTS1,
+        deprecated: false
+      }
+    }
+  }
+})
 
 const filename = 'packinglist-boots-model1.xlsx'
 
