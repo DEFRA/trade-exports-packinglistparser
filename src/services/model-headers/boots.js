@@ -17,7 +17,6 @@ export const bootsHeaders = {
       commodity_code: /CommodityCode/i
     },
     country_of_origin: /CountryOrigin/i,
-    findUnitInHeader: true,
-    deprecated: true
+    findUnitInHeader: true
   }
 }
