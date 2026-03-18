@@ -46,8 +46,7 @@ const giovanniHeaders = {
       total_net_weight_kg: netWeight
     },
     country_of_origin: /Country of Origin/i,
-    findUnitInHeader: true,
-    deprecated: true
+    findUnitInHeader: true
   }
 }
 
