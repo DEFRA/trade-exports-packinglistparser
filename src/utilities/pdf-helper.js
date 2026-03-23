@@ -117,50 +117,66 @@ export function extractEstablishmentNumbers(
 }
 
 /**
- * Groups text objects by X coordinate and Y coordinate proximity.
- * Objects are grouped if they have the same X coordinate AND consecutive Y differences are within threshold.
+ * Groups text objects by X coordinate proximity and Y coordinate proximity.
+ * Objects are grouped if their X coordinates are within xTolerance AND consecutive Y differences are within yThreshold.
  *
  * @param {Array} textObjects - Array of text objects with x, y, str properties
  * @param {number} yThreshold - Maximum Y difference between consecutive objects to consider for grouping (default: 10)
+ * @param {number} xTolerance - Maximum X difference to treat as the same column (default: 5)
  * @returns {Array} Grouped text objects with concatenated strings
  */
-export function groupByYCoordinate(textObjects, yThreshold = 10) {
+export function groupByYCoordinate(
+  textObjects,
+  yThreshold = 10,
+  xTolerance = 6
+) {
   if (!textObjects || textObjects.length === 0) {
     return []
   }
 
-  // Sort by X coordinate first, then by Y coordinate to ensure proper grouping
-  const sortedObjects = textObjects.slice().sort((a, b) => {
-    if (a.x !== b.x) {
-      return a.x - b.x
-    }
+  // Filter out space-only items to prevent trailing spaces in grouped content
+  const filtered = textObjects.filter((item) => item.str.trim() !== '')
+  if (filtered.length === 0) {
+    return []
+  }
+
+  // Sort strictly by X then Y so column assignment is deterministic
+  const sortedByX = filtered.slice().sort((a, b) => {
+    if (a.x !== b.x) return a.x - b.x
     return a.y - b.y
   })
 
-  const grouped = []
-  let currentGroup = [sortedObjects[0]]
-
-  for (let i = 1; i < sortedObjects.length; i++) {
-    const current = sortedObjects[i]
-    const previous = sortedObjects[i - 1]
-
-    // Check if current object should be grouped with previous
-    // Group only if X coordinates are the same AND Y difference is within threshold
-    if (
-      current.x === previous.x &&
-      Math.abs(current.y - previous.y) < yThreshold
-    ) {
-      currentGroup.push(current)
+  // Cluster items into columns — each column is anchored by its first item's X.
+  // An item joins the first column whose anchor X is within xTolerance.
+  const columns = []
+  for (const item of sortedByX) {
+    const column = columns.find(
+      (col) => Math.abs(item.x - col[0].x) <= xTolerance
+    )
+    if (column) {
+      column.push(item)
     } else {
-      // Process current group and start new one
-      grouped.push(processGroup(currentGroup))
-      currentGroup = [current]
+      columns.push([item])
     }
   }
 
-  // Process the last group
-  if (currentGroup.length > 0) {
-    grouped.push(processGroup(currentGroup))
+  // Within each column, sort by Y and group consecutive items within yThreshold
+  const grouped = []
+  for (const column of columns) {
+    column.sort((a, b) => a.y - b.y)
+
+    let currentGroup = [column[0]]
+    for (let i = 1; i < column.length; i++) {
+      if (Math.abs(column[i].y - column[i - 1].y) < yThreshold) {
+        currentGroup.push(column[i])
+      } else {
+        grouped.push(processGroup(currentGroup))
+        currentGroup = [column[i]]
+      }
+    }
+    if (currentGroup.length > 0) {
+      grouped.push(processGroup(currentGroup))
+    }
   }
 
   return grouped

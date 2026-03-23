@@ -70,7 +70,7 @@ describe('parseMandS1', () => {
 
   test('handles getYsForRows errors when page content includes invalid text values', async () => {
     const parseSpy = vi
-      .spyOn(parserMap, 'mapPdfNonAiParser')
+      .spyOn(parserMap, 'mapPdfDynamicHeaderParser')
       .mockImplementation(() => [])
 
     const basePage = model.validModel.pages[0]
@@ -81,10 +81,7 @@ describe('parseMandS1', () => {
     }
     const problematicPage = {
       ...basePage,
-      content: [
-        { str: invalidTextValue, y: headers.MANDS1.maxHeadersY + 1 },
-        ...basePage.content
-      ]
+      content: [{ str: invalidTextValue, y: 225 }, ...basePage.content]
     }
 
     extractPdf.mockImplementation(() => ({
@@ -100,7 +97,7 @@ describe('parseMandS1', () => {
 
   test('filters rows that are completely empty', async () => {
     const parseSpy = vi
-      .spyOn(parserMap, 'mapPdfNonAiParser')
+      .spyOn(parserMap, 'mapPdfDynamicHeaderParser')
       .mockImplementation(() => [
         {
           description: null,
@@ -192,8 +189,142 @@ describe('findNetWeightUnit', () => {
 
 describe('getYsForRows', () => {
   test('returns empty array when page content is malformed', () => {
-    const result = getYsForRows(null, headers.MANDS1)
+    const result = getYsForRows(null, headers.MANDS1, 225)
 
     expect(result).toEqual([])
+  })
+})
+
+describe('Fixed threshold boundary expansion', () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('applies fixed threshold to boundaries allowing data slightly outside headers to be captured', async () => {
+    // Simulates the M&S layout where data values may sit slightly outside
+    // the header text region. The parser applies a fixed threshold (±15px)
+    // to each boundary.
+    const testModel = {
+      pages: [
+        {
+          pageInfo: { num: 1 },
+          content: [
+            {
+              x: 229.64,
+              y: 157.86,
+              str: 'Depot Approval Number: RMS-GB-000008-001',
+              width: 157.14
+            },
+            { x: 767.3, y: 30, str: '1 of 1', width: 36.696 },
+            // Headers
+            { x: 75.26, y: 219.48, str: 'Description of Goods', width: 76.26 },
+            {
+              x: 204.42,
+              y: 219.48,
+              str: 'Co. of Origin EU Commodity Code',
+              width: 121.84
+            },
+            { x: 335.29, y: 219.48, str: 'Treatment Type', width: 55.845 },
+            { x: 407.05, y: 219.48, str: 'NIRMS', width: 24.165 },
+            { x: 445.2, y: 219.48, str: 'Trays/Ctns', width: 38.76 },
+            // Mega-merged header containing Units Per Tray and Tot Net Weight
+            {
+              x: 490.7,
+              y: 219.48,
+              str: 'Units Per Tray Tot Net Weight (Kg) Tot Gross Weight (Kg) Ind Item Price Value of Goods',
+              width: 313.13
+            },
+            // Data row
+            {
+              x: 75.27,
+              y: 240.13,
+              str: 'Test Product',
+              width: 85,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 222.44,
+              y: 240.13,
+              str: 'GB',
+              width: 9,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 273.95,
+              y: 240.13,
+              str: '12345678',
+              width: 30,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 343.7,
+              y: 240.13,
+              str: 'No treatment',
+              width: 39,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 413.88,
+              y: 240.13,
+              str: 'yes',
+              width: 10.503,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 462.7,
+              y: 240.13,
+              str: '2',
+              width: 3.753,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            // Units Per Tray value at x≈514 — must NOT be included in net weight
+            {
+              x: 514.25,
+              y: 240.13,
+              str: '6',
+              width: 3.753,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            // Actual net weight at x≈570
+            {
+              x: 569.94,
+              y: 240.13,
+              str: '4.455',
+              width: 16.89,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            // Footer
+            { x: 37.5, y: 383.97, str: '* see certification', width: 57.105 }
+          ]
+        }
+      ]
+    }
+
+    extractPdf.mockImplementation(() => testModel)
+
+    const result = await parse(Buffer.from('fixed-threshold-test'))
+
+    expect(result.parserModel).toBe('MANDS1')
+    expect(result.items).toHaveLength(1)
+    // Net weight must be only '4.455' — data at x≈514 falls outside the
+    // threshold-expanded boundaries and is not captured
+    expect(result.items[0].total_net_weight_kg).toBe('4.455')
+    expect(result.items[0].number_of_packages).toBe('2')
   })
 })

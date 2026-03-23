@@ -413,6 +413,258 @@ export function mapPdfNonAiParser(
 }
 
 /**
+ * Discover column x-boundaries by matching header regexes against page content.
+ * Finds each header item on the page and derives column boundaries from header positions.
+ * @param {Array<Object>} pageContent - PDF page content array with {x, y, str, width, ...}
+ * @param {Object} modelHeaders - Model header configuration with regex patterns
+ * @param {number} [threshold=0] - Pixels to extend each boundary on both sides
+ * @returns {Object|null} Map of field name to {x1, x2} boundaries, or null if any header is missing
+ */
+export function discoverHeaderBoundaries(
+  pageContent,
+  modelHeaders,
+  threshold = 0
+) {
+  const found = []
+
+  for (const [key, headerConfig] of Object.entries(modelHeaders)) {
+    const item = pageContent.find((el) => headerConfig.regex.test(el.str))
+    if (!item) {
+      return null
+    }
+    found.push({ key, item, regex: headerConfig.regex })
+  }
+
+  const boundaries = {}
+
+  for (let i = 0; i < found.length; i++) {
+    const current = found[i]
+
+    const { x1, x2 } = deriveBoundaryFromRegex(
+      current.item,
+      current.regex,
+      threshold
+    )
+    boundaries[current.key] = { x1, x2, regex: modelHeaders[current.key].regex }
+  }
+
+  return boundaries
+}
+
+/**
+ * Map PDF data to standardized packing list items using dynamically discovered
+ * column boundaries. Instead of relying on hardcoded x1/x2 values from model
+ * headers, this function matches each header regex against the page content to
+ * find the header positions, then derives column x-ranges from those positions.
+ * @param {Object} packingListJson - PDF page with content coordinates
+ * @param {string} model - Parser model identifier
+ * @param {Array<number>} ys - Y-coordinates of data rows
+ * @param {Object} headerBoundaries - Pre-computed column boundaries from discoverHeaderBoundaries
+ * @param {Object|null} nirmsBoundary - Pre-computed NIRMS boundary or null
+ * @param {Object|null} coBoundary - Pre-computed country of origin boundary or null
+ * @param {string|null} netWeightUnit - Pre-computed net weight unit or null
+ * @returns {Array<Object>} Mapped packing list items
+ */
+export function mapPdfDynamicHeaderParser(
+  packingListJson,
+  model,
+  ys,
+  headerBoundaries,
+  nirmsBoundary = null,
+  coBoundary = null,
+  netWeightUnit = null
+) {
+  const packingListContents = []
+
+  for (let row = 0; row < ys.length; row++) {
+    const y = ys[row]
+    const plRow = {
+      description: null,
+      nature_of_products: null,
+      type_of_treatment: null,
+      commodity_code: null,
+      number_of_packages: null,
+      total_net_weight_kg: null,
+      nirms: null,
+      country_of_origin: null,
+      total_net_weight_unit: netWeightUnit ?? null
+    }
+
+    for (const key of Object.keys(headerBoundaries)) {
+      plRow[key] = findItemContent(packingListJson, headerBoundaries[key], y)
+    }
+
+    if (nirmsBoundary) {
+      plRow.nirms = findItemContent(packingListJson, nirmsBoundary, y)
+    }
+
+    if (coBoundary) {
+      plRow.country_of_origin = findItemContent(packingListJson, coBoundary, y)
+    }
+
+    plRow.row_location = {
+      rowNumber: row + 1,
+      pageNumber: packingListJson.pageInfo.num
+    }
+
+    packingListContents.push(plRow)
+  }
+
+  applyBlanketValues(packingListJson, model, packingListContents)
+
+  return packingListContents
+}
+
+/**
+ * Discover the net weight unit from page content by finding the header item
+ * matching the total_net_weight_kg regex. The unit may appear in the header text
+ * itself (e.g. "Tot Net Weight kg") or on a separate line just below the header
+ * (e.g. "(Kg)" beneath "Tot Net Weight").
+ * @param {Array<Object>} pageContent - PDF page content array with {x, y, str, width, ...}
+ * @param {string} model - Parser model identifier
+ * @returns {string|null} Net weight unit or null if not found
+ */
+export function discoverNetWeightUnit(pageContent, model) {
+  if (!headers[model].findUnitInHeader) {
+    return null
+  }
+
+  const netWeightHeaderItem = pageContent.find((item) =>
+    headers[model].headers.total_net_weight_kg.regex.test(item.str)
+  )
+
+  if (!netWeightHeaderItem) {
+    return null
+  }
+
+  // Unit may be in the header text itself (e.g. "Tot Net Weight kg")
+  const unit = regex.findUnit(netWeightHeaderItem.str)
+  if (unit) {
+    return unit
+  }
+
+  // Or on a separate line just below the header (e.g. "(Kg)" beneath "Tot Net Weight")
+  const headerX1 = netWeightHeaderItem.x
+  const headerX2 = netWeightHeaderItem.x + (netWeightHeaderItem.width ?? 0)
+  const headerY = netWeightHeaderItem.y
+  const unitItem = pageContent.find(
+    (item) =>
+      item.y > headerY &&
+      item.y <= headerY + 15 &&
+      item.x >= headerX1 &&
+      item.x <= headerX2 &&
+      regex.findUnit(item.str)
+  )
+
+  return unitItem ? regex.findUnit(unitItem.str) : null
+}
+
+/**
+ * Derive x-boundary from a content item's position and width.
+ * @param {Object} item - Item with {x, width}
+ * @returns {Object} Boundary with {x1, x2}
+ */
+export function deriveBoundary(item) {
+  const x1 = Math.round(item.x)
+  const width = item.width ?? 0
+  const x2 = Math.round(item.x + width)
+
+  return { x1, x2 }
+}
+
+/**
+ * Derive x-boundary from a content item using the regex match position within
+ * the string. When a PDF text element contains multiple merged headers
+ * (e.g. "Co. of Origin EU Commodity Code"), this function uses the character
+ * position of the regex match to proportionally calculate the x-boundary for
+ * just the matched portion.
+ * @param {Object} item - PDF text item with {x, str, width}
+ * @param {RegExp} matchRegex - Regex pattern to locate within the string
+ * @param {number} [threshold=0] - Pixels to extend x1 boundary to the left
+ * @returns {Object} Boundary with {x1, x2}
+ */
+export function deriveBoundaryFromRegex(item, matchRegex, threshold = 0) {
+  const str = item.str ?? ''
+  const width = item.width ?? 0
+
+  if (str.length === 0 || width === 0) {
+    const base = deriveBoundary(item)
+    return {
+      x1: Math.max(0, base.x1 - threshold),
+      x2: base.x2
+    }
+  }
+
+  const match = matchRegex.exec(str)
+  if (!match) {
+    const base = deriveBoundary(item)
+    return {
+      x1: Math.max(0, base.x1 - threshold),
+      x2: base.x2
+    }
+  }
+
+  // If the match covers the entire string, use simple boundary
+  if (match.index === 0 && match[0].length === str.length) {
+    const base = deriveBoundary(item)
+    return {
+      x1: Math.max(0, base.x1 - threshold),
+      x2: base.x2
+    }
+  }
+
+  // Calculate proportional x position based on match position within the string
+  const charWidth = width / str.length
+  const x1 = Math.round(item.x + match.index * charWidth)
+  const x2 = Math.round(item.x + (match.index + match[0].length) * charWidth)
+
+  return {
+    x1: Math.max(0, x1 - threshold),
+    x2
+  }
+}
+
+/**
+ * Expand column boundaries so each column fills the gap to its neighbours.
+ * For adjacent columns sorted left-to-right, the dividing line is the midpoint
+ * between the right edge of the left column and the left edge of the right
+ * column. This prevents data items that sit slightly outside their header's
+ * text region from being missed during extraction.
+ * @param {Object} allBoundaries - Map of field name to boundary objects with at least {x1, x2}
+ * @param {number} [edgePadding=10] - Extra padding for the leftmost x1 and rightmost x2
+ * @returns {Object} Expanded boundaries with adjusted x1/x2 values (other properties preserved)
+ */
+export function expandBoundariesToMidpoints(allBoundaries, edgePadding = 10) {
+  const entries = Object.entries(allBoundaries)
+    .map(([key, boundary]) => ({ key, boundary }))
+    .sort((a, b) => a.boundary.x1 - b.boundary.x1)
+
+  if (entries.length === 0) {
+    return {}
+  }
+
+  const expanded = {}
+
+  for (let i = 0; i < entries.length; i++) {
+    const { key, boundary } = entries[i]
+    const prev = i > 0 ? entries[i - 1].boundary : null
+    const next = i < entries.length - 1 ? entries[i + 1].boundary : null
+
+    const x1 = prev
+      ? Math.floor((prev.x2 + boundary.x1) / 2)
+      : Math.max(0, boundary.x1 - edgePadding)
+
+    const x2 = next
+      ? Math.floor((boundary.x2 + next.x1) / 2) - 1
+      : boundary.x2 + edgePadding
+
+    expanded[key] = { ...boundary, x1, x2 }
+  }
+
+  return expanded
+}
+
+/**
  * Apply blanket values (treatment type and NIRMS) to packing list items.
  * @param {Object} packingListJson - PDF page with content coordinates
  * @param {string} model - Parser model identifier

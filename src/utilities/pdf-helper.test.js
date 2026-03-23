@@ -336,3 +336,141 @@ describe('extractPdf', () => {
     expect(result.pages[0].content[0].str).toBe('Valid')
   })
 })
+
+describe('groupByYCoordinate', () => {
+  test('returns empty array for empty input', () => {
+    expect(pdfHelper.groupByYCoordinate([])).toEqual([])
+  })
+
+  test('returns empty array for null input', () => {
+    expect(pdfHelper.groupByYCoordinate(null)).toEqual([])
+  })
+
+  test('returns single item unchanged', () => {
+    const items = [{ x: 100, y: 200, str: 'Hello', width: 30 }]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toEqual([{ x: 100, y: 200, str: 'Hello', width: 30 }])
+  })
+
+  test('groups items with exact same X and Y within threshold', () => {
+    const items = [
+      { x: 435, y: 321, str: 'Cafe', width: 20 },
+      { x: 435, y: 329, str: 'Exempt', width: 25 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(1)
+    expect(result[0].str).toBe('Cafe Exempt')
+    expect(result[0].width).toBe(25)
+  })
+
+  test('groups items with X within tolerance and Y within threshold', () => {
+    const items = [
+      { x: 435.05, y: 321.31, str: 'Cafe', width: 20 },
+      { x: 430.73, y: 329.41, str: 'Exempt', width: 25 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(1)
+    expect(result[0].str).toBe('Cafe Exempt')
+  })
+
+  test('does not group items when X difference exceeds tolerance', () => {
+    const items = [
+      { x: 100, y: 321, str: 'Cafe', width: 20 },
+      { x: 200, y: 329, str: 'Exempt', width: 25 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(2)
+  })
+
+  test('does not group items when Y difference exceeds threshold', () => {
+    const items = [
+      { x: 435, y: 100, str: 'Cafe', width: 20 },
+      { x: 435, y: 200, str: 'Exempt', width: 25 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(2)
+  })
+
+  test('sorts by Y within X tolerance group before concatenating', () => {
+    const items = [
+      { x: 430.73, y: 329.41, str: 'Exempt', width: 25 },
+      { x: 435.05, y: 321.31, str: 'Cafe', width: 20 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(1)
+    expect(result[0].str).toBe('Cafe Exempt')
+  })
+
+  test('respects custom xTolerance of 0 for exact matching', () => {
+    const items = [
+      { x: 435.05, y: 321.31, str: 'Cafe', width: 20 },
+      { x: 430.73, y: 329.41, str: 'Exempt', width: 25 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items, 10, 0)
+    expect(result).toHaveLength(2)
+  })
+
+  test('respects custom yThreshold', () => {
+    const items = [
+      { x: 435, y: 321, str: 'Cafe', width: 20 },
+      { x: 435, y: 329, str: 'Exempt', width: 25 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items, 5)
+    expect(result).toHaveLength(2)
+  })
+
+  test('groups multiple items in same column', () => {
+    const items = [
+      { x: 435, y: 300, str: 'Line1', width: 20 },
+      { x: 435, y: 305, str: 'Line2', width: 25 },
+      { x: 435, y: 309, str: 'Line3', width: 22 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(1)
+    expect(result[0].str).toBe('Line1 Line2 Line3')
+    expect(result[0].width).toBe(25)
+  })
+
+  test('keeps separate columns apart', () => {
+    const items = [
+      { x: 100, y: 300, str: 'Col1Top', width: 20 },
+      { x: 100, y: 305, str: 'Col1Bot', width: 25 },
+      { x: 500, y: 300, str: 'Col2Top', width: 30 },
+      { x: 500, y: 305, str: 'Col2Bot', width: 35 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(2)
+    expect(result[0].str).toBe('Col1Top Col1Bot')
+    expect(result[1].str).toBe('Col2Top Col2Bot')
+  })
+
+  test('calculates average Y for grouped items', () => {
+    const items = [
+      { x: 435, y: 320, str: 'Cafe', width: 20 },
+      { x: 435, y: 328, str: 'Exempt', width: 25 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result[0].y).toBe(324)
+  })
+
+  test('filters out space-only items to prevent trailing spaces', () => {
+    const items = [
+      { x: 448, y: 300, str: '1', width: 10 },
+      { x: 449, y: 300, str: ' ', width: 5 },
+      { x: 450, y: 300, str: '  ', width: 8 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toHaveLength(1)
+    expect(result[0].str).toBe('1')
+  })
+
+  test('returns empty array when all items are space-only', () => {
+    const items = [
+      { x: 100, y: 200, str: ' ', width: 5 },
+      { x: 101, y: 200, str: '  ', width: 8 },
+      { x: 102, y: 200, str: '   ', width: 10 }
+    ]
+    const result = pdfHelper.groupByYCoordinate(items)
+    expect(result).toEqual([])
+  })
+})

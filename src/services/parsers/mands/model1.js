@@ -8,7 +8,12 @@ import * as combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers-pdf.js'
 import * as regex from '../../../utilities/regex.js'
-import { mapPdfNonAiParser } from '../../parser-map.js'
+import {
+  mapPdfDynamicHeaderParser,
+  discoverHeaderBoundaries,
+  deriveBoundaryFromRegex,
+  discoverNetWeightUnit
+} from '../../parser-map.js'
 import {
   extractPdf,
   extractEstablishmentNumbers,
@@ -16,6 +21,12 @@ import {
 } from '../../../utilities/pdf-helper.js'
 
 const logger = createLogger()
+
+/**
+ * Threshold (in pixels) applied to each side of a header boundary.
+ * Allows data slightly outside the header text region to be captured.
+ */
+const BOUNDARY_THRESHOLD = 15
 
 /**
  * Parse M&S Model 1 PDF document using coordinate-based extraction.
@@ -42,14 +53,72 @@ export async function parse(packingList) {
       headers.MANDS1.establishmentNumber.establishmentRegex
     )
 
-    const header = extractHeader(
+    // Discover boundaries once from first page, with threshold applied
+    const headerBoundaries = discoverHeaderBoundaries(
       firstPage.content,
-      headers.MANDS1.minHeadersY,
-      headers.MANDS1.maxHeadersY
+      headers.MANDS1.headers,
+      BOUNDARY_THRESHOLD
     )
-    const headersExist = checkHeadersExist(header, headers.MANDS1)
 
-    const packingListContents = processPages(pdfJson.pages, headersExist)
+    if (!headerBoundaries) {
+      return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
+    }
+
+    const nirmsItem = firstPage.content.find((item) =>
+      headers.MANDS1.nirms.regex.test(item.str)
+    )
+    const nirmsBoundary = nirmsItem
+      ? deriveBoundaryFromRegex(
+          nirmsItem,
+          headers.MANDS1.nirms.regex,
+          BOUNDARY_THRESHOLD
+        )
+      : null
+
+    const coItem = firstPage.content.find((item) =>
+      headers.MANDS1.country_of_origin.regex.test(item.str)
+    )
+    const coBoundary = coItem
+      ? deriveBoundaryFromRegex(
+          coItem,
+          headers.MANDS1.country_of_origin.regex,
+          BOUNDARY_THRESHOLD
+        )
+      : null
+
+    // Use the lowest y of the commodity code header as the boundary for where data rows start.
+    // Commodity code may be split across two lines (e.g. "EU Commodity" / "Code") — take the lower y.
+    const commodityItem = firstPage.content.find((item) =>
+      headers.MANDS1.headers.commodity_code.regex.test(item.str)
+    )
+    let headerY
+    if (commodityItem) {
+      const cmX1 = commodityItem.x
+      const cmX2 = commodityItem.x + (commodityItem.width ?? 0)
+      const continuationItem = firstPage.content.find(
+        (item) =>
+          item.y > commodityItem.y &&
+          item.y <= commodityItem.y + 15 &&
+          item.x >= cmX1 &&
+          item.x <= cmX2 &&
+          item.str.trim() !== '' &&
+          item !== commodityItem
+      )
+      headerY = continuationItem ? continuationItem.y : commodityItem.y
+    } else {
+      headerY = Math.max(...Object.values(headerBoundaries).map((b) => b.x1))
+    }
+
+    const netWeightUnit = discoverNetWeightUnit(firstPage.content, 'MANDS1')
+
+    const packingListContents = processPages(
+      pdfJson.pages,
+      headerBoundaries,
+      nirmsBoundary,
+      coBoundary,
+      netWeightUnit,
+      headerY
+    )
 
     const filteredContents = packingListContents.filter(
       (row) => !isEmptyRow(row)
@@ -72,29 +141,37 @@ export async function parse(packingList) {
 /**
  * Process all pages and extract packing list items.
  * @param {Array} pages - Array of PDF pages
- * @param {Object} headersExist - Flags indicating which headers are present
+ * @param {Object} headerBoundaries - Pre-computed column boundaries
+ * @param {Object|null} nirmsBoundary - Pre-computed NIRMS boundary
+ * @param {Object|null} coBoundary - Pre-computed country of origin boundary
+ * @param {string|null} netWeightUnit - Pre-computed net weight unit
+ * @param {number} headerY - Y coordinate below which data rows start on first page
  * @returns {Array} Combined packing list contents from all pages
  */
-function processPages(pages, headersExist) {
+function processPages(
+  pages,
+  headerBoundaries,
+  nirmsBoundary,
+  coBoundary,
+  netWeightUnit,
+  headerY
+) {
   let allContents = []
 
   for (const page of pages) {
     const groupedByY = groupByYCoordinate(page.content)
     page.content = groupedByY
 
-    const ys = getYsForRows(page.content, headers.MANDS1)
-    const pageContents = mapPdfNonAiParser(
+    const ys = getYsForRows(page.content, headers.MANDS1, headerY)
+    const pageContents = mapPdfDynamicHeaderParser(
       page,
       'MANDS1',
       ys,
-      headersExist.nirms,
-      headersExist.countryOfOrigin
+      headerBoundaries,
+      nirmsBoundary,
+      coBoundary,
+      netWeightUnit
     )
-
-    // Apply net weight unit to all items (header only on first page)
-    pageContents.forEach((item) => {
-      item.total_net_weight_unit = headersExist.totalNetWeightUnit
-    })
 
     allContents = allContents.concat(pageContents)
 
@@ -108,37 +185,6 @@ function processPages(pages, headersExist) {
   }
 
   return allContents
-}
-
-/**
- * Extract header items within Y-coordinate range.
- * @param {Array} pageContent - Page content array
- * @param {number} minY - Minimum Y coordinate
- * @param {number} maxY - Maximum Y coordinate
- * @returns {Array} Header items
- */
-function extractHeader(pageContent, minY, maxY) {
-  return pageContent.filter((item) => item.y >= minY && item.y <= maxY)
-}
-
-/**
- * Check which headers exist in the header row.
- * @param {Array} header - Header items
- * @param {Object} modelHeaders - Model header configuration
- * @returns {Object} Flags indicating which headers exist
- */
-function checkHeadersExist(header, modelHeaders) {
-  const totalNetWeightHeader = header.find((x) =>
-    modelHeaders.headers.total_net_weight_kg.regex.test(x.str)
-  )?.str
-
-  return {
-    nirms: header.some((item) => modelHeaders.nirms.regex.test(item.str)),
-    countryOfOrigin: header.some((item) =>
-      modelHeaders.country_of_origin.regex.test(item.str)
-    ),
-    totalNetWeightUnit: findNetWeightUnit(totalNetWeightHeader)
-  }
 }
 
 /**
@@ -186,9 +232,10 @@ export function findNetWeightUnit(totalNetWeightHeader) {
  * Determine the Y coordinates for rows between header and footer on a PDF page.
  * @param {Array} pageContent - Array of PDF text items with positions
  * @param {Object} model - Model header configuration
+ * @param {number} headerY - Y coordinate of the lowest header (data starts below this)
  * @returns {Array<number>} Unique Y coordinates for rows
  */
-export function getYsForRows(pageContent, model) {
+export function getYsForRows(pageContent, model, headerY) {
   try {
     const pageNumberY = pageContent.find((item) =>
       model.pageNumber.test(item.str)
@@ -196,10 +243,11 @@ export function getYsForRows(pageContent, model) {
     const isFirstPage = pageContent.some((item) =>
       model.firstPage.test(item.str)
     )
-    const firstY = isFirstPage ? model.maxHeadersY : pageNumberY
+    const firstY = isFirstPage ? headerY : pageNumberY
     const lastPageY = pageContent.find((item) => model.footer.test(item.str))?.y
 
-    const lastY = lastPageY ?? Math.max(...pageContent.map((item) => item.y))
+    const lastY =
+      lastPageY ?? Math.max(...pageContent.map((item) => item.y)) + 1
     const ys = [
       ...new Set(
         pageContent
