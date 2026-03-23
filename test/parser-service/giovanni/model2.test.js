@@ -45,12 +45,15 @@ const filename = 'packinglist-giovanni-model2.xlsx'
 describe('Parser Service - Giovanni Model 2', () => {
   describe('Valid packing lists', () => {
     test('matches valid Giovanni Model 2 file, calls parser and returns all_required_fields_present as true', async () => {
-      const result = await parserService.findParser(model.validModel, filename)
+      const result = await parserService.parsePackingList(
+        model.validModel,
+        filename
+      )
       expect(result).toMatchObject(test_results.validTestResult)
     })
 
     test('parses multiple sheets correctly', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         model.validModelMultipleSheets,
         filename
       )
@@ -62,7 +65,7 @@ describe('Parser Service - Giovanni Model 2', () => {
 
   describe('Invalid packing lists', () => {
     test('matches valid Giovanni Model 2 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         model.invalidModel_MissingColumnCells,
         filename
       )
@@ -70,12 +73,15 @@ describe('Parser Service - Giovanni Model 2', () => {
     })
 
     test('matches valid Giovanni Model 2 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-      const result = await parserService.findParser(model.multipleRms, filename)
+      const result = await parserService.parsePackingList(
+        model.multipleRms,
+        filename
+      )
       expect(result).toMatchObject(test_results.multipleRms)
     })
 
     test('matches valid Giovanni Model 2 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         model.missingKgunit,
         filename
       )
@@ -84,7 +90,7 @@ describe('Parser Service - Giovanni Model 2', () => {
   })
 
   test(`returns 'No Match' for incorrect file extension`, async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
