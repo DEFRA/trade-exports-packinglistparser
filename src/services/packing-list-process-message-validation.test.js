@@ -2,6 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const TEST_BLOB_STORAGE_ACCOUNT = 'testaccount'
 const TEST_BLOB_CONTAINER_NAME = 'container'
+const APPLICATION_ID_VALIDATION_ERROR =
+  'application_id must be a positive integer'
 const PACKING_LIST_BLOB_VALIDATION_ERROR =
   'packing_list_blob must be a valid URL from ehcoBlob.blobStorageAccount and ehcoBlob.containerName'
 
@@ -112,9 +114,7 @@ describe('packing-list-process-message-validation', () => {
     })
 
     expect(result.isValid).toBe(false)
-    expect(result.description).toContain(
-      'application_id must be a positive integer'
-    )
+    expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
   })
 
   it('returns error when application_id is not positive', () => {
@@ -124,9 +124,7 @@ describe('packing-list-process-message-validation', () => {
     })
 
     expect(result.isValid).toBe(false)
-    expect(result.description).toContain(
-      'application_id must be a positive integer'
-    )
+    expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
   })
 
   it('returns error when application_id contains decimal characters', () => {
@@ -136,9 +134,17 @@ describe('packing-list-process-message-validation', () => {
     })
 
     expect(result.isValid).toBe(false)
-    expect(result.description).toContain(
-      'application_id must be a positive integer'
-    )
+    expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
+  })
+
+  it('returns error when application_id is neither a number nor a string', () => {
+    const result = validateProcessPackingListPayload({
+      ...validPayload,
+      application_id: true
+    })
+
+    expect(result.isValid).toBe(false)
+    expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
   })
 
   it('returns error when packing_list_blob is not a valid URL', () => {

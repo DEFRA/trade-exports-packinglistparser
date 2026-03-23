@@ -41,13 +41,16 @@ const EXPECTED_SECOND_DATA_ROW = 5
 
 describe('matchesBandMModel1', () => {
   test('matches valid BAndM Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   test('matches valid BAndM Model 1 file with case insensitive headers, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelInsensitiveHeader,
       filename
     )
@@ -56,7 +59,7 @@ describe('matchesBandMModel1', () => {
   })
 
   test('matches valid BAndM Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -65,7 +68,7 @@ describe('matchesBandMModel1', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -74,19 +77,25 @@ describe('matchesBandMModel1', () => {
   })
 
   test('matches valid BAndM Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(model.multipleRms, filename)
+    const result = await parserService.parsePackingList(
+      model.multipleRms,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.multipleRms)
   })
 
   test('matches valid BAndM Model 1 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(model.missingKgunit, filename)
+    const result = await parserService.parsePackingList(
+      model.missingKgunit,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.missingKgunit)
   })
 
   test('matches valid BAndM Model 1 file with multiple sheets where headers are on different rows', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelMultipleSheetsHeadersOnDifferentRows,
       filename
     )
@@ -103,7 +112,7 @@ describe('matchesBandMModel1', () => {
 describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
   // AC1: Null NIRMS value - Given a packing list does not have the statement 'This consignment contains only NIRMS eligible goods' specified anywhere on it
   test('AC1: matches BAndM Model 1 file, returns all_required_fields_present as false for missing NIRMS statement', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.missingNirmsStatement,
       filename
     )
@@ -116,7 +125,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
 
   // AC2: Null CoO Value - Given a packing list has the NIRMS statement and the CoO value is null
   test('AC2: matches BAndM Model 1 file, returns all_required_fields_present as false for null CoO value', async () => {
-    const result = await parserService.findParser(model.nullCoO, filename)
+    const result = await parserService.parsePackingList(model.nullCoO, filename)
 
     expect(result).toMatchObject(testResults.nullCoOTestResult)
     expect(result.business_checks.failure_reasons).toContain(
@@ -126,7 +135,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
 
   // AC3: Null CoO Value, more than 3 - Multiple items with null CoO values
   test('AC3: matches BAndM Model 1 file, returns all_required_fields_present as false for multiple null CoO values', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.multipleNullCoO,
       filename
     )
@@ -144,7 +153,10 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
 describe('BANDM1 CoO Validation Tests - Type 1 - CoO', () => {
   // AC4: Invalid CoO Value - Given a packing list has the NIRMS statement and the CoO value is not valid
   test('AC4: matches BAndM Model 1 file, returns all_required_fields_present as false for invalid CoO value', async () => {
-    const result = await parserService.findParser(model.invalidCoO, filename)
+    const result = await parserService.parsePackingList(
+      model.invalidCoO,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.invalidCoOTestResult)
     expect(result.business_checks.failure_reasons).toContain(
@@ -154,7 +166,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - CoO', () => {
 
   // AC5: Invalid CoO Value, more than 3 - Multiple items with invalid CoO values
   test('AC5: matches BAndM Model 1 file, returns all_required_fields_present as false for multiple invalid CoO values', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.multipleInvalidCoO,
       filename
     )
@@ -170,7 +182,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - CoO', () => {
 
   // AC6: CoO Value is X or x - Should pass when country of origin is "X" or "x"
   test('AC6: matches BAndM Model 1 file, returns all_required_fields_present as true for CoO value X or x', async () => {
-    const result = await parserService.findParser(model.xCoO, filename)
+    const result = await parserService.parsePackingList(model.xCoO, filename)
 
     expect(result).toMatchObject(testResults.xCoOTestResult)
     expect(result.business_checks.all_required_fields_present).toBe(true)
@@ -183,7 +195,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   // Note: Current validation checks ISO validity before prohibited items,
   // so 'INELIGIBLE_ITEM_ISO' (not a real ISO) triggers COO_INVALID first
   test('AC7: matches BAndM Model 1 file, returns all_required_fields_present as false for ineligible item with treatment type', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemWithTreatment,
       filename
     )
@@ -197,7 +209,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   // AC8: Item Present on Ineligible Item List, more than 3 (Treatment Type specified)
   // Note: Current validation checks ISO validity before prohibited items
   test('AC8: matches BAndM Model 1 file, returns all_required_fields_present as false for multiple ineligible items with treatment type', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.multipleineligibleItemsWithTreatment,
       filename
     )
@@ -214,7 +226,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   // AC9: Item Present on Ineligible Item List (no Treatment Type specified)
   // Note: Current validation checks ISO validity before prohibited items
   test('AC9: matches BAndM Model 1 file, returns all_required_fields_present as false for ineligible item without treatment type', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemNoTreatment,
       filename
     )
@@ -228,7 +240,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   // AC10: Item Present on Ineligible Item List, more than 3 (no Treatment Type specified)
   // Note: Current validation checks ISO validity before prohibited items
   test('AC10: matches BAndM Model 1 file, returns all_required_fields_present as false for multiple ineligible items without treatment type', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.multipleineligibleItemsNoTreatment,
       filename
     )
@@ -244,7 +256,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
 
   // AC11: Null Treatment type value - Missing treatment type statement with null commodity code
   test('AC11: matches BAndM Model 1 file, returns all_required_fields_present as false for null treatment type with null identifier', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullTreatmentTypeWithNullIdentifier,
       filename
     )

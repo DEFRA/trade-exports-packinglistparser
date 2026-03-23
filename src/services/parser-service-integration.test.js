@@ -32,7 +32,7 @@ const NO_MATCH_RESULT = {
 describe('Parser Service Integration Tests - No Match Scenarios', () => {
   describe('Invalid file extension returns NOMATCH', () => {
     test('Turners Model 1 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         turnersModel.validModel,
         INVALID_FILENAME
       )
@@ -40,7 +40,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('TJ Morris Model 2 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         tjmorrisModel.validModel,
         INVALID_FILENAME
       )
@@ -48,7 +48,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('Tesco Model 3 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         tescoModel.validModel,
         INVALID_FILENAME
       )
@@ -56,7 +56,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('Nisa Model 1 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         nisaModel.validModel,
         INVALID_FILENAME
       )
@@ -64,7 +64,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('Sainsburys Model 1 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         sainsburysModel.validModel,
         INVALID_FILENAME
       )
@@ -72,7 +72,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('Coop Model 1 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         coopModel.validModel,
         INVALID_FILENAME
       )
@@ -80,7 +80,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('Booker Model 2 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         bookerModel.validModel,
         INVALID_FILENAME
       )
@@ -88,7 +88,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('Buffaload Logistics Model 1 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         buffaloModel.validModel,
         INVALID_FILENAME
       )
@@ -96,7 +96,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
     })
 
     test('Asda Model 3 with invalid extension', async () => {
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         asdaModel3.validModel,
         INVALID_FILENAME
       )
@@ -106,7 +106,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
 
   describe('Empty or malformed data returns NOREMOS', () => {
     test('Empty JSON object', async () => {
-      const result = await parserService.findParser({}, 'packinglist.xls')
+      const result = await parserService.parsePackingList({}, 'packinglist.xls')
       expect(result.parserModel).toBe(parserModel.NOREMOS)
     })
 
@@ -123,7 +123,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
           }
         ]
       }
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         packingListJson,
         'packinglist.xls'
       )
@@ -139,7 +139,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
           }
         ]
       }
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         packingListJson,
         'packinglist.xlsx'
       )
@@ -163,7 +163,7 @@ describe('Parser Service Integration Tests - No Match Scenarios', () => {
           }
         ]
       }
-      const result = await parserService.findParser(
+      const result = await parserService.parsePackingList(
         packingListJson,
         'packinglist.xlsx'
       )

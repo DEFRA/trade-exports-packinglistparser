@@ -14,14 +14,13 @@ const bartonRedmanHeaders = {
       description: /Description of goods/i,
       number_of_packages: /No\.? of packages/i,
       total_net_weight_kg: /Item Net Weight/i,
-      type_of_treatment: /Type of Treatment/i,
-      nirms: /NIRMS Red\/Green Lane/i,
-      country_of_origin: /Country of Origin/i
+      type_of_treatment: /Type of Treatment/i
     },
+    nirms: /NIRMS Red\/Green Lane/i,
+    country_of_origin: /Country of Origin/i,
     findUnitInHeader: true,
     validateCountryOfOrigin: true,
-    invalidSheets: ['References', 'Lookups', 'Meursing'],
-    deprecated: false
+    invalidSheets: ['References', 'Lookups', 'Meursing']
   }
 }
 

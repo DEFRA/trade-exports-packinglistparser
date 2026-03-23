@@ -26,13 +26,16 @@ const filename = 'packinglist.xlsx'
 
 describe('matchesWarrensModel2', () => {
   test('matches valid Warrens Model 2 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   test('matches valid Warrens Model 2 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -41,7 +44,7 @@ describe('matchesWarrensModel2', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -50,13 +53,19 @@ describe('matchesWarrensModel2', () => {
   })
 
   test('matches valid Warrens Model 2 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(model.multipleRms, filename)
+    const result = await parserService.parsePackingList(
+      model.multipleRms,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.multipleRms)
   })
 
   test('matches valid Warrens Model 2 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(model.missingKgunit, filename)
+    const result = await parserService.parsePackingList(
+      model.missingKgunit,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.missingKgunit)
   })
@@ -64,12 +73,15 @@ describe('matchesWarrensModel2', () => {
 
 describe('Warrens 2 CoO Validation Tests - Type 1 - Nirms', () => {
   test('BAC1: NOT within NIRMS Scheme - passes validation', async () => {
-    const result = await parserService.findParser(model.nonNirmsModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nonNirmsModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   test('BAC2: Null NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsModel,
       filename
     )
@@ -79,7 +91,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('BAC3: Invalid NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsModel,
       filename
     )
@@ -89,7 +101,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('BAC4: Null NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsMultipleModel,
       filename
     )
@@ -97,7 +109,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('BAC5: Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsMultipleModel,
       filename
     )
@@ -107,14 +119,17 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - Nirms', () => {
 
 describe('Warrens 2 CoO Validation Tests - Type 1 - CoO', () => {
   test('BAC6: Null CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(model.nullCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nullCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toContain(
       'Missing Country of Origin'
     )
   })
 
   test('BAC7: Invalid CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooModel,
       filename
     )
@@ -124,7 +139,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('BAC8: Null CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullCooMultipleModel,
       filename
     )
@@ -132,7 +147,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('BAC9: Invalid CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooMultipleModel,
       filename
     )
@@ -140,7 +155,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('BAC10: CoO Value is X or x - passes validation', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.cooPlaceholderXModel,
       filename
     )
@@ -148,7 +163,10 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
     expect(result.items.every((item) => item.country_of_origin)).toBe(true)
     expect(result.items.every((item) => item.commodity_code)).toBe(true)
@@ -158,7 +176,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - CoO', () => {
 
 describe('Warrens 2 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   test('BAC11: Item Present on Ineligible Item List (Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsWithTreatmentModel,
       filename
     )
@@ -168,7 +186,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   })
 
   test('BAC12: Item Present on Ineligible Item List, more than 3 (Treatment Type specified) - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultipleWithTreatmentModel,
       filename
     )
@@ -176,7 +194,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   })
 
   test('BAC13: Item Present on Ineligible Item List (no Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsNoTreatmentModel,
       filename
     )
@@ -186,7 +204,7 @@ describe('Warrens 2 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   })
 
   test('BAC14: Item Present on Ineligible Item List, more than 3 (no Treatment Type specified) - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultipleNoTreatmentModel,
       filename
     )

@@ -5,7 +5,10 @@ import {
   buildSyncSkippedResult
 } from './sync-result-builders.js'
 
-describe('sync-result-builders', () => {
+const ONE_SECOND_MS = 1000
+const MAX_DURATION_MS = 2000
+
+function defineSuccessResultTests() {
   describe('buildSyncSuccessResult', () => {
     it('should build a success result with default data', () => {
       const startTime = Date.now()
@@ -33,14 +36,16 @@ describe('sync-result-builders', () => {
     })
 
     it('should calculate duration correctly', () => {
-      const startTime = Date.now() - 1000 // 1 second ago
+      const startTime = Date.now() - ONE_SECOND_MS
       const result = buildSyncSuccessResult(startTime)
 
-      expect(result.duration).toBeGreaterThanOrEqual(1000)
-      expect(result.duration).toBeLessThan(2000)
+      expect(result.duration).toBeGreaterThanOrEqual(ONE_SECOND_MS)
+      expect(result.duration).toBeLessThan(MAX_DURATION_MS)
     })
   })
+}
 
+function defineErrorResultTests() {
   describe('buildSyncErrorResult', () => {
     it('should build an error result', () => {
       const startTime = Date.now()
@@ -66,7 +71,9 @@ describe('sync-result-builders', () => {
       expect(result.errorName).toBe('TypeError')
     })
   })
+}
 
+function defineSkippedResultTests() {
   describe('buildSyncSkippedResult', () => {
     it('should build a skipped result', () => {
       const startTime = Date.now()
@@ -91,7 +98,9 @@ describe('sync-result-builders', () => {
       expect(result.reason).toBe('Configuration not found')
     })
   })
+}
 
+function defineTimestampFormatTests() {
   describe('result timestamp format', () => {
     it('should produce valid ISO timestamp strings', () => {
       const startTime = Date.now()
@@ -99,12 +108,10 @@ describe('sync-result-builders', () => {
       const errorResult = buildSyncErrorResult(startTime, new Error('Test'))
       const skippedResult = buildSyncSkippedResult(startTime, 'Test reason')
 
-      // Verify all timestamps are valid ISO strings
       expect(() => new Date(successResult.timestamp)).not.toThrow()
       expect(() => new Date(errorResult.timestamp)).not.toThrow()
       expect(() => new Date(skippedResult.timestamp)).not.toThrow()
 
-      // Verify they can be parsed back to dates
       expect(new Date(successResult.timestamp).toISOString()).toBe(
         successResult.timestamp
       )
@@ -116,4 +123,11 @@ describe('sync-result-builders', () => {
       )
     })
   })
+}
+
+describe('sync-result-builders', () => {
+  defineSuccessResultTests()
+  defineErrorResultTests()
+  defineSkippedResultTests()
+  defineTimestampFormatTests()
 })

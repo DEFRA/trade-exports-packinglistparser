@@ -71,9 +71,14 @@ vi.mock('./validators/packing-list-validator-utilities.js', () => ({
   isNotNirms: mockIsNotNirms
 }))
 
-// Mock uuid
+// Mock uuid - uses vi.hoisted so the function reference is available for per-test setup,
+// ensuring messageId and correlationId receive distinct values.
+const { mockV4 } = vi.hoisted(() => ({
+  mockV4: vi.fn()
+}))
+
 vi.mock('uuid', () => ({
-  v4: vi.fn(() => 'test-uuid')
+  v4: mockV4
 }))
 
 // Mock logger
@@ -152,6 +157,11 @@ describe('packing-list-process-service', () => {
     mockLogger.debug.mockClear()
     mockIsNirms.mockReturnValue(false)
     mockIsNotNirms.mockReturnValue(false)
+    // Reset and queue distinct UUID values so messageId and correlationId differ
+    mockV4.mockReset()
+    mockV4
+      .mockReturnValueOnce('test-message-uuid')
+      .mockReturnValueOnce('test-correlation-uuid')
   })
 
   describe('processPackingList', () => {
@@ -664,8 +674,12 @@ describe('packing-list-process-service', () => {
       expect(messageCall).toHaveProperty('body')
       expect(messageCall).toHaveProperty('type', 'uk.gov.trade.plp')
       expect(messageCall).toHaveProperty('source', 'trade-exportscore-plp')
-      expect(messageCall).toHaveProperty('messageId', 'test-uuid')
-      expect(messageCall).toHaveProperty('correlationId', 'test-uuid')
+      expect(messageCall).toHaveProperty('messageId', 'test-message-uuid')
+      expect(messageCall).toHaveProperty(
+        'correlationId',
+        'test-correlation-uuid'
+      )
+      expect(messageCall.messageId).not.toBe(messageCall.correlationId)
       expect(messageCall).toHaveProperty('subject', 'plp.idcoms.parsed')
       expect(messageCall).toHaveProperty('contentType', 'application/json')
       expect(messageCall).toHaveProperty('applicationProperties')
@@ -710,8 +724,10 @@ describe('packing-list-process-service', () => {
       const result = await processPackingList(mockPayload)
 
       expect(result.result).toBe('failure')
-      expect(result.error).toBeDefined()
+      expect(result.error).toContain('Unable to map parsed data')
       expect(result.errorType).toBe('server')
+      expect(mockUploadJsonFileToS3).not.toHaveBeenCalled()
+      expect(mockSendMessageToQueue).not.toHaveBeenCalled()
       expect(mockLogger.error).toHaveBeenCalled()
       // The error is logged both in mapPackingListForStorage and in the catch block
       const errorCalls = mockLogger.error.mock.calls
@@ -871,10 +887,9 @@ describe('packing-list-process-service', () => {
       )
 
       const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
-      // Should have 2 items: 1 good item and 1 undefined (becomes null in JSON)
-      expect(uploadedData.items.length).toBe(2)
+      // Invalid mapped rows are removed before persistence.
+      expect(uploadedData.items.length).toBe(1)
       expect(uploadedData.items[0].description).toBe('Good Item')
-      expect(uploadedData.items[1]).toBeNull()
     })
 
     it('should skip sending message when disableSend is true', async () => {

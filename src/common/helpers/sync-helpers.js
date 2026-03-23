@@ -18,8 +18,7 @@ export function createEnabledCheck(configKey, featureName, logger) {
       )
 
       logger.info(
-        result,
-        `${featureName} synchronization skipped - ${featureName} is disabled`
+        `${featureName} synchronization skipped - ${featureName} is disabled (reason: ${result.reason})`
       )
 
       return result

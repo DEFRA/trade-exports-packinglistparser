@@ -3,7 +3,7 @@ import * as parserService from './parser-service.js'
 import parserModel from './parser-model.js'
 import failureReasonsDescriptions from './validators/packing-list-failure-reasons.js'
 
-describe('findParser', () => {
+describe('parsePackingList', () => {
   const filename = 'packinglist.xls'
   const packingListJson = {
     Sheet1: [
@@ -106,7 +106,7 @@ describe('findParser', () => {
   }
 
   test('removes empty items', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       emptyDataPackingListJson,
       filename
     )
@@ -118,13 +118,19 @@ describe('findParser', () => {
   test('Not matched Excel file', async () => {
     const packingListJson = {}
 
-    const result = await parserService.findParser(packingListJson, filename)
+    const result = await parserService.parsePackingList(
+      packingListJson,
+      filename
+    )
 
     expect(result.parserModel).toBe(parserModel.NOREMOS)
   })
 
   test('returns NOREMOS when no valid data present', async () => {
-    const result = await parserService.findParser(packingListJson, filename)
+    const result = await parserService.parsePackingList(
+      packingListJson,
+      filename
+    )
     // Without matching any parser, should return NOREMOS
     expect([parserModel.NOREMOS, parserModel.NOMATCH]).toContain(
       result.parserModel
@@ -181,7 +187,7 @@ describe('findParser', () => {
         }
       ]
     }
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       packingListJsonMissing,
       filename
     )
@@ -221,7 +227,7 @@ describe('findParser', () => {
         }
       ]
     }
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       packingListJsonEmpty,
       filename
     )
@@ -255,7 +261,7 @@ describe('findParser', () => {
       parserModel: parserModel.NOREMOS
     }
 
-    const result = await parserService.findParser(testModel, filename)
+    const result = await parserService.parsePackingList(testModel, filename)
 
     expect(result).toMatchObject(expected)
   })

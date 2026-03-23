@@ -14,6 +14,8 @@ import * as regex from '../../../utilities/regex.js'
 
 const logger = createLogger()
 
+const COMMODITY_CODE_SHORT_LENGTH = 9
+
 /**
  * Helper to determine if a mapped row is itself a header row.
  * Used to strip repeated headers that appear in multi-sheet workbooks.
@@ -82,6 +84,15 @@ export function parse(packingListJson) {
     packingListContents = packingListContents.filter(
       (item) => !isHeaderRow(item)
     )
+
+    // Pad 9-digit commodity codes to the required 10-digit length
+    packingListContents = packingListContents.map((item) => {
+      const code = item.commodity_code?.toString()
+      if (code?.length === COMMODITY_CODE_SHORT_LENGTH) {
+        return { ...item, commodity_code: `0${code}` }
+      }
+      return item
+    })
 
     return combineParser.combine(
       establishmentNumber,

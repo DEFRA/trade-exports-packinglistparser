@@ -31,13 +31,16 @@ const EXPECTED_SECOND_DATA_ROW = 3
 
 describe('matchesAsdaModel3', () => {
   test('matches valid Asda Model 3 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.validTestResult)
   })
 
   test('matches valid Asda Model 3 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -46,7 +49,7 @@ describe('matchesAsdaModel3', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -55,13 +58,19 @@ describe('matchesAsdaModel3', () => {
   })
 
   test('matches valid Asda Model 3 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(model.multipleRms, filename)
+    const result = await parserService.parsePackingList(
+      model.multipleRms,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.multipleRms)
   })
 
   test('matches valid Asda Model 3 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(model.missingKgunit, filename)
+    const result = await parserService.parsePackingList(
+      model.missingKgunit,
+      filename
+    )
 
     expect(result).toMatchObject(test_results.missingKgunit)
   })
@@ -71,12 +80,15 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
   // Order tests by BAC sequence for maintainability
 
   test('BAC1: NOT within NIRMS Scheme - passes validation', async () => {
-    const result = await parserService.findParser(model.nonNirmsModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nonNirmsModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   test('BAC2: Null NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsModel,
       filename
     )
@@ -86,7 +98,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('BAC3: Invalid NIRMS value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsModel,
       filename
     )
@@ -96,7 +108,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('BAC4: Null NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullNirmsMultipleModel,
       filename
     )
@@ -104,7 +116,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('BAC5: Invalid NIRMS value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirmsMultipleModel,
       filename
     )
@@ -112,7 +124,10 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('Valid CoO Validation: Complete packing list with all fields valid', async () => {
-    const result = await parserService.findParser(model.validCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toBeNull()
     expect(result.items.every((item) => item.country_of_origin)).toBe(true)
     expect(result.items.every((item) => item.commodity_code)).toBe(true)
@@ -120,7 +135,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('matches valid Asda Model 3 file with multiple sheets where headers are on different rows', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelMultipleSheetsHeadersOnDifferentRows,
       filename
     )
@@ -135,14 +150,17 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Nirms', () => {
 
 describe('ASDA3 CoO Validation Tests - Type 1 - CoO', () => {
   test('BAC6: Null CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(model.nullCooModel, filename)
+    const result = await parserService.parsePackingList(
+      model.nullCooModel,
+      filename
+    )
     expect(result.business_checks.failure_reasons).toContain(
       'Missing Country of Origin'
     )
   })
 
   test('BAC7: Invalid CoO Value - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooModel,
       filename
     )
@@ -152,7 +170,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('BAC8: Null CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nullCooMultipleModel,
       filename
     )
@@ -160,7 +178,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('BAC9: Invalid CoO Value, more than 3 - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCooMultipleModel,
       filename
     )
@@ -168,7 +186,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('BAC10: CoO Value is X or x - passes validation', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.cooPlaceholderXModel,
       filename
     )
@@ -178,7 +196,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - CoO', () => {
 
 describe('ASDA3 CoO Validation Tests - Type 1 - Ineligible Item', () => {
   test('BAC11: Item Present on Ineligible Item List (Treatment Type specified) - validation errors', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsWithTreatmentModel,
       filename
     )
@@ -188,7 +206,7 @@ describe('ASDA3 CoO Validation Tests - Type 1 - Ineligible Item', () => {
   })
 
   test('BAC12: Item Present on Ineligible Item List, more than 3 (Treatment Type specified) - validation errors with summary', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItemsMultipleWithTreatmentModel,
       filename
     )

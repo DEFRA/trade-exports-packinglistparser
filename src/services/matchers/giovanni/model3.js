@@ -70,6 +70,38 @@ function matchHeaders(pageContent) {
 }
 
 /**
+ * Check if header matches using Y-range coordinates on page content.
+ * @param {Object} matchHeader - Header configuration with Y-range
+ * @param {Array} pageContent - Extracted page content
+ * @returns {boolean} True if header is found
+ */
+function matchHeaderWithYRange(matchHeader, pageContent) {
+  return pageContent.some(
+    (item) =>
+      matchHeader.regex.test(item.str) &&
+      item.x >= matchHeader.x1 &&
+      item.x <= matchHeader.x2 &&
+      item.y >= matchHeader.minHeadersY &&
+      item.y <= matchHeader.maxHeadersY
+  )
+}
+
+/**
+ * Check if header matches using X-range coordinates in header object.
+ * @param {Object} matchHeader - Header configuration
+ * @param {Object} header - Extracted header object
+ * @returns {boolean} True if header is found
+ */
+function matchHeaderWithXRange(matchHeader, header) {
+  return Object.keys(header).some(
+    (i) =>
+      matchHeader.regex.test(header[i]) &&
+      i >= matchHeader.x1 &&
+      i <= matchHeader.x2
+  )
+}
+
+/**
  * Locate a header for a specific model within page content.
  * @param {string} model - Header model key (e.g., 'GIOVANNI3')
  * @param {Array} pageContent - Extracted page content
@@ -77,27 +109,24 @@ function matchHeaders(pageContent) {
  */
 function findHeader(model, pageContent) {
   const header = pdfHelper.getHeaders(pageContent, model)
-  let isHeader = matcherResult.WRONG_HEADER
-  for (const x in headers[model].headers) {
-    if (!Object.hasOwn(headers[model].headers, x)) {
-      return isHeader
+  const modelHeaders = headers[model].headers
+
+  for (const key in modelHeaders) {
+    if (!Object.hasOwn(modelHeaders, key)) {
+      return matcherResult.WRONG_HEADER
     }
-    const matchHeader = headers[model].headers[x]
-    for (const i in header) {
-      if (
-        matchHeader.regex.test(header[i]) &&
-        i >= matchHeader.x1 &&
-        i <= matchHeader.x2
-      ) {
-        isHeader = matcherResult.CORRECT
-        break
-      } else {
-        isHeader = matcherResult.WRONG_HEADER
-      }
-    }
-    if (isHeader === matcherResult.WRONG_HEADER) {
-      break
+
+    const matchHeader = modelHeaders[key]
+    const hasYRange = matchHeader.minHeadersY !== undefined
+
+    const isMatch = hasYRange
+      ? matchHeaderWithYRange(matchHeader, pageContent) // use this to match blanket headers
+      : matchHeaderWithXRange(matchHeader, header) // use this to match normal column headers
+
+    if (!isMatch) {
+      return matcherResult.WRONG_HEADER
     }
   }
-  return isHeader
+
+  return matcherResult.CORRECT
 }

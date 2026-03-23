@@ -81,7 +81,6 @@ async function makeAddHandler(request, h) {
   const fileData = request.payload
 
   try {
-    console.log('Payload received for S3 upload:', fileData)
     await uploadJsonFileToS3({ filename, schema }, JSON.stringify(fileData))
     return h
       .response({ message: 'File added to S3 successfully' })

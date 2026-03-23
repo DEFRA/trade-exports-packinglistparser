@@ -24,7 +24,7 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
 
 describe('Parser Service - Barton and Redman Model 1', () => {
   test('matches valid Barton and Redman Model 1 file and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       BARTONREDMAN_FILENAME
     )
@@ -34,7 +34,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
   })
 
   test('matches valid Barton and Redman Model 1 file with multiple sheets where headers are on different rows', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModelMultipleSheetsHeadersOnDifferentRows,
       BARTONREDMAN_FILENAME
     )
@@ -45,14 +45,8 @@ describe('Parser Service - Barton and Redman Model 1', () => {
   })
 
   test('ignores invalid sheets and still discovers/parses Barton and Redman Model 1', async () => {
-    const packingListWithInvalidSheets = {
-      References: [{ A: 'reference data' }],
-      Lookups: [{ A: 'lookup data' }],
-      'Input Packing Sheet': model.validModel['Input Packing Sheet']
-    }
-
-    const result = await parserService.findParser(
-      packingListWithInvalidSheets,
+    const result = await parserService.parsePackingList(
+      model.packingListWithInvalidSheets,
       BARTONREDMAN_FILENAME
     )
 
@@ -67,7 +61,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
   })
 
   test('returns all_required_fields_present as false when required cells are missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       BARTONREDMAN_FILENAME
     )
@@ -76,7 +70,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
   })
 
   test("returns 'No Match' for incorrect file extension", async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -87,7 +81,7 @@ describe('Parser Service - Barton and Redman Model 1', () => {
 
 describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
   test('RED lane (non-NIRMS) passes validation without CoO', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.nonNirms,
       BARTONREDMAN_FILENAME
     )
@@ -96,7 +90,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('Invalid NIRMS value returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidNirms,
       BARTONREDMAN_FILENAME
     )
@@ -107,7 +101,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
   })
 
   test('Null NIRMS value returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.missingNirms,
       BARTONREDMAN_FILENAME
     )
@@ -120,7 +114,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Nirms', () => {
 
 describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
   test('GREEN lane with missing CoO returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.missingCoO,
       BARTONREDMAN_FILENAME
     )
@@ -131,7 +125,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('GREEN lane with invalid CoO returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidCoO,
       BARTONREDMAN_FILENAME
     )
@@ -142,7 +136,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   test('GREEN lane with CoO value X passes validation', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.xCoO,
       BARTONREDMAN_FILENAME
     )
@@ -153,7 +147,7 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - CoO', () => {
 
 describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   test('Ineligible items detected returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.ineligibleItems,
       BARTONREDMAN_FILENAME
     )
@@ -161,5 +155,57 @@ describe('BARTONREDMAN1 CoO Validation Tests - Type 1 - Ineligible Items', () =>
     expect(result.business_checks.failure_reasons).toContain(
       failureReasons.PROHIBITED_ITEM
     )
+  })
+})
+
+// ── NIRMS / CoO column-presence tests ─────────────────────────────────────────
+// nirms and country_of_origin are top-level properties on the model headers
+// object, NOT inside the regex map. The matcher therefore does not require these
+// columns when identifying the file — their absence does not prevent model
+// discovery. The parser reads them separately when the columns are present.
+
+describe('BARTONREDMAN1 - NIRMS and Country of Origin column behaviour', () => {
+  test('items include nirms and country_of_origin values when both columns are present in the header', async () => {
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      BARTONREDMAN_FILENAME
+    )
+
+    expect(result.parserModel).toBe(parserModel.BARTONREDMAN1)
+    expect(result.items[0].nirms).toBe('GREEN')
+    expect(result.items[0].country_of_origin).toBe('GB')
+  })
+
+  test('still matches and parses when NIRMS column is absent from the header — nirms is null on items', async () => {
+    const result = await parserService.parsePackingList(
+      model.packingListWithoutNirmsColumn,
+      BARTONREDMAN_FILENAME
+    )
+
+    expect(result.parserModel).toBe(parserModel.BARTONREDMAN1)
+    expect(result.items[0].nirms).toBeNull()
+    expect(result.items[0].country_of_origin).toBe('GB')
+  })
+
+  test('still matches and parses when Country of Origin column is absent from the header — country_of_origin is null on items', async () => {
+    const result = await parserService.parsePackingList(
+      model.packingListWithoutCooColumn,
+      BARTONREDMAN_FILENAME
+    )
+
+    expect(result.parserModel).toBe(parserModel.BARTONREDMAN1)
+    expect(result.items[0].nirms).toBe('RED')
+    expect(result.items[0].country_of_origin).toBeNull()
+  })
+
+  test('still matches and parses when both NIRMS and Country of Origin columns are absent from the header — nirms and country_of_origin are null on items', async () => {
+    const result = await parserService.parsePackingList(
+      model.packingListWithoutNirmsAndCooColumns,
+      BARTONREDMAN_FILENAME
+    )
+
+    expect(result.parserModel).toBe(parserModel.BARTONREDMAN1)
+    expect(result.items[0].nirms).toBeNull()
+    expect(result.items[0].country_of_origin).toBeNull()
   })
 })

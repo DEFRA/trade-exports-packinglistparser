@@ -247,7 +247,7 @@ function generateFailuresByIndexAndTypes(validationResult, packingList) {
     addSingleRmsFailureReason(validationResult, failuresAndChecks)
 
     // Handle net weight unit as a special case
-    addNetWeightFailuireReasonOrCheck(
+    addNetWeightFailureReasonOrCheck(
       validationResult,
       packingList.unitInHeader,
       failuresAndChecks
@@ -294,7 +294,7 @@ function addSingleRmsFailureReason(validationResult, reasonsAndChecks) {
  * @param {boolean} unitInHeader - True when a unit-of-weight appears in the header.
  * @param {Object} reasonsAndChecks - Accumulator containing `failureReasons` and `checks`.
  */
-function addNetWeightFailuireReasonOrCheck(
+function addNetWeightFailureReasonOrCheck(
   validationResult,
   unitInHeader,
   reasonsAndChecks
@@ -406,7 +406,7 @@ function generateFailureReasonFromRows(description, rows) {
     )
   } else if (rows[0].pageNumber) {
     return generateRowLocation(
-      generateLocatioPageDescription,
+      generateLocationPageDescription,
       description,
       rows
     )
@@ -483,7 +483,7 @@ function generateLocationSheetDescription(row) {
  * @param {Object} row - Row-location object with `pageNumber` and `rowNumber`.
  * @returns {string} text - Formatted location such as `page 2 row 5`.
  */
-function generateLocatioPageDescription(row) {
+function generateLocationPageDescription(row) {
   return `page ${row.pageNumber} row ${row.rowNumber}`
 }
 

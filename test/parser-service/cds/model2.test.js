@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findParser } from '../../../src/services/parser-service.js'
+import { parsePackingList } from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models/cds/model2.js'
 import parserModel from '../../../src/services/parser-model.js'
 import testResults from '../../test-data-and-results/results/cds/model2.js'
@@ -9,13 +9,13 @@ const filename = 'packinglist-cds-model2.xlsx'
 
 describe('matchesCdsModel2', () => {
   it('matches valid CDS Model 2 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await findParser(model.validModel, filename)
+    const result = await parsePackingList(model.validModel, filename)
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   it('matches valid CDS Model 2 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -24,37 +24,40 @@ describe('matchesCdsModel2', () => {
   })
 
   it('returns No Match for incorrect file extension', async () => {
-    const result = await findParser(model.validModel, INVALID_FILENAME)
+    const result = await parsePackingList(model.validModel, INVALID_FILENAME)
 
     expect(result).toMatchObject(NO_MATCH_RESULT)
   })
 
   it('matches valid CDS Model 2 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await findParser(model.multipleRms, filename)
+    const result = await parsePackingList(model.multipleRms, filename)
 
     expect(result).toMatchObject(testResults.multipleRms)
   })
 
   it('matches valid CDS Model 2 file, calls parser and returns all_required_fields_present as false for multiple sheets', async () => {
-    const result = await findParser(model.validModelMultipleSheets, filename)
+    const result = await parsePackingList(
+      model.validModelMultipleSheets,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResultForMultipleSheets)
   })
 
   it('matches valid CDS Model 2 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await findParser(model.missingKgunit, filename)
+    const result = await parsePackingList(model.missingKgunit, filename)
 
     expect(result).toMatchObject(testResults.missingKgunit)
   })
 
   it('matches empty CDS Model 2 file and handles empty results appropriately', async () => {
-    const result = await findParser(model.emptyModel, filename)
+    const result = await parsePackingList(model.emptyModel, filename)
 
     expect(result).toMatchObject(testResults.emptyTestResultNoRemos)
   })
 
   it('matches valid CDS Model 2 file with multiple sheets where headers are on different rows, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validModelMultipleSheetsHeadersOnDifferentRows,
       filename
     )
@@ -67,7 +70,7 @@ describe('matchesCdsModel2', () => {
 
 describe('matchesCdsModel2_CoOValidation', () => {
   it('handles Non-NIRMS items with null country of origin correctly', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validNonNirmsWithNullCountryOfOrigin,
       filename
     )
@@ -78,7 +81,7 @@ describe('matchesCdsModel2_CoOValidation', () => {
   })
 
   it('fails validation when NIRMS item has missing country of origin', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.invalidNirmsMissingCountryOfOrigin,
       filename
     )
@@ -89,7 +92,7 @@ describe('matchesCdsModel2_CoOValidation', () => {
   })
 
   it('matches valid CDS Model 2 file with Non-NIRMS multiple formats', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validModel_CoO__NonNirmsMultipleFormats,
       filename
     )
@@ -99,7 +102,7 @@ describe('matchesCdsModel2_CoOValidation', () => {
   })
 
   it('matches valid CDS Model 2 file with NIRMS multiple formats', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validModel_CoO__NirmsMultipleFormats,
       filename
     )
@@ -109,21 +112,27 @@ describe('matchesCdsModel2_CoOValidation', () => {
   })
 
   it('matches CDS Model 2 file with invalid NIRMS values (more than 3 issues) and returns validation errors', async () => {
-    const result = await findParser(model.CoO_InvalidNirms_MoreThan3, filename)
+    const result = await parsePackingList(
+      model.CoO_InvalidNirms_MoreThan3,
+      filename
+    )
     expect(result).toMatchObject(
       testResults.invalidTestResultInvalidNirmsMoreThan3
     )
   })
 
   it('matches CDS Model 2 file with invalid NIRMS values (less than 3 issues) and returns validation errors', async () => {
-    const result = await findParser(model.CoO_InvalidNirms_LessThan3, filename)
+    const result = await parsePackingList(
+      model.CoO_InvalidNirms_LessThan3,
+      filename
+    )
     expect(result).toMatchObject(
       testResults.invalidTestResultInvalidNirmsLessThan3
     )
   })
 
   it('matches valid CDS Model 2 file with items not on prohibited list', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validModel_CoO__NotOnProhibitedItemsList,
       filename
     )
@@ -133,7 +142,7 @@ describe('matchesCdsModel2_CoOValidation', () => {
   })
 
   it('matches CDS Model 2 file with items on prohibited list and returns validation errors', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validModel_CoO__OnProhibitedItemsList,
       filename
     )
@@ -143,7 +152,7 @@ describe('matchesCdsModel2_CoOValidation', () => {
   })
 
   it('matches CDS Model 2 file with multiple prohibited items (more than 3) with no treatment type and returns validation errors', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validModel_CoO__MultipleProhibitedItemsList_NoTreatmentType,
       filename
     )
@@ -153,7 +162,7 @@ describe('matchesCdsModel2_CoOValidation', () => {
   })
 
   it('matches CDS Model 2 file with multiple prohibited items (more than 3) with treatment type and returns validation errors', async () => {
-    const result = await findParser(
+    const result = await parsePackingList(
       model.validModel_CoO__MultipleProhibitedItemsListMoreThan3_TreatmentType,
       filename
     )
@@ -204,7 +213,7 @@ describe('matchesCdsModel2_ExceptionHandling', () => {
       ]
     }
 
-    const result = await findParser(dataWithInvalidRms, filename)
+    const result = await parsePackingList(dataWithInvalidRms, filename)
 
     // The parser should catch any errors and return NOMATCH result
     expect(result).toBeDefined()

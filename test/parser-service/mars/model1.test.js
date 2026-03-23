@@ -36,13 +36,16 @@ const filename = 'packinglist-mars-model1.xlsx'
 
 describe('parsesMarsModel1', () => {
   it('matches valid Mars Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(testData.validModel, filename)
+    const result = await parserService.parsePackingList(
+      testData.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   it('matches valid Mars Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.invalidModel_MissingColumnCells,
       filename
     )
@@ -62,13 +65,16 @@ describe('parsesMarsModel1', () => {
       parserModel: ParserModel.NOMATCH
     }
 
-    const result = await parserService.findParser(testData.validModel, filename)
+    const result = await parserService.parsePackingList(
+      testData.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(invalidTestResult_NoMatch)
   })
 
   it('matches valid Mars Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.multipleRms,
       filename
     )
@@ -77,7 +83,7 @@ describe('parsesMarsModel1', () => {
   })
 
   it('matches valid Mars Model 1 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.missingKgunit,
       filename
     )
@@ -85,7 +91,7 @@ describe('parsesMarsModel1', () => {
   })
 
   it('matches valid Mars Model 1 file with multiple sheets where headers are on different rows, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       testData.validModelMultipleSheetsHeadersOnDifferentRows,
       filename
     )
@@ -124,7 +130,7 @@ describe('CoO Validation Tests', () => {
       expected: 'Prohibited item identified on the packing list'
     }
   ])('checks CoO validation for $description', async ({ model, expected }) => {
-    const result = await parserService.findParser(model, filename)
+    const result = await parserService.parsePackingList(model, filename)
 
     expect(result.business_checks.failure_reasons).not.toBeNull()
     expect(result.business_checks.failure_reasons).toContain(expected)

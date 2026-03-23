@@ -59,31 +59,62 @@ const pdfGiovanniHeaders = {
       description: {
         x: /DESCRIPTION/i,
         x1: 125,
-        x2: 255,
+        x2: 235,
         regex: /DESCRIPTION/i
       },
       commodity_code: {
         x: /Commodity Code/i,
-        x1: 255,
-        x2: 350,
+        x1: 235,
+        x2: 280,
         regex: /Commodity Code/i
       },
       number_of_packages: {
         x: /Quantity/i,
-        x1: 355,
-        x2: 389,
+        x1: 320,
+        x2: 360,
         regex: /Quantity/i
       },
       total_net_weight_kg: {
         x: /Net/i,
-        x1: 389,
-        x2: 439,
+        x1: 361,
+        x2: 400,
         regex: /Net Weight/i
+      },
+      type_of_treatment: {
+        x: /Type of Treatment/i,
+        x1: 360,
+        x2: 400,
+        regex: /Type of Treatment/i,
+        minHeadersY: 190,
+        maxHeadersY: 205
       }
+    },
+    country_of_origin: {
+      x1: 285,
+      x2: 320,
+      regex: /Country of/i
+    },
+    nirms: {
+      x1: 475,
+      x2: 520,
+      regex: /NIRMS\s*ONLY/i
+    },
+    blanketNirmsValue: {
+      x1: 475,
+      x2: 520,
+      maxHeadersY: 340,
+      regex: /NIRMS\s*ONLY/i
     },
     minHeadersY: 280,
     maxHeadersY: 300,
-    findUnitInHeader: true
+    findUnitInHeader: true,
+    validateCountryOfOrigin: true,
+    blanketTreatmentTypeValue: {
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250,
+      regex: /Type of Treatment/i
+    }
   }
 }
 

@@ -1,5 +1,9 @@
 import { describe, it, expect, vi } from 'vitest'
-import { mapParser, mapPdfNonAiParser } from './parser-map.js'
+import {
+  mapParser,
+  mapPdfNonAiParser,
+  extractBlanketValuesPdf
+} from './parser-map.js'
 import * as regex from '../utilities/regex.js'
 
 // Mock dependencies
@@ -416,21 +420,6 @@ describe('mapPdfNonAiParser', () => {
     expect(typeof mapPdfNonAiParser).toBe('function')
   })
 
-  it('should extract commodity code digits and filter out 2-letter country codes', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: 'GB' }, // 2-letter country code should be filtered
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe(null)
-  })
-
   it('should keep valid commodity codes starting with digits', () => {
     const packingListJson = {
       content: [
@@ -446,51 +435,6 @@ describe('mapPdfNonAiParser', () => {
     expect(result[0].commodity_code).toBe('1234567890')
   })
 
-  it('should extract first 4-14 digits from commodity code with trailing text', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: '02071290ABC' },
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe('02071290')
-  })
-
-  it('should filter out lowercase 2-letter country codes', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: 'gb' }, // lowercase 2-letter country code
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe(null)
-  })
-
-  it('should filter out mixed case 2-letter country codes', () => {
-    const packingListJson = {
-      content: [
-        { x: 50, y: 100, str: 'Test Product' },
-        { x: 150, y: 100, str: 'Gb' }, // mixed case 2-letter country code
-        { x: 250, y: 100, str: '10.5' }
-      ],
-      pageInfo: { num: 1 }
-    }
-
-    const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
-
-    expect(result[0].commodity_code).toBe(null)
-  })
-
   it('should keep 3-letter codes (not country codes)', () => {
     const packingListJson = {
       content: [
@@ -504,5 +448,217 @@ describe('mapPdfNonAiParser', () => {
     const result = mapPdfNonAiParser(packingListJson, 'testModel', [100])
 
     expect(result[0].commodity_code).toBe('ABC')
+  })
+})
+
+describe('extractBlanketValuesPdf', () => {
+  it('should extract value from next row below header within X boundary', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 375, y: 210, str: 'FRESH' }
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe('FRESH')
+  })
+
+  it('should return null when header is not found', () => {
+    const pageContent = [{ x: 375, y: 210, str: 'FRESH' }]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe(null)
+  })
+
+  it('should return null when value is outside X boundary', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 100, y: 210, str: 'FRESH' } // x is outside x1-x2 range
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe(null)
+  })
+
+  it('should return null when value Y exceeds maxHeadersY', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 375, y: 260, str: 'FRESH' } // y exceeds maxHeadersY
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe(null)
+  })
+
+  it('should return null when value Y is above header Y', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 375, y: 180, str: 'FRESH' } // y is above header
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe(null)
+  })
+
+  it('should concatenate multiple items at same Y coordinate', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 365, y: 210, str: 'FRESH ' },
+      { x: 385, y: 210, str: 'FROZEN' }
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe('FRESH FROZEN')
+  })
+
+  it('should skip empty strings when filtering items', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 370, y: 210, str: '   ' }, // whitespace only
+      { x: 375, y: 220, str: 'CHILLED' }
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe('CHILLED')
+  })
+
+  it('should handle items with Y coordinate within 1 pixel tolerance', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 365, y: 210, str: 'FRESH' },
+      { x: 385, y: 210.5, str: ' MEAT' } // within 1 pixel
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe('FRESH MEAT')
+  })
+
+  it('should select closest Y coordinate when multiple exist', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 375, y: 210, str: 'FRESH' },
+      { x: 375, y: 230, str: 'CHILLED' } // further down, should not be selected
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe('FRESH')
+  })
+
+  it('should return null for empty pageContent array', () => {
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf([], blanketValue)
+
+    expect(result).toBe(null)
+  })
+
+  it('should return null and handle errors gracefully', () => {
+    const blanketValue = {
+      regex: null, // will cause error
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(
+      [{ x: 375, y: 195, str: 'Test' }],
+      blanketValue
+    )
+
+    expect(result).toBe(null)
+  })
+
+  it('should return null when value string results in empty after trim', () => {
+    const pageContent = [
+      { x: 375, y: 195, str: 'Type of Treatment' },
+      { x: 375, y: 210, str: '' }
+    ]
+
+    const blanketValue = {
+      regex: /Type of Treatment/i,
+      x1: 360,
+      x2: 400,
+      maxHeadersY: 250
+    }
+
+    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+
+    expect(result).toBe(null)
   })
 })

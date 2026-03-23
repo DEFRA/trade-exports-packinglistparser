@@ -13,13 +13,16 @@ const filename = 'packinglist-fowlerwelch-model1.xlsx'
 
 describe('matchesFowlerwelchModel1', () => {
   test('matches valid Fowlerwelch Model 1 file, calls parser and returns all_required_fields_present as true', async () => {
-    const result = await parserService.findParser(model.validModel, filename)
+    const result = await parserService.parsePackingList(
+      model.validModel,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.validTestResult)
   })
 
   test('matches Fowlerwelch Model 1 file with multiple sheets containing different RMS numbers, returns validation error', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel_Multiple,
       filename
     )
@@ -33,7 +36,7 @@ describe('matchesFowlerwelchModel1', () => {
   })
 
   test('matches valid Fowlerwelch Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
       filename
     )
@@ -52,7 +55,7 @@ describe('matchesFowlerwelchModel1', () => {
       parserModel: parserModel.NOMATCH
     }
 
-    const result = await parserService.findParser(
+    const result = await parserService.parsePackingList(
       model.validModel,
       INVALID_FILENAME
     )
@@ -61,13 +64,19 @@ describe('matchesFowlerwelchModel1', () => {
   })
 
   test('matches valid Fowlerwelch Model 1 file, calls parser and returns all_required_fields_present as false for multiple rms', async () => {
-    const result = await parserService.findParser(model.multipleRms, filename)
+    const result = await parserService.parsePackingList(
+      model.multipleRms,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.multipleRms)
   })
 
   test('matches valid Fowlerwelch Model 1 file, calls parser and returns all_required_fields_present as false for missing kg unit', async () => {
-    const result = await parserService.findParser(model.missingKgunit, filename)
+    const result = await parserService.parsePackingList(
+      model.missingKgunit,
+      filename
+    )
 
     expect(result).toMatchObject(testResults.missingKgunit)
   })

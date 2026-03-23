@@ -403,34 +403,116 @@ export function mapPdfNonAiParser(
       rowNumber: row + 1,
       pageNumber: packingListJson.pageInfo.num
     }
-    plRow.commodity_code = extractCommodityCodeDigits(plRow.commodity_code)
+
     packingListContents.push(plRow)
   }
+
+  applyBlanketValues(packingListJson, model, packingListContents)
 
   return packingListContents
 }
 
 /**
- * Extract 4-14 digit commodity code from input string.
- * @param {string|null} input - Input string to extract from
- * @returns {string|null} Extracted digits or original input
+ * Apply blanket values (treatment type and NIRMS) to packing list items.
+ * @param {Object} packingListJson - PDF page with content coordinates
+ * @param {string} model - Parser model identifier
+ * @param {Array<Object>} packingListContents - Array of packing list items
  */
-function extractCommodityCodeDigits(input) {
-  if (input === null) {
-    return null
+function applyBlanketValues(packingListJson, model, packingListContents) {
+  // set all type of treatment values to blanket value if it exists
+  if (headers[model].blanketTreatmentTypeValue) {
+    const blanketTreatmentType = extractBlanketValuesPdf(
+      packingListJson.content,
+      headers[model].blanketTreatmentTypeValue
+    )
+
+    packingListContents.forEach((item) => {
+      item.type_of_treatment = blanketTreatmentType
+    })
   }
 
-  // If input is only 2 alphabetic characters (ie the country of origin), return null
-  if (/^[A-Z]{2}$/i.test(input)) {
+  // set nirms to blanket value if row nirms is null and blanket value exists
+  if (headers[model].blanketNirmsValue) {
+    const blanketNirmsValue = extractBlanketValuesPdf(
+      packingListJson.content,
+      headers[model].blanketNirmsValue
+    )
+    packingListContents.forEach((item) => {
+      if (!item.nirms) {
+        item.nirms = blanketNirmsValue
+      }
+    })
+  }
+}
+
+/**
+ * Extract a blanket value from PDF page content using the blanketValue
+ * header config. Locates the header item by regex, then finds the value in the next
+ * row below using an X boundary derived from the header's X position.
+ * The value is determined by finding the next distinct Y coordinate below the header
+ * that has content within the X boundary, and concatenating all content at that Y coordinate.
+ *
+ * @param {Array<Object>} pageContent - PDF page content array with {x, y, str, ...}
+ * @param {Object} blanketValue - Config with `regex`
+ * @returns {string|null} Extracted value or null
+ */
+export function extractBlanketValuesPdf(pageContent, blanketValue) {
+  try {
+    const headerItem = pageContent.find((item) =>
+      blanketValue.regex.test(item.str)
+    )
+
+    if (!headerItem) {
+      return null
+    }
+
+    const { y: headerY } = headerItem
+
+    // Filter items within X boundary first, then find next distinct Y
+    const itemsInXRange = pageContent.filter(
+      (item) =>
+        item.x >= blanketValue.x1 &&
+        item.x <= blanketValue.x2 &&
+        item.str.trim() !== ''
+    )
+
+    const distinctYs = [
+      ...new Set(
+        itemsInXRange
+          .filter(
+            (item) => item.y > headerY && item.y < blanketValue.maxHeadersY
+          )
+          .map((item) => item.y)
+      )
+    ].sort((a, b) => a - b)
+
+    const nextY = distinctYs[0]
+
+    if (nextY === undefined) {
+      return null
+    }
+
+    const matches = itemsInXRange
+      .filter((item) => Math.abs(item.y - nextY) <= 1)
+      .sort((a, b) => a.x - b.x)
+
+    if (matches.length === 0) {
+      return null
+    }
+
+    return (
+      matches
+        .map((item) => item.str)
+        .join('')
+        .trim() || null
+    )
+  } catch (error) {
+    logger.error(
+      formatError(error),
+      'extractBlanketValuesPdf() - Error extracting value'
+    )
     return null
   }
-
-  // Match if input starts with 4 to 14 digits
-  const match = /^(\d{4,14})/.exec(input)
-  if (match) {
-    return match[1]
-  }
-  return input
 }
 
 /**
