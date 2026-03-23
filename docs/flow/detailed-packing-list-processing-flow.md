@@ -18,14 +18,17 @@ flowchart TD
 
     Step4 --> CheckMatch{Parse<br/>Successful?}
 
-    CheckMatch -->|No Match| Return200NoMatch[Return HTTP 200<br/>No match result in response body]
-
+    CheckMatch -->|No Match| Step8
     CheckMatch -->|Matched| Step8[8. S3 Persistence<br/>- Write parsed data to S3<br/>- Store as JSON with application_id key<br/>- Include parser model and validation results]
 
-    Step8 --> Step9[9. Downstream Notification<br/>- Send parsed/approval message<br/>- Include business_checks status<br/>- Include failure_reasons if present]
+    Step8 --> Step9{9. Downstream Notification<br/>Send Service Bus message?}
 
-    Step9 --> Return200[Return HTTP 200<br/>Success response with parsed data]
+    Step9 -->|Yes| Notify[Send parsed/approval message<br/>- Include business_checks status<br/>- Include failure_reasons if present]
+    Step9 -->|No| Return200NoMatch[Return HTTP 200<br/>No match result in response body]
 
+    Notify --> Return200[Return HTTP 200<br/>Success response with parsed data]
+
+    Step1 -.->|Validation error| Return400[Return HTTP 400<br/>Bad request / invalid payload]
     Step1 -.->|Error| Return500[Return HTTP 500<br/>Internal server error]
     Step2 -.->|Error| Return500
     Step3 -.->|Error| Return500
@@ -35,15 +38,18 @@ flowchart TD
 
     Return200 --> Success([Completion - Success])
     Return200NoMatch --> NoMatch([Completion - No Match])
+    Return400 --> FailedValidation([Completion - Validation Error])
     Return500 --> Failed([Completion - Error])
 
     style Start fill:#e1f5ff
     style Success fill:#d4edda
     style NoMatch fill:#fff3cd
+    style FailedValidation fill:#fce8b2
     style Failed fill:#f8d7da
     style CheckMatch fill:#ffeaa7
     style Return200 fill:#d4edda
     style Return200NoMatch fill:#fff3cd
+    style Return400 fill:#fce8b2
     style Return500 fill:#f8d7da
 ```
 
@@ -61,12 +67,12 @@ flowchart TD
 
     Step5b --> CheckREMOS{REMOS<br/>Found?}
 
-    CheckREMOS -->|No| NoMatch1[Return NOREMOS/<br/>NOREMOSCSV/NOREMOSPDF]
+    CheckREMOS -->|No| NoMatch1[Return NOREMOS]
     CheckREMOS -->|Yes| Step5c[5c. Retailer Matcher Selection<br/>- Match establishment number patterns<br/>- Match header row patterns<br/>- Return specific parser e.g. ASDA1, TESCO2]
 
     Step5c --> CheckMatcher{Parser<br/>Matched?}
 
-    CheckMatcher -->|No| NoMatch2[Return UNRECOGNISED]
+    CheckMatcher -->|No| NoMatch2[Return NOMATCH]
     CheckMatcher -->|Yes| Step6[6. Data Extraction<br/>- Extract establishment numbers via regex<br/>- Locate header row using rowFinder<br/>- Map columns to standard fields via mapParser<br/>- Process rows to extract item details<br/>- Filter totals/summary rows]
 
     Step6 --> Step7[7. Data Validation & Cleanup<br/>- Remove empty items<br/>- Validate required fields<br/>- Check for single RMS establishment number<br/>- Remove bad data<br/>- Set business_checks flags<br/>- Populate failure_reasons if needed]
@@ -148,17 +154,17 @@ The file extension determines the initial parser category:
 
 - `.xlsx`, `.xls` → Excel parsers
 - `.csv` → CSV parsers
-- `.pdf` → PDF parsers (AI or non-AI)
+- `.pdf` → PDF non-AI parsers
 
 **Implementation:** `src/services/parsers/parser-factory.js` - `findParser()`
 
+Note: `src/services/parser-service.js` still contains a conditional branch for AI-style PDF parser results, but current parser selection (`findParser()` → `getPdfNonAiParser()`) returns non-AI parser objects, so that AI branch is not used in the current runtime flow.
+
 #### 5b. REMOS Validation
 
-Before attempting retailer-specific matching, the document is scanned for valid REMOS (RMS establishment numbers) in the format `RMS-GB-XXXXXX-XXX`. If no valid REMOS is found, the parser returns:
+Before attempting retailer-specific matching, the document is scanned for valid REMOS (RMS establishment numbers) in the format `RMS-GB-XXXXXX-XXX`. If no valid REMOS is found, the effective parser output is:
 
-- `NOREMOS` (Excel)
-- `NOREMOSCSV` (CSV)
-- `NOREMOSPDF` (PDF)
+- `NOREMOS` (Excel/CSV/PDF)
 
 **Implementation:**
 
@@ -174,7 +180,7 @@ Using the establishment number and header patterns, the service identifies the s
 3. Validate header row structure matches expected format for that retailer
 4. Return the matched parser (e.g., `ASDA1`, `TESCO2`, `COOP1`)
 
-If no match is found, returns `UNRECOGNISED`.
+If no retailer match is found, parser selection falls back to the UNRECOGNISED parser, which currently returns parser model `NOMATCH`.
 
 **Implementation:**
 
@@ -220,7 +226,7 @@ The extracted data undergoes validation and cleanup:
 - Verify single RMS establishment number
 - Validate data formats (weights, codes, etc.)
 - Set `business_checks.all_required_fields_present` flag
-- Populate `business_checks.failure_reasons` array with any issues
+- Populate `business_checks.failure_reasons` text with any issues (or `null` when none)
 
 **Implementation:**
 
@@ -249,14 +255,20 @@ If a parser successfully matched and extracted data from the document, the parse
 
 ### 9. Downstream Notification
 
-For successfully matched and extracted documents, the service sends a message to downstream services:
+For successful processing, the service may send a message to downstream services:
 
 - Message includes `application_id` and parsed data details
 - Includes approval status based on business checks
 - Includes `failure_reasons` if validation issues were found
 - Enables downstream approval workflow to proceed
 
-Note: No notification is sent when parser result is NOREMOS, NOREMOSCSV, NOREMOSPDF, UNRECOGNISED, or NOMATCH.
+Note: Notification is skipped when:
+
+- `tradeServiceBus.disableSend` is enabled
+- `stopDataExit=true` is used
+- parser result is `NOMATCH`
+
+For `NOREMOS` outputs, notification is still sent by current implementation.
 
 **Implementation:** `src/services/trade-service-bus-service.js` - `sendMessageToQueue()`
 
@@ -266,10 +278,15 @@ The process completes by returning an appropriate HTTP response:
 
 **Success - Matched Parser (HTTP 200):**
 
-- Parsed data has been processed and stored
+- A retailer parser model has been identified and data extraction has completed
+- Business validation may still fail even when a model matched (for example invalid commodity code/COO/prohibited items)
 - Response body includes:
   - `result`: "success"
-  - `data.approvalStatus`
+  - `data.approvalStatus`: one of:
+    - `approved` (all required checks passed)
+    - `rejected_ineligible` (prohibited/ineligible items detected)
+    - `rejected_coo` (country-of-origin rules failed)
+    - `rejected_other` (other validation failures)
   - `data.reasonsForFailure`
   - `data.parserModel` (e.g., "ASDA1", "TESCO2")
 
@@ -278,33 +295,39 @@ The process completes by returning an appropriate HTTP response:
 - Parser could not match the document format, but processing completed
 - Response body includes:
   - `result`: "success"
-  - `data.parserModel`: (NOREMOS, NOREMOSCSV, NOREMOSPDF, UNRECOGNISED, NOMATCH)
-  - No data persisted to S3
-  - No downstream notification sent
+  - `data.parserModel`: (`NOREMOS` or `NOMATCH`)
+  - Data is still persisted to S3 unless `stopDataExit=true`
+  - Notification is only skipped for `NOMATCH` (or when disabled by config/flag)
 
-**Error (HTTP 500):**
+**Validation Error (HTTP 400 Bad Request):**
+
+- Request payload or query validation failed
+- Response body includes:
+  - `result`: "failure"
+  - `error`: Validation error message
+  - `errorType`: `client`
+
+**Error (HTTP 500 Internal Server Error):**
 
 - An exception occurred during processing
 - Response body includes:
   - `result`: "failure"
   - `error`: Error message
+  - `errorType`: `server`
 - Error is logged with context for investigation
 
 **Implementation:** `src/routes/packing-list-process.js` - Response handling
 
 ## Parser Result Types
 
-All successful parsing operations return HTTP 200 OK with the parser result in the response body. Only exceptions during processing return HTTP 500.
+All successful parsing operations return HTTP 200 OK with the parser result in the response body. Validation failures return HTTP 400 and processing exceptions return HTTP 500.
 
-| Result Type      | Description                                             | HTTP Status               | Action Taken                                     |
-| ---------------- | ------------------------------------------------------- | ------------------------- | ------------------------------------------------ |
-| **MATCHED**      | Retailer format identified, data extracted successfully | 200 OK                    | Persist to S3, send notification, return success |
-| **NOREMOS**      | No valid RMS establishment number found in Excel file   | 200 OK                    | No persistence, no notification, return result   |
-| **NOREMOSCSV**   | No valid RMS establishment number found in CSV file     | 200 OK                    | No persistence, no notification, return result   |
-| **NOREMOSPDF**   | No valid RMS establishment number found in PDF file     | 200 OK                    | No persistence, no notification, return result   |
-| **UNRECOGNISED** | File format not supported or header structure unknown   | 200 OK                    | No persistence, no notification, return result   |
-| **NOMATCH**      | Generic catch-all for unmatched documents               | 200 OK                    | No persistence, no notification, return result   |
-| **ERROR**        | Processing exception occurred                           | 500 Internal Server Error | No persistence, no notification, return error    |
+| Result Type | Description                                                                                                          | HTTP Status               | Action Taken                                                                             |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------- | ---------------------------------------------------------------------------------------- |
+| **MATCHED** | Retailer parser model identified and extraction completed; business validation may still reject via `approvalStatus` | 200 OK                    | Persist to S3, send notification, return success                                         |
+| **NOREMOS** | No valid RMS establishment number found (effective output for xlsx/csv/pdf)                                          | 200 OK                    | Persist to S3, send notification (unless disabled by config/flag), return success result |
+| **NOMATCH** | Generic catch-all for unmatched/unrecognised documents                                                               | 200 OK                    | Persist to S3, skip notification, return success result                                  |
+| **ERROR**   | Processing exception occurred                                                                                        | 500 Internal Server Error | No persistence, no notification, return error                                            |
 
 ## Error Handling Strategy
 
@@ -312,7 +335,7 @@ The service implements a robust error handling approach:
 
 1. **Request Validation**: Validate request payload before processing begins
 2. **Comprehensive Logging**: All errors logged with module name, function name, and context
-3. **Graceful Degradation**: Parsers return `NOMATCH` rather than throwing exceptions
+3. **Graceful Degradation**: No-match parser outcomes return `NOREMOS`/`NOMATCH` results rather than throwing exceptions
 4. **HTTP Status Codes**: Appropriate status codes returned for different failure scenarios
 5. **Error Details**: Response bodies include helpful error information for clients
 6. **Isolation**: Errors in one stage don't cascade to others
@@ -353,16 +376,18 @@ Content-Type: application/json
 
 {
   "application_id": "string",
-  "packing_list_blob": "https://storage.../blob-uri",
+  "packing_list_blob": "https://{ehcoBlobAccount}.blob.core.windows.net/{ehcoContainer}/file.xlsx",
   "SupplyChainConsignment": {
     "DispatchLocation": {
       "IDCOMS": {
-        "EstablishmentId": "string"
+        "EstablishmentId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
       }
     }
   }
 }
 ```
+
+> **Note:** `packing_list_blob` must be a valid URL from the configured EHCO blob storage account and container (validated against `ehcoBlob.blobStorageAccount` and `ehcoBlob.containerName`). `EstablishmentId` must be a valid UUID string.
 
 ### Response - Success with Match (200 OK)
 
@@ -371,7 +396,7 @@ Content-Type: application/json
   "result": "success",
   "data": {
     "approvalStatus": "approved",
-    "reasonsForFailure": [],
+    "reasonsForFailure": null,
     "parserModel": "ASDA1"
   }
 }
@@ -383,8 +408,8 @@ Content-Type: application/json
 {
   "result": "success",
   "data": {
-    "approvalStatus": "conditional",
-    "reasonsForFailure": ["No valid RMS establishment number found"],
+    "approvalStatus": "rejected_other",
+    "reasonsForFailure": "No valid RMS establishment number found",
     "parserModel": "NOREMOS"
   }
 }
@@ -415,15 +440,17 @@ Content-Type: application/json
 The service currently supports parsers for the following retailers (see `src/services/matchers/` and `src/services/parsers/` for complete list):
 
 - ASDA
+- Barton & Redman
+- B&M (BANDM)
 - Boots
 - Booker
-- Buffalo-ad Logistics
+- Buffaload Logistics
+- Burbank
 - CDS
 - Co-op
-- Davenport
 - Fowler Welch
 - Giovanni
-- Greggs
+- Gousto
 - Iceland
 - Kepak
 - Marks & Spencer
@@ -436,7 +463,6 @@ The service currently supports parsers for the following retailers (see `src/ser
 - TJ Morris
 - Turners
 - Warrens
-- B&M (BANDM)
 
 Each retailer may have multiple format variants (e.g., ASDA1, ASDA2) to handle different packing list templates.
 
@@ -486,7 +512,7 @@ The application runs two scheduled synchronization services that operate indepen
 - `INELIGIBLE_ITEMS_SYNC_CRON_SCHEDULE` - Cron schedule (default: hourly)
 - `MDM_INTEGRATION_ENABLED` - Feature flag for MDM integration
 
-**Implementation:** `src/services/cache/mdm-s3-sync.js`, `src/services/cache/sync-scheduler.js`
+**Implementation:** `src/services/cache/ineligible-items-mdm-s3-sync.js`, `src/services/cache/sync-scheduler.js`
 
 **Error Handling:** Failures are logged but do not affect service operation. Existing S3 data and cache remain unchanged on errors.
 

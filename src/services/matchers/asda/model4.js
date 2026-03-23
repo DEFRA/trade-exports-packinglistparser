@@ -38,12 +38,9 @@ export function matches(packingList, filename) {
       packingList
     )
 
-    if (result === matcherResult.WRONG_HEADER) {
-      return result
-    }
-
     if (result === matcherResult.CORRECT) {
       logger.info(
+        { filename },
         `Packing list matches Asda Model 4 CSV with filename: ${filename}`
       )
     }

@@ -38,10 +38,6 @@ export function matches(packingList, filename) {
       packingList
     )
 
-    if (result === matcherResult.WRONG_HEADER) {
-      return result
-    }
-
     if (result === matcherResult.CORRECT) {
       logger.info(`${filename} Packing list matches Iceland Model 2 CSV`)
     }
