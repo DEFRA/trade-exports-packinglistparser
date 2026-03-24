@@ -7,7 +7,7 @@ import { parse } from './model3.js'
 import model from '../../../../test/test-data-and-results/models-pdf/giovanni/model3.js'
 import parserModel from '../../parser-model.js'
 import * as pdfHelper from '../../../utilities/pdf-helper.js'
-import * as parserMap from '../../parser-map.js'
+import * as parserMap from '../../parser-map-pdf.js'
 
 // Mock the pdf-helper module - only mock extractPdf
 vi.mock('../../../utilities/pdf-helper.js', async () => {

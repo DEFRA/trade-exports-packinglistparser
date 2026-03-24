@@ -9,18 +9,6 @@ import { createLogger } from '../common/helpers/logging/logger.js'
 import { formatError } from '../common/helpers/logging/error-logger.js'
 import { filterValidatableRows } from './validators/row-filter-utilities.js'
 
-// Re-export PDF functions for backwards compatibility
-export {
-  mapPdfNonAiParser,
-  mapPdfDynamicHeaderParser,
-  discoverHeaderBoundaries,
-  deriveBoundary,
-  deriveBoundaryFromRegex,
-  expandBoundariesToMidpoints,
-  discoverNetWeightUnit,
-  extractBlanketValuesPdf
-} from './parser-map-pdf.js'
-
 const logger = createLogger()
 
 /**

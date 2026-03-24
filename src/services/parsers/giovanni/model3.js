@@ -11,7 +11,7 @@ import * as combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers-pdf.js'
 import * as regex from '../../../utilities/regex.js'
-import { mapPdfNonAiParser } from '../../parser-map.js'
+import { mapPdfNonAiParser } from '../../parser-map-pdf.js'
 import {
   extractPdf,
   extractEstablishmentNumbers
