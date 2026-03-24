@@ -80,7 +80,7 @@ function calculateHeaderY(pageContent, headerBoundaries) {
   const continuationItem = pageContent.find(
     (item) =>
       item.y > commodityItem.y &&
-      item.y <= commodityItem.y + 15 &&
+      item.y <= commodityItem.y + BOUNDARY_THRESHOLD &&
       item.x >= cmX1 &&
       item.x <= cmX2 &&
       item.str.trim() !== '' &&
