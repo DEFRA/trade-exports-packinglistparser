@@ -339,5 +339,25 @@ export default {
     ],
     registration_approval_number: 'RMS-GB-000008-001',
     parserModel: parserModel.MANDS1
+  },
+  splitCommodityCodeHeaderTestResult: {
+    business_checks: {
+      all_required_fields_present: true,
+      failure_reasons: null
+    },
+    items: [
+      {
+        description: 'SB* 220M CAPPUCI CHILLED CUP',
+        commodity_code: '2202999990',
+        nature_of_products: null,
+        number_of_packages: '10',
+        total_net_weight_kg: '2.3275',
+        type_of_treatment: 'Chilled',
+        total_net_weight_unit: 'Kg',
+        nirms: 'no'
+      }
+    ],
+    registration_approval_number: 'RMS-GB-000008-001',
+    parserModel: parserModel.MANDS1
   }
 }

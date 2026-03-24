@@ -171,3 +171,24 @@ describe('MANDS1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
     )
   })
 })
+
+describe('MANDS1 split commodity code header', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('parses correctly when EU Commodity Code header is on separate lines', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(
+      model.splitCommodityCodeHeader
+    )
+
+    const result = await parsePackingList({}, filename)
+    expect(result).toMatchObject(
+      test_results.splitCommodityCodeHeaderTestResult
+    )
+  })
+})

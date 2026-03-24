@@ -53,24 +53,19 @@ export async function matches(packingList, filename) {
 
 /**
  * Locate and validate headers for M&S Model 1 within page content.
- * Validates that each model header regex matches at least one extracted header text.
+ * Validates that each model header regex matches at least one extracted text element on the page.
  * @param {Array} pageContent - Extracted page content
  * @returns {number} matcherResult - `CORRECT` if all headers match, otherwise `WRONG_HEADER`
  */
 function findHeader(pageContent) {
-  const y1 = headers.MANDS1.minHeadersY
-  const y2 = headers.MANDS1.maxHeadersY
-  const header = pageContent.filter(
-    (item) => item.y >= y1 && item.y <= y2 && item.str.trim() !== ''
-  )
   const mandsHeaders = headers.MANDS1.headers
 
   for (const headerField in mandsHeaders) {
     if (!Object.hasOwn(mandsHeaders, headerField)) {
       continue
     }
-    // Check if any of the str fields in header match headerField regex
-    const matchFound = header.some((item) =>
+
+    const matchFound = pageContent.some((item) =>
       mandsHeaders[headerField].regex.test(item.str)
     )
 
@@ -79,6 +74,5 @@ function findHeader(pageContent) {
     }
   }
 
-  // All headers matched successfully
   return matcherResult.CORRECT
 }

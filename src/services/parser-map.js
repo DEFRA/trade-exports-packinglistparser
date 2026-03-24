@@ -5,11 +5,21 @@
  * Handles header detection, column mapping, blanket values, and coordinate-based PDF extraction.
  */
 import * as regex from '../utilities/regex.js'
-import headers from './model-headers-pdf.js'
-import * as pdfHelper from '../utilities/pdf-helper.js'
 import { createLogger } from '../common/helpers/logging/logger.js'
 import { formatError } from '../common/helpers/logging/error-logger.js'
 import { filterValidatableRows } from './validators/row-filter-utilities.js'
+
+// Re-export PDF functions for backwards compatibility
+export {
+  mapPdfNonAiParser,
+  mapPdfDynamicHeaderParser,
+  discoverHeaderBoundaries,
+  deriveBoundary,
+  deriveBoundaryFromRegex,
+  expandBoundariesToMidpoints,
+  discoverNetWeightUnit,
+  extractBlanketValuesPdf
+} from './parser-map-pdf.js'
 
 const logger = createLogger()
 
@@ -338,201 +348,4 @@ export function mapParser(
   )
 
   return packingListContents
-}
-
-/**
- * Map PDF coordinate-based (non-AI) data to standardized packing list items.
- * @param {Object} packingListJson - PDF page with content coordinates
- * @param {string} model - Parser model identifier
- * @param {Array<number>} ys - Y-coordinates of data rows
- * @param {boolean} nirmsHeaderExists - Flag indicating if NIRMS header exists
- * @param {boolean} coHeaderExists - Flag indicating if Country of Origin header exists
- * @returns {Array<Object>} Mapped packing list items
- */
-export function mapPdfNonAiParser(
-  packingListJson,
-  model,
-  ys,
-  nirmsHeaderExists = false,
-  coHeaderExists = false
-) {
-  let netWeightUnit
-  if (headers[model].findUnitInHeader) {
-    const pageHeader = pdfHelper.getHeaders(packingListJson.content, model)
-    const totalNetWeightHeader = Object.values(pageHeader).find((x) =>
-      headers[model].headers.total_net_weight_kg.regex.test(x)
-    )
-    netWeightUnit = regex.findUnit(totalNetWeightHeader)
-  }
-
-  const packingListContents = []
-
-  for (let row = 0; row < ys.length; row++) {
-    const y = ys[row]
-    const plRow = {
-      description: null,
-      nature_of_products: null,
-      type_of_treatment: null,
-      commodity_code: null,
-      number_of_packages: null,
-      total_net_weight_kg: null,
-      total_net_weight_unit: netWeightUnit ?? null
-    }
-
-    for (const key of Object.keys(headers[model].headers)) {
-      plRow[key] = findItemContent(
-        packingListJson,
-        headers[model].headers[key],
-        y
-      )
-    }
-
-    if (headers[model].nirms && nirmsHeaderExists) {
-      plRow.nirms = findItemContent(packingListJson, headers[model].nirms, y)
-    }
-
-    if (headers[model].country_of_origin && coHeaderExists) {
-      plRow.country_of_origin = findItemContent(
-        packingListJson,
-        headers[model].country_of_origin,
-        y
-      )
-    }
-
-    plRow.row_location = {
-      rowNumber: row + 1,
-      pageNumber: packingListJson.pageInfo.num
-    }
-
-    packingListContents.push(plRow)
-  }
-
-  applyBlanketValues(packingListJson, model, packingListContents)
-
-  return packingListContents
-}
-
-/**
- * Apply blanket values (treatment type and NIRMS) to packing list items.
- * @param {Object} packingListJson - PDF page with content coordinates
- * @param {string} model - Parser model identifier
- * @param {Array<Object>} packingListContents - Array of packing list items
- */
-function applyBlanketValues(packingListJson, model, packingListContents) {
-  // set all type of treatment values to blanket value if it exists
-  if (headers[model].blanketTreatmentTypeValue) {
-    const blanketTreatmentType = extractBlanketValuesPdf(
-      packingListJson.content,
-      headers[model].blanketTreatmentTypeValue
-    )
-
-    packingListContents.forEach((item) => {
-      item.type_of_treatment = blanketTreatmentType
-    })
-  }
-
-  // set nirms to blanket value if row nirms is null and blanket value exists
-  if (headers[model].blanketNirmsValue) {
-    const blanketNirmsValue = extractBlanketValuesPdf(
-      packingListJson.content,
-      headers[model].blanketNirmsValue
-    )
-    packingListContents.forEach((item) => {
-      if (!item.nirms) {
-        item.nirms = blanketNirmsValue
-      }
-    })
-  }
-}
-
-/**
- * Extract a blanket value from PDF page content using the blanketValue
- * header config. Locates the header item by regex, then finds the value in the next
- * row below using an X boundary derived from the header's X position.
- * The value is determined by finding the next distinct Y coordinate below the header
- * that has content within the X boundary, and concatenating all content at that Y coordinate.
- *
- * @param {Array<Object>} pageContent - PDF page content array with {x, y, str, ...}
- * @param {Object} blanketValue - Config with `regex`
- * @returns {string|null} Extracted value or null
- */
-export function extractBlanketValuesPdf(pageContent, blanketValue) {
-  try {
-    const headerItem = pageContent.find((item) =>
-      blanketValue.regex.test(item.str)
-    )
-
-    if (!headerItem) {
-      return null
-    }
-
-    const { y: headerY } = headerItem
-
-    // Filter items within X boundary first, then find next distinct Y
-    const itemsInXRange = pageContent.filter(
-      (item) =>
-        item.x >= blanketValue.x1 &&
-        item.x <= blanketValue.x2 &&
-        item.str.trim() !== ''
-    )
-
-    const distinctYs = [
-      ...new Set(
-        itemsInXRange
-          .filter(
-            (item) => item.y > headerY && item.y < blanketValue.maxHeadersY
-          )
-          .map((item) => item.y)
-      )
-    ].sort((a, b) => a - b)
-
-    const nextY = distinctYs[0]
-
-    if (nextY === undefined) {
-      return null
-    }
-
-    const matches = itemsInXRange
-      .filter((item) => Math.abs(item.y - nextY) <= 1)
-      .sort((a, b) => a.x - b.x)
-
-    if (matches.length === 0) {
-      return null
-    }
-
-    return (
-      matches
-        .map((item) => item.str)
-        .join('')
-        .trim() || null
-    )
-  } catch (error) {
-    logger.error(
-      formatError(error),
-      'extractBlanketValuesPdf() - Error extracting value'
-    )
-    return null
-  }
-}
-
-/**
- * Find content items at specific Y-coordinate within X-range.
- * @param {Object} packingListJson - PDF content with coordinates
- * @param {Object} header - Header with x1, x2 range
- * @param {number} y - Y-coordinate to search
- * @returns {string|null} Concatenated content or null
- */
-function findItemContent(packingListJson, header, y) {
-  const result = packingListJson.content.filter(
-    (item) =>
-      Math.abs(item.y - y) <= 1 &&
-      Math.round(item.x) >= header.x1 &&
-      Math.round(item.x) <= header.x2 &&
-      item.str.trim() !== ''
-  )
-  if (result.length > 0) {
-    return result.map((obj) => obj.str).join('')
-  } else {
-    return null
-  }
 }
