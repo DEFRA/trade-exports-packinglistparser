@@ -29,6 +29,68 @@ const logger = createLogger()
 const BOUNDARY_THRESHOLD = 15
 
 /**
+ * Discover optional NIRMS and country of origin boundaries from page content.
+ * @param {Array} pageContent - PDF page content
+ * @returns {Object} Object with nirmsBoundary and coBoundary (may be null)
+ */
+function discoverOptionalBoundaries(pageContent) {
+  const nirmsItem = pageContent.find((item) =>
+    headers.MANDS1.nirms.regex.test(item.str)
+  )
+  const nirmsBoundary = nirmsItem
+    ? deriveBoundaryFromRegex(
+        nirmsItem,
+        headers.MANDS1.nirms.regex,
+        BOUNDARY_THRESHOLD
+      )
+    : null
+
+  const coItem = pageContent.find((item) =>
+    headers.MANDS1.country_of_origin.regex.test(item.str)
+  )
+  const coBoundary = coItem
+    ? deriveBoundaryFromRegex(
+        coItem,
+        headers.MANDS1.country_of_origin.regex,
+        BOUNDARY_THRESHOLD
+      )
+    : null
+
+  return { nirmsBoundary, coBoundary }
+}
+
+/**
+ * Calculate the Y coordinate below which data rows start.
+ * Uses the lowest y of the commodity code header (may be split across two lines).
+ * @param {Array} pageContent - PDF page content
+ * @param {Object} headerBoundaries - Discovered header boundaries
+ * @returns {number} Y coordinate for data row start
+ */
+function calculateHeaderY(pageContent, headerBoundaries) {
+  const commodityItem = pageContent.find((item) =>
+    headers.MANDS1.headers.commodity_code.regex.test(item.str)
+  )
+
+  if (!commodityItem) {
+    return Math.max(...Object.values(headerBoundaries).map((b) => b.x1))
+  }
+
+  const cmX1 = commodityItem.x
+  const cmX2 = commodityItem.x + (commodityItem.width ?? 0)
+  const continuationItem = pageContent.find(
+    (item) =>
+      item.y > commodityItem.y &&
+      item.y <= commodityItem.y + 15 &&
+      item.x >= cmX1 &&
+      item.x <= cmX2 &&
+      item.str.trim() !== '' &&
+      item !== commodityItem
+  )
+
+  return continuationItem ? continuationItem.y : commodityItem.y
+}
+
+/**
  * Parse M&S Model 1 PDF document using coordinate-based extraction.
  * @param {Buffer} packingList - PDF file buffer
  * @returns {Promise<Object>} Combined parser result with items and metadata
@@ -53,7 +115,6 @@ export async function parse(packingList) {
       headers.MANDS1.establishmentNumber.establishmentRegex
     )
 
-    // Discover boundaries once from first page, with threshold applied
     const headerBoundaries = discoverHeaderBoundaries(
       firstPage.content,
       headers.MANDS1.headers,
@@ -64,51 +125,10 @@ export async function parse(packingList) {
       return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
     }
 
-    const nirmsItem = firstPage.content.find((item) =>
-      headers.MANDS1.nirms.regex.test(item.str)
+    const { nirmsBoundary, coBoundary } = discoverOptionalBoundaries(
+      firstPage.content
     )
-    const nirmsBoundary = nirmsItem
-      ? deriveBoundaryFromRegex(
-          nirmsItem,
-          headers.MANDS1.nirms.regex,
-          BOUNDARY_THRESHOLD
-        )
-      : null
-
-    const coItem = firstPage.content.find((item) =>
-      headers.MANDS1.country_of_origin.regex.test(item.str)
-    )
-    const coBoundary = coItem
-      ? deriveBoundaryFromRegex(
-          coItem,
-          headers.MANDS1.country_of_origin.regex,
-          BOUNDARY_THRESHOLD
-        )
-      : null
-
-    // Use the lowest y of the commodity code header as the boundary for where data rows start.
-    // Commodity code may be split across two lines (e.g. "EU Commodity" / "Code") — take the lower y.
-    const commodityItem = firstPage.content.find((item) =>
-      headers.MANDS1.headers.commodity_code.regex.test(item.str)
-    )
-    let headerY
-    if (commodityItem) {
-      const cmX1 = commodityItem.x
-      const cmX2 = commodityItem.x + (commodityItem.width ?? 0)
-      const continuationItem = firstPage.content.find(
-        (item) =>
-          item.y > commodityItem.y &&
-          item.y <= commodityItem.y + 15 &&
-          item.x >= cmX1 &&
-          item.x <= cmX2 &&
-          item.str.trim() !== '' &&
-          item !== commodityItem
-      )
-      headerY = continuationItem ? continuationItem.y : commodityItem.y
-    } else {
-      headerY = Math.max(...Object.values(headerBoundaries).map((b) => b.x1))
-    }
-
+    const headerY = calculateHeaderY(firstPage.content, headerBoundaries)
     const netWeightUnit = discoverNetWeightUnit(firstPage.content, 'MANDS1')
 
     const packingListContents = processPages(

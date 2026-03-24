@@ -142,7 +142,9 @@ export function groupByYCoordinate(
 
   // Sort strictly by X then Y so column assignment is deterministic
   const sortedByX = filtered.slice().sort((a, b) => {
-    if (a.x !== b.x) return a.x - b.x
+    if (a.x !== b.x) {
+      return a.x - b.x
+    }
     return a.y - b.y
   })
 
