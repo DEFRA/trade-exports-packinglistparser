@@ -13,7 +13,7 @@ import {
   discoverHeaderBoundaries,
   deriveBoundaryFromRegex,
   discoverNetWeightUnit
-} from '../../parser-map.js'
+} from '../../parser-map-pdf.js'
 import {
   extractPdf,
   extractEstablishmentNumbers,

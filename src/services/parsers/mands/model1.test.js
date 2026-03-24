@@ -8,7 +8,7 @@ import { describe, test, expect, afterEach, vi } from 'vitest'
 import model from '../../../../test/test-data-and-results/models-pdf/mands/model1.js'
 import test_results from '../../../../test/test-data-and-results/results-pdf/mands/model1.js'
 import headers from '../../model-headers-pdf.js'
-import * as parserMap from '../../parser-map.js'
+import * as parserMap from '../../parser-map-pdf.js'
 
 // Mock pdf-helper before importing the parser
 vi.mock('../../../utilities/pdf-helper.js', async () => {
