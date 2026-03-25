@@ -104,6 +104,7 @@ Prompts for cross-cutting developer tasks that apply across the whole repository
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `create-path-instructions.prompt.md` | Generates a new `.instructions.md` file for a selected code path, documenting WHY the code exists, how it integrates with the broader PLP architecture, and what new developers need to understand |
 | `prompt-builder.prompt.md`           | Guides a developer through designing and generating a new `.prompt.md` file — interviews for requirements, applies repository prompt conventions, and outputs a production-ready prompt            |
+| `sonarqube-test-quality.prompt.md`   | Refactors test files to resolve SonarQube maintainability warnings by extracting constants, replacing magic numbers, and splitting oversized test files/functions where appropriate                |
 
 **When to add here**: Add a new `.prompt.md` when you have a complex, multi-step task a developer (or Copilot) will need to repeat. Place parser/model lifecycle prompts in `models/`, and general developer workflow prompts in `utilities/`.
 
