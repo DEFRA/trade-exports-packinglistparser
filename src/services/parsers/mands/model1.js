@@ -208,47 +208,6 @@ function processPages(
 }
 
 /**
- * Find the net weight unit from the total net weight header.
- * @param {string} totalNetWeightHeader - Total net weight header string
- * @returns {string|null} Net weight unit or null if not found
- */
-export function findNetWeightUnit(totalNetWeightHeader) {
-  if (!totalNetWeightHeader) {
-    return null
-  }
-
-  const lowerHeader = totalNetWeightHeader.toLowerCase()
-
-  // Find positions of key strings
-  const netWeightPos = lowerHeader.indexOf('net weight')
-  if (netWeightPos === -1) {
-    return null
-  }
-
-  const grossWeightPos = lowerHeader.indexOf('gross weight')
-
-  // Use regex to find unit pattern
-  const match = regex.kgRegex.exec(totalNetWeightHeader)
-
-  if (match) {
-    const unitPos = match.index
-
-    // Unit must be after "net weight"
-    const afterNetWeight = unitPos > netWeightPos + 'net weight'.length
-
-    // If "gross weight" exists, unit must be before it
-    const beforeGrossWeight = grossWeightPos === -1 || unitPos < grossWeightPos
-
-    if (afterNetWeight && beforeGrossWeight) {
-      // Return the matched unit with original casing
-      return match[1]
-    }
-  }
-
-  return null
-}
-
-/**
  * Determine the Y coordinates for rows between header and footer on a PDF page.
  * @param {Array} pageContent - Array of PDF text items with positions
  * @param {Object} model - Model header configuration
@@ -275,7 +234,7 @@ export function getYsForRows(pageContent, model, headerY) {
             (item) =>
               item.y > firstY && item.y < lastY && item.str.trim() !== ''
           )
-          .map((item) => item.y)
+          .map((item) => Math.round(item.y))
       )
     ].sort((a, b) => a - b)
 

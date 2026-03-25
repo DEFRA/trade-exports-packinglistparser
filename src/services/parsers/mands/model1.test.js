@@ -21,7 +21,8 @@ vi.mock('../../../utilities/pdf-helper.js', async () => {
 
 // Import after mocking
 const { extractPdf } = await import('../../../utilities/pdf-helper.js')
-const { parse, findNetWeightUnit, getYsForRows } = await import('./model1.js')
+const { parse, getYsForRows } = await import('./model1.js')
+const { findNetWeightUnit } = await import('../../parser-map-pdf.js')
 
 describe('parseMandS1', () => {
   afterEach(() => {
