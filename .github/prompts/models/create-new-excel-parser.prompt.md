@@ -20,12 +20,12 @@ Secondary tasks include generating a standard set of unit tests and integrating 
 
 **Field Mapping Structure in model-headers.js:**
 
-- **Mandatory fields** go inside the `regex` object (e.g., `description`, `commodity_code`, `number_of_packages`, `total_net_weight_kg`, `nature_of_products`, `type_of_treatment`)
-- **Optional fields** are defined as separate properties outside the `regex` object (e.g., `country_of_origin`, `nirms`, `total_net_weight_unit`)
+- **Mandatory fields** go inside the `regex` object (e.g., `description`, `number_of_packages`, `total_net_weight_kg` and either `commodity_code` or `nature_of_products` and `type_of_treatment`).
+- **Optional fields** are defined as separate properties outside the `regex` object (e.g., `country_of_origin`, `nirms`, `total_net_weight_unit`). if `country_of_origin` and `nirms` are specified then we would look to set `validateCountryOfOrigin`. if `total_net_weight_unit` is not set we would look to set `findUnitInHeader`.
 
 **Constraints:**
 
-- A matcher must be created to determine if a file matches the model (see `src/services/matchers/asda/model2.js` for example)
+- A matcher must be created to determine if a file matches the model (see `src/services/matchers/asda/model3.js` for example)
 - A parser must be created to convert the spreadsheet into a standard data structure (see `src/services/parsers/asda/model2.js` for example)
 - If specific sheets need to be excluded from processing:
   - Add `invalidSheets` array property to the model in `model-headers.js` (like DAVENPORT2, FOWLERWELCH1)
@@ -52,7 +52,7 @@ Secondary tasks include generating a standard set of unit tests and integrating 
    - Matcher: `src/services/matchers/{trader}/modelN.js`
    - Parser: `src/services/parsers/{trader}/modelN.js`
    - Model header file: `src/services/model-headers/{trader}.js` (add/update model entry in correct order)
-   - Model header registry: update `src/services/model-headers.js` (in the same style/order as `ASDA2`)
+   - Model header registry: update `src/services/model-headers.js` (in the same style/order as `ASDA3`)
    - Registration: update `src/services/model-parsers.js` and `src/services/parser-model.js`
    - Matcher/parser unit tests: co-locate as `src/services/matchers/{trader}/modelN.test.js` and `src/services/parsers/{trader}/modelN.test.js`
    - Parser-service tests: `test/parser-service/{trader}/modelN.test.js` (following the ASDA example)
@@ -68,7 +68,7 @@ Secondary tasks include generating a standard set of unit tests and integrating 
 
 ## Output Requirements
 
-- Output should be code files in the same pattern as the existing codebase (see `src/services/matchers/asda/model2.js` and `src/services/parsers/asda/model2.js`)
+- Output should be code files in the same pattern as the existing codebase (see `src/services/matchers/asda/model3.js` and `src/services/parsers/asda/model3.js`)
 - Create new files in the appropriate folders with the correct naming convention
 - Modify `src/services/model-headers.js`, `src/services/model-parsers.js`, and `src/services/parser-model.js` as needed
 - Use code examples for few-shot learning and to ensure output matches expectations
@@ -89,7 +89,7 @@ Secondary tasks include generating a standard set of unit tests and integrating 
 ## Quality & Validation Criteria
 
 - Success is measured by all code files being generated in the correct format and structure
-- Validate that generated files are consistent with examples for other exporters (especially `asda/model2.js`)
+- Validate that generated files are consistent with examples for other exporters (especially `asda/model3.js`)
 - Check that all required files are created and all mappings are correct
 - Address common failure modes such as missing fields, incorrect mappings, or invalid regex
 - Include error handling and follow all existing coding standards and best practices
