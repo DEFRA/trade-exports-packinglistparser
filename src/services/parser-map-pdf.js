@@ -20,6 +20,46 @@ const logger = createLogger()
 const UNIT_SEARCH_Y_OFFSET = 15
 
 /**
+ * Find the net weight unit from a header string that may contain multiple weight columns.
+ * Handles mega headers like "Tot Net Weight (Kg) Tot Gross Weight (Kg)" by ensuring
+ * the matched unit appears after "net weight" and before "gross weight" (if present).
+ * @param {string} headerStr - Header string to search
+ * @returns {string|null} Net weight unit or null if not found
+ */
+export function findNetWeightUnit(headerStr) {
+  if (!headerStr) {
+    return null
+  }
+
+  const lowerHeader = headerStr.toLowerCase()
+
+  const netWeightPos = lowerHeader.indexOf('net weight')
+  if (netWeightPos === -1) {
+    return null
+  }
+
+  const grossWeightPos = lowerHeader.indexOf('gross weight')
+
+  const match = regex.kgRegex.exec(headerStr)
+
+  if (match) {
+    const unitPos = match.index
+
+    // Unit must be after "net weight"
+    const afterNetWeight = unitPos > netWeightPos + 'net weight'.length
+
+    // If "gross weight" exists, unit must be before it
+    const beforeGrossWeight = grossWeightPos === -1 || unitPos < grossWeightPos
+
+    if (afterNetWeight && beforeGrossWeight) {
+      return match[1]
+    }
+  }
+
+  return null
+}
+
+/**
  * Map PDF coordinate-based (non-AI) data to standardized packing list items.
  * @param {Object} packingListJson - PDF page with content coordinates
  * @param {string} model - Parser model identifier
@@ -197,6 +237,7 @@ export function mapPdfDynamicHeaderParser(
  * matching the total_net_weight_kg regex. The unit may appear in the header text
  * itself (e.g. "Tot Net Weight kg") or on a separate line just below the header
  * (e.g. "(Kg)" beneath "Tot Net Weight").
+ * Uses findNetWeightUnit to handle mega headers with multiple weight columns.
  * @param {Array<Object>} pageContent - PDF page content array with {x, y, str, width, ...}
  * @param {string} model - Parser model identifier
  * @returns {string|null} Net weight unit or null if not found
@@ -215,7 +256,8 @@ export function discoverNetWeightUnit(pageContent, model) {
   }
 
   // Unit may be in the header text itself (e.g. "Tot Net Weight kg")
-  const unit = regex.findUnit(netWeightHeaderItem.str)
+  // Use findNetWeightUnit to handle mega headers with multiple weight columns
+  const unit = findNetWeightUnit(netWeightHeaderItem.str)
   if (unit) {
     return unit
   }
