@@ -1,7 +1,7 @@
 ---
 description: 'Generate documentation for what each parser model does, grouped by exporter, with clear mapping and filtering details. The output must be easy to read and understand for both technical and non-technical people.'
 agent: agent
-tools: ['codebase', 'search']
+tools: ['search/codebase', 'search']
 ---
 
 # Parser Model Description Prompt

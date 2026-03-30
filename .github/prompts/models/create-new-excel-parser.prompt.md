@@ -1,7 +1,7 @@
 ---
 description: 'Generate all code and support files required to add a new Excel parser model for a trader/exporter, including matcher, parser, model header, registration, and tests, following DEFRA PLP conventions.'
 agent: agent
-tools: ['codebase', 'editFiles', 'search']
+tools: ['search/codebase', 'edit/editFiles', 'search']
 ---
 
 # Create New Excel Parser

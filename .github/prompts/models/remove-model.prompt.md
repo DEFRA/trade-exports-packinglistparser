@@ -1,7 +1,7 @@
 ---
 description: 'Remove a deprecated parser model from PLP by deleting registry entries, source files, tests, test data, and documentation references.'
 agent: agent
-tools: ['codebase', 'editFiles', 'search']
+tools: ['search/codebase', 'edit/editFiles', 'search']
 ---
 
 # Remove Parser Model

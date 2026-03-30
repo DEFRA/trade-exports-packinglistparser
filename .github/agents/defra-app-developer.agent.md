@@ -4,13 +4,11 @@ tools:
   [
     search/codebase,
     edit/editFiles,
-    runTerminal,
+    runCommands,
     web/fetch,
-    findTestFiles,
     web/githubRepo,
     read/problems,
-    search/usages,
-    thinking
+    search/usages
   ]
 ---
 
@@ -124,7 +122,7 @@ Before marking work as done or creating a pull request, verify all of the follow
 - Unit test coverage must meet tiered targets: ≥90% global, ≥95% core business logic, 100% error handling and security-critical paths
 - Test behaviour, not implementation details
 - Mock external dependencies (APIs, databases, file system)
-- See the [Tester agent](tester.agent.md) for naming conventions, coverage targets, minimum route test scenarios, and security testing patterns
+- See the project test guidance and existing route test files for naming conventions, coverage targets, minimum route test scenarios, and security testing patterns
 
 ### Accessibility (frontend)
 
