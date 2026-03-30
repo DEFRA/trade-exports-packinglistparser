@@ -1,15 +1,7 @@
 ---
 description: Systematic code reviewer using Defra quality criteria
 tools:
-  [
-    search/codebase,
-    web/fetch,
-    findTestFiles,
-    web/githubRepo,
-    read/problems,
-    search/usages,
-    thinking
-  ]
+  [search/codebase, web/fetch, web/githubRepo, read/problems, search/usages]
 ---
 
 # Code Reviewer

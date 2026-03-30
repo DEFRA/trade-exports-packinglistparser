@@ -1,7 +1,7 @@
 ---
 description: Generate instruction files explaining why code exists and how it integrates within the trade-exports-packinglistparser architecture
 agent: agent
-tools: ['codebase', 'editFiles', 'search']
+tools: ['search/codebase', 'edit/editFiles', 'search']
 ---
 
 # Path-Specific Instructions Generator
