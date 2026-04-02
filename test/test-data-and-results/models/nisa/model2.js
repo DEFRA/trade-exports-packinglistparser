@@ -1,21 +1,78 @@
+const rmsEstablishmentHeaderRow = {
+  A: 'RMS_ESTABLISHMENT_NO'
+}
+
+const rmsEstablishmentNumberRow = {
+  A: 'RMS-GB-000025-003'
+}
+
+const standardHeaderRow = {
+  C: 'PRODUCT TYPE CATEGORY',
+  E: 'PART NUMBER DESCRIPTION',
+  F: 'TARIFF CODE EU',
+  G: 'PACKAGES',
+  I: 'NET WEIGHT TOTAL KG',
+  J: 'NIRMS'
+}
+
+const cooHeaderRow = {
+  C: 'PRODUCT TYPE CATEGORY',
+  E: 'PART NUMBER DESCRIPTION',
+  F: 'TARIFF CODE EU',
+  G: 'PACKAGES',
+  I: 'NET WEIGHT TOTAL KG',
+  J: 'NIRMS',
+  K: 'COUNTRY OF ORIGIN',
+  L: 'TYPE OF TREATMENT'
+}
+
+const standardSheetPrefix = [
+  rmsEstablishmentHeaderRow,
+  rmsEstablishmentNumberRow,
+  standardHeaderRow
+]
+
+const cooSheetPrefix = [
+  rmsEstablishmentHeaderRow,
+  rmsEstablishmentNumberRow,
+  cooHeaderRow
+]
+
+const totalsItemRow = (numberOfPackages, totalNetWeightKg) => {
+  return {
+    G: numberOfPackages,
+    I: totalNetWeightKg
+  }
+}
+
+const footerTableRows = [
+  {},
+  {
+    A: 'Measure',
+    B: 'Total'
+  },
+  {
+    A: 'TOTAL NIRMS QTY',
+    B: 100
+  },
+  {
+    A: 'TOTAL NIRMS NET WEIGHT',
+    B: 200
+  },
+  {
+    A: 'TOTAL NIRMS GROSS WEIGHT',
+    B: 300
+  }
+]
+
+const totalsAndFooterRows = (numberOfPackages, totalNetWeightKg) => {
+  return [totalsItemRow(numberOfPackages, totalNetWeightKg), ...footerTableRows]
+}
+
 export default {
   validModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS'
-      },
+      ...standardSheetPrefix,
       {
         C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
@@ -31,7 +88,8 @@ export default {
         G: 1,
         I: 2,
         J: 'Non-NIRMS'
-      }
+      },
+      ...totalsAndFooterRows(3, 4.5)
     ]
   },
 
@@ -39,23 +97,7 @@ export default {
   // Preserves existing column structure (A-J) + adds CoO fields at end (K-L)
   validCooModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
@@ -75,30 +117,15 @@ export default {
         J: 'No',
         K: 'IE',
         L: 'Fresh'
-      }
+      },
+      ...totalsAndFooterRows(3, 4.5)
     ]
   },
 
   // BAC1: NOT within NIRMS Scheme - passes validation
   nonNirmsModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
@@ -108,30 +135,15 @@ export default {
         J: 'No',
         K: 'GB',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ]
   },
 
   // BAC2: Null NIRMS value - validation errors
   nullNirmsModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
@@ -140,30 +152,15 @@ export default {
         I: 2,
         K: 'GB',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ]
   },
 
   // BAC3: Invalid NIRMS value - validation errors
   invalidNirmsModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
@@ -173,30 +170,15 @@ export default {
         J: 'Invalid',
         K: 'GB',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ]
   },
 
   // BAC4: Null NIRMS value, more than 3 - multiple validation errors
   nullNirmsMultipleModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
@@ -232,30 +214,15 @@ export default {
         I: 2,
         K: 'GB',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(4, 8)
     ]
   },
 
   // BAC5: Invalid NIRMS value, more than 3 - multiple validation errors
   invalidNirmsMultipleModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
@@ -295,30 +262,15 @@ export default {
         J: 'Invalid',
         K: 'GB',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(4, 8)
     ]
   },
 
   // BAC6: Null CoO Value - validation errors
   nullCooModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
@@ -327,30 +279,15 @@ export default {
         I: 2,
         J: 'Yes',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ]
   },
 
   // BAC7: Invalid CoO Value - validation errors
   invalidCooModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
@@ -360,30 +297,15 @@ export default {
         J: 'Yes',
         K: 'INVALID',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ]
   },
 
   // BAC8: Null CoO Value, more than 3 - multiple validation errors
   nullCooMultipleModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
@@ -419,30 +341,15 @@ export default {
         I: 2,
         J: 'Yes',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(4, 8)
     ]
   },
 
   // BAC9: Invalid CoO Value, more than 3 - multiple validation errors
   invalidCooMultipleModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
@@ -482,30 +389,15 @@ export default {
         J: 'Yes',
         K: 'INVALID',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(4, 8)
     ]
   },
 
   // BAC10: CoO Placeholder X - passes validation
   xCooModel: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
@@ -525,30 +417,15 @@ export default {
         J: 'Yes',
         K: 'x',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(2, 4)
     ]
   },
 
   // BAC11: Ineligible Item with Treatment Type - validation errors
   ineligibleItemsWithTreatment: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'Ineligible ITEM',
@@ -558,30 +435,15 @@ export default {
         J: 'Yes',
         K: 'INELIGIBLE_ITEM_ISO',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ]
   },
 
   // BAC12: Ineligible Items, more than 3 (Treatment Type specified) - multiple validation errors
   ineligibleItemsMultipleWithTreatment: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: 'PRODUCT1',
         E: 'Ineligible ITEM 1',
@@ -621,30 +483,15 @@ export default {
         J: 'Yes',
         K: 'INELIGIBLE_ITEM_ISO',
         L: 'Processed'
-      }
+      },
+      ...totalsAndFooterRows(4, 8)
     ]
   },
 
   // BAC13: Ineligible Item without Treatment Type - validation errors
   ineligibleItemsWithoutTreatment: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: '900 - VEGETABLES PREPACK-C',
         E: 'Ineligible ITEM',
@@ -653,30 +500,15 @@ export default {
         I: 2,
         J: 'Yes',
         K: 'INELIGIBLE_ITEM_ISO'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ]
   },
 
   // BAC14: Ineligible Items, more than 3 (no Treatment Type specified) - multiple validation errors
   ineligibleItemsMultipleWithoutTreatment: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS',
-        K: 'COUNTRY OF ORIGIN',
-        L: 'TYPE OF TREATMENT'
-      },
+      ...cooSheetPrefix,
       {
         C: 'PRODUCT1',
         E: 'Ineligible ITEM 1',
@@ -712,28 +544,15 @@ export default {
         I: 2,
         J: 'Yes',
         K: 'INELIGIBLE_ITEM_ISO'
-      }
+      },
+      ...totalsAndFooterRows(4, 8)
     ]
   },
 
   // ⚠️ EXISTING MODELS - Preserved unchanged (already updated with NIRMS column J)
   validModelWithTotals: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS'
-      },
+      ...standardSheetPrefix,
       {
         C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
@@ -750,48 +569,15 @@ export default {
         I: 2,
         J: 'Non-NIRMS'
       },
-      {
-        G: 3,
-        I: 4.5
-      }
+      ...totalsAndFooterRows(3, 4.5)
     ]
   },
   validHeadersNoData: {
-    sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS'
-      }
-    ]
+    sheet: [...standardSheetPrefix]
   },
   validModelMultipleSheets: {
     Sheet1: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS'
-      },
+      ...standardSheetPrefix,
       {
         C: '500 - VEGETABLES - F',
         E: 'GREEN ISLE BATTERED ONION RING',
@@ -799,24 +585,11 @@ export default {
         G: 9,
         I: 63,
         J: 'Non-NIRMS'
-      }
+      },
+      ...totalsAndFooterRows(9, 63)
     ],
     Sheet2: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS'
-      },
+      ...standardSheetPrefix,
       {
         C: '515 - F/P POTATOES - F',
         E: 'MCCAIN READY BAKED JACKETS 4PK',
@@ -824,7 +597,8 @@ export default {
         G: 28,
         I: 176.4,
         J: 'Non-NIRMS'
-      }
+      },
+      ...totalsAndFooterRows(28, 176.4)
     ]
   },
   wrongEstablishment: {
@@ -847,8 +621,7 @@ export default {
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
+        I: 'NET WEIGHT TOTAL KG',
         J: 'NIRMS'
       }
     ],
@@ -862,8 +635,7 @@ export default {
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
+        I: 'NET WEIGHT TOTAL KG',
         J: 'NIRMS'
       }
     ]
@@ -887,8 +659,7 @@ export default {
       {
         C: 'PRODUCT TYPE CATEGORY',
         F: 'TARIFF CODE EU',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
+        I: 'NET WEIGHT TOTAL KG',
         J: 'NIRMS'
       },
       {
@@ -911,21 +682,7 @@ export default {
   },
   invalidModel_MissingColumnCells: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS'
-      },
+      ...standardSheetPrefix,
       {
         C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
@@ -953,8 +710,7 @@ export default {
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
+        I: 'NET WEIGHT TOTAL KG',
         J: 'NIRMS'
       }
     ]
@@ -973,8 +729,7 @@ export default {
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
+        I: 'NET WEIGHT TOTAL KG',
         J: 'NIRMS'
       },
       {
@@ -992,7 +747,8 @@ export default {
         G: 1,
         I: 2,
         J: 'Non-NIRMS'
-      }
+      },
+      ...totalsAndFooterRows(3, 4.5)
     ]
   },
   missingKgunit: {
@@ -1008,7 +764,6 @@ export default {
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE',
         I: 'NET WEIGHT TOTAL',
         J: 'NIRMS'
       },
@@ -1027,26 +782,13 @@ export default {
         G: 1,
         I: 2,
         J: 'Non-NIRMS'
-      }
+      },
+      ...totalsAndFooterRows(3, 4.5)
     ]
   },
   missingMandatoryData: {
     sheet: [
-      {
-        A: 'RMS_ESTABLISHMENT_NO'
-      },
-      {
-        A: 'RMS-GB-000025-003'
-      },
-      {
-        C: 'PRODUCT TYPE CATEGORY',
-        E: 'PART NUMBER DESCRIPTION',
-        F: 'TARIFF CODE EU',
-        G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE',
-        I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
-      },
+      ...standardSheetPrefix,
       {
         C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
@@ -1070,8 +812,7 @@ export default {
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
+        I: 'NET WEIGHT TOTAL KG',
         J: 'NIRMS'
       },
       {
@@ -1081,7 +822,8 @@ export default {
         G: 1,
         I: 2,
         J: 'Non-NIRMS'
-      }
+      },
+      ...totalsAndFooterRows(1, 2)
     ],
     Sheet2: [
       {
@@ -1095,8 +837,7 @@ export default {
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
-        H: 'NET WEIGHT PACKAGE KG',
-        I: 'NET WEIGHT TOTAL',
+        I: 'NET WEIGHT TOTAL KG',
         J: 'NIRMS'
       },
       {
@@ -1106,7 +847,8 @@ export default {
         G: 3,
         I: 4.5,
         J: 'Non-NIRMS'
-      }
+      },
+      ...totalsAndFooterRows(3, 4.5)
     ]
   }
 }

@@ -35,8 +35,7 @@ export const nisaHeaders = {
       commodity_code: /TARIFF CODE EU/i,
       number_of_packages: /PACKAGES/i,
       total_net_weight_kg: /NET WEIGHT TOTAL/i,
-      nature_of_products: /PRODUCT TYPE CATEGORY/i,
-      header_net_weight_unit: /NET WEIGHT PACKAGE/i
+      nature_of_products: /PRODUCT TYPE CATEGORY/i
     },
     // Optional fields
     country_of_origin: /COUNTRY OF ORIGIN/i,
@@ -44,6 +43,7 @@ export const nisaHeaders = {
     nirms: /NIRMS/i,
     // Validation flags
     findUnitInHeader: true,
-    validateCountryOfOrigin: true
+    validateCountryOfOrigin: true,
+    skipTotalsRows: true
   }
 }
