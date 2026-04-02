@@ -1,12 +1,28 @@
+import { describe, test, expect, vi } from 'vitest'
 import * as parserService from '../../../src/services/parser-service.js'
 import model from '../../test-data-and-results/models-csv/iceland/model2.js'
 import test_results from '../../test-data-and-results/results-csv/iceland/model2.js'
+import failureReasons from '../../../src/services/validators/packing-list-failure-reasons.js'
 import {
   INVALID_FILENAME,
   NO_MATCH_RESULT,
   NO_REMOS_RESULT,
   ERROR_SUMMARY_TEXT
 } from '../../test-constants.js'
+
+vi.mock('../../../src/services/data/data-iso-codes.json', () => ({
+  default: ['VALID_ISO', 'INELIGIBLE_ITEM_ISO', 'GB', 'FR', 'X']
+}))
+
+vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
+  default: [
+    {
+      country_of_origin: 'INELIGIBLE_ITEM_ISO',
+      commodity_code: '1234',
+      type_of_treatment: 'Processed'
+    }
+  ]
+}))
 
 const filename = 'packinglist.csv'
 
@@ -125,7 +141,7 @@ describe('ICELAND2 CoO Validation Tests - Type 1 - Nirms', () => {
       filename
     )
     expect(result.business_checks.failure_reasons).toContain(
-      'NIRMS/Non-NIRMS goods not specified'
+      failureReasons.NIRMS_MISSING
     )
   })
 
@@ -135,7 +151,7 @@ describe('ICELAND2 CoO Validation Tests - Type 1 - Nirms', () => {
       filename
     )
     expect(result.business_checks.failure_reasons).toContain(
-      'Invalid entry for NIRMS/Non-NIRMS goods'
+      failureReasons.NIRMS_INVALID
     )
   })
 
@@ -163,7 +179,7 @@ describe('ICELAND2 CoO Validation Tests - Type 1 - CoO', () => {
       filename
     )
     expect(result.business_checks.failure_reasons).toContain(
-      'Missing Country of Origin'
+      failureReasons.COO_MISSING
     )
   })
 
@@ -173,7 +189,7 @@ describe('ICELAND2 CoO Validation Tests - Type 1 - CoO', () => {
       filename
     )
     expect(result.business_checks.failure_reasons).toContain(
-      'Invalid Country of Origin ISO Code'
+      failureReasons.COO_INVALID
     )
   })
 
