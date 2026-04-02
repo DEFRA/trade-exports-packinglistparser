@@ -5,7 +5,7 @@ const validModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -46,7 +46,7 @@ const wrongEstablishmentNumber = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -89,7 +89,7 @@ const invalidModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -104,7 +104,7 @@ const invalidModel_MissingColumnCells = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -131,7 +131,7 @@ const invalidModel_MultipleRms = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -159,7 +159,7 @@ const missingKgUnit = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -199,7 +199,7 @@ const validCooModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -226,7 +226,7 @@ const nonNirmsModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -253,7 +253,7 @@ const nullNirmsModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -280,7 +280,7 @@ const invalidNirmsModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -307,7 +307,7 @@ const nullCooModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -334,7 +334,7 @@ const invalidCooModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -361,7 +361,7 @@ const nullCooMultipleModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -424,7 +424,7 @@ const invalidCooMultipleModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -487,7 +487,7 @@ const cooPlaceholderXModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -514,7 +514,7 @@ const ineligibleItemsWithTreatmentModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -553,7 +553,7 @@ const ineligibleItemsNoTreatmentModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -580,7 +580,7 @@ const ineligibleItemsMultipleWithTreatmentModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -643,7 +643,7 @@ const ineligibleItemsMultipleNoTreatmentModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -706,7 +706,7 @@ const nullNirmsMultipleModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
@@ -769,7 +769,7 @@ const invalidNirmsMultipleModel = [
   [
     '',
     'RMS Dispatch location',
-    'Nature',
+    'Product Type/Category',
     'Tariff Code EU',
     'Country of Origin Code',
     'Product/Part Number description',
