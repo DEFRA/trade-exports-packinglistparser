@@ -103,7 +103,7 @@ const ineligibleItemsWithTreatmentTestResult = {
   business_checks: {
     all_required_fields_present: false,
     failure_reasons: expect.stringContaining(
-      'Invalid Country of Origin ISO Code'
+      'Prohibited item identified on the packing list'
     )
   },
   items: expect.any(Array),
@@ -115,7 +115,7 @@ const ineligibleItemsNoTreatmentTestResult = {
   business_checks: {
     all_required_fields_present: false,
     failure_reasons: expect.stringContaining(
-      'Invalid Country of Origin ISO Code'
+      'Prohibited item identified on the packing list'
     )
   },
   items: expect.any(Array),
@@ -127,7 +127,7 @@ const ineligibleItemsMultipleWithTreatmentTestResult = {
   business_checks: {
     all_required_fields_present: false,
     failure_reasons: expect.stringContaining(
-      'Invalid Country of Origin ISO Code'
+      'Prohibited item identified on the packing list'
     )
   },
   items: expect.any(Array),
@@ -139,7 +139,7 @@ const ineligibleItemsMultipleNoTreatmentTestResult = {
   business_checks: {
     all_required_fields_present: false,
     failure_reasons: expect.stringContaining(
-      'Invalid Country of Origin ISO Code'
+      'Prohibited item identified on the packing list'
     )
   },
   items: expect.any(Array),

@@ -4,12 +4,15 @@ import model from '../../../../test/test-data-and-results/models-csv/iceland/mod
 import expectedResults from '../../../../test/test-data-and-results/results-csv/iceland/model2.js'
 import parserModel from '../../parser-model.js'
 
+const ESTABLISHMENT_NUMBER = 'RMS-GB-000040-001'
+const EXPECTED_VALID_ITEM_COUNT = 2 // validModel contains two data rows
+
 describe('Iceland Model 2 CSV Parser', () => {
   test('parses valid Iceland Model 2 CSV file correctly', () => {
     const result = parse(model.validModel)
     expect(result).toMatchObject(expectedResults.validTestResult)
-    expect(result.items).toHaveLength(2)
-    expect(result.establishment_numbers).toContain('RMS-GB-000040-001')
+    expect(result.items).toHaveLength(EXPECTED_VALID_ITEM_COUNT)
+    expect(result.establishment_numbers).toContain(ESTABLISHMENT_NUMBER)
   })
 
   test('returns NOMATCH for empty CSV', () => {
