@@ -80,7 +80,21 @@ export async function parse(packingList) {
 }
 
 /**
+ * Maximum Y difference (pixels) between two content items to treat them
+ * as belonging to the same logical row. PDF renderers can place cells in
+ * the same row at slightly different Y values.
+ */
+const ROW_Y_TOLERANCE = 5
+
+/**
  * Extract Y-coordinates of data rows from page content.
+ *
+ * Groups content items into logical rows using a Y-tolerance so that cells
+ * rendered at slightly different Y values (a common PDF quirk) are treated
+ * as the same row. The representative Y for each group is the minimum Y seen
+ * in that cluster, which is the value used by findItemContent to retrieve
+ * column values (findItemContent also applies a ±1 tolerance on Y).
+ *
  * @param {Array} pageContent - Page content array
  * @param {string} model - Parser model identifier
  * @returns {Array<number>} Array of Y-coordinates for data rows
@@ -95,30 +109,40 @@ function getYsForRows(pageContent, model) {
       return []
     }
 
-    // Group items by Y value
-    const rowsByY = {}
-    for (const item of pageContent) {
-      const y = Number(item.y.toFixed(2))
-      if (!rowsByY[y]) {
-        rowsByY[y] = []
+    // Collect all distinct Y values below the header, sorted ascending
+    const allYs = [
+      ...new Set(
+        pageContent
+          .filter((item) => item.y >= firstY)
+          .map((item) => Number(item.y.toFixed(2)))
+      )
+    ].sort((a, b) => a - b)
+
+    // Cluster Y values that are within ROW_Y_TOLERANCE of each other into
+    // a single logical row, represented by the smallest Y in the cluster.
+    const rowYs = []
+    for (const y of allYs) {
+      const lastRowY = rowYs[rowYs.length - 1]
+      if (lastRowY === undefined || y - lastRowY > ROW_Y_TOLERANCE) {
+        rowYs.push(y)
       }
-      rowsByY[y].push(item.str.trim())
     }
 
-    // Sort Y values and collect rows until stopping condition
-    const sortedYs = Object.keys(rowsByY)
-      .map(Number)
-      .sort((a, b) => a - b)
-
+    // For each logical row Y, count all items within ROW_Y_TOLERANCE to
+    // determine whether this is a data row or a stopping row.
     const ysInRange = []
-    const filteredYs = sortedYs.filter((y) => y >= firstY)
-    const maxRows = 5
-    for (const y of filteredYs) {
-      const row = rowsByY[y]
-      if (row.length < maxRows || row[0] === '0') {
-        break // Stop if row is short or starts with '0'
+    const minItemsPerRow = 5
+    for (const rowY of rowYs) {
+      const rowItems = pageContent.filter(
+        (item) =>
+          Number(item.y.toFixed(2)) >= rowY &&
+          Number(item.y.toFixed(2)) <= rowY + ROW_Y_TOLERANCE &&
+          item.str.trim() !== ''
+      )
+      if (rowItems.length < minItemsPerRow || rowItems[0].str.trim() === '0') {
+        break // Stop if row is sparse or is a totals/summary row
       }
-      ysInRange.push(y)
+      ysInRange.push(rowY)
     }
 
     return ysInRange

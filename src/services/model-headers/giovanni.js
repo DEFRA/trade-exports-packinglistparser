@@ -53,7 +53,11 @@ const giovanniHeaders = {
 const pdfGiovanniHeaders = {
   GIOVANNI3: {
     establishmentNumber: {
-      regex: /RMS-GB-000149(-\d{3})?/i
+      regex: /RMS-GB-000149(-\d{3})?/i,
+      x1: 460,
+      x2: 545,
+      y1: 130,
+      y2: 165
     },
     headers: {
       description: {
@@ -71,20 +75,20 @@ const pdfGiovanniHeaders = {
       number_of_packages: {
         x: /Quantity/i,
         x1: 320,
-        x2: 360,
+        x2: 412,
         regex: /Quantity/i
       },
       total_net_weight_kg: {
         x: /Net/i,
-        x1: 361,
-        x2: 400,
+        x1: 385,
+        x2: 445,
         regex: /Net Weight/i
       },
       type_of_treatment: {
-        x: /Type of Treatment/i,
-        x1: 360,
+        x: /Type of Treatment|METHOD/i,
+        x1: 320,
         x2: 400,
-        regex: /Type of Treatment/i,
+        regex: /Type of Treatment|METHOD/i,
         minHeadersY: 190,
         maxHeadersY: 205
       }
@@ -108,12 +112,13 @@ const pdfGiovanniHeaders = {
     minHeadersY: 280,
     maxHeadersY: 300,
     findUnitInHeader: true,
+    strictUnitMatch: true,
     validateCountryOfOrigin: true,
     blanketTreatmentTypeValue: {
-      x1: 360,
+      x1: 320,
       x2: 400,
       maxHeadersY: 250,
-      regex: /Type of Treatment/i
+      regex: /Type of Treatment|METHOD/i
     }
   }
 }

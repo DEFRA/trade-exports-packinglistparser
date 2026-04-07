@@ -13,6 +13,10 @@ const remosRegex = /^RMS-GB-\d{6}-\d{3}$/i
 // Used by parsers that need to check unit position (e.g., MANDS1)
 const kgRegex = /(KGS?|KILOGRAMS?|KILOS?)/i
 
+// Strict variant — only matches the unit when it is not embedded within
+// a longer word (e.g. rejects "kGkilograms" but accepts "KG" or "(KGS)")
+const STRICT_KG_REGEX = /(?<![A-Za-z])(KGS?|KILOGRAMS?|KILOS?)(?![A-Za-z])/i
+
 /**
  * Create case-insensitive global regex pattern.
  * @param {RegExp|string} regex - Regex to convert
@@ -120,7 +124,7 @@ function testAllPatterns(regexArray, obj) {
  * @returns {string|null} Matched unit or null
  */
 function findUnit(header) {
-  const unitRegex = /(KGS?|KILOGRAMS?|KILOS?)/i // regex of all possible units
+  const unitRegex = /(KGS?|KILOGRAMS?|KILOS?)/i
   const match = unitRegex.exec(header)
   if (match) {
     return match[0] // return only the matching part of the string (the unit)
@@ -194,6 +198,7 @@ function positionFinder(json, regex) {
 export {
   remosRegex,
   kgRegex,
+  STRICT_KG_REGEX,
   test,
   findMatch,
   testAllPatterns,

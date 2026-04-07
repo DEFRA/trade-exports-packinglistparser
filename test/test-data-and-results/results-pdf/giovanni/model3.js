@@ -59,6 +59,26 @@ export default {
     registration_approval_number: 'RMS-GB-000149-002',
     parserModel: parserModel.GIOVANNI3
   },
+  malformedKgTestResult: {
+    business_checks: {
+      all_required_fields_present: false,
+      failure_reasons: `Net Weight Unit of Measure (kg) not found.\nNIRMS/Non-NIRMS goods not specified in page 1 row 1.\n`
+    },
+    items: [
+      {
+        description: 'HAM AND CHEESE TORT',
+        commodity_code: '1902209990',
+        number_of_packages: '20',
+        total_net_weight_kg: '48',
+        total_net_weight_unit: null,
+        type_of_treatment: 'FRESH',
+        country_of_origin: 'IT'
+      }
+    ],
+    establishment_numbers: ['RMS-GB-000149-002'],
+    registration_approval_number: 'RMS-GB-000149-002',
+    parserModel: parserModel.GIOVANNI3
+  },
   multipleRmsTestResult: {
     business_checks: {
       all_required_fields_present: false,

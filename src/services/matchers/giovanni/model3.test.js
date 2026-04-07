@@ -65,6 +65,43 @@ describe('Giovanni Model 3 PDF Matcher', () => {
     expect(result).toBe(matcherResult.WRONG_HEADER)
   })
 
+  test('returns correct for valid multi-page document where subsequent pages have no headers or establishment number', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(
+      model.validModelMultiplePages
+    )
+    const result = await matches(Buffer.from('mock-pdf'), filename)
+    expect(result).toBe(matcherResult.CORRECT)
+  })
+
+  test("returns 'Wrong Establishment Number' when no page has content in the establishment region", async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue({
+      pages: [
+        {
+          content: [
+            {
+              x: 100,
+              y: 100,
+              str: 'some data',
+              dir: 'ltr',
+              width: 50,
+              height: 7
+            }
+          ]
+        }
+      ]
+    })
+    const result = await matches(Buffer.from('mock-pdf'), filename)
+    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
+  })
+
+  test('returns correct when treatment type header uses METHOD keyword instead of Type of Treatment', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(
+      model.validModelMethodHeader
+    )
+    const result = await matches(Buffer.from('mock-pdf'), filename)
+    expect(result).toBe(matcherResult.CORRECT)
+  })
+
   test("return 'Generic Error' matcher result when an error occurs", async () => {
     vi.mocked(pdfHelper.extractPdf).mockRejectedValue(new Error('Mock error'))
     const result = await matches(null, null)

@@ -82,6 +82,12 @@ export function mapPdfNonAiParser(
       headers[model].headers.total_net_weight_kg.regex.test(x)
     )
     netWeightUnit = regex.findUnit(totalNetWeightHeader)
+    // If strictUnitMatch is set, reject units embedded within a longer word (e.g. "kGkilograms")
+    if (netWeightUnit && headers[model].strictUnitMatch) {
+      if (!regex.STRICT_KG_REGEX.test(totalNetWeightHeader)) {
+        netWeightUnit = null
+      }
+    }
   }
 
   const packingListContents = []
