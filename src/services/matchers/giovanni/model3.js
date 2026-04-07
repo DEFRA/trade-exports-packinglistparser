@@ -29,11 +29,29 @@ export async function matches(packingList, filename) {
       return matcherResult.EMPTY_FILE
     }
 
-    // check for correct establishment number
+    const estNoConfig = headers.GIOVANNI3.establishmentNumber
+    let foundEstablishmentPage = false
+
+    // For each page, check if this is a header page by looking for the
+    // establishment number at its known coordinate region. Data-only continuation
+    // pages will have no content in that region and are skipped.
     for (const page of pdfJson.pages) {
-      if (
-        !regex.test(headers.GIOVANNI3.establishmentNumber.regex, page.content)
-      ) {
+      const itemsInRegion = page.content.filter(
+        (item) =>
+          item.x >= estNoConfig.x1 &&
+          item.x <= estNoConfig.x2 &&
+          item.y >= estNoConfig.y1 &&
+          item.y <= estNoConfig.y2
+      )
+
+      if (itemsInRegion.length === 0) {
+        // Continuation/data page — no establishment number region, skip
+        continue
+      }
+
+      foundEstablishmentPage = true
+
+      if (!regex.test(estNoConfig.regex, itemsInRegion)) {
         return matcherResult.WRONG_ESTABLISHMENT_NUMBER
       }
 
@@ -42,6 +60,10 @@ export async function matches(packingList, filename) {
       if (result === matcherResult.WRONG_HEADER) {
         return matcherResult.WRONG_HEADER
       }
+    }
+
+    if (!foundEstablishmentPage) {
+      return matcherResult.WRONG_ESTABLISHMENT_NUMBER
     }
 
     if (result === matcherResult.CORRECT) {

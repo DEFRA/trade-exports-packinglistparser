@@ -222,7 +222,7 @@ function createGiovanni3PdfModel(rows, options = {}) {
       row.total_net_weight_kg !== undefined
     ) {
       content.push({
-        x: 380,
+        x: 420,
         y,
         str: row.total_net_weight_kg,
         dir: 'ltr',
@@ -323,6 +323,14 @@ describe('parsePackingList - Giovanni Model 3', () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.missingKgunit)
     const result = await parsePackingList({}, filename)
     expect(result).toMatchObject(test_results.missingKgTestResult)
+  })
+
+  test('returns unit failure for malformed unit in header (e.g. kGkilograms)', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(
+      model.malformedKgunitModel
+    )
+    const result = await parsePackingList({}, filename)
+    expect(result).toMatchObject(test_results.malformedKgTestResult)
   })
 
   test('returns prohibited item failure when ineligible item is found', async () => {

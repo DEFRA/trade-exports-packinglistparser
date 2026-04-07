@@ -60,6 +60,93 @@ export function findNetWeightUnit(headerStr) {
 }
 
 /**
+ * Discover the net weight unit for coordinate-based (non-AI) PDF parsing.
+ * @param {Array<Object>} pageContent - PDF page content array
+ * @param {string} model - Parser model identifier
+ * @returns {string|null} Matched unit or null
+ */
+function findNonAiNetWeightUnit(pageContent, model) {
+  if (!headers[model].findUnitInHeader) {
+    return null
+  }
+
+  const pageHeader = pdfHelper.getHeaders(pageContent, model)
+  const totalNetWeightHeader = Object.values(pageHeader).find((x) =>
+    headers[model].headers.total_net_weight_kg.regex.test(x)
+  )
+  const unit = regex.findUnit(totalNetWeightHeader)
+
+  // Reject units embedded within a longer word (e.g. "kGkilograms")
+  if (
+    unit &&
+    headers[model].strictUnitMatch &&
+    !regex.STRICT_KG_REGEX.test(totalNetWeightHeader)
+  ) {
+    return null
+  }
+
+  return unit
+}
+
+/**
+ * Build a standardized packing list row from PDF coordinate data.
+ * @param {Object} packingListJson - PDF page with content coordinates
+ * @param {string} model - Parser model identifier
+ * @param {number} y - Y-coordinate of the data row
+ * @param {number} rowIndex - Zero-based row index
+ * @param {string|null} netWeightUnit - Pre-resolved net weight unit
+ * @param {boolean} nirmsHeaderExists - Whether NIRMS header exists on the page
+ * @param {boolean} coHeaderExists - Whether Country of Origin header exists
+ * @returns {Object} Standardized packing list row
+ */
+function buildNonAiRow(
+  packingListJson,
+  model,
+  y,
+  rowIndex,
+  netWeightUnit,
+  nirmsHeaderExists,
+  coHeaderExists
+) {
+  const plRow = {
+    description: null,
+    nature_of_products: null,
+    type_of_treatment: null,
+    commodity_code: null,
+    number_of_packages: null,
+    total_net_weight_kg: null,
+    total_net_weight_unit: netWeightUnit ?? null
+  }
+
+  for (const key of Object.keys(headers[model].headers)) {
+    plRow[key] = findItemContent(
+      packingListJson,
+      headers[model].headers[key],
+      y
+    )
+  }
+
+  if (headers[model].nirms && nirmsHeaderExists) {
+    plRow.nirms = findItemContent(packingListJson, headers[model].nirms, y)
+  }
+
+  if (headers[model].country_of_origin && coHeaderExists) {
+    plRow.country_of_origin = findItemContent(
+      packingListJson,
+      headers[model].country_of_origin,
+      y
+    )
+  }
+
+  plRow.row_location = {
+    rowNumber: rowIndex + 1,
+    pageNumber: packingListJson.pageInfo.num
+  }
+
+  return plRow
+}
+
+/**
  * Map PDF coordinate-based (non-AI) data to standardized packing list items.
  * @param {Object} packingListJson - PDF page with content coordinates
  * @param {string} model - Parser model identifier
@@ -75,56 +162,19 @@ export function mapPdfNonAiParser(
   nirmsHeaderExists = false,
   coHeaderExists = false
 ) {
-  let netWeightUnit
-  if (headers[model].findUnitInHeader) {
-    const pageHeader = pdfHelper.getHeaders(packingListJson.content, model)
-    const totalNetWeightHeader = Object.values(pageHeader).find((x) =>
-      headers[model].headers.total_net_weight_kg.regex.test(x)
+  const netWeightUnit = findNonAiNetWeightUnit(packingListJson.content, model)
+
+  const packingListContents = ys.map((y, row) =>
+    buildNonAiRow(
+      packingListJson,
+      model,
+      y,
+      row,
+      netWeightUnit,
+      nirmsHeaderExists,
+      coHeaderExists
     )
-    netWeightUnit = regex.findUnit(totalNetWeightHeader)
-  }
-
-  const packingListContents = []
-
-  for (let row = 0; row < ys.length; row++) {
-    const y = ys[row]
-    const plRow = {
-      description: null,
-      nature_of_products: null,
-      type_of_treatment: null,
-      commodity_code: null,
-      number_of_packages: null,
-      total_net_weight_kg: null,
-      total_net_weight_unit: netWeightUnit ?? null
-    }
-
-    for (const key of Object.keys(headers[model].headers)) {
-      plRow[key] = findItemContent(
-        packingListJson,
-        headers[model].headers[key],
-        y
-      )
-    }
-
-    if (headers[model].nirms && nirmsHeaderExists) {
-      plRow.nirms = findItemContent(packingListJson, headers[model].nirms, y)
-    }
-
-    if (headers[model].country_of_origin && coHeaderExists) {
-      plRow.country_of_origin = findItemContent(
-        packingListJson,
-        headers[model].country_of_origin,
-        y
-      )
-    }
-
-    plRow.row_location = {
-      rowNumber: row + 1,
-      pageNumber: packingListJson.pageInfo.num
-    }
-
-    packingListContents.push(plRow)
-  }
+  )
 
   applyBlanketValues(packingListJson, model, packingListContents)
 
