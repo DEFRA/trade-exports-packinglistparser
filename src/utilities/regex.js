@@ -15,7 +15,7 @@ const kgRegex = /(KGS?|KILOGRAMS?|KILOS?)/i
 
 // Strict variant — only matches the unit when it is not embedded within
 // a longer word (e.g. rejects "kGkilograms" but accepts "KG" or "(KGS)")
-const STRICT_KG_REGEX = /(?<![A-Za-z])(KGS?|KILOGRAMS?|KILOS?)(?![A-Za-z])/i
+const STRICT_KG_REGEX = /(?<![a-z])(KGS?|KILOGRAMS?|KILOS?)(?![a-z])/i
 
 /**
  * Create case-insensitive global regex pattern.
