@@ -122,7 +122,7 @@ function getYsForRows(pageContent, model) {
     // a single logical row, represented by the smallest Y in the cluster.
     const rowYs = []
     for (const y of allYs) {
-      const lastRowY = rowYs[rowYs.length - 1]
+      const lastRowY = rowYs.at(-1)
       if (lastRowY === undefined || y - lastRowY > ROW_Y_TOLERANCE) {
         rowYs.push(y)
       }
