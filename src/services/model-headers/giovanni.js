@@ -54,7 +54,7 @@ const pdfGiovanniHeaders = {
   GIOVANNI3: {
     establishmentNumber: {
       regex: /RMS-GB-000149(-\d{3})?/i,
-      x1: 460,
+      x1: 455,
       x2: 545,
       y1: 130,
       y2: 165
@@ -80,7 +80,7 @@ const pdfGiovanniHeaders = {
       },
       total_net_weight_kg: {
         x: /Net/i,
-        x1: 385,
+        x1: 360,
         x2: 445,
         regex: /Net Weight/i
       },
