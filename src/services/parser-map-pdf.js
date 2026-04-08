@@ -566,7 +566,7 @@ function findItemContent(packingListJson, header, y) {
       Math.round(item.x) >= header.x1 &&
       Math.round(item.x) <= header.x2 &&
       item.str.trim() !== '' &&
-      !/^[""\u201C\u201D]$/.test(item.str.trim())
+      !/^["\u201C\u201D]$/.test(item.str.trim())
   )
   if (result.length > 0) {
     return result.map((obj) => obj.str).join('')
