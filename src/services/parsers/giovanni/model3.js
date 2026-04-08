@@ -254,7 +254,7 @@ function getYsForRows(pageContent, model) {
     // For each logical row Y, count all items within ROW_Y_TOLERANCE to
     // determine whether this is a data row or a stopping row.
     const ysInRange = []
-    const minItemsPerRow = 5
+    const minItemsPerRow = 2
     for (const rowY of rowYs) {
       const rowItems = pageContent.filter(
         (item) =>
