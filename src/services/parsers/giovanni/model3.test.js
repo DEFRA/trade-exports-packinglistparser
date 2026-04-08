@@ -63,13 +63,18 @@ describe('Giovanni Model 3 PDF Parser', () => {
   })
 
   test('handles pages with no rows after header', async () => {
-    const mapSpy = vi.spyOn(parserMap, 'mapPdfNonAiParser').mockReturnValue([])
+    const mapSpy = vi
+      .spyOn(parserMap, 'mapPdfDynamicHeaderParser')
+      .mockReturnValue([])
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue({
       pages: [
         {
           content: [
-            { x: 100, y: 299, str: 'DESCRIPTION' },
-            { x: 120, y: 300, str: 'RMS-GB-000149-002' }
+            { x: 174, y: 285, str: 'DESCRIPTION', width: 36 },
+            { x: 257, y: 286, str: 'Commodity Code', width: 44 },
+            { x: 357, y: 286, str: 'Quantity', width: 21 },
+            { x: 389, y: 286, str: 'Net Weight (KG)', width: 41 },
+            { x: 120, y: 147, str: 'RMS-GB-000149-002', width: 70 }
           ]
         }
       ]
@@ -77,26 +82,24 @@ describe('Giovanni Model 3 PDF Parser', () => {
 
     const result = await parse(Buffer.from('mock-pdf'))
 
-    expect(mapSpy).toHaveBeenCalledWith(
-      expect.any(Object),
-      'GIOVANNI3',
-      [],
-      false,
-      false,
-      null
-    )
+    expect(mapSpy).toHaveBeenCalled()
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
 
   test('handles malformed row data when extracting Y coordinates', async () => {
-    const mapSpy = vi.spyOn(parserMap, 'mapPdfNonAiParser').mockReturnValue([])
+    const mapSpy = vi
+      .spyOn(parserMap, 'mapPdfDynamicHeaderParser')
+      .mockReturnValue([])
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue({
       pages: [
         {
           content: [
-            { x: 100, y: 301, str: 'DESCRIPTION' },
-            { x: 120, y: 302, str: 'RMS-GB-000149-002' },
-            { x: 140, y: undefined, str: 'BROKEN' }
+            { x: 174, y: 285, str: 'DESCRIPTION', width: 36 },
+            { x: 257, y: 286, str: 'Commodity Code', width: 44 },
+            { x: 357, y: 286, str: 'Quantity', width: 21 },
+            { x: 389, y: 286, str: 'Net Weight (KG)', width: 41 },
+            { x: 120, y: 147, str: 'RMS-GB-000149-002', width: 70 },
+            { x: 140, y: undefined, str: 'BROKEN', width: 30 }
           ]
         }
       ]
@@ -104,14 +107,7 @@ describe('Giovanni Model 3 PDF Parser', () => {
 
     const result = await parse(Buffer.from('mock-pdf'))
 
-    expect(mapSpy).toHaveBeenCalledWith(
-      expect.any(Object),
-      'GIOVANNI3',
-      [],
-      false,
-      false,
-      null
-    )
+    expect(mapSpy).toHaveBeenCalled()
     expect(result.parserModel).toBe(parserModel.GIOVANNI3)
   })
 
@@ -121,21 +117,21 @@ describe('Giovanni Model 3 PDF Parser', () => {
         {
           pageInfo: { num: 1 },
           content: [
-            { x: 471.46, y: 147.26, str: 'RMS-GB-000149-002' },
-            { x: 480, y: 285.77, str: 'NIRMS Only' },
-            { x: 480, y: 303.77, str: 'N' },
-            { x: 174.38, y: 285.29, str: 'DESCRIPTION' },
-            { x: 257.33, y: 285.77, str: 'Commodity Code' },
-            { x: 317.11, y: 282.29, str: 'Country of' },
-            { x: 322.75, y: 289.25, str: 'Origin' },
-            { x: 357.55, y: 285.77, str: 'Quantity' },
-            { x: 389.59, y: 285.77, str: 'Net Weight (KG)' },
-            { x: 30, y: 303.77, str: '1' },
-            { x: 145.22, y: 303.77, str: 'HAM AND CHEESE TORT' },
-            { x: 265.13, y: 303.77, str: '1902209990' },
-            { x: 312.67, y: 303.77, str: 'IT' },
-            { x: 340, y: 303.77, str: '20' },
-            { x: 380, y: 303.77, str: '48' }
+            { x: 471.46, y: 147.26, str: 'RMS-GB-000149-002', width: 70 },
+            { x: 480, y: 285.77, str: 'NIRMS Only', width: 30 },
+            { x: 480, y: 303.77, str: 'N', width: 5 },
+            { x: 174.38, y: 285.29, str: 'DESCRIPTION', width: 36 },
+            { x: 257.33, y: 285.77, str: 'Commodity Code', width: 44 },
+            { x: 317.11, y: 282.29, str: 'Country of', width: 27 },
+            { x: 322.75, y: 289.25, str: 'Origin', width: 15 },
+            { x: 357.55, y: 285.77, str: 'Quantity', width: 21 },
+            { x: 389.59, y: 285.77, str: 'Net Weight (KG)', width: 41 },
+            { x: 30, y: 303.77, str: '1', width: 5 },
+            { x: 145.22, y: 303.77, str: 'HAM AND CHEESE TORT', width: 60 },
+            { x: 265.13, y: 303.77, str: '1902209990', width: 44 },
+            { x: 312.67, y: 303.77, str: 'IT', width: 7 },
+            { x: 340, y: 303.77, str: '20', width: 9 },
+            { x: 380, y: 303.77, str: '48', width: 9 }
           ]
         }
       ]
@@ -154,21 +150,21 @@ describe('Giovanni Model 3 PDF Parser', () => {
         {
           pageInfo: { num: 1 },
           content: [
-            { x: 471.46, y: 147.26, str: 'RMS-GB-000149-002' },
-            { x: 480, y: 285.77, str: 'NIRMS  ONLY' },
-            { x: 480, y: 303.77, str: 'NIRMS' },
-            { x: 174.38, y: 285.29, str: 'DESCRIPTION' },
-            { x: 257.33, y: 285.77, str: 'Commodity Code' },
-            { x: 317.11, y: 282.29, str: 'Country of' },
-            { x: 322.75, y: 289.25, str: 'Origin' },
-            { x: 357.55, y: 285.77, str: 'Quantity' },
-            { x: 389.59, y: 285.77, str: 'Net Weight (KG)' },
-            { x: 30, y: 303.77, str: '1' },
-            { x: 145.22, y: 303.77, str: 'HAM AND CHEESE TORT' },
-            { x: 265.13, y: 303.77, str: '1902209990' },
-            { x: 312.67, y: 303.77, str: 'IT' },
-            { x: 340, y: 303.77, str: '20' },
-            { x: 380, y: 303.77, str: '48' }
+            { x: 471.46, y: 147.26, str: 'RMS-GB-000149-002', width: 70 },
+            { x: 480, y: 285.77, str: 'NIRMS  ONLY', width: 33 },
+            { x: 480, y: 303.77, str: 'NIRMS', width: 18 },
+            { x: 174.38, y: 285.29, str: 'DESCRIPTION', width: 36 },
+            { x: 257.33, y: 285.77, str: 'Commodity Code', width: 44 },
+            { x: 317.11, y: 282.29, str: 'Country of', width: 27 },
+            { x: 322.75, y: 289.25, str: 'Origin', width: 15 },
+            { x: 357.55, y: 285.77, str: 'Quantity', width: 21 },
+            { x: 389.59, y: 285.77, str: 'Net Weight (KG)', width: 41 },
+            { x: 30, y: 303.77, str: '1', width: 5 },
+            { x: 145.22, y: 303.77, str: 'HAM AND CHEESE TORT', width: 60 },
+            { x: 265.13, y: 303.77, str: '1902209990', width: 44 },
+            { x: 312.67, y: 303.77, str: 'IT', width: 7 },
+            { x: 340, y: 303.77, str: '20', width: 9 },
+            { x: 380, y: 303.77, str: '48', width: 9 }
           ]
         }
       ]

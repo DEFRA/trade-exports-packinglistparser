@@ -2,7 +2,8 @@
  * Giovanni Model 3 PDF Parser
  *
  * Parses Giovanni PDF packing lists using coordinate-based extraction (non-AI).
- * Extracts data from specific X/Y positions on the page.
+ * Uses dynamic header boundary discovery to handle layout variations across
+ * different Giovanni PDF formats.
  */
 
 import { createLogger } from '../../../common/helpers/logging/logger.js'
@@ -11,7 +12,13 @@ import * as combineParser from '../../parser-combine.js'
 import parserModel from '../../parser-model.js'
 import headers from '../../model-headers-pdf.js'
 import * as regex from '../../../utilities/regex.js'
-import { mapPdfNonAiParser } from '../../parser-map-pdf.js'
+import {
+  mapPdfDynamicHeaderParser,
+  discoverHeaderBoundaries,
+  expandBoundariesToMidpoints,
+  deriveBoundaryFromRegex,
+  discoverNetWeightUnit
+} from '../../parser-map-pdf.js'
 import {
   extractPdf,
   extractEstablishmentNumbers
@@ -20,44 +27,160 @@ import {
 const logger = createLogger()
 
 /**
- * Parse Giovanni Model 3 PDF document using coordinate-based extraction.
+ * Threshold (in pixels) applied to each side of a header boundary.
+ * Allows data slightly outside the header text region to be captured.
+ */
+const BOUNDARY_THRESHOLD = 15
+
+/**
+ * Core column headers required for data extraction.
+ * Excludes type_of_treatment which lives in a separate Y region
+ * and is applied via blanket values instead.
+ */
+const CORE_HEADERS = {
+  description: headers.GIOVANNI3.headers.description,
+  commodity_code: headers.GIOVANNI3.headers.commodity_code,
+  number_of_packages: headers.GIOVANNI3.headers.number_of_packages,
+  total_net_weight_kg: { regex: /Net Weight.*/i }
+}
+
+/**
+ * Optional anchor columns whose positions establish midpoints that prevent
+ * adjacent columns from bleeding into each other. These are added to the
+ * boundary set before expansion, then removed before data extraction.
+ */
+const ANCHOR_HEADERS = {
+  country_of_origin: { regex: headers.GIOVANNI3.country_of_origin.regex },
+  gross_weight: { regex: /Gross Weight.*/i }
+}
+
+/**
+ * Edge padding (in pixels) for the leftmost and rightmost discovered columns.
+ * Ensures data that starts to the left of the header text (e.g. long
+ * descriptions) or extends to the right is still captured.
+ */
+const EDGE_PADDING = 50
+
+/**
+ * Discover optional NIRMS and country-of-origin boundaries from page content.
+ * @param {Array} pageContent - PDF page content
+ * @returns {{ nirmsBoundary: Object|null, coBoundary: Object|null }}
+ */
+function discoverOptionalBoundaries(pageContent) {
+  const nirmsItem = pageContent.find((item) =>
+    headers.GIOVANNI3.nirms.regex.test(item.str)
+  )
+  const nirmsBoundary = nirmsItem
+    ? deriveBoundaryFromRegex(
+        nirmsItem,
+        headers.GIOVANNI3.nirms.regex,
+        BOUNDARY_THRESHOLD
+      )
+    : null
+
+  const coItem = pageContent.find((item) =>
+    headers.GIOVANNI3.country_of_origin.regex.test(item.str)
+  )
+  const coBoundary = coItem
+    ? deriveBoundaryFromRegex(
+        coItem,
+        headers.GIOVANNI3.country_of_origin.regex,
+        BOUNDARY_THRESHOLD
+      )
+    : null
+
+  return { nirmsBoundary, coBoundary }
+}
+
+/**
+ * Discover anchor header boundaries from page content and merge them into
+ * the core boundaries. Anchors that are not found are silently skipped.
+ * @param {Array} headerRowContent - Page content filtered to header Y range
+ * @param {Object} coreBoundaries - Already-discovered core boundaries
+ * @returns {Object} Merged boundaries including any found anchors
+ */
+function mergeAnchorBoundaries(headerRowContent, coreBoundaries) {
+  const merged = { ...coreBoundaries }
+
+  for (const [key, config] of Object.entries(ANCHOR_HEADERS)) {
+    const item = headerRowContent.find((el) => config.regex.test(el.str))
+    if (item) {
+      const { x1, x2 } = deriveBoundaryFromRegex(item, config.regex)
+      merged[key] = { x1, x2, regex: config.regex }
+    }
+  }
+
+  return merged
+}
+
+/**
+ * Parse Giovanni Model 3 PDF document using dynamic header discovery.
  * @param {Buffer} packingList - PDF file buffer
  * @returns {Promise<Object>} Combined parser result with items and metadata
  */
 export async function parse(packingList) {
   try {
-    let packingListContents = []
-    let packingListContentsTemp = []
-
     const pdfJson = await extractPdf(packingList)
-    const establishmentNumber = regex.findMatch(
-      headers.GIOVANNI3.establishmentNumber.regex,
-      pdfJson.pages[0].content
-    )
-
+    const firstPage = pdfJson.pages[0]
     const model = 'GIOVANNI3'
 
-    const nirmsHeaderExists = pdfJson.pages[0].content.some((item) =>
-      headers.GIOVANNI3.nirms.regex.test(item.str)
+    const establishmentNumber = regex.findMatch(
+      headers.GIOVANNI3.establishmentNumber.regex,
+      firstPage.content
     )
 
-    const coHeaderExists = pdfJson.pages[0].content.some((item) =>
-      headers.GIOVANNI3.country_of_origin.regex.test(item.str)
+    const headerRowContent = firstPage.content.filter(
+      (item) =>
+        item.y >= headers.GIOVANNI3.minHeadersY &&
+        item.y <= headers.GIOVANNI3.maxHeadersY
     )
 
-    const blanketNirms = null
+    const coreBoundaries = discoverHeaderBoundaries(
+      headerRowContent,
+      CORE_HEADERS
+    )
+
+    if (!coreBoundaries) {
+      logger.info(
+        'Giovanni Model 3 — dynamic header discovery failed, no match'
+      )
+      return combineParser.combine(null, [], false, parserModel.NOMATCH)
+    }
+
+    const allBoundaries = mergeAnchorBoundaries(
+      headerRowContent,
+      coreBoundaries
+    )
+
+    const expandedBoundaries = expandBoundariesToMidpoints(
+      allBoundaries,
+      EDGE_PADDING
+    )
+
+    // Remove gross_weight — included only to establish midpoint divider.
+    // Keep country_of_origin in expanded boundaries for properly bounded
+    // extraction (the separate discoverOptionalBoundaries threshold is too
+    // wide for CO and can bleed into adjacent columns).
+    delete expandedBoundaries.gross_weight
+
+    const { nirmsBoundary } = discoverOptionalBoundaries(firstPage.content)
+
+    const netWeightUnit = discoverNetWeightUnit(firstPage.content, model)
+
+    let packingListContents = []
 
     for (const page of pdfJson.pages) {
       const ys = getYsForRows(page.content, model)
-      packingListContentsTemp = mapPdfNonAiParser(
+      const pageContents = mapPdfDynamicHeaderParser(
         page,
         model,
         ys,
-        nirmsHeaderExists,
-        coHeaderExists,
-        blanketNirms
+        expandedBoundaries,
+        nirmsBoundary,
+        null,
+        netWeightUnit
       )
-      packingListContents = packingListContents.concat(packingListContentsTemp)
+      packingListContents = packingListContents.concat(pageContents)
     }
 
     const establishmentNumbers = extractEstablishmentNumbers(pdfJson)

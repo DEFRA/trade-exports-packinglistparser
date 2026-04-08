@@ -88,6 +88,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 21,
             y: 303.77,
             str: '',
@@ -187,7 +196,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -205,7 +214,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 420,
+            x: 423,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -333,6 +342,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 21,
             y: 303.77,
             str: '',
@@ -432,7 +450,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -450,7 +468,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 420,
+            x: 423,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -578,6 +596,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 21,
             y: 303.77,
             str: '',
@@ -677,7 +704,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -695,7 +722,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 420,
+            x: 423,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -823,6 +850,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 389.59,
             y: 291.77,
             str: 'kGkilograms',
@@ -931,7 +967,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -949,7 +985,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 420,
+            x: 423,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -1086,6 +1122,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 21,
             y: 303.77,
             str: '',
@@ -1185,7 +1230,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -1203,7 +1248,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 420,
+            x: 423,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -1374,6 +1419,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 145.22,
             y: 303.77,
             str: 'HAM AND CHEESE TORT',
@@ -1417,7 +1471,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: '50',
             dir: 'ltr',
@@ -1514,6 +1568,15 @@ export default {
             str: 'Net Weight (KG)',
             dir: 'ltr',
             width: 40.59792,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
             height: 5.28,
             fontName: 'Helvetica'
           },
@@ -1676,6 +1739,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 21,
             y: 303.77,
             str: '',
@@ -1775,7 +1847,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: ' ',
             dir: 'ltr',
@@ -1793,7 +1865,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 420,
+            x: 423,
             y: 303.77,
             str: '48',
             dir: 'ltr',
@@ -1912,6 +1984,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 440,
+            y: 285.77,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 45,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
             x: 480,
             y: 285.77,
             str: 'NIRMS Only',
@@ -1948,7 +2029,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 340,
+            x: 376,
             y: 303.77,
             str: '20',
             dir: 'ltr',
@@ -1957,7 +2038,7 @@ export default {
             fontName: 'Helvetica'
           },
           {
-            x: 420,
+            x: 423,
             y: 303.77,
             str: '48',
             dir: 'ltr',

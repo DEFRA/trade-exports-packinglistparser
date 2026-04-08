@@ -104,6 +104,15 @@ function createGiovanni3PdfModel(rows, options = {}) {
       width: 40.59792,
       height: 5.28,
       fontName: 'Helvetica'
+    },
+    {
+      x: 440,
+      y: 285.77,
+      str: 'Gross Weight (KG)',
+      dir: 'ltr',
+      width: 45,
+      height: 5.28,
+      fontName: 'Helvetica'
     }
   ]
 
@@ -207,7 +216,7 @@ function createGiovanni3PdfModel(rows, options = {}) {
       row.number_of_packages !== undefined
     ) {
       content.push({
-        x: 340,
+        x: 376,
         y,
         str: row.number_of_packages,
         dir: 'ltr',
@@ -222,7 +231,7 @@ function createGiovanni3PdfModel(rows, options = {}) {
       row.total_net_weight_kg !== undefined
     ) {
       content.push({
-        x: 420,
+        x: 423,
         y,
         str: row.total_net_weight_kg,
         dir: 'ltr',

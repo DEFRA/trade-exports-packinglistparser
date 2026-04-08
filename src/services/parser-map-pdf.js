@@ -325,7 +325,22 @@ export function discoverNetWeightUnit(pageContent, model) {
       regex.findUnit(item.str)
   )
 
-  return unitItem ? regex.findUnit(unitItem.str) : null
+  if (!unitItem) {
+    return null
+  }
+
+  const foundUnit = regex.findUnit(unitItem.str)
+
+  // Reject units embedded within a longer word (e.g. "kGkilograms")
+  if (
+    foundUnit &&
+    headers[model].strictUnitMatch &&
+    !regex.STRICT_KG_REGEX.test(unitItem.str)
+  ) {
+    return null
+  }
+
+  return foundUnit
 }
 
 /**
