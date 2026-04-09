@@ -828,6 +828,33 @@ const invalidNirmsMultipleModel = [
   ]
 ]
 
+const validModelNatureHeader = [
+  [
+    '',
+    'RMS Dispatch location',
+    'Nature',
+    'Tariff Code EU',
+    'Country of Origin Code',
+    'Product/Part Number description',
+    'Net Weight/Package KG',
+    'Packages',
+    'Treatment Type',
+    'NIRMS'
+  ],
+  [
+    attestationText,
+    'RMS-GB-000040-001',
+    'Frozen',
+    '1234567890',
+    'GB',
+    'Test Product 1',
+    '5.5',
+    '10',
+    'Processed',
+    'No'
+  ]
+]
+
 export default {
   validModel,
   emptyModel,
@@ -851,5 +878,6 @@ export default {
   ineligibleItemsWithTreatmentModel,
   ineligibleItemsNoTreatmentModel,
   ineligibleItemsMultipleWithTreatmentModel,
-  ineligibleItemsMultipleNoTreatmentModel
+  ineligibleItemsMultipleNoTreatmentModel,
+  validModelNatureHeader
 }
