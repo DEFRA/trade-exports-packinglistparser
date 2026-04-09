@@ -128,6 +128,51 @@ function mergeAnchorBoundaries(headerRowContent, coreBoundaries) {
 }
 
 /**
+ * Build final extraction boundaries from core + anchor headers.
+ * Expands boundaries to midpoints, removes the gross_weight anchor,
+ * and caps columns that would otherwise bleed into missing neighbours.
+ * @param {Array} headerRowContent - Page content filtered to header Y range
+ * @param {Object} coreBoundaries - Already-discovered core boundaries
+ * @returns {Object} Extraction-ready boundaries
+ */
+function buildExtractionBoundaries(headerRowContent, coreBoundaries) {
+  const allBoundaries = mergeAnchorBoundaries(headerRowContent, coreBoundaries)
+
+  const expandedBoundaries = expandBoundariesToMidpoints(
+    allBoundaries,
+    EDGE_PADDING
+  )
+
+  // Remove gross_weight — included only to establish midpoint divider.
+  // Keep country_of_origin in expanded boundaries for properly bounded
+  // extraction (the separate discoverOptionalBoundaries threshold is too
+  // wide for CO and can bleed into adjacent columns).
+  delete expandedBoundaries.gross_weight
+
+  // Cap commodity code right boundary when country-of-origin anchor is missing.
+  // Some PDFs omit the Country of Origin header entirely, causing commodity
+  // code to expand into the country-of-origin data region.
+  if (!allBoundaries.country_of_origin && expandedBoundaries.commodity_code) {
+    expandedBoundaries.commodity_code.x2 = Math.min(
+      expandedBoundaries.commodity_code.x2,
+      COMMODITY_CODE_MAX_X2
+    )
+  }
+
+  // Cap net weight right boundary when gross weight anchor is missing.
+  // Some PDFs omit the Gross Weight header entirely, causing net weight
+  // to expand into the gross weight data region.
+  if (!allBoundaries.gross_weight && expandedBoundaries.total_net_weight_kg) {
+    expandedBoundaries.total_net_weight_kg.x2 = Math.min(
+      expandedBoundaries.total_net_weight_kg.x2,
+      NET_WEIGHT_MAX_X2
+    )
+  }
+
+  return expandedBoundaries
+}
+
+/**
  * Parse Giovanni Model 3 PDF document using dynamic header discovery.
  * @param {Buffer} packingList - PDF file buffer
  * @returns {Promise<Object>} Combined parser result with items and metadata
@@ -161,41 +206,10 @@ export async function parse(packingList) {
       return combineParser.combine(null, [], false, parserModel.NOMATCH)
     }
 
-    const allBoundaries = mergeAnchorBoundaries(
+    const expandedBoundaries = buildExtractionBoundaries(
       headerRowContent,
       coreBoundaries
     )
-
-    const expandedBoundaries = expandBoundariesToMidpoints(
-      allBoundaries,
-      EDGE_PADDING
-    )
-
-    // Remove gross_weight — included only to establish midpoint divider.
-    // Keep country_of_origin in expanded boundaries for properly bounded
-    // extraction (the separate discoverOptionalBoundaries threshold is too
-    // wide for CO and can bleed into adjacent columns).
-    delete expandedBoundaries.gross_weight
-
-    // Cap commodity code right boundary when country-of-origin anchor is missing.
-    // Some PDFs omit the Country of Origin header entirely, causing commodity
-    // code to expand into the country-of-origin data region.
-    if (!allBoundaries.country_of_origin && expandedBoundaries.commodity_code) {
-      expandedBoundaries.commodity_code.x2 = Math.min(
-        expandedBoundaries.commodity_code.x2,
-        COMMODITY_CODE_MAX_X2
-      )
-    }
-
-    // Cap net weight right boundary when gross weight anchor is missing.
-    // Some PDFs omit the Gross Weight header entirely, causing net weight
-    // to expand into the gross weight data region.
-    if (!allBoundaries.gross_weight && expandedBoundaries.total_net_weight_kg) {
-      expandedBoundaries.total_net_weight_kg.x2 = Math.min(
-        expandedBoundaries.total_net_weight_kg.x2,
-        NET_WEIGHT_MAX_X2
-      )
-    }
 
     const { nirmsBoundary } = discoverOptionalBoundaries(firstPage.content)
 
