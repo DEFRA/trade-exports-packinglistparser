@@ -51,7 +51,7 @@ const CORE_HEADERS = {
  */
 const ANCHOR_HEADERS = {
   country_of_origin: { regex: headers.GIOVANNI3.country_of_origin.regex },
-  gross_weight: { regex: /Gr.ss\sWe.*ght.*/i }
+  gross_weight: { regex: /Gross Weight.*/i }
 }
 
 /**
