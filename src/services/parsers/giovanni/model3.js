@@ -51,7 +51,7 @@ const CORE_HEADERS = {
  */
 const ANCHOR_HEADERS = {
   country_of_origin: { regex: headers.GIOVANNI3.country_of_origin.regex },
-  gross_weight: { regex: /Gross Weight.*/i }
+  gross_weight: { regex: /Gr.ss\sWe.*ght.*/i }
 }
 
 /**
@@ -91,6 +91,20 @@ function discoverOptionalBoundaries(pageContent) {
 
   return { nirmsBoundary, coBoundary }
 }
+
+/**
+ * Maximum right boundary (in pixels) for the commodity code column.
+ * Prevents commodity code from capturing country-of-origin data when
+ * no country-of-origin anchor header is found (some PDFs omit it entirely).
+ */
+const COMMODITY_CODE_MAX_X2 = 290
+
+/**
+ * Maximum right boundary (in pixels) for the net weight column.
+ * Prevents net weight from capturing gross weight data when no gross
+ * weight anchor header is found (some PDFs omit it entirely).
+ */
+const NET_WEIGHT_MAX_X2 = 430
 
 /**
  * Discover anchor header boundaries from page content and merge them into
@@ -162,6 +176,26 @@ export async function parse(packingList) {
     // extraction (the separate discoverOptionalBoundaries threshold is too
     // wide for CO and can bleed into adjacent columns).
     delete expandedBoundaries.gross_weight
+
+    // Cap commodity code right boundary when country-of-origin anchor is missing.
+    // Some PDFs omit the Country of Origin header entirely, causing commodity
+    // code to expand into the country-of-origin data region.
+    if (!allBoundaries.country_of_origin && expandedBoundaries.commodity_code) {
+      expandedBoundaries.commodity_code.x2 = Math.min(
+        expandedBoundaries.commodity_code.x2,
+        COMMODITY_CODE_MAX_X2
+      )
+    }
+
+    // Cap net weight right boundary when gross weight anchor is missing.
+    // Some PDFs omit the Gross Weight header entirely, causing net weight
+    // to expand into the gross weight data region.
+    if (!allBoundaries.gross_weight && expandedBoundaries.total_net_weight_kg) {
+      expandedBoundaries.total_net_weight_kg.x2 = Math.min(
+        expandedBoundaries.total_net_weight_kg.x2,
+        NET_WEIGHT_MAX_X2
+      )
+    }
 
     const { nirmsBoundary } = discoverOptionalBoundaries(firstPage.content)
 

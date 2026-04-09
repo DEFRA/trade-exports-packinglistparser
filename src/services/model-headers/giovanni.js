@@ -96,7 +96,7 @@ const pdfGiovanniHeaders = {
     country_of_origin: {
       x1: 285,
       x2: 320,
-      regex: /Country of/i
+      regex: /Country of|C.untry|^Origin$/i
     },
     nirms: {
       x1: 475,
