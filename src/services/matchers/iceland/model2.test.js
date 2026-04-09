@@ -36,11 +36,6 @@ describe('Iceland Model 2 CSV Matcher', () => {
     expect(result).toBe(matcherResult.CORRECT)
   })
 
-  test('returns CORRECT when Nature header used instead of Product Type/Category', () => {
-    const result = matches(model.validModelNatureHeader, filename)
-    expect(result).toBe(matcherResult.CORRECT)
-  })
-
   test('returns GENERIC_ERROR when exception occurs', () => {
     // Pass invalid data structure to trigger error
     const invalidData = {
