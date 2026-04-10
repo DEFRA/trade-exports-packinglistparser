@@ -12,7 +12,8 @@ const standardHeaderRow = {
   F: 'TARIFF CODE EU',
   G: 'PACKAGES',
   I: 'NET WEIGHT TOTAL KG',
-  J: 'NIRMS'
+  O: 'NIRMS',
+  P: 'NATURE OF PRODUCT'
 }
 
 const cooHeaderRow = {
@@ -21,9 +22,10 @@ const cooHeaderRow = {
   F: 'TARIFF CODE EU',
   G: 'PACKAGES',
   I: 'NET WEIGHT TOTAL KG',
-  J: 'NIRMS',
-  K: 'COUNTRY OF ORIGIN',
-  L: 'TYPE OF TREATMENT'
+  M: 'COUNTRY OF ORIGIN',
+  O: 'NIRMS',
+  P: 'NATURE OF PRODUCT',
+  Q: 'TYPE OF TREATMENT'
 }
 
 const standardSheetPrefix = [
@@ -74,20 +76,20 @@ export default {
     sheet: [
       ...standardSheetPrefix,
       {
-        C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
         F: '2005995090',
         G: 2,
         I: 2.5,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '0403209300',
         G: 1,
         I: 2,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(3, 4.5)
     ]
@@ -99,24 +101,24 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
         F: '12345678',
         G: 2,
         I: 2.5,
-        J: 'Yes',
-        K: 'GB',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'GB',
+        Q: 'Processed'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '87654321',
         G: 1,
         I: 2,
-        J: 'No',
-        K: 'IE',
-        L: 'Fresh'
+        P: 'Frozen',
+        O: 'No',
+        M: 'IE',
+        Q: 'Fresh'
       },
       ...totalsAndFooterRows(3, 4.5)
     ]
@@ -127,14 +129,14 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'No',
-        K: 'GB',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'No',
+        M: 'GB',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(1, 2)
     ]
@@ -145,13 +147,12 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '12345678',
         G: 1,
         I: 2,
-        K: 'GB',
-        L: 'Processed'
+        M: 'GB',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(1, 2)
     ]
@@ -162,14 +163,14 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Invalid',
-        K: 'GB',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Invalid',
+        M: 'GB',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(1, 2)
     ]
@@ -180,40 +181,36 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
         F: '12345678',
         G: 1,
         I: 2,
-        K: 'GB',
-        L: 'Processed'
+        M: 'GB',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT2',
         E: 'NISA PRODUCT 2',
         F: '12345678',
         G: 1,
         I: 2,
-        K: 'GB',
-        L: 'Processed'
+        M: 'GB',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT3',
         E: 'NISA PRODUCT 3',
         F: '12345678',
         G: 1,
         I: 2,
-        K: 'GB',
-        L: 'Processed'
+        M: 'GB',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT4',
         E: 'NISA PRODUCT 4',
         F: '12345678',
         G: 1,
         I: 2,
-        K: 'GB',
-        L: 'Processed'
+        M: 'GB',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(4, 8)
     ]
@@ -224,44 +221,44 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Invalid',
-        K: 'GB',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Invalid',
+        M: 'GB',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT2',
         E: 'NISA PRODUCT 2',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Invalid',
-        K: 'GB',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Invalid',
+        M: 'GB',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT3',
         E: 'NISA PRODUCT 3',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Invalid',
-        K: 'GB',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Invalid',
+        M: 'GB',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT4',
         E: 'NISA PRODUCT 4',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Invalid',
-        K: 'GB',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Invalid',
+        M: 'GB',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(4, 8)
     ]
@@ -272,13 +269,13 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(1, 2)
     ]
@@ -289,14 +286,14 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INVALID',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INVALID',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(1, 2)
     ]
@@ -307,40 +304,40 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT2',
         E: 'NISA PRODUCT 2',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT3',
         E: 'NISA PRODUCT 3',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT4',
         E: 'NISA PRODUCT 4',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(4, 8)
     ]
@@ -351,44 +348,44 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: 'PRODUCT1',
         E: 'NISA PRODUCT 1',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INVALID',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INVALID',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT2',
         E: 'NISA PRODUCT 2',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INVALID',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INVALID',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT3',
         E: 'NISA PRODUCT 3',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INVALID',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INVALID',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT4',
         E: 'NISA PRODUCT 4',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INVALID',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INVALID',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(4, 8)
     ]
@@ -399,24 +396,24 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'X',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'X',
+        Q: 'Processed'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '12345678',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'x',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'x',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(2, 4)
     ]
@@ -427,14 +424,14 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'Ineligible ITEM',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(1, 2)
     ]
@@ -445,44 +442,44 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: 'PRODUCT1',
         E: 'Ineligible ITEM 1',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT2',
         E: 'Ineligible ITEM 2',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT3',
         E: 'Ineligible ITEM 3',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO',
+        Q: 'Processed'
       },
       {
-        C: 'PRODUCT4',
         E: 'Ineligible ITEM 4',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO',
-        L: 'Processed'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO',
+        Q: 'Processed'
       },
       ...totalsAndFooterRows(4, 8)
     ]
@@ -493,13 +490,13 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'Ineligible ITEM',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO'
       },
       ...totalsAndFooterRows(1, 2)
     ]
@@ -510,40 +507,40 @@ export default {
     sheet: [
       ...cooSheetPrefix,
       {
-        C: 'PRODUCT1',
         E: 'Ineligible ITEM 1',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO'
       },
       {
-        C: 'PRODUCT2',
         E: 'Ineligible ITEM 2',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO'
       },
       {
-        C: 'PRODUCT3',
         E: 'Ineligible ITEM 3',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO'
       },
       {
-        C: 'PRODUCT4',
         E: 'Ineligible ITEM 4',
         F: '1234',
         G: 1,
         I: 2,
-        J: 'Yes',
-        K: 'INELIGIBLE_ITEM_ISO'
+        P: 'Frozen',
+        O: 'Yes',
+        M: 'INELIGIBLE_ITEM_ISO'
       },
       ...totalsAndFooterRows(4, 8)
     ]
@@ -554,20 +551,20 @@ export default {
     sheet: [
       ...standardSheetPrefix,
       {
-        C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
         F: '2005995090',
         G: 2,
         I: 2.5,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '0403209300',
         G: 1,
         I: 2,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(3, 4.5)
     ]
@@ -579,24 +576,24 @@ export default {
     Sheet1: [
       ...standardSheetPrefix,
       {
-        C: '500 - VEGETABLES - F',
         E: 'GREEN ISLE BATTERED ONION RING',
         F: '2004909880',
         G: 9,
         I: 63,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(9, 63)
     ],
     Sheet2: [
       ...standardSheetPrefix,
       {
-        C: '515 - F/P POTATOES - F',
         E: 'MCCAIN READY BAKED JACKETS 4PK',
         F: '2004109900',
         G: 28,
         I: 176.4,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(28, 176.4)
     ]
@@ -617,12 +614,12 @@ export default {
         A: 'RMS-GB-000025-003'
       },
       {
-        C: 'PRODUCT TYPE CATEGORY',
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
         I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       }
     ],
     Sheet2: [
@@ -631,52 +628,53 @@ export default {
         A: 'INCORRECT'
       },
       {
-        C: 'PRODUCT TYPE CATEGORY',
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
         I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       }
     ]
   },
   incorrectHeader: {
     sheet1: [
       {
-        C: 'NOT',
         F: 'CORRECT',
         H: 'NET WEIGHT PACKAGE KG',
         I: 'HEADER'
       },
       {
         A: 'RMS-GB-000025-003',
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       }
     ]
   },
   incorrectHeaderMultiple: {
     sheet1: [
       {
-        C: 'PRODUCT TYPE CATEGORY',
         F: 'TARIFF CODE EU',
         I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       },
       {
         A: 'RMS-GB-000025-003',
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       }
     ],
     Sheet2: [
       {
-        C: 'NOT',
         F: 'CORRECT',
         H: 'NET WEIGHT PACKAGE KG',
         I: 'HEADER'
       },
       {
         A: 'RMS-GB-000025-003',
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       }
     ]
   },
@@ -684,20 +682,20 @@ export default {
     sheet: [
       ...standardSheetPrefix,
       {
-        C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
         F: '2005995090',
         G: 2,
         I: null,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: null,
         G: 1,
         I: 2,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       }
     ]
   },
@@ -706,12 +704,12 @@ export default {
       {},
       {},
       {
-        C: 'PRODUCT TYPE CATEGORY',
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
         I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       }
     ]
   },
@@ -725,28 +723,28 @@ export default {
         B: 'RMS-GB-000025-004'
       },
       {
-        C: 'PRODUCT TYPE CATEGORY',
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
         I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       },
       {
-        C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
         F: '2005995090',
         G: 2,
         I: 2.5,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '0403209300',
         G: 1,
         I: 2,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(3, 4.5)
     ]
@@ -760,28 +758,28 @@ export default {
         A: 'RMS-GB-000025-003'
       },
       {
-        C: 'PRODUCT TYPE CATEGORY',
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
         I: 'NET WEIGHT TOTAL',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       },
       {
-        C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
         F: '2005995090',
         G: 2,
         I: 2.5,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '0403209300',
         G: 1,
         I: 2,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(3, 4.5)
     ]
@@ -790,15 +788,15 @@ export default {
     sheet: [
       ...standardSheetPrefix,
       {
-        C: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
         E: 'DAIRYLEA DUNKERS JUMBO PM80P',
         F: '2005995090',
         G: 2,
         I: 2.5,
-        J: 'Non-NIRMS'
+        O: 'Non-NIRMS',
+        P: 'Frozen'
       },
       {
-        J: 'Non-NIRMS'
+        O: 'Non-NIRMS'
       }
     ]
   },
@@ -808,20 +806,20 @@ export default {
         A: 'RMS-GB-000025-003'
       },
       {
-        C: 'PRODUCT TYPE CATEGORY',
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
         I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       },
       {
-        C: '900 - VEGETABLES PREPACK-C',
         E: 'NISA BROCCOLI',
         F: '0403209300',
         G: 1,
         I: 2,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(1, 2)
     ],
@@ -833,20 +831,20 @@ export default {
         A: 'extra row'
       },
       {
-        C: 'PRODUCT TYPE CATEGORY',
         E: 'PART NUMBER DESCRIPTION',
         F: 'TARIFF CODE EU',
         G: 'PACKAGES',
         I: 'NET WEIGHT TOTAL KG',
-        J: 'NIRMS'
+        P: 'NATURE OF PRODUCT',
+        O: 'NIRMS'
       },
       {
-        C: 'PRODUCT_TYPE_CATEGORY800 - FRUITS - C',
         E: 'NISA APPLES RED',
         F: '0808100000',
         G: 3,
         I: 4.5,
-        J: 'Non-NIRMS'
+        P: 'Frozen',
+        O: 'Non-NIRMS'
       },
       ...totalsAndFooterRows(3, 4.5)
     ]
