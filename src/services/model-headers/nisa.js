@@ -35,7 +35,7 @@ export const nisaHeaders = {
       commodity_code: /TARIFF CODE EU/i,
       number_of_packages: /PACKAGES/i,
       total_net_weight_kg: /NET WEIGHT TOTAL/i,
-      nature_of_products: /PRODUCT TYPE CATEGORY/i
+      nature_of_products: /NATURE OF PRODUCT/i
     },
     // Optional fields
     country_of_origin: /COUNTRY OF ORIGIN/i,

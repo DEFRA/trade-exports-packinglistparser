@@ -11,8 +11,7 @@ export default {
       {
         commodity_code: '2005995090',
         description: 'DAIRYLEA DUNKERS JUMBO PM80P',
-        nature_of_products: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
-        number_of_packages: 2,
+        nature_of_products: 'Frozen',
         total_net_weight_kg: 2.5,
         total_net_weight_unit: 'KG',
         type_of_treatment: null
@@ -20,7 +19,7 @@ export default {
       {
         commodity_code: '0403209300',
         description: 'NISA BROCCOLI',
-        nature_of_products: '900 - VEGETABLES PREPACK-C',
+        nature_of_products: 'Frozen',
         number_of_packages: 1,
         total_net_weight_kg: 2,
         total_net_weight_unit: 'KG',
@@ -40,7 +39,7 @@ export default {
       {
         commodity_code: '2004909880',
         description: 'GREEN ISLE BATTERED ONION RING',
-        nature_of_products: '500 - VEGETABLES - F',
+        nature_of_products: 'Frozen',
         number_of_packages: 9,
         total_net_weight_kg: 63,
         total_net_weight_unit: 'KG',
@@ -49,7 +48,7 @@ export default {
       {
         commodity_code: '2004109900',
         description: 'MCCAIN READY BAKED JACKETS 4PK',
-        nature_of_products: '515 - F/P POTATOES - F',
+        nature_of_products: 'Frozen',
         number_of_packages: 28,
         total_net_weight_kg: 176.4,
         total_net_weight_unit: 'KG',
@@ -70,7 +69,7 @@ export default {
       {
         commodity_code: '2005995090',
         description: 'DAIRYLEA DUNKERS JUMBO PM80P',
-        nature_of_products: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
+        nature_of_products: 'Frozen',
         number_of_packages: 2,
         total_net_weight_kg: null,
         total_net_weight_unit: 'KG',
@@ -79,7 +78,7 @@ export default {
       {
         commodity_code: null,
         description: 'NISA BROCCOLI',
-        nature_of_products: '900 - VEGETABLES PREPACK-C',
+        nature_of_products: 'Frozen',
         number_of_packages: 1,
         total_net_weight_kg: 2,
         total_net_weight_unit: 'KG',
@@ -107,7 +106,7 @@ export default {
       {
         commodity_code: '2005995090',
         description: 'DAIRYLEA DUNKERS JUMBO PM80P',
-        nature_of_products: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
+        nature_of_products: 'Frozen',
         number_of_packages: 2,
         total_net_weight_kg: 2.5,
         total_net_weight_unit: 'KG',
@@ -116,7 +115,7 @@ export default {
       {
         commodity_code: '0403209300',
         description: 'NISA BROCCOLI',
-        nature_of_products: '900 - VEGETABLES PREPACK-C',
+        nature_of_products: 'Frozen',
         number_of_packages: 1,
         total_net_weight_kg: 2,
         total_net_weight_unit: 'KG',
@@ -136,7 +135,7 @@ export default {
       {
         commodity_code: '2005995090',
         description: 'DAIRYLEA DUNKERS JUMBO PM80P',
-        nature_of_products: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
+        nature_of_products: 'Frozen',
         number_of_packages: 2,
         total_net_weight_kg: 2.5,
         total_net_weight_unit: null,
@@ -145,7 +144,7 @@ export default {
       {
         commodity_code: '0403209300',
         description: 'NISA BROCCOLI',
-        nature_of_products: '900 - VEGETABLES PREPACK-C',
+        nature_of_products: 'Frozen',
         number_of_packages: 1,
         total_net_weight_kg: 2,
         total_net_weight_unit: null,
@@ -166,7 +165,7 @@ export default {
       {
         commodity_code: '2005995090',
         description: 'DAIRYLEA DUNKERS JUMBO PM80P',
-        nature_of_products: 'PRODUCT_TYPE_CATEGORY675 - CHEESE - C',
+        nature_of_products: 'Frozen',
         number_of_packages: 2,
         total_net_weight_kg: 2.5,
         total_net_weight_unit: 'KG',
