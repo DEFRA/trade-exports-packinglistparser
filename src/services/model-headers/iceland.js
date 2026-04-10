@@ -16,7 +16,7 @@ const csvIcelandHeaders = {
       type_of_treatment: /Treatment Type/i,
       number_of_packages: /Packages/i,
       total_net_weight_kg: /Net Weight\/Package/i,
-      nature_of_products: /Product Type \/ Category/i
+      nature_of_products: /Product Type\/Category/i
     },
     nirms: /NIRMS/i,
     country_of_origin: /Country of Origin Code/i,
