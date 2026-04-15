@@ -17,7 +17,8 @@ describe('matchesWarrens2', () => {
   test("returns 'Empty File' when workbook contains only invalid sheets", () => {
     const packingListJson = {
       'GC REFERENCE': [{ A: 'INVALID' }],
-      'GC REF': [{ A: 'INVALID' }]
+      'GC REF': [{ A: 'INVALID' }],
+      GC_REF: [{ A: 'INVALID' }]
     }
 
     const result = matches(packingListJson, filename)
