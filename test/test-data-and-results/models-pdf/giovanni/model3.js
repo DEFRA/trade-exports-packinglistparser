@@ -861,7 +861,7 @@ export default {
           {
             x: 389.59,
             y: 291.77,
-            str: 'kGkilograms',
+            str: '(lbs)',
             dir: 'ltr',
             width: 40,
             height: 5.28,
@@ -2070,5 +2070,322 @@ export default {
   },
   emptyModel: {
     pages: []
+  },
+  giohappyModel: {
+    pages: [
+      {
+        pageInfo: {
+          num: 1
+        },
+        content: [
+          {
+            x: 457.9,
+            y: 159.02,
+            str: 'RMS-GB-000149-002',
+            dir: 'ltr',
+            width: 65.25,
+            height: 7.2,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 387.31,
+            y: 198.89,
+            str: 'Type of Treatment',
+            dir: 'ltr',
+            width: 42.87,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 393.31,
+            y: 219.89,
+            str: 'Processed',
+            dir: 'ltr',
+            width: 31.7,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 484.66,
+            y: 198.89,
+            str: 'NIRMS ONLY',
+            dir: 'ltr',
+            width: 30.64,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 494.62,
+            y: 219.89,
+            str: 'N',
+            dir: 'ltr',
+            width: 4.85,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 186.74,
+            y: 234.89,
+            str: 'GOODS TOTAL',
+            dir: 'ltr',
+            width: 53.05,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 218.93,
+            y: 247.73,
+            str: 'NET WEIGHT (KG)',
+            dir: 'ltr',
+            width: 42.99,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 210.29,
+            y: 271.37,
+            str: 'GOODS DETAIL',
+            dir: 'ltr',
+            width: 55.2,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 165.26,
+            y: 286.37,
+            str: 'DESCRIPTION',
+            dir: 'ltr',
+            width: 33.41,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 242.09,
+            y: 286.85,
+            str: 'Commodity Code',
+            dir: 'ltr',
+            width: 40.65,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 297.05,
+            y: 283.61,
+            str: 'Country of',
+            dir: 'ltr',
+            width: 24.91,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 302.33,
+            y: 290.09,
+            str: 'Origin',
+            dir: 'ltr',
+            width: 14.4,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 334.39,
+            y: 286.85,
+            str: 'Quantity',
+            dir: 'ltr',
+            width: 19.99,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 364.03,
+            y: 286.85,
+            str: 'Net Weight (KG)',
+            dir: 'ltr',
+            width: 37.82,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 408.43,
+            y: 286.85,
+            str: 'Gross Weight (KG)',
+            dir: 'ltr',
+            width: 44.06,
+            height: 5.28,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 135.5,
+            y: 303.41,
+            str: 'FRESH EGG TAGLIATELLE',
+            dir: 'ltr',
+            width: 93.59,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 242.45,
+            y: 303.41,
+            str: '1902110090',
+            dir: 'ltr',
+            width: 40.79,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 293.09,
+            y: 303.41,
+            str: 'IT',
+            dir: 'ltr',
+            width: 6.39,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 355.87,
+            y: 303.41,
+            str: '8',
+            dir: 'ltr',
+            width: 4.07,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 395.11,
+            y: 303.41,
+            str: '32',
+            dir: 'ltr',
+            width: 8.15,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 440.62,
+            y: 303.41,
+            str: '35.2',
+            dir: 'ltr',
+            width: 14.28,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 147.14,
+            y: 312.53,
+            str: 'FRESH EGG PENNE',
+            dir: 'ltr',
+            width: 70.37,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 242.45,
+            y: 312.53,
+            str: '1902110090',
+            dir: 'ltr',
+            width: 40.79,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 293.09,
+            y: 312.53,
+            str: 'IT',
+            dir: 'ltr',
+            width: 6.39,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 355.87,
+            y: 312.53,
+            str: '1',
+            dir: 'ltr',
+            width: 4.07,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 399.19,
+            y: 312.53,
+            str: '4',
+            dir: 'ltr',
+            width: 4.07,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 440.62,
+            y: 312.53,
+            str: '4.44',
+            dir: 'ltr',
+            width: 14.28,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 146.42,
+            y: 321.65,
+            str: 'FRESH EGG FUSILLI',
+            dir: 'ltr',
+            width: 71.81,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 242.45,
+            y: 321.65,
+            str: '1902110090',
+            dir: 'ltr',
+            width: 40.79,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 293.09,
+            y: 321.65,
+            str: 'IT',
+            dir: 'ltr',
+            width: 6.39,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 355.87,
+            y: 321.65,
+            str: '3',
+            dir: 'ltr',
+            width: 4.07,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 395.11,
+            y: 321.65,
+            str: '12',
+            dir: 'ltr',
+            width: 8.15,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 440.62,
+            y: 321.65,
+            str: '13.2',
+            dir: 'ltr',
+            width: 14.28,
+            height: 7.92,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 39.96,
+            y: 340.65,
+            str: '0',
+            dir: 'ltr',
+            width: 4.07,
+            height: 7.92,
+            fontName: 'Helvetica'
+          }
+        ]
+      }
+    ]
   }
 }

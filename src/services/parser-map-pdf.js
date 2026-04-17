@@ -335,7 +335,7 @@ export function discoverNetWeightUnit(pageContent, model) {
   if (
     foundUnit &&
     headers[model].strictUnitMatch &&
-    !regex.STRICT_KG_REGEX.test(unitItem.str)
+    !regex.kgRegex.test(unitItem.str)
   ) {
     return null
   }

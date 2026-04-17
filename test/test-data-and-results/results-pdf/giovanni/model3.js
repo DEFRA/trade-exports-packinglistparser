@@ -148,5 +148,42 @@ export default {
     ],
     registration_approval_number: 'RMS-GB-000149-002',
     parserModel: parserModel.GIOVANNI3
+  },
+  giohappyTestResult: {
+    business_checks: {
+      all_required_fields_present: true,
+      failure_reasons: null
+    },
+    items: [
+      {
+        description: 'FRESH EGG TAGLIATELLE',
+        commodity_code: '1902110090',
+        number_of_packages: '8',
+        total_net_weight_kg: '32',
+        total_net_weight_unit: 'KG',
+        type_of_treatment: 'Processed',
+        country_of_origin: 'IT'
+      },
+      {
+        description: 'FRESH EGG PENNE',
+        commodity_code: '1902110090',
+        number_of_packages: '1',
+        total_net_weight_kg: '4',
+        total_net_weight_unit: 'KG',
+        type_of_treatment: 'Processed',
+        country_of_origin: 'IT'
+      },
+      {
+        description: 'FRESH EGG FUSILLI',
+        commodity_code: '1902110090',
+        number_of_packages: '3',
+        total_net_weight_kg: '12',
+        total_net_weight_unit: 'KG',
+        type_of_treatment: 'Processed',
+        country_of_origin: 'IT'
+      }
+    ],
+    registration_approval_number: 'RMS-GB-000149-002',
+    parserModel: parserModel.GIOVANNI3
   }
 }
