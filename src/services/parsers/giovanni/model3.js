@@ -41,7 +41,7 @@ const CORE_HEADERS = {
   description: headers.GIOVANNI3.headers.description,
   commodity_code: headers.GIOVANNI3.headers.commodity_code,
   number_of_packages: headers.GIOVANNI3.headers.number_of_packages,
-  total_net_weight_kg: { regex: /Net Weight.*/i }
+  total_net_weight_kg: headers.GIOVANNI3.headers.total_net_weight_kg
 }
 
 /**
@@ -149,6 +149,14 @@ function buildExtractionBoundaries(headerRowContent, coreBoundaries) {
   // wide for CO and can bleed into adjacent columns).
   delete expandedBoundaries.gross_weight
 
+  // The midpoint calculation reserves a 1px gap to prevent column overlap.
+  // For net weight this can exclude right-aligned single-digit values that
+  // sit exactly at the midpoint, so restore that pixel after the anchor
+  // column has been removed.
+  if (expandedBoundaries.total_net_weight_kg && allBoundaries.gross_weight) {
+    expandedBoundaries.total_net_weight_kg.x2 += 1
+  }
+
   // Cap commodity code right boundary when country-of-origin anchor is missing.
   // Some PDFs omit the Country of Origin header entirely, causing commodity
   // code to expand into the country-of-origin data region.
@@ -213,7 +221,12 @@ export async function parse(packingList) {
 
     const { nirmsBoundary } = discoverOptionalBoundaries(firstPage.content)
 
-    const netWeightUnit = discoverNetWeightUnit(firstPage.content, model)
+    // Filter to content at or below the header Y band so discoverNetWeightUnit
+    // finds the Goods Detail "Net Weight" header, not the Goods Total one above.
+    const headerAndBelowContent = firstPage.content.filter(
+      (item) => item.y >= headers.GIOVANNI3.minHeadersY
+    )
+    const netWeightUnit = discoverNetWeightUnit(headerAndBelowContent, model)
 
     let packingListContents = []
 

@@ -82,7 +82,7 @@ const pdfGiovanniHeaders = {
         x: /Net/i,
         x1: 360,
         x2: 445,
-        regex: /Net Weight/i
+        regex: /Net Weight.*/i
       },
       type_of_treatment: {
         x: /Type of Treatment|METHOD/i,

@@ -334,7 +334,7 @@ describe('parsePackingList - Giovanni Model 3', () => {
     expect(result).toMatchObject(test_results.missingKgTestResult)
   })
 
-  test('returns unit failure for malformed unit in header (e.g. kGkilograms)', async () => {
+  test('returns unit failure when header contains no valid KG unit (e.g. lbs only)', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(
       model.malformedKgunitModel
     )
@@ -355,6 +355,15 @@ describe('parsePackingList - Giovanni Model 3', () => {
   test("returns 'No Match' for incorrect file extension", async () => {
     const result = await parsePackingList({}, INVALID_FILENAME)
     expect(result).toMatchObject(NO_MATCH_RESULT)
+  })
+
+  test('parses giohappy layout with GOODS DETAIL headers and single-digit net weights', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.giohappyModel)
+    const result = await parsePackingList({}, filename)
+    expect(result).toMatchObject(test_results.giohappyTestResult)
+    expect(result.items).toHaveLength(3)
+    expect(result.items[1].total_net_weight_kg).toBe('4')
+    expect(result.business_checks.all_required_fields_present).toBe(true)
   })
 })
 
