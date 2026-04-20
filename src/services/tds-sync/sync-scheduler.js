@@ -1,10 +1,11 @@
 import { syncToTds } from './tds-sync.js'
+import { executeWithTdsSyncLock } from './tds-sync-lock.js'
 import { config } from '../../config.js'
 import { createSyncScheduler } from '../../common/helpers/sync-scheduler-factory.js'
 
 const scheduler = createSyncScheduler({
   name: 'TDS',
-  syncFunction: syncToTds,
+  syncFunction: () => executeWithTdsSyncLock(syncToTds),
   get enabled() {
     return config.get('tdsSync').enabled
   },

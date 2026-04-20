@@ -440,7 +440,7 @@ const config = convict({
     cronSchedule: {
       doc: 'Cron schedule for TDS sync (default: hourly at minute 0)',
       format: String,
-      default: '0 * * * *',
+      default: '*/1 * * * *',
       env: 'TDS_SYNC_CRON_SCHEDULE'
     },
     batchSize: {
@@ -448,6 +448,26 @@ const config = convict({
       format: 'nat',
       default: 5,
       env: 'TDS_SYNC_BATCH_SIZE'
+    },
+    lock: {
+      key: {
+        doc: 'S3 object key used as distributed lock for TDS synchronization',
+        format: String,
+        default: 'locks/tds-sync/lease.lock',
+        env: 'TDS_SYNC_LOCK_KEY'
+      },
+      ttlMs: {
+        doc: 'TDS lock lease time-to-live in milliseconds',
+        format: 'nat',
+        default: 300000,
+        env: 'TDS_SYNC_LOCK_TTL_MS'
+      },
+      failOpen: {
+        doc: 'Run TDS synchronization when lock operations fail',
+        format: Boolean,
+        default: true,
+        env: 'TDS_SYNC_LOCK_FAIL_OPEN'
+      }
     }
   }
 })
