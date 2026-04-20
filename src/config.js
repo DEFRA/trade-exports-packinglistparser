@@ -440,7 +440,7 @@ const config = convict({
     cronSchedule: {
       doc: 'Cron schedule for TDS sync (default: hourly at minute 0)',
       format: String,
-      default: '*/1 * * * *',
+      default: '0 * * * *',
       env: 'TDS_SYNC_CRON_SCHEDULE'
     },
     batchSize: {
