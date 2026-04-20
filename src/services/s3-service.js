@@ -33,6 +33,30 @@ function createS3Client() {
 }
 
 /**
+ * Uploads an object to S3 bucket using a raw key
+ * @param {Object} options - Upload options
+ * @param {string} options.key - S3 object key
+ * @param {string|Buffer|Uint8Array} options.body - Object body
+ * @param {string} [options.contentType] - Content type
+ * @param {Object} [options.metadata] - Custom object metadata
+ * @param {string} [options.ifNoneMatch] - Conditional write header
+ * @returns {Promise<Object>} S3 PutObject command response
+ */
+function putObjectToS3({ key, body, contentType, metadata, ifNoneMatch }) {
+  const client = createS3Client()
+  const command = new PutObjectCommand({
+    Bucket: s3Bucket,
+    Key: key,
+    Body: body,
+    ...(contentType && { ContentType: contentType }),
+    ...(metadata && { Metadata: metadata }),
+    ...(ifNoneMatch && { IfNoneMatch: ifNoneMatch })
+  })
+
+  return client.send(command)
+}
+
+/**
  * Lists objects in S3 bucket for a given schema version
  * @param {string} [schema] - Schema version prefix (defaults to config schemaVersion)
  * @returns {Promise<Object>} S3 ListObjectsV2 command response
@@ -54,13 +78,10 @@ function listS3Objects(schema = schemaVersion) {
  * @returns {Promise<Object>} S3 PutObject command response
  */
 function uploadJsonFileToS3(location, body) {
-  const client = createS3Client()
-  const command = new PutObjectCommand({
-    Bucket: s3Bucket,
-    Key: getKeyFromLocation(location),
-    Body: body
+  return putObjectToS3({
+    key: getKeyFromLocation(location),
+    body
   })
-  return client.send(command)
 }
 
 /**
@@ -79,10 +100,19 @@ async function getFileFromS3(location) {
  * @returns {Promise<Object>} S3 GetObject command response with Body stream
  */
 function getStreamFromS3(location) {
+  return getObjectFromS3ByKey(getKeyFromLocation(location))
+}
+
+/**
+ * Gets an object from S3 for a given raw key
+ * @param {string} key - S3 object key
+ * @returns {Promise<Object>} S3 GetObject command response with Body stream
+ */
+function getObjectFromS3ByKey(key) {
   const client = createS3Client()
   const command = new GetObjectCommand({
     Bucket: s3Bucket,
-    Key: getKeyFromLocation(location)
+    Key: key
   })
   return client.send(command)
 }
@@ -105,6 +135,15 @@ function getKeyFromLocation(location) {
  * @returns {Promise<Object>} S3 DeleteObject command response
  */
 function deleteFileFromS3(key) {
+  return deleteObjectFromS3(key)
+}
+
+/**
+ * Deletes an object from S3 bucket using a raw key
+ * @param {string} key - S3 object key to delete
+ * @returns {Promise<Object>} S3 DeleteObject command response
+ */
+function deleteObjectFromS3(key) {
   const client = createS3Client()
   const command = new DeleteObjectCommand({
     Bucket: s3Bucket,
@@ -118,5 +157,8 @@ export {
   uploadJsonFileToS3,
   getFileFromS3,
   getStreamFromS3,
-  deleteFileFromS3
+  deleteFileFromS3,
+  putObjectToS3,
+  getObjectFromS3ByKey,
+  deleteObjectFromS3
 }

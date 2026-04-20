@@ -5,6 +5,8 @@ import {
   isTdsSchedulerRunning
 } from './sync-scheduler.js'
 import { config } from '../../config.js'
+import { syncToTds } from './tds-sync.js'
+import { executeWithTdsSyncLock } from './tds-sync-lock.js'
 
 // Variable to capture scheduler options at module load time - uses var to avoid TDZ issues with hoisting
 // eslint-disable-next-line no-var
@@ -12,6 +14,9 @@ var captured
 
 // Mock dependencies first
 vi.mock('./tds-sync.js')
+vi.mock('./tds-sync-lock.js', () => ({
+  executeWithTdsSyncLock: vi.fn(() => Promise.resolve({ success: true }))
+}))
 
 vi.mock('../../common/helpers/sync-scheduler-factory.js', () => ({
   createSyncScheduler: vi.fn((options) => {
@@ -149,6 +154,12 @@ describe('TDS sync-scheduler', () => {
 
       const enabled = captured.enabled
       expect(enabled).toBe(false)
+    })
+
+    it('should wrap TDS sync execution with distributed lock', async () => {
+      await captured.syncFunction()
+
+      expect(executeWithTdsSyncLock).toHaveBeenCalledWith(syncToTds)
     })
   })
 })

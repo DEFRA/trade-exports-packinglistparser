@@ -48,7 +48,10 @@ describe('S3 Service', () => {
     uploadJsonFileToS3,
     getFileFromS3,
     getStreamFromS3,
-    deleteFileFromS3
+    deleteFileFromS3,
+    putObjectToS3,
+    getObjectFromS3ByKey,
+    deleteObjectFromS3
 
   beforeEach(async () => {
     mockSend = vi.fn()
@@ -75,6 +78,9 @@ describe('S3 Service', () => {
     getFileFromS3 = s3Service.getFileFromS3
     getStreamFromS3 = s3Service.getStreamFromS3
     deleteFileFromS3 = s3Service.deleteFileFromS3
+    putObjectToS3 = s3Service.putObjectToS3
+    getObjectFromS3ByKey = s3Service.getObjectFromS3ByKey
+    deleteObjectFromS3 = s3Service.deleteObjectFromS3
   })
 
   afterEach(() => {
@@ -149,6 +155,39 @@ describe('S3 Service', () => {
       await expect(
         uploadJsonFileToS3({ filename: 'test' }, '{"test": "data"}')
       ).rejects.toThrow('Failed to upload file')
+    })
+  })
+
+  describe('putObjectToS3', () => {
+    it('should upload object with metadata and conditional header', async () => {
+      const mockResponse = { ETag: 'etag-value' }
+      mockSend.mockResolvedValue(mockResponse)
+
+      const result = await putObjectToS3({
+        key: 'locks/tds-sync/lease.lock',
+        body: '{"owner":"instance-1"}',
+        contentType: 'application/json',
+        metadata: {
+          ownerid: 'instance-1'
+        },
+        ifNoneMatch: '*'
+      })
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            Bucket: 'test-bucket',
+            Key: 'locks/tds-sync/lease.lock',
+            Body: '{"owner":"instance-1"}',
+            ContentType: 'application/json',
+            Metadata: {
+              ownerid: 'instance-1'
+            },
+            IfNoneMatch: '*'
+          }
+        })
+      )
+      expect(result).toEqual(mockResponse)
     })
   })
 
@@ -228,6 +267,29 @@ describe('S3 Service', () => {
       await expect(getStreamFromS3({ filename: 'test' })).rejects.toThrow(
         'Stream error'
       )
+    })
+  })
+
+  describe('getObjectFromS3ByKey', () => {
+    it('should fetch object using raw key', async () => {
+      const mockResponse = {
+        Body: {
+          transformToString: vi.fn()
+        }
+      }
+      mockSend.mockResolvedValue(mockResponse)
+
+      const result = await getObjectFromS3ByKey('locks/tds-sync/lease.lock')
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            Bucket: 'test-bucket',
+            Key: 'locks/tds-sync/lease.lock'
+          }
+        })
+      )
+      expect(result).toEqual(mockResponse)
     })
   })
 
@@ -322,6 +384,25 @@ describe('S3 Service', () => {
           }
         })
       )
+    })
+  })
+
+  describe('deleteObjectFromS3', () => {
+    it('should delete object using raw key', async () => {
+      const mockResponse = { DeleteMarker: false }
+      mockSend.mockResolvedValue(mockResponse)
+
+      const result = await deleteObjectFromS3('locks/tds-sync/lease.lock')
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          input: {
+            Bucket: 'test-bucket',
+            Key: 'locks/tds-sync/lease.lock'
+          }
+        })
+      )
+      expect(result).toEqual(mockResponse)
     })
   })
 })
