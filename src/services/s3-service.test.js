@@ -99,18 +99,32 @@ describe('S3 Service', () => {
 
       const result = await listS3Objects()
 
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          input: {
-            Bucket: 'test-bucket',
-            Prefix: `${mockPackingList.schemaVersion}/`
-          }
-        })
-      )
       const command = mockSend.mock.calls[0][0]
       expect(command.input.Bucket).toBe('test-bucket')
       expect(command.input.Prefix).toBe(`${mockPackingList.schemaVersion}/`)
+      expect(command.input.MaxKeys).toBe(300)
+      expect(command.input.ContinuationToken).toBeUndefined()
       expect(result).toEqual(mockResponse)
+    })
+
+    it('should include ContinuationToken when provided', async () => {
+      const mockResponse = { Contents: [{ Key: 'file3.txt', Size: 100 }] }
+      mockSend.mockResolvedValue(mockResponse)
+
+      await listS3Objects('v0.0', 'some-token-value')
+
+      const command = mockSend.mock.calls[0][0]
+      expect(command.input.ContinuationToken).toBe('some-token-value')
+      expect(command.input.MaxKeys).toBe(300)
+    })
+
+    it('should not include ContinuationToken when not provided', async () => {
+      mockSend.mockResolvedValue({ Contents: [] })
+
+      await listS3Objects()
+
+      const command = mockSend.mock.calls[0][0]
+      expect(command.input.ContinuationToken).toBeUndefined()
     })
 
     it('should handle errors when listing objects', async () => {

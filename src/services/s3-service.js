@@ -12,6 +12,8 @@ const { s3Bucket, region, endpoint, accessKeyId, secretAccessKey } =
 
 const { schemaVersion } = config.get('packingList')
 
+const MAX_KEYS_PER_PAGE = 300
+
 /**
  * Get S3 client configuration with optional endpoint and credentials
  * @returns {Object} S3 client configuration object
@@ -59,14 +61,17 @@ function putObjectToS3({ key, body, contentType, metadata, ifNoneMatch }) {
 /**
  * Lists objects in S3 bucket for a given schema version
  * @param {string} [schema] - Schema version prefix (defaults to config schemaVersion)
+ * @param {string} [continuationToken] - Pagination token from a previous truncated response
  * @returns {Promise<Object>} S3 ListObjectsV2 command response
  */
-function listS3Objects(schema = schemaVersion) {
+function listS3Objects(schema = schemaVersion, continuationToken = undefined) {
   const client = createS3Client()
 
   const command = new ListObjectsV2Command({
     Bucket: s3Bucket,
-    Prefix: `${schema}/`
+    Prefix: `${schema}/`,
+    MaxKeys: MAX_KEYS_PER_PAGE,
+    ...(continuationToken && { ContinuationToken: continuationToken })
   })
   return client.send(command)
 }

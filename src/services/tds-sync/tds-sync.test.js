@@ -76,6 +76,7 @@ const TEST_CONTENT = 'test content'
 const EXPECTED_FILE_COUNT_THREE = 3
 const EXPECTED_FILE_COUNT_SEVEN = 7
 const BATCH_SIZE_TWO = 2
+const EXPECTED_FILE_COUNT_SIX = 6
 
 describe('tds-sync', () => {
   beforeEach(() => {
@@ -291,6 +292,63 @@ describe('tds-sync', () => {
       expect(result.transfers.failed).toHaveLength(1)
       expect(result.transfers.failed[0].error).toBe('Upload failed')
       expect(deleteFileFromS3).toHaveBeenCalledTimes(1) // Only for successful transfer
+    })
+  })
+
+  describe('syncToTds - paginated S3 listing', () => {
+    it('should collect keys across multiple pages when S3 response is truncated', async () => {
+      const mockS3Response = {
+        Body: createMockStream(TEST_CONTENT)
+      }
+
+      // Page 1: truncated, returns a continuation token
+      listS3Objects.mockResolvedValueOnce({
+        Contents: [
+          { Key: 'tds-transfer/file1.json' },
+          { Key: 'tds-transfer/file2.json' },
+          { Key: 'tds-transfer/file3.json' }
+        ],
+        IsTruncated: true,
+        NextContinuationToken: 'page-2-token'
+      })
+      // Page 2: final page
+      listS3Objects.mockResolvedValueOnce({
+        Contents: [
+          { Key: 'tds-transfer/file4.json' },
+          { Key: 'tds-transfer/file5.json' },
+          { Key: 'tds-transfer/file6.json' }
+        ],
+        IsTruncated: false
+      })
+
+      getStreamFromS3.mockResolvedValue(mockS3Response)
+      uploadToTdsBlob.mockResolvedValue({ ETag: '"abc"' })
+      deleteFileFromS3.mockResolvedValue({})
+
+      const result = await syncToTds()
+
+      expect(listS3Objects).toHaveBeenCalledTimes(2)
+      expect(listS3Objects).toHaveBeenNthCalledWith(1, 'v0.0', undefined)
+      expect(listS3Objects).toHaveBeenNthCalledWith(2, 'v0.0', 'page-2-token')
+      expect(result.success).toBe(true)
+      expect(result.totalFiles).toBe(EXPECTED_FILE_COUNT_SIX)
+      expect(result.successfulTransfers).toBe(EXPECTED_FILE_COUNT_SIX)
+      expect(result.failedTransfers).toBe(0)
+      expect(uploadToTdsBlob).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_SIX)
+      expect(deleteFileFromS3).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_SIX)
+    })
+
+    it('should handle empty first page across paginated listing', async () => {
+      listS3Objects.mockResolvedValueOnce({
+        IsTruncated: false
+      })
+
+      const result = await syncToTds()
+
+      expect(listS3Objects).toHaveBeenCalledTimes(1)
+      expect(result.success).toBe(true)
+      expect(result.totalFiles).toBe(0)
+      expect(result.message).toBe('No files found to transfer')
     })
   })
 

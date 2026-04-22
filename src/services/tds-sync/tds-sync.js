@@ -22,21 +22,36 @@ const checkTdsSyncEnabled = createEnabledCheck(
 )
 
 /**
- * List documents from S3 in the configured schema folder
+ * List documents from S3 in the configured schema folder, paginating through
+ * all result pages to ensure all keys are collected regardless of bucket size.
+ * Each page requests at most 300 keys to stay within the XML entity expansion
+ * limit enforced by the underlying fast-xml-parser dependency.
  * @param {string} schema - S3 schema/folder to search
  * @returns {Promise<Array>} Array of S3 object keys
  */
 async function listDocumentsFromS3(schema) {
   logger.info(`Listing documents from S3 schema folder (schema: ${schema})`)
 
-  const response = await listS3Objects(schema)
+  const keys = []
+  let continuationToken
 
-  if (!response.Contents || response.Contents.length === 0) {
+  do {
+    const response = await listS3Objects(schema, continuationToken)
+
+    if (response.Contents) {
+      keys.push(...response.Contents.map((obj) => obj.Key))
+    }
+
+    continuationToken = response.IsTruncated
+      ? response.NextContinuationToken
+      : undefined
+  } while (continuationToken)
+
+  if (keys.length === 0) {
     logger.info(`No documents found in S3 schema folder (schema: ${schema})`)
     return []
   }
 
-  const keys = response.Contents.map((obj) => obj.Key)
   logger.info(
     `Found documents in S3 schema folder (schema: ${schema}, count: ${keys.length})`
   )
