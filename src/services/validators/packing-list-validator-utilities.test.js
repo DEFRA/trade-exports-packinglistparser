@@ -186,7 +186,12 @@ describe('validator function tests', () => {
     ['N', false], // Valid Value
     ['R', false], // Valid Value
     ['nirms', false], // Case insensitive
-    ['', false] // Empty value should be handled by hasMissingNirms
+    ['', false], // Empty value should be handled by hasMissingNirms
+    ['Cafe-Exempt', false], // Valid Cafe-Exempt value
+    ['cafe-exempt', false], // Valid Cafe-Exempt value (lowercase)
+    ['Café-Exempt', false], // Valid Café-Exempt value (accented)
+    ['Cafe Exempt', false], // Valid Cafe Exempt value (space separator)
+    ['café exempt', false] // Valid café exempt value (accented, space separator)
   ])('hasInvalidNirms', (nirms, expected) => {
     const item = { nirms }
     expect(hasInvalidNirms(item)).toBe(expected)
@@ -428,6 +433,20 @@ describe('isNirms and isNotNirms', () => {
     expect(isNotNirms(null)).toBe(false)
     expect(isNotNirms('')).toBe(false)
     expect(isNotNirms(undefined)).toBe(false)
+  })
+
+  test('isNirms should handle Cafe-Exempt variations', () => {
+    expect(isNirms('Cafe-Exempt')).toBe(true)
+    expect(isNirms('cafe-exempt')).toBe(true)
+    expect(isNirms('Café-Exempt')).toBe(true)
+    expect(isNirms('café-exempt')).toBe(true)
+    expect(isNirms('Cafe Exempt')).toBe(true)
+    expect(isNirms('café exempt')).toBe(true)
+  })
+
+  test('isNirms should return false for non-Cafe-Exempt look-alikes', () => {
+    expect(isNirms('CafeExempt')).toBe(false) // missing separator
+    expect(isNirms('Cafe-exempt extra text invalid')).toBe(true) // pattern is unanchored — valid match anywhere in string
   })
 })
 

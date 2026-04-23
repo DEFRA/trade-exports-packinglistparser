@@ -152,6 +152,24 @@ describe('MANDS1 CoO Validation Tests - Type 1 - CoO', () => {
   })
 })
 
+describe('MANDS1 CoO Validation Tests - Type 1 - Cafe Exempt', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('Cafe Exempt NIRMS value - passes validation', async () => {
+    vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.cafeExempt)
+
+    const result = await parsePackingList({}, filename)
+
+    expect(result).toMatchObject(test_results.cafeExemptTestResult)
+  })
+})
+
 describe('MANDS1 CoO Validation Tests - Type 1 - Ineligible Items', () => {
   beforeEach(() => {
     vi.clearAllMocks()

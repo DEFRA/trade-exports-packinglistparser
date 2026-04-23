@@ -2151,6 +2151,15 @@ export default {
             fontName: 'Helvetica'
           },
           {
+            x: 227.8,
+            y: 240.13,
+            str: 'VALID_ISO',
+            dir: 'ltr',
+            width: 15.024,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
             x: 278.08,
             y: 240.13,
             str: '2202999990',
@@ -2172,6 +2181,146 @@ export default {
             x: 417.390003,
             y: 240.13,
             str: 'no',
+            dir: 'ltr',
+            width: 10.503,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 466,
+            y: 240.13,
+            str: '10',
+            dir: 'ltr',
+            width: 3.753,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 572.31,
+            y: 240.13,
+            str: '2.3275',
+            dir: 'ltr',
+            width: 16.8885,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 37.4999999999969,
+            y: 383.97,
+            str: '* see certification',
+            width: 57.105
+          }
+        ]
+      }
+    ]
+  },
+  cafeExempt: {
+    pages: [
+      {
+        pageInfo: {
+          num: 1
+        },
+        content: [
+          {
+            x: 229.64,
+            y: 157.86,
+            str: 'Depot Approval Number: RMS-GB-000008-001',
+            width: 157.14
+          },
+          {
+            x: 767.299999999997,
+            y: 30.0000000000001,
+            str: '1 of 22',
+            width: 36.696
+          },
+          {
+            x: 75.2600025,
+            y: 219.48,
+            str: 'Description of Goods',
+            width: 76.26
+          },
+          {
+            x: 227.61,
+            y: 214.98,
+            str: 'Co. of',
+            width: 21.2475
+          },
+          {
+            x: 227.19,
+            y: 223.98,
+            str: 'Origin',
+            width: 22.0875
+          },
+          {
+            x: 255.8,
+            y: 219.48,
+            str: 'EU Commodity Code',
+            width: 74.5875
+          },
+          {
+            x: 339.0100025,
+            y: 219.48,
+            str: 'Treatment Type',
+            width: 55.845
+          },
+          {
+            x: 410.5600025,
+            y: 219.48,
+            str: 'NIRMS',
+            width: 24.165
+          },
+          {
+            x: 448.4975,
+            y: 219.4404,
+            str: 'Trays/Ctns',
+            width: 38.76
+          },
+          {
+            x: 545.8025,
+            y: 219.4404,
+            str: 'Tot Net Weight (Kg)',
+            width: 69.9900000000001
+          },
+          {
+            x: 75.259998,
+            y: 240.13,
+            str: 'SB* 220M CAPPUCI CHILLED CUP',
+            dir: 'ltr',
+            width: 85.536,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 227.8,
+            y: 240.13,
+            str: 'VALID_ISO',
+            dir: 'ltr',
+            width: 15.024,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 278.08,
+            y: 240.13,
+            str: '2202999990',
+            dir: 'ltr',
+            width: 30.024,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 349.11,
+            y: 240.13,
+            str: 'Chilled',
+            dir: 'ltr',
+            width: 35.64,
+            height: 6.75,
+            fontName: 'Helvetica'
+          },
+          {
+            x: 417.390003,
+            y: 240.13,
+            str: 'Cafe Exempt',
             dir: 'ltr',
             width: 10.503,
             height: 6.75,

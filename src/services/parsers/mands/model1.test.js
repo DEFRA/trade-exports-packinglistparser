@@ -48,7 +48,8 @@ describe('parseMandS1', () => {
 
   test.each([
     [model.validModel, test_results.validTestResult],
-    [model.emptyModel, test_results.emptyTestResult]
+    [model.emptyModel, test_results.emptyTestResult],
+    [model.cafeExempt, test_results.cafeExemptTestResult]
   ])('parses model', async (testModel, expected) => {
     extractPdf.mockImplementation(() => {
       return testModel
@@ -127,6 +128,51 @@ describe('parseMandS1', () => {
     })
     parseSpy.mockRestore()
   })
+
+  test('keeps rows with at least one critical field populated (lines 125-126)', async () => {
+    const expectedNumberOfPackages = 5
+    const expectedTotalNetWeightKg = 10.5
+    const parseSpy = vi
+      .spyOn(parserMap, 'mapPdfDynamicHeaderParser')
+      .mockImplementation(() => [
+        {
+          description: 'Item with only description',
+          commodity_code: null,
+          number_of_packages: null,
+          total_net_weight_kg: null
+        },
+        {
+          description: null,
+          commodity_code: '12345678',
+          number_of_packages: null,
+          total_net_weight_kg: null
+        },
+        {
+          description: null,
+          commodity_code: null,
+          number_of_packages: expectedNumberOfPackages,
+          total_net_weight_kg: null
+        },
+        {
+          description: null,
+          commodity_code: null,
+          number_of_packages: null,
+          total_net_weight_kg: expectedTotalNetWeightKg
+        }
+      ])
+
+    extractPdf.mockImplementation(() => model.validModel)
+
+    const result = await parse(Buffer.from('keep-partial-rows'))
+
+    // All four rows should be kept because each has at least one critical field
+    expect(result.items).toHaveLength(4)
+    expect(result.items[0].description).toBe('Item with only description')
+    expect(result.items[1].commodity_code).toBe('12345678')
+    expect(result.items[2].number_of_packages).toBe(expectedNumberOfPackages)
+    expect(result.items[3].total_net_weight_kg).toBe(expectedTotalNetWeightKg)
+    parseSpy.mockRestore()
+  })
 })
 
 describe('findNetWeightUnit', () => {
@@ -193,6 +239,138 @@ describe('getYsForRows', () => {
     const result = getYsForRows(null, headers.MANDS1, 225)
 
     expect(result).toEqual([])
+  })
+})
+
+describe('calculateHeaderY (lines 75-76 - conditional return)', () => {
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  test('returns continuationItem.y when commodity code header is split across lines', async () => {
+    // When commodity code header spans two lines (e.g., "EU Commodity" on one line,
+    // "Code" on the next), calculateHeaderY returns the y of the continuation item
+    const testModel = {
+      pages: [
+        {
+          pageInfo: { num: 1 },
+          content: [
+            {
+              x: 229.64,
+              y: 157.86,
+              str: 'Depot Approval Number: RMS-GB-000008-001',
+              width: 157.14
+            },
+            { x: 767.3, y: 30, str: '1 of 1', width: 36.696 },
+            // Headers
+            { x: 75.26, y: 219.48, str: 'Description of Goods', width: 76.26 },
+            {
+              x: 204.42,
+              y: 219.48,
+              str: 'Co. of Origin',
+              width: 121.84
+            },
+            // Commodity code SPLIT across two lines (tests continuationItem path)
+            {
+              x: 255.8,
+              y: 214.98,
+              str: 'EU Commodity',
+              width: 50
+            },
+            {
+              x: 255.8,
+              y: 223.98,
+              str: 'Code',
+              width: 25
+            },
+            { x: 335.29, y: 219.48, str: 'Treatment Type', width: 55.845 },
+            { x: 407.05, y: 219.48, str: 'NIRMS', width: 24.165 },
+            { x: 445.2, y: 219.48, str: 'Trays/Ctns', width: 38.76 },
+            {
+              x: 490.7,
+              y: 219.48,
+              str: 'Tot Net Weight (Kg)',
+              width: 313.13
+            },
+            // Data row
+            {
+              x: 75.27,
+              y: 240.13,
+              str: 'Test Product',
+              width: 85,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 222.44,
+              y: 240.13,
+              str: 'GB',
+              width: 9,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 273.95,
+              y: 240.13,
+              str: '12345678',
+              width: 30,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 343.7,
+              y: 240.13,
+              str: 'No treatment',
+              width: 39,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 413.88,
+              y: 240.13,
+              str: 'yes',
+              width: 10.503,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 462.7,
+              y: 240.13,
+              str: '2',
+              width: 3.753,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            {
+              x: 569.94,
+              y: 240.13,
+              str: '4.455',
+              width: 16.89,
+              dir: 'ltr',
+              height: 6.75,
+              fontName: 'Helvetica'
+            },
+            // Footer
+            { x: 37.5, y: 383.97, str: '* see certification', width: 57.105 }
+          ]
+        }
+      ]
+    }
+
+    extractPdf.mockImplementation(() => testModel)
+
+    const result = await parse(Buffer.from('split-commodity-header'))
+
+    expect(result.parserModel).toBe('MANDS1')
+    expect(result.items).toHaveLength(1)
+    // Confirms the parser correctly handled split commodity header
+    expect(result.items[0].commodity_code).toBe('12345678')
   })
 })
 
