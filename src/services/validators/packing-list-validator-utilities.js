@@ -259,7 +259,12 @@ function isNirms(nirms) {
   if (isNullOrEmptyString(nirms)) {
     return false
   }
-  return stringMatchesPattern(nirms, /^(yes|nirms|green|y|g)$/i, /^green lane/i)
+  return stringMatchesPattern(
+    nirms,
+    /^(yes|nirms|green|y|g)$/i,
+    /^green lane/i,
+    /[Cc]af[eé][- ][Ee]xempt/
+  )
 }
 
 /**
