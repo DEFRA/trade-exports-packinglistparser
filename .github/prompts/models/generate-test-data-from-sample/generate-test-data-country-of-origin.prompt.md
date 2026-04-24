@@ -7,6 +7,8 @@ agent: agent
 
 _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
 
+**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
+
 **Important**: When corrupting numeric data (like commodity_code values) in these scenarios, refer to the **Numeric Field Corruption Guidelines** section in the main `generate-test-data-from-sample.prompt.md` for specific examples of special characters, alphanumeric values, negative numbers, and mixed patterns to use.
 
 ## Scenarios
@@ -19,19 +21,19 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 ### NIRMS Scenarios (Generate only if NO `blanketNirms` property exists)
 
-- **ac1_NotNirms_Pass**: Set NIRMS column to a valid non-NIRMS value (e.g. "NON-NIRMS" or "No") for 2-3 data rows.
-- **ac2_NullNirms_Fail**: Set NIRMS column to blank/empty for 2-3 data rows.
-- **ac3_InvalidNirms_Fail**: Set NIRMS column to invalid values (e.g. "INVALID", "123", "Maybe") for 2-3 data rows.
-- **ac4_NullNirmsMultiple_Fail**: Set NIRMS column to blank/empty for multiple data rows (at least 3).
-- **ac5_InvalidNirmsMultiple_Fail**: Set NIRMS column to different invalid values for multiple data rows (3 rows).
+- **ac1_NotNirms_Pass**: Set NIRMS field to a valid non-NIRMS value (e.g. "NON-NIRMS" or "No") for 2-3 data rows/items.
+- **ac2_NullNirms_Fail**: Set NIRMS field to blank/empty for 2-3 data rows/items.
+- **ac3_InvalidNirms_Fail**: Set NIRMS field to invalid values (e.g. "INVALID", "123", "Maybe") for 2-3 data rows/items.
+- **ac4_NullNirmsMultiple_Fail**: Set NIRMS field to blank/empty for multiple data rows/items (at least 3).
+- **ac5_InvalidNirmsMultiple_Fail**: Set NIRMS field to different invalid values for multiple data rows/items (3 rows/items).
 
 ### Country of Origin Scenarios (Generate if `country_of_origin` property exists)
 
-- **ac6_NullCoO_Fail**: Set country_of_origin column to blank/empty for 2-3 data rows.
-- **ac7_InvalidCoO_Fail**: Set country_of_origin column to invalid values including numeric codes and special characters: `"123"`, `"@GB"`, `"G#B"`, `"GBR"`, `"INVALID"`, `"-GB"`, `"G1B"` for 2-3 data rows.
-- **ac8_NullCoOMultiple_Fail**: Set country_of_origin column to blank/empty for multiple data rows (at least 3).
-- **ac9_InvalidCoOMultiple_Fail**: Set country_of_origin column to different invalid values including special characters, alphanumeric, and numeric patterns for multiple data rows (3 rows): `"@GB"`, `"G1B"`, `"123"`, `"#FR"`, `"F2R"`, `"456"`, `"-DE"`, `"D3E"`, `"789"`.
-- **ac10_xCoO_Pass**: Set country_of_origin column to "X" for 2-3 data rows.
+- **ac6_NullCoO_Fail**: Set country_of_origin field to blank/empty for 2-3 data rows/items.
+- **ac7_InvalidCoO_Fail**: Set country_of_origin field to invalid values including numeric codes and special characters: `"123"`, `"@GB"`, `"G#B"`, `"GBR"`, `"INVALID"`, `"-GB"`, `"G1B"` for 2-3 data rows/items.
+- **ac8_NullCoOMultiple_Fail**: Set country_of_origin field to blank/empty for multiple data rows/items (at least 3).
+- **ac9_InvalidCoOMultiple_Fail**: Set country_of_origin field to different invalid values including special characters, alphanumeric, and numeric patterns for multiple data rows/items (3 rows/items): `"@GB"`, `"G1B"`, `"123"`, `"#FR"`, `"F2R"`, `"456"`, `"-DE"`, `"D3E"`, `"789"`.
+- **ac10_xCoO_Pass**: Set country_of_origin field to "X" for 2-3 data rows/items.
 
 ### High-Risk/Ineligible Items Scenarios (Generate if `country_of_origin`, `commodity_code`, and `type_of_treatment` properties exist)
 
@@ -46,14 +48,6 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 - **Happypath**: No mutation; copy the original happy path file.
 
 **You must generate and mutate all applicable scenarios based on the exporter configuration conditional logic above.**
-
-## Mutation Scope Guidelines
-
-- **Standard scenarios**: Modify exactly **2-3 data rows** as specified per scenario
-- **"Multiple" scenarios**: Modify exactly **3 data rows** (minimum for "multiple")
-- **Preserve remaining rows**: All other data rows should remain unchanged from the template
-- **Do not modify all rows**: Only change the specified number of rows per scenario, not entire columns
-- **Baseline scenario**: `Happypath` should remain completely unmodified
 
 ## Documentation: Country of Origin, NIRMS, and High-Risk/Ineligible Items Scenario Types
 
@@ -78,7 +72,7 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 ### NIRMS Validation (for exporters with `nirms` property)
 
-- **Valid NIRMS Values**: "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS", "NIRMS Eligible", "Non-NIRMS", etc.
+- **Valid NIRMS Values**: "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS", "NIRMS Eligible", "Non-NIRMS", "Cafe Exempt", etc.
 - **Invalid NIRMS Values**: "INVALID", "Maybe", "Unknown", "123", blank/empty values
 - **Test Patterns**:
   - Blank/empty cells in NIRMS column should trigger validation failure
@@ -128,7 +122,13 @@ Based on the exporter configuration, determine which country-of-origin-related s
 
 ## Apply Mutations
 
-Use `exceljs` (see `generate-test-data-from-sample.prompt.md` for guidance) to modify specific cells for each scenario. Typical mutation targets:
+Use the format-appropriate tools from `generate-test-data-from-sample.prompt.md` to mutate scenario files:
+
+- Excel: `exceljs` cell mutations
+- CSV: PowerShell Import-Csv/Export-Csv or text mutation
+- PDF: supported coordinate/region mutations with a PDF tool
+
+Typical mutation targets:
 
 - **NIRMS Validation**: For exporters with `nirms` property, test blank values and invalid patterns (should be recognizable values like "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS", etc.)
 - **Country of Origin Validation**: For exporters with `validateCountryOfOrigin: true`, test blank values and invalid formats (should be 2-digit ISO codes like "GB", "FR", "DE" or "X")

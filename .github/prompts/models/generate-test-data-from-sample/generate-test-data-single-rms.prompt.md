@@ -7,6 +7,8 @@ agent: agent
 
 _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
 
+**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
+
 **Important**: When corrupting RMS establishment numbers in these scenarios, use specific patterns to test validation. The scenarios below include examples with special characters, alphanumeric values, and invalid numeric patterns.
 
 ## Scenarios
@@ -40,11 +42,12 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 ## Mutation Scope Guidelines
 
-- **Standard scenarios**: Modify exactly **2-3 data rows** unless scenario specifies otherwise
+- **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
 - **Establishment number patterns**:
-  - **Single per sheet**: Modify the single establishment number location (e.g., header/company area)
-  - **Per row**: Modify exactly **2-3 data rows** with establishment number columns
-- **"Multiple" scenarios**: Modify exactly **3 data rows** (minimum for "multiple")
-- **Preserve remaining rows**: All other data rows should remain unchanged from the template
-- **Do not modify all rows**: Only change the specified number of rows per scenario, not entire columns
+  - **Single per sheet/document**: Modify the single establishment number location (e.g., header/company area in Excel/CSV or document header text region in PDF)
+  - **Per row/item**: Modify exactly **2-3 data rows/items** with establishment number fields
+- **PDF-specific targeting**: Use a supported PDF mutation tool and mutate the RMS text in mapped coordinate regions. If RMS appears in multiple page locations, mutate only the scenario-required locations and leave other regions unchanged.
+- **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
+- **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
+- **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions
 - **Baseline scenario**: `Happypath` should remain completely unmodified

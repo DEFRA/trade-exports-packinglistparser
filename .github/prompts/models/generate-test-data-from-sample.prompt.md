@@ -1,5 +1,5 @@
 ---
-description: 'Generate a suite of test data and Excel/CSV files for various test scenarios based on a user-provided happy path sample file.'
+description: 'Generate a suite of test data and Excel/CSV/PDF files for various test scenarios based on a user-provided happy path sample file.'
 agent: agent
 tools: ['search/codebase', 'edit/editFiles', 'read/problems']
 ---
@@ -8,25 +8,29 @@ tools: ['search/codebase', 'edit/editFiles', 'read/problems']
 
 > **Required Inputs:**
 >
-> - `happyPathFile`: Path to the user-provided happy path sample file (Excel/CSV)
-> - `exporterProperty`: The exporter property name from `src/services/model-headers.js` or `src/services/model-headers-csv.js` (e.g., 'BOOKER2', 'ASDA1', 'ASDA3')
-> - `modelConfigSource`: (Optional) Explicitly specify configuration source: 'excel' (uses `src/services/model-headers.js`) or 'csv' (uses `src/services/model-headers-csv.js`). If not specified, auto-detects based on file extension.
+> - `happyPathFile`: Path to the user-provided happy path sample file (Excel/CSV/PDF)
+> - `exporterProperty`: The exporter property name from `src/services/model-headers-pdf.js`, `src/services/model-headers.js`, or `src/services/model-headers-csv.js` (e.g., 'BOOKER2', 'ASDA1', 'ASDA3')
+> - `modelConfigSource`: (Optional) Explicitly specify configuration source: 'pdf' (uses `src/services/model-headers-pdf.js`), 'excel' (uses `src/services/model-headers.js`), or 'csv' (uses `src/services/model-headers-csv.js`). If not specified, auto-detects based on file extension.
 > - `scenarioFolders`: List of scenario folders to generate (e.g., ['basic-tests', 'single-rms'])
 
 > **Note:** The list of tools available for this prompt is fixed in the header section above and does not need to be specified as an input.
 
-You are a senior QA automation engineer with 8+ years of experience in test data design and Excel/CSV automation for Node.js/TypeScript projects. You are proficient in using tools for both Excel and CSV file manipulation to efficiently generate and manipulate test data.
+You are a senior QA automation engineer with 8+ years of experience in test data design and Excel/CSV/PDF automation for Node.js/TypeScript projects. You are proficient in using tools for Excel, CSV, and PDF file manipulation to efficiently generate and mutate test data.
 
 ## Column Mapping Manifest (Pre-Scenario Step)
 
 Before creating any test scenario folders or files, generate a single `manifest.json` file in the test-scenarios folder (e.g., `src/packing-lists/{exporter}/test-scenarios/manifest.json`) containing:
 
-- **Configuration source**: Which configuration file was used (`src/services/model-headers.js` or `src/services/model-headers-csv.js`) and the exporter property
-- **File format**: The input/output file format (CSV or Excel) - **all output files MUST match the input format**
-- **Column references**: CSV files use 1-based column indices (1, 2, 3...), Excel files use column letters (A, B, C...)
+- **Configuration source**: Which configuration file was used (`src/services/model-headers-pdf.js`, `src/services/model-headers.js`, or `src/services/model-headers-csv.js`) and the exporter property
+- **File format**: The input/output file format (CSV, Excel, or PDF) - **all output files MUST match the input format**
+- **Field references**:
+  - CSV files use 1-based column indices (1, 2, 3...)
+  - Excel files use column letters (A, B, C...)
+  - PDF files use coordinate references (`pageIndex`, `x`, `y`, and bounding box ranges)
 - The detected column mappings (mandatory, optional, other) for the exporter and sample file
 - Header row and data row locations
 - Merged cell/column details (Excel only)
+- Text block/header region details (PDF only)
 - Establishment number pattern (per sheet or per row)
 
 This manifest must be confirmed and can be reused for all scenario generation and seeding. Do not regenerate the manifest for each scenario folder.
@@ -108,10 +112,12 @@ When analyzing the exporter configuration, determine which configuration file to
 
 1. **If `modelConfigSource` parameter is explicitly provided:**
 
+   - `'pdf'` → Use `src/services/model-headers-pdf.js` regardless of input file format
    - `'excel'` → Use `src/services/model-headers.js` regardless of input file format
    - `'csv'` → Use `src/services/model-headers-csv.js` regardless of input file format
 
 2. **If `modelConfigSource` is NOT provided (auto-detection):**
+   - Input file is `.pdf` → Use `src/services/model-headers-pdf.js` (if exporter exists there, else fallback to `src/services/model-headers.js`, then `src/services/model-headers-csv.js`)
    - Input file is `.csv` → Use `src/services/model-headers-csv.js` (if exporter exists there, else fallback to `src/services/model-headers.js`)
    - Input file is `.xls` or `.xlsx` → Use `src/services/model-headers.js` (if exporter exists there, else fallback to `src/services/model-headers-csv.js`)
 
@@ -119,6 +125,7 @@ When analyzing the exporter configuration, determine which configuration file to
 
 - **CSV input → CSV output** (all .csv files)
 - **Excel input → Excel output** (all .xlsx/.xls files)
+- **PDF input → PDF output** (all .pdf files)
 
 Columns are classified into three categories:
 
@@ -179,15 +186,16 @@ Header columns in the template are classified into three states based on the exp
 
 ## Task
 
-- Generate a suite of test data and Excel/CSV files for various test scenarios based on a user-provided “happy path” sample file.
+- Generate a suite of test data and Excel/CSV/PDF files for various test scenarios based on a user-provided “happy path” sample file.
 - Scenarios must include both valid (happy path) and failure cases, such as missing or incorrect data in columns and column names.
 - Use the appropriate configuration file based on the input file format:
+  - **For PDF files (.pdf)**: Use `src/services/model-headers-pdf.js` and access the exporter configuration at `model-headers-pdf.js[${exporterProperty}]`.
   - **For Excel files (.xls, .xlsx)**: Use `src/services/model-headers.js` and access the exporter configuration at `model-headers.js[${exporterProperty}]`
   - **For CSV files (.csv)**: Use `src/services/model-headers-csv.js` and access the exporter configuration at `model-headers-csv.js[${exporterProperty}]`
   - Determine mandatory columns from the `regex` property for that exporter (ALL fields in the regex object are mandatory).
   - Identify optional columns from other root-level properties like `country_of_origin`, `nirms`, `type_of_treatment` (excluding `validateCountryOfOrigin`, `findUnitInHeader`, and `invalidSheets`).
   - For Excel files: Ignore any sheets listed in the `invalidSheets` property for that exporter.
-- Output files must be in `.xls`, `.xlsx`, or `.csv` format, matching the format of the input file.
+- Output files must be in `.xls`, `.xlsx`, `.csv`, or `.pdf` format, matching the format of the input file.
 - All generated files should be written to `src/packing-lists/{exporter}/test-scenarios/` (where `{exporter}` is determined from the `${exporterProperty}` value).
 - The original template file should remain in `src/packing-lists/` as the authoritative source.
 - Create a `manifest.json` file with structured test scenario definitions and a comprehensive `README.md` for documentation.
@@ -195,7 +203,7 @@ Header columns in the template are classified into three states based on the exp
 
 ## Field Mapping Confirmation (MANDATORY)
 
-**Before any test data is created or mutated, you MUST display the detected field/column mappings (from both the appropriate configuration file - `src/services/model-headers.js` for Excel files or `src/services/model-headers-csv.js` for CSV files - and the sample file) to the user and require explicit confirmation.**
+**Before any test data is created or mutated, you MUST display the detected field/column mappings (from the appropriate configuration file - `src/services/model-headers-pdf.js` for PDF files, `src/services/model-headers.js` for Excel files, or `src/services/model-headers-csv.js` for CSV files - and the sample file) to the user and require explicit confirmation.**
 
 - Present a summary of the detected mappings, including which columns in the sample file correspond to which fields in the exporter configuration.
 - Allow the user to confirm, adjust, or reject the mappings interactively (e.g., via CLI prompt, UI, or other means).
@@ -207,15 +215,17 @@ This confirmation step is required to prevent accidental data corruption and ens
 
 ## Instructions
 
-1. **File Organization**: The user must provide a valid sample file (happy path) in Excel or CSV format. This file will be used as the template for all scenario files and should remain in the main exporter directory as the source. **All output files MUST match the input file format.**
-2. **Template Preservation**: All scenario files must be created by copying the entire original happy path file to each scenario file, preserving formatting (Excel) or structure (CSV). Never create blank files from scratch, and never update the template in-place.
+1. **File Organization**: The user must provide a valid sample file (happy path) in Excel, CSV, or PDF format. This file will be used as the template for all scenario files and should remain in the main exporter directory as the source. **All output files MUST match the input file format.**
+2. **Template Preservation**: All scenario files must be created by copying the entire original happy path file to each scenario file, preserving formatting (Excel), structure (CSV), or page layout/font rendering (PDF). Never create blank files from scratch, and never update the template in-place.
 3. **File Manipulation Tools**:
    - **Excel files**: MUST use the `exceljs` library to read, mutate, and write workbooks so styles, merged ranges, number formats and column widths are preserved. Copy the template file to each scenario filename (PowerShell/CLI) and then use `exceljs` (for example `workbook.xlsx.readFile()` / `workbook.xlsx.writeFile()`) to apply mutations. If `exceljs` is not available in the environment, explicitly document the limitation and only then fall back to `xlsx` as a last resort; validate merged ranges and formatting manually after any fallback write.
    - **CSV files**: Use PowerShell for copying files. Use PowerShell Import-Csv/Export-Csv or text manipulation for applying mutations.
+   - **PDF files**: MUST use a supported PDF manipulation tool to read, mutate, and write PDFs. Use coordinate/text-block targeting (`pageIndex`, `x`, `y`, bounding boxes) for header/data mutations, preserving non-target content. If the PDF is scanned/image-only and text is not editable, stop and report the limitation clearly (do not silently mutate the wrong content).
 4. **Directory Structure**: Each scenario's instructions file is responsible for creating its own subdirectory (e.g., `src/packing-lists/{exporter}/test-scenarios/basic-tests/`, `src/packing-lists/{exporter}/test-scenarios/single-rms/`, etc.) only if its scenarios are being generated. The main instructions do not create subdirectories globally. All generated test files go in their respective subdirectories, while the original template remains in `src/packing-lists/` as the parent directory.
 5. **Column References**:
    - **CSV files**: Use 1-based column indices (1, 2, 3, 4...) when documenting columns in manifest.json
    - **Excel files**: Use Excel column letters (A, B, C, D...) when documenting columns in manifest.json
+   - **PDF files**: Use coordinate references (`pageIndex`, `x`, `y`, `x1`, `y1`, `x2`, `y2`) when documenting fields in manifest.json
 6. **Column Analysis**:
 
    - **For Excel files**: Excel templates often use merged cells and visual formatting that can create confusion about actual data column locations. To identify correct columns:
@@ -231,6 +241,11 @@ This confirmation step is required to prevent accidental data corruption and ens
      - **Single per sheet** (e.g., Booker2): One establishment number for the entire sheet, typically in a header area or company information section
      - **Per row** (e.g., COOP): Establishment number appears in each data row, usually in a dedicated column
      - Always analyze the template to determine which pattern is used before applying establishment number mutations
+   - **For PDF files**: PDFs do not have native spreadsheet columns. Build field mappings from text positions:
+     - **MANDATORY**: Use a supported PDF tool to load the PDF, inspect page content, and locate header/data text blocks before mutations.
+     - **MANDATORY**: Capture target coordinates and bounding boxes for each mapped field and store them in the manifest.
+     - **MANDATORY**: Test one small mutation first (single field in one row/item) to verify targeting before bulk mutation.
+     - **MANDATORY**: If establishment numbers appear once per document header area, mutate that single location; if they appear per line item, mutate exactly the required 2-3 items.
 
 7. **REQUIRED: Select which test-scenarios folders to generate.**
 
@@ -261,8 +276,8 @@ Each scenario's specific requirements and mutations are described in their own p
    - Include exporter configuration details (establishment number regex, column mappings)
    - Document column classification (mandatory vs optional) based on `regex` property vs root-level properties
 10. **Do not modify the original input file** - it should remain in the main exporter directory as the authoritative template.
-11. **Line Break Handling**: For multi-line cell values, use `\n` for line breaks (never `<br>`). Excel's "Wrap Text" feature should display these correctly. If you see `<br>` in a cell, replace it with `\n`.
-12. **Error Handling**: Use `exceljs` for Excel mutations. If file operations fail, fall back to PowerShell/CLI copy operations and provide clear guidance.
+11. **Line Break Handling**: For multi-line values, use `\n` for line breaks (never `<br>`). Excel's "Wrap Text" feature and PDF text rendering should preserve line breaks when applicable.
+12. **Error Handling**: Use `exceljs` for Excel mutations and a supported PDF tool for PDF mutations. If file operations fail, fall back to PowerShell/CLI copy operations only for file creation and provide clear guidance.
 
 ## Implementation Steps
 
@@ -274,9 +289,9 @@ Each scenario's specific requirements and mutations are described in their own p
 
 2. **Analyze Template**:
 
-   - Read the happy path file using appropriate tools (Excel tools for .xlsx/.xls, CSV reading for .csv)
+   - Read the happy path file using appropriate tools (Excel tools for .xlsx/.xls, CSV reading for .csv, PDF inspection tools for .pdf)
    - Identify establishment number, headers, and data structure
-   - Determine column reference format (1-based indices for CSV, letters for Excel)
+   - Determine reference format (1-based indices for CSV, letters for Excel, coordinate mapping for PDF)
 
 3. **Match Exporter**:
 
@@ -288,13 +303,14 @@ Each scenario's specific requirements and mutations are described in their own p
 5. **Copy Files**:
 
    - Use PowerShell to copy the entire template file to all scenario filenames
-   - **CRITICAL**: Preserve file extension - CSV to CSV, Excel to Excel
+   - **CRITICAL**: Preserve file extension - CSV to CSV, Excel to Excel, PDF to PDF
 
 6. **Apply Mutations**:
 
    - **For CSV files**: Use PowerShell Import-Csv/Export-Csv or text manipulation for mutations
    - **For Excel files**: Use the `exceljs` library (see guidance below) to read, inspect, and write workbooks while preserving formatting
-   - Reference columns using the appropriate format (indices for CSV, letters for Excel)
+   - **For PDF files**: Use a supported PDF tool and mutate targeted text regions by coordinates/bounding boxes while preserving non-target content
+   - Reference fields using the appropriate format (indices for CSV, letters for Excel, coordinates for PDF)
 
 7. **Generate Documentation**: Create manifest.json and README.md with:
    - Configuration source used
@@ -303,7 +319,7 @@ Each scenario's specific requirements and mutations are described in their own p
 
 ## MANDATORY - Systematic Mutation Completion Tracking
 
-**CRITICAL REQUIREMENT**: All scenario files must have appropriate mutations applied. No files should remain as unchanged copies of the template (except the baseline happypath.xlsx).
+**CRITICAL REQUIREMENT**: All scenario files must have appropriate mutations applied. No files should remain as unchanged copies of the template (except the baseline `Happypath` file for the selected format).
 
 ### Mutation Progress Tracking Commands
 
@@ -325,106 +341,45 @@ Get-ChildItem -Path "src/packing-lists/{exporter}/test-scenarios" -Recurse -File
 1. **Initial File Copy**: Copy template to all scenario filenames
 2. **Track Progress**: Use commands above to identify which files need mutations
 3. **Apply Mutations Systematically**: Go through each file and apply appropriate mutations
-4. **Verify Completion**: Ensure all files except happypath.xlsx have been modified
+4. **Verify Completion**: Ensure all files except the baseline `Happypath` file (for the selected format) have been modified
 5. **Final Validation**: Check that all scenarios have proper mutations applied
 
 ### Common Issues & Troubleshooting
 
-### Merged Cells and Column Mapping
+### Excel Generation Skill
 
-- **Issue**: Excel templates with merged cells can cause confusion about actual data column locations
-- **Root Cause**: Visual layout doesn't match actual data positions, especially with merged cells
-- **Solution**: ALWAYS use `exceljs` to read the workbook with styles and merged ranges and analyze multiple data rows before making assumptions. Use `workbook.xlsx.readFile(file)` then inspect `sheet.getMergeCells()`, `cell.style`, `cell.numFmt`, and `cell.text`/`cell.value` across header and several data rows.
-- **Example**: A template might show headers visually in columns C-F but actual data resides in columns D,E with merged content
-- **Critical**: For merged fields, update ALL columns containing the merged data with identical values
+For the full Excel workflow (merged-cell handling, column-mapping verification, style-safe mutation patterns, and exporter-specific lessons), **load the `excel-test-data-generation` skill**.
 
-### Column Position Verification
+Keep these minimum rules in this prompt:
 
-- **Best Practice**: Always read both header row and multiple data rows to confirm actual column placement patterns
-- **Documentation**: Record exact column letters with merge status (e.g., "commodity_code: L,M (merged)" or "country_of_origin: N (single)")
-- **Validation**: Cross-reference column mappings in manifest.json with actual Excel file structure after mutations
-- **Testing**: Apply one small test mutation first to verify correct column targeting before bulk operations
+- Use `exceljs` for Excel mutations.
+- Validate mapping from both headers and multiple data rows.
+- Perform one trial mutation before bulk edits.
+- Preserve merged-field consistency across all participating columns.
 
-### Data Consistency in Merged Cells
+### PDF Generation Skill
 
-- **Issue**: Updating only one column of a merged cell field causes data inconsistency
-- **Example**: BOOKER2 commodity codes in columns L,M must both be updated with identical values
-- **Solution**: Identify all columns containing merged data and update all with same value
-- **Verification**: Read back all merged columns after mutation to ensure consistency
+For PDF-specific implementation details, **load the `pdf-test-data-generation` skill**.
 
-### Excel files (.xlsx) — `exceljs` Usage
+Keep only these minimum rules in this prompt:
 
-Use the `exceljs` library to preserve formatting and handle merged cells when mutating Excel templates. `exceljs` reads and writes `.xlsx` files while keeping styles, fills, borders, number formats, merged ranges and column widths intact.
+- Map fields by page and coordinate ranges before mutation.
+- Run one trial mutation and verify only the intended regions changed.
+- Use parser-visible mutations for parser validation scenarios, not visual-only overlays.
+- If the PDF is scanned or image-only and text is not targetable, stop and report the limitation.
 
-Basic pattern:
+### CSV Generation Skill
 
-```javascript
-import ExcelJS from 'exceljs'
+For the full CSV workflow (PowerShell mutation patterns, quote escaping, encoding handling, and column-mapping verification), **load the `csv-test-data-generation` skill**.
 
-const wb = new ExcelJS.Workbook()
-await wb.xlsx.readFile(inputFile)
-const sheet = wb.worksheets[0]
+Keep these minimum rules in this prompt:
 
-// Inspect header/data rows
-const headerRow = 18 // detect programmatically where possible
-const headerCell = sheet.getRow(headerRow).getCell('K')
-console.log('Header text:', headerCell.text || headerCell.value)
+- Use PowerShell `Import-Csv`/`Export-Csv` for data mutations; use text manipulation for header-row changes.
+- Use 1-based column indices when referencing columns in manifest.json.
+- Escape literal double-quote characters in CSV values as `""` (RFC 4180).
+- Perform one trial mutation before bulk scenario changes.
 
-// Modify first data row in column K (NetMassKG)
-const dataRow = headerRow + 1
-const cell = sheet.getRow(dataRow).getCell('K')
-cell.value = 'INVALID'
-
-await wb.xlsx.writeFile(outputFile)
-```
-
-Recommended workflow:
-
-- Copy the template file into the scenario filename using CLI/PowerShell to ensure a fresh file
-- Use `exceljs` to read the copied file, detect headers/merged cells, apply targeted mutations, and write back
-- Verify by re-reading the workbook and checking `sheet.getMergeCells()` and sample cell styles
-
-Fallback: if `exceljs` cannot be used in your environment, use `xlsx` with `cellStyles: true` and related read/write options, but validate formatting preservation carefully.
-
-### BOOKER2 Implementation Lessons Learned
-
-#### Establishment Number Pattern Recognition
-
-- **BOOKER2 Pattern**: Single establishment number per sheet in header/company information area (Column B, multi-line with company details)
-- **COOP Pattern**: Establishment number appears in each data row (Column E, repeated per row)
-- **Pattern Detection**: Always analyze template structure to determine which pattern is used:
-  - Check header/company information areas for single establishment number
-  - Check data rows for establishment number columns
-  - Apply mutations accordingly - single location vs. multiple rows
-
-#### Actual Column Structure (Based on Template Analysis)
-
-- **Establishment Number**: Column B (multi-line with company details) - SINGLE PER SHEET PATTERN
-- **Description**: Column D (single column, not merged)
-- **Commodity Code**: Columns L,M (merged - both must be updated identically)
-- **Number of Packages**: Column H (single column)
-- **Net Weight**: Column K (single column)
-- **Nature of Products**: Column I (single column)
-- **Type of Treatment**: Column J (single column)
-- **Country of Origin**: Column N (single column)
-- **NIRMS**: Column Q (single column)
-
-#### Common Misconceptions
-
-- **Visual ≠ Actual**: Column positions in Excel display don't match data positions
-- **Header ≠ Data**: Header row layout may differ from actual data column usage
-- **Merged Cell Handling**: Failing to update all merged columns causes inconsistent data
-- **Multi-line Preservation**: Establishment numbers often contain line breaks that must be preserved
-
-#### Verification Strategy
-
-1. **Structure Analysis**: Read template with showStyle to understand layout
-2. **Data Sampling**: Read multiple data rows to confirm patterns
-3. **Test Mutation**: Apply one small change to verify column targeting
-4. **Bulk Application**: Apply remaining mutations using verified column positions
-5. **Final Verification**: Read back sample cells to confirm correct mutations
-
-This systematic approach prevents the column mapping errors encountered during initial BOOKER2 implementation.
+---
 
 # Generic Test Data Scenario Generation and Seeding Instructions
 
@@ -434,7 +389,7 @@ These steps apply to all scenario-based test data generation:
    ```powershell
    New-Item -ItemType Directory -Path "src/packing-lists/{exporter}/test-scenarios/{scenario-folder}" -Force
    ```
-2. **Copy the happy path sample file** to each scenario filename in the relevant test-scenarios folder using PowerShell or CLI. Do not create blank files from scratch. **Preserve the file extension (.csv or .xlsx)**. Example:
+2. **Copy the happy path sample file** to each scenario filename in the relevant test-scenarios folder using PowerShell or CLI. Do not create blank files from scratch. **Preserve the file extension (.csv, .xlsx/.xls, or .pdf)**. Example:
 
    ```powershell
    # For CSV files
@@ -442,23 +397,27 @@ These steps apply to all scenario-based test data generation:
 
    # For Excel files
    Copy-Item "src/packing-lists/{exporter}/HappyPath.xlsx" "src/packing-lists/{exporter}/test-scenarios/{scenario-folder}/<scenario-file>.xlsx"
+
+   # For PDF files
+   Copy-Item "src/packing-lists/{exporter}/HappyPath.pdf" "src/packing-lists/{exporter}/test-scenarios/{scenario-folder}/<scenario-file>.pdf"
    ```
 
 3. **For each scenario,** apply the described mutations to the copied file:
    - **CSV files**: Use PowerShell Import-Csv/Export-Csv for data mutations, text manipulation for header mutations
    - **Excel files**: Use `exceljs` for mutations
+   - **PDF files**: Use the approved PDF mutation workflow documented for this repo and avoid visual-only overlays for parser testing
    - Never modify the original template file.
 4. **Unless otherwise stated,** modify only the relevant rows/fields as specified by the scenario.
 5. **Mutation Scope Rules**: Follow these guidelines for all scenarios:
    - **Missing vs Incorrect Scenarios**:
      - **"Missing"**: **Remove/clear** headers or data completely (empty cells)
      - **"Incorrect"**: **Modify** headers or data to wrong text that doesn't match expected patterns
-   - **Standard scenarios**: Modify exactly **2-3 data rows** unless scenario specifies otherwise
-   - **"Multiple" scenarios**: Modify exactly **3 data rows** (minimum for "multiple")
-   - **"All" scenarios**: Modify **all data rows** when explicitly stated (e.g., "All_Fail")
-   - **Header scenarios**: Modify header row only, leave data rows unchanged
-   - **Preserve remaining rows**: All other data rows should remain unchanged from the template
-   - **Do not modify all rows**: Only change the specified number of rows per scenario, not entire columns
+   - **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
+   - **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
+   - **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail")
+   - **Header scenarios**: Modify header labels only, leave data rows/items unchanged
+   - **Preserve remaining rows/items**: All other data should remain unchanged from the template
+   - **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions
    - **Baseline scenario**: `Happypath` should remain completely unmodified
 6. **After mutation,** verify that the file is no longer identical to the template.
 7. **Track mutation progress** using PowerShell or CLI commands to ensure all files have been modified.
