@@ -1,8 +1,11 @@
 ---
+name: csv-test-data-generation
 description: Generate CSV test data with correct quoting, encoding, and PowerShell-based mutation patterns for scenario-based test suites
 ---
 
 # CSV Test Data Generation Skill
+
+> **Scope**: This skill covers the _how_ for CSV file operations — mutation tooling, PowerShell patterns, quote escaping, encoding, and manifest.json reference format. It is designed to be loaded alongside the `generate-test-data-from-sample` prompt, which defines the _what_ (business rules, scenario selection, and validation requirements).
 
 > **Use this skill when**: Creating or mutating `.csv` scenario files from a happy-path template where quote escaping, encoding, and column-index targeting are required.
 

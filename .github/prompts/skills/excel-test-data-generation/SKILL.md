@@ -1,8 +1,11 @@
 ---
+name: excel-test-data-generation
 description: Generate Excel test data with style-safe workbook mutations, merged-cell handling, and mapping verification for scenario-based test suites
 ---
 
 # Excel Test Data Generation Skill
+
+> **Scope**: This skill covers the _how_ for Excel file operations — mutation tooling, merged-cell handling, column mapping inspection, and manifest.json reference format. It is designed to be loaded alongside the `generate-test-data-from-sample` prompt, which defines the _what_ (business rules, scenario selection, and validation requirements).
 
 > **Use this skill when**: Creating or mutating `.xlsx/.xls` scenario files from a happy-path template where merged cells, formatting preservation, and accurate column mapping are required.
 
@@ -16,7 +19,10 @@ description: Generate Excel test data with style-safe workbook mutations, merged
 
 ## Workflow
 
-1. Copy the template to scenario output path.
+1. Copy the template to scenario output path:
+   ```powershell
+   Copy-Item "src/packing-lists/{exporter}/HappyPath.xlsx" "src/packing-lists/{exporter}/test-scenarios/{scenario}/{filename}.xlsx"
+   ```
 2. Load workbook and inspect structure:
    - Header row candidates
    - Data row candidates
@@ -68,6 +74,10 @@ Visual column layout can differ from actual data columns when templates use merg
 - Data values align with expected column(s).
 - Merged field values are consistent across all merged columns.
 - Non-target rows and columns remain unchanged.
+
+### manifest.json column reference format
+
+Document all field-to-column mappings in manifest.json using Excel column letters (A, B, C...), not numeric indices. For merged fields, list all participating columns (e.g. `"commodity_code": ["L", "M"]`).
 
 ## Mutation Safety Rules
 

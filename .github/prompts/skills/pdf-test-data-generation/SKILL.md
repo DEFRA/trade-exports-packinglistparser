@@ -1,16 +1,31 @@
 ---
+name: pdf-test-data-generation
 description: Generate PDF test data with true in-place content stream mutations for integration testing
 ---
 
 # PDF Test Data Generation Skill
 
+> **Scope**: This skill covers the _how_ for PDF file operations — content stream mutation using muhammara, coordinate mapping, establishment number targeting, and validation. It is designed to be loaded alongside the `generate-test-data-from-sample` prompt, which defines the _what_ (business rules, scenario selection, and validation requirements).
+
 > **Use this skill when**: Generating PDF test data files where the app's PDF parser must see mutated content (not just visual overlays), particularly for scenarios requiring authentic field mutations for parsing validation.
+
+## Copy Template
+
+Before any mutation, copy the template to the scenario output path:
+
+```powershell
+Copy-Item "src/packing-lists/{exporter}/HappyPath.pdf" "src/packing-lists/{exporter}/test-scenarios/{scenario}/{filename}.pdf"
+```
+
+Never mutate the source template in place.
 
 ## Two Approaches: In-Place Stream Mutation vs. Overlay
 
 ### Approach 1: True In-Place Content Stream Mutation (Recommended for Test Data)
 
 **When to use**: When you need authentic PDF mutations that the app will actually parse (not visual overlays).
+
+> **Pre-condition**: Verify the PDF contains real text streams before proceeding. If the PDF is scanned or image-only and text is not targetable in the content stream, stop and report the limitation clearly — do not silently produce an unmodified file.
 
 Use `muhammara` library with low-level content stream replacement for true in-place edits:
 
@@ -154,7 +169,8 @@ writer.end()
 3. Search for text tokens using pattern: `1 0 0 1 X Y Tm\n/Font Size Tf\n(text)Tj`
 4. Record X,Y coordinates and exact font/size for each field
 5. Document coordinates in manifest.json for future reference
-6. Create mutations by replacing the entire token at those coordinates
+6. Apply one trial mutation to a single field before bulk mutations — verify only the intended token changed and the output file is not identical to the template
+7. Apply remaining bulk mutations by replacing the entire token at those coordinates
 
 **Validation**:
 
@@ -178,6 +194,13 @@ const descValues = page0Tokens
 const hasMutatedValue = descValues.some((v) => v.includes('INVALID TEXT'))
 if (!hasMutatedValue) throw new Error('Mutation not visible to extractor')
 ```
+
+## Establishment Number Mutations
+
+Establishment numbers in PDFs can appear in one of two locations — determine which applies from the template before mutating:
+
+- **Single per document** (header area): Mutate that single token only. For scenarios requiring an incorrect, missing, or changed RMS number, target the header-area token exclusively.
+- **Per line item**: Mutate exactly 2–3 items for standard scenarios. Do not mutate all items unless the scenario explicitly requires it (e.g. `All_Fail`).
 
 ---
 
