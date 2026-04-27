@@ -5,13 +5,15 @@ agent: agent
 
 # Basic Tests Scenario Generation and Seeding
 
-Generate and seed a suite of test data and Excel/CSV files for core functionality and data validation scenarios. Each scenario must be based on the provided happy path sample file, with targeted mutations as described below. All files must be placed in `src/packing-lists/{exporter}/test-scenarios/basic-tests/`.
+Generate and seed a suite of test data and Excel/CSV/PDF files for core functionality and data validation scenarios. Each scenario must be based on the provided happy path sample file, with targeted mutations as described below. All files must be placed in `src/packing-lists/{exporter}/test-scenarios/basic-tests/`.
 
 **Important**: When corrupting numeric data in these scenarios, refer to the **Numeric Field Corruption Guidelines** section in the main `generate-test-data-from-sample.prompt.md` for specific examples of special characters, alphanumeric values, negative numbers, and mixed patterns to use.
 
 # Basic Test Scenarios
 
 _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
+
+**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`). If a scenario is listed with `.xlsx`, treat it as a base-name example and emit the scenario file using the actual input format extension.
 
 **IMPORTANT: Only generate scenarios if the required data/columns are present in the template.**
 
@@ -35,6 +37,7 @@ Document in the scenario folder's README which scenarios were skipped due to mis
 - DescriptionHasDoubleQuotesShould_Pass.xlsx: **Add actual double quotes** to description field data to test special character handling:
   - **For Excel files**: Change "Product Name" to "\"Product Name\""
   - **For CSV files**: Change "Product Name" to "\"\"Product Name\"\"" (properly escaped for CSV format)
+  - **For PDF files**: Overlay or replace the description text region with quoted text, preserving page layout
 - MandatoryHeaders_CaseInSensitive_Pass.xlsx: Change the case of mandatory headers to test case/formatting variations.
 - Incorrect_Mandatatypes_Excl_netandNopkgs_ProductCode_Pass.xlsx: Insert non-standard data types in non-critical mandatory fields excluding net weight and number of packages. Use the **Numeric Field Corruption Guidelines** from the main prompt - apply special characters, alphanumeric values, and negative numbers to fields like commodity_code, nature_of_products, type_of_treatment. Examples:
   - **Commodity codes**: `@123456`, `ABC123`, `-123456`, `-A123!`
@@ -81,15 +84,12 @@ Document in the scenario folder's README which scenarios were skipped due to mis
 
 ## Mutation Scope Guidelines
 
-- **CSV vs Excel Format Considerations**:
-  - **CSV files**: Special characters like quotes need proper escaping (`""` for literal `"`)
-  - **Excel files**: Special characters are treated as literal text in cells
 - **Missing vs Incorrect Header Scenarios**:
-  - **"Missing"**: **Remove/clear** headers completely (empty cells)
+  - **"Missing"**: **Remove/clear** headers completely (empty cells for CSV/Excel, blanked label region for PDF)
   - **"Incorrect"**: **Modify** headers to wrong text that doesn't match regex patterns
-- **Standard scenarios**: Modify exactly **2-3 data rows** unless scenario specifies otherwise
-- **"Multiple" scenarios**: Modify exactly **3 data rows** (minimum for "multiple")
-- **"All" scenarios**: Modify **all data rows** when explicitly stated (e.g., "All_Fail")
-- **Preserve remaining rows**: All other data rows should remain unchanged from the template
-- **Do not modify all rows**: Only change the specified number of rows per scenario, not entire columns
+- **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
+- **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
+- **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail")
+- **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
+- **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions
 - **Baseline scenario**: `Happypath` should remain completely unmodified

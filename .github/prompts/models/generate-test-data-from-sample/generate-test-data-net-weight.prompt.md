@@ -7,6 +7,8 @@ agent: agent
 
 _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
 
+**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
+
 **Important**: When corrupting numeric data in these scenarios, refer to the **Numeric Field Corruption Guidelines** section in the main `generate-test-data-from-sample.prompt.md` for specific examples of special characters, alphanumeric values, negative numbers, and mixed patterns to use.
 
 ## Scenarios
@@ -29,7 +31,7 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
   - **Mixed patterns**: `-A12.5!`, `@-15.B`, `#-C20.8`, `$D-25.E`
   - **Text values**: `"Heavy"`, `"Light"`, `"Unknown"`, `"TBD"`, `"Variable"`
 - **Malformed_Header_Unit_Pass**: Malform the unit in the header (e.g. 'Total Net Weight (K-G)').
-- **Missing_Header_Netweight_Unparse**: **Remove (clear/empty)** the net weight header column completely.
+- **Missing_Header_Netweight_Unparse**: **Remove (clear/empty)** the net weight header label completely (empty cell for CSV/Excel, blanked header text region for PDF).
 - **Missing_Paranthesis_in_Uom_Pass**: Remove parentheses from the unit in the header (e.g. 'Total Net Weight KG').
 - **MixedCase_Header_Pass**: Change the net weight header to mixed case (e.g. 'ToTal nEt WeIGHt').
 - **Netweight_HasEmpty_Parentheses_Fail**: Use empty parentheses in the header (e.g. 'Total Net Weight ()').
@@ -45,7 +47,7 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 - **Alpha_Numeric_UOM_Weight**: Set the unit of measure to alphanumeric values that do NOT match the allowed kilogram tokens (see main prompt). Examples: `K9G`, `L2B`, `G3M`, `K5G`, `M7L`.
 - **Data_empty_NetweightUOM**: Leave unit of measure cells empty.
 - **Invalid_Unit_Type_Fail**: Set unit of measure to an invalid type (e.g. `LBS`, `LB`, `GRAM`, `G`) — do NOT use `KGS` or other allowed kg variants, as those will be treated as valid.
-- **Missing_Header_NetweightUOM**: **Remove (clear/empty)** the unit of measure header column completely.
+- **Missing_Header_NetweightUOM**: **Remove (clear/empty)** the unit of measure header label completely (empty cell for CSV/Excel, blanked header text region for PDF).
 - **Missing_UOM_Weight_Fail**: Remove all unit of measure data.
 - **MissingNetweightUOM_excludeKG**: Remove the unit of measure column if it only contains an allowed kilogram token (e.g., `KG`, `KGS`, `KILOGRAM`, `KILOGRAMS`, `KILO`, `KILOS`).
 - **MixedUnits_And_Casing_Pass**: Use mixed units and casing in the unit of measure data (e.g. 'Kg', 'kG', 'KG').
@@ -61,14 +63,14 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 ## Mutation Scope Guidelines
 
 - **Missing vs Modification Scenarios**:
-  - **"Missing_Header"**: **Remove/clear** headers completely (empty cells)
+  - **"Missing_Header"**: **Remove/clear** headers completely (empty cells for CSV/Excel, blanked header text regions for PDF)
   - **Other header scenarios**: **Modify** headers with typos, extra characters, etc.
-- **Standard scenarios**: Modify exactly **2-3 data rows** unless scenario specifies otherwise
-- **Header scenarios**: Modify header row only, leave data rows unchanged
-- **Data scenarios**: Modify exactly **2-3 data rows**, preserve header and remaining rows
-- **"All" scenarios**: Modify **all data rows** when explicitly stated (e.g., "All_Fail")
-- **Preserve remaining rows**: All other data rows should remain unchanged from the template
-- **Do not modify all rows**: Only change the specified number of rows per scenario, not entire columns
+- **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
+- **Header scenarios**: Modify header row/label only, leave data rows/items unchanged
+- **Data scenarios**: Modify exactly **2-3 data rows/items**, preserve header and remaining rows/items
+- **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail")
+- **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
+- **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions
 - **Baseline scenario**: `Happypath` should remain completely unmodified
 
 ## Output
