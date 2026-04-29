@@ -29,33 +29,32 @@ Document in the scenario folder's README which scenarios were skipped due to mis
 **Only generate a scenario if the required field/column is present in the template.**
 
 - Happypath.xlsx: Exact copy of the input file for baseline validation.
-- Missing_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **Remove (clear/empty)** all optional column headers completely so they are blank cells.
+- Missing_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** all optional column headers completely so they are blank cells.
 - Missing_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Clear all data in optional columns while preserving headers.
 - Incorrect_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Insert invalid/incorrect data in all optional columns. For numeric optional fields (if any), use the **Numeric Field Corruption Guidelines** with special characters, alphanumeric values, and negative numbers. For text optional fields, use invalid formats or unexpected values.
-- Incorrect_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **Modify** optional column headers to incorrect text that doesn't match the original regex patterns (e.g., change "Country of Origin" to "Country Origin").
+- Incorrect_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **[HEADER ONLY — do not modify data rows.]** **Modify** optional column headers to incorrect text that doesn't match the original regex patterns (e.g., change "Country of Origin" to "Country Origin").
 - OnlyMandatoryDataIsFilled_Pass.xlsx: Only generate if optional columns are present. Clear all optional data while keeping mandatory data intact.
 - DescriptionHasDoubleQuotesShould_Pass.xlsx: **Add actual double quotes** to description field data to test special character handling:
   - **For Excel files**: Change "Product Name" to "\"Product Name\""
   - **For CSV files**: Change "Product Name" to "\"\"Product Name\"\"" (properly escaped for CSV format)
   - **For PDF files**: Overlay or replace the description text region with quoted text, preserving page layout
-- MandatoryHeaders_CaseInSensitive_Pass.xlsx: Change the case of mandatory headers to test case/formatting variations.
+- MandatoryHeaders_CaseInSensitive_Pass.xlsx: **[HEADER ONLY — do not modify data rows.]** Change the case of mandatory headers to test case/formatting variations.
 - Incorrect_Mandatatypes_Excl_netandNopkgs_ProductCode_Pass.xlsx: Insert non-standard data types in non-critical mandatory fields excluding net weight and number of packages. Use the **Numeric Field Corruption Guidelines** from the main prompt - apply special characters, alphanumeric values, and negative numbers to fields like commodity_code, nature_of_products, type_of_treatment. Examples:
-  - **Commodity codes**: `@123456`, `ABC123`, `-123456`, `-A123!`
   - **Nature of products**: `@Frozen`, `A5Food`, `-Products`, `-B!Food`
   - **Type of treatment**: `@Chilled`, `F5resh`, `-Frozen`, `-C!old`
-- Incorrect_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **Remove (clear/empty)** the header name for the commodity_code column.
-- Incorrect_MandatoryHeader_All_Unparse.xlsx: **Remove (clear/empty)** ALL mandatory header names.
-- Incorrect_MandatoryHeader_Desc_Unparse.xlsx: Only generate if description field is present. **Remove (clear/empty)** the header name for the description column.
-- Incorrect_MandatoryHeader_TotNetweight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **Remove (clear/empty)** the header name for the total_net_weight_kg column.
-- Incorrect_MandatoryHeader_NoofPakgs_Unparse.xlsx: Only generate if number_of_packages field is present. **Remove (clear/empty)** the header name for the number_of_packages column.
-- Incorrect_MandatoryHeader_TreatmentType_Unparse.xlsx: Only generate if type_of_treatment field is present. **Remove (clear/empty)** the header name for the type_of_treatment column.
-- Incorrect_MandatoryHeader_TotNetweightKGS_Fail.xlsx: Only generate if total_net_weight_kg field is present. **Modify** the net weight header to use different unit terminology that does NOT match the allowed-kg regex (e.g., change "Total Net Weight (KG)" to "Total Net Weight (LBS)" or "Total Net Weight (LB)"). Do NOT use `KGS` or other allowed kg variants, as those will be treated as valid.
+- Incorrect_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the commodity_code column.
+- Incorrect_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** ALL mandatory header names.
+- Incorrect_MandatoryHeader_Desc_Unparse.xlsx: Only generate if description field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the description column.
+- Incorrect_MandatoryHeader_TotNetweight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the total_net_weight_kg column.
+- Incorrect_MandatoryHeader_NoofPakgs_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the number_of_packages column.
+- Incorrect_MandatoryHeader_TreatmentType_Unparse.xlsx: Only generate if type_of_treatment field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the type_of_treatment column.
+- Incorrect_MandatoryHeader_TotNetweightKGS_Fail.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Modify** the net weight header to use different unit terminology that does NOT match the allowed-kg regex (e.g., change "Total Net Weight (KG)" to "Total Net Weight (LBS)" or "Total Net Weight (LB)"). Do NOT use `KGS` or other allowed kg variants, as those will be treated as valid.
 - Empty_MultipleRowsColumns_Pass.xlsx: Include empty rows in the data section while maintaining valid structure.
-- Missing_MandatoryHeader_All_Unparse.xlsx: **Remove (clear/empty)** ALL mandatory header names completely.
-- Missing_MandatoryHeader_Description_unparse.xlsx: Only generate if description field is present. **Remove (clear/empty)** only the description header.
-- Missing_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **Remove (clear/empty)** only the commodity code header.
-- Missing_MandatoryHeader_NoofPacakges_Unparse.xlsx: Only generate if number_of_packages field is present. **Remove (clear/empty)** only the number of packages header.
-- Missing_MandatoryHeader_TotNetWeight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **Remove (clear/empty)** only the total net weight header.
+- Missing_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** ALL mandatory header names completely.
+- Missing_MandatoryHeader_Description_unparse.xlsx: Only generate if description field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the description header.
+- Missing_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the commodity code header.
+- Missing_MandatoryHeader_NoofPacakges_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the number of packages header.
+- Missing_MandatoryHeader_TotNetWeight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the total net weight header.
 - Incorrect_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Insert invalid data types in mandatory fields across multiple rows and locations. Use the **Numeric Field Corruption Guidelines** from the main prompt with a mix of special characters, alphanumeric values, and negative numbers:
   - **Row 1**: Special characters (`@123456`, `@5`, `@12.5`)
   - **Row 2**: Alphanumeric values (`ABC123`, `A5`, `A12.5`)
@@ -87,6 +86,7 @@ Document in the scenario folder's README which scenarios were skipped due to mis
 - **Missing vs Incorrect Header Scenarios**:
   - **"Missing"**: **Remove/clear** headers completely (empty cells for CSV/Excel, blanked label region for PDF)
   - **"Incorrect"**: **Modify** headers to wrong text that doesn't match regex patterns
+- **Header-only scenarios** (any scenario marked `[HEADER ONLY]` above): Modify header labels only — **do NOT modify any data rows**
 - **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
 - **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
 - **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail")
