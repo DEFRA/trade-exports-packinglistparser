@@ -45,8 +45,6 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 ### Baseline Scenario (Always generate)
 
-- **Happypath**: No mutation; copy the original happy path file.
-
 **You must generate and mutate all applicable scenarios based on the exporter configuration conditional logic above.**
 
 ## Documentation: Country of Origin, NIRMS, and High-Risk/Ineligible Items Scenario Types
@@ -66,7 +64,6 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 - **ac13_HighRiskCoOTreatmentTypeNotSpecified_Fail**: country_of_origin set to a high-risk value and type_of_treatment left blank or not specified. Should fail validation.
 - **ac14_HighRiskCoOTreatmentTypeNotSpecified_COO_InvalidMultiple_Fail**: Multiple rows (3 rows) with high-risk country_of_origin, missing type_of_treatment, and invalid country_of_origin values. Should fail validation for all.
 - **ac15_HighRiskCoOTreatmentTypeNotSpecifiedMultiple_Fail**: Multiple rows (3 rows) with high-risk country_of_origin and missing type_of_treatment. Should fail validation for all.
-- **Happypath**: No mutation; copy the original happy path file. Should pass validation.
 
 ## NIRMS and Country of Origin Validation Patterns
 

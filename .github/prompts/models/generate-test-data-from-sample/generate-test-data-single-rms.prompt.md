@@ -13,7 +13,6 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 ## Scenarios
 
-- **Happypath**: No mutation; copy the original happy path file.
 - **RMSHasWrongFinal3DigitsShould_Pass**: Change the last 3 digits of the RMS number (e.g. RMS-GB-000015-666)
 - **LowercaseAndMalformedPrefixInEstablishmentNumber_Pass**: Use lowercase and malformed prefix (e.g. rms-gb-000015-010)
 - **MixedCaseEstablishmentNumberFormat_Pass**: Use mixed case (e.g. Rms-Gb-000015-010)
@@ -50,4 +49,3 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 - **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
 - **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
 - **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions
-- **Baseline scenario**: `Happypath` should remain completely unmodified
