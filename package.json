@@ -42,7 +42,7 @@
     "@hapi/hapi": "21.4.0",
     "aws-embedded-metrics": "4.2.0",
     "aws4": "1.13.2",
-    "convict": "6.2.4",
+    "convict": "6.2.5",
     "convict-format-with-validator": "6.2.0",
     "csv-parse": "6.1.0",
     "global-agent": "3.0.0",
