@@ -30,7 +30,7 @@
   "dependencies": {
     "@aws-sdk/client-cognito-identity": "3.980.0",
     "@aws-sdk/client-s3": "3.980.0",
-    "@azure/identity": "4.13.0",
+    "@azure/identity": "4.13.1",
     "@azure/service-bus": "7.9.5",
     "@azure/storage-blob": "12.29.1",
     "@boterop/convert-excel-to-json": "2.0.0",
@@ -58,6 +58,7 @@
     "pino": "9.14.0",
     "pino-pretty": "13.0.0",
     "undici": "7.24.0",
+    "uuid": "14.0.0",
     "ws": "8.18.3",
     "xlsx": "0.20.3"
   },
