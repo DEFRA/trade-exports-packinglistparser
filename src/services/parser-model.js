@@ -89,5 +89,8 @@ export default Object.freeze({
   SAVERS1: 'SAVERS1',
 
   // Burbank models
-  BURBANK1: 'BURBANK1'
+  BURBANK1: 'BURBANK1',
+
+  // Lactalis McLelland models
+  LACTALIS1: 'LACTALIS1'
 })

@@ -119,6 +119,10 @@ import { parse as parseTurners1 } from './parsers/turners/model1.js'
 import { matches as matchesBurbank1 } from './matchers/burbank/model1.js'
 import { parse as parseBurbank1 } from './parsers/burbank/model1.js'
 
+// Lactalis McLelland Excel parsers
+import { matches as matchesLactalis1 } from './matchers/lactalis/model1.js'
+import { parse as parseLactalis1 } from './parsers/lactalis/model1.js'
+
 // No-match matchers and parsers
 import {
   noRemosMatch,
@@ -243,6 +247,10 @@ const parsersExcel = {
   BURBANK1: {
     matches: matchesBurbank1,
     parse: parseBurbank1
+  },
+  LACTALIS1: {
+    matches: matchesLactalis1,
+    parse: parseLactalis1
   }
 }
 

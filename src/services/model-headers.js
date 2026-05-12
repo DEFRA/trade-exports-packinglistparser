@@ -26,6 +26,7 @@ import { tjmorrisHeaders } from './model-headers/tjmorris.js'
 import { turnersHeaders } from './model-headers/turners.js'
 import { warrensHeaders } from './model-headers/warrens.js'
 import { burbankHeaders } from './model-headers/burbank.js'
+import { lactalisHeaders } from './model-headers/lactalis.js'
 
 const modelHeaders = {
   ...asdaHeaders,
@@ -49,7 +50,8 @@ const modelHeaders = {
   ...tjmorrisHeaders,
   ...turnersHeaders,
   ...warrensHeaders,
-  ...burbankHeaders
+  ...burbankHeaders,
+  ...lactalisHeaders
 }
 
 export default modelHeaders
