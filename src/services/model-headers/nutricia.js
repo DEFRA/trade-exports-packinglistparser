@@ -17,7 +17,8 @@ const nutriciaHeaders = {
       total_net_weight_kg: /Order net weight/i
     },
     country_of_origin: /coo/i,
-    findUnitInHeader: true
+    findUnitInHeader: true,
+    deprecated: true
   }
 }
 

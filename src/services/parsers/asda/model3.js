@@ -74,7 +74,7 @@ export function parse(packingListJson) {
       headers.ASDA3 // Required for Country of Origin validation
     )
   } catch (err) {
-    logger.error(formatError(err), 'Error in parse()')
+    logger.error(formatError(err), 'Error in ASDA 3 parser')
     return combineParser.combine(null, [], false, parserModel.NOMATCH, [])
   }
 }

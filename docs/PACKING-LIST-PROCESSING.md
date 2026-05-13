@@ -329,7 +329,7 @@ export const excelMatchers = [
    - Excel: ASDA (ASDA3), B&M (BANDM1), Barton and Redman (BARTONREDMAN1), Booker (BOOKER2), Boots (BOOTS1),
      Buffaload Logistics (BUFFALOAD1), CDS (CDS2), Co-op (COOP1), Fowler-Welch (FOWLERWELCH1, FOWLERWELCH2),
      Giovanni (GIOVANNI1), Gousto (GOUSTO1), Kepak (KEPAK1), Mars (MARS1),
-     Nisa (NISA1, NISA2), Nutricia (NUTRICIA2), Sainsbury's (SAINSBURYS1), Savers (SAVERS1),
+     Nisa (NISA1, NISA2), Sainsbury's (SAINSBURYS1), Savers (SAVERS1),
      Tesco (TESCO2, TESCO3), TJ Morris (TJMORRIS2), Turners (TURNERS1), Warrens (WARRENS2)
    - CSV: ASDA (ASDA4), Iceland (ICELAND2)
    - PDF (non-AI): Giovanni (GIOVANNI3), M&S (MANDS1)
