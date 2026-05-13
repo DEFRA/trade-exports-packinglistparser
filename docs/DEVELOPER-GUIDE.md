@@ -253,7 +253,6 @@ The following parsers are currently available in the system (as of February 2026
 | MARS1         | Mars                | Model 1 format |
 | NISA1         | Nisa                | Model 1 format |
 | NISA2         | Nisa                | Model 2 format |
-| NUTRICIA2     | Nutricia            | Model 2 format |
 | SAINSBURYS1   | Sainsbury's         | Model 1 format |
 | SAVERS1       | Savers              | Model 1 format |
 | TESCO2        | Tesco               | Model 2 format |

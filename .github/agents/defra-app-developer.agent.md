@@ -2,13 +2,17 @@
 description: Builds Defra-compliant applications following all software development standards
 tools:
   [
-    search/codebase,
-    edit/editFiles,
-    runCommands,
-    web/fetch,
-    web/githubRepo,
-    read/problems,
-    search/usages
+    edit,
+    execute,
+    read,
+    search,
+    web,
+    findTestFiles,
+    githubRepo,
+    usages,
+    changes,
+    todos,
+    thinking
   ]
 ---
 
@@ -24,8 +28,9 @@ Use the Defra-approved stack for this project:
 - **Language**: Vanilla JavaScript with JSDoc for type annotations — do not use TypeScript without an approved exception
 - **Server framework**: Hapi (current major version)
 - **Module system**: ES modules by default, CommonJS only where required (e.g. Jest config)
-- **Linter**: ESLint + Prettier
-- **Test framework**: Jest for unit/integration tests
+- **Linter**: neostandard ([Defra JS standard](https://defra.github.io/software-development-standards/standards/javascript_standards/))
+- **Test framework**: Jest for most Node.js projects; CDP frontend projects use Vitest — follow whatever is already set up in the project
+- **Configuration**: `convict` with `convict-format-with-validator` — never access `process.env` outside the config module
 - **Container**: Docker with Defra base images (`defradigital/node`, `defradigital/node-development`)
 
 > If your project uses .NET/C# or Python instead, replace this section with the relevant Defra language standards.
@@ -36,7 +41,7 @@ Use the Defra-approved stack for this project:
 2. Check existing code for patterns — follow the conventions already established in the codebase
 3. Write the code in small, testable increments
 4. Write unit tests alongside the code — target ≥90% global coverage, ≥95% for core business logic, and 100% for error handling and security-critical paths
-5. After every change: run the linter (`npx eslint .`) and formatter (`npx prettier --check .`) and fix all issues
+5. After every change: run the linter (`npx neostandard`) and fix all issues
 6. After every change: run the full test suite (`npm test`) and confirm all tests pass — do not move on until green
 7. Before committing, verify every item in the pre-commit checklist below
 
@@ -44,7 +49,7 @@ Use the Defra-approved stack for this project:
 
 Before marking work as done or creating a pull request, verify all of the following:
 
-- [ ] Linter passes with zero warnings or errors (`npx eslint .`) and code is formatted (`npx prettier --check .`)
+- [ ] Linter passes with zero warnings or errors (`npx neostandard`)
 - [ ] All existing tests still pass — no regressions introduced
 - [ ] New or changed behaviour has corresponding test coverage
 - [ ] Unit test coverage meets tiered targets (≥90% global, ≥95% business logic, 100% error handling and security paths) and has not decreased from the project or SonarCloud baseline
@@ -122,7 +127,7 @@ Before marking work as done or creating a pull request, verify all of the follow
 - Unit test coverage must meet tiered targets: ≥90% global, ≥95% core business logic, 100% error handling and security-critical paths
 - Test behaviour, not implementation details
 - Mock external dependencies (APIs, databases, file system)
-- See the project test guidance and existing route test files for naming conventions, coverage targets, minimum route test scenarios, and security testing patterns
+- See the [Tester agent](tester.agent.md) for naming conventions, coverage targets, minimum route test scenarios, and security testing patterns
 
 ### Accessibility (frontend)
 
@@ -142,7 +147,7 @@ Before marking work as done or creating a pull request, verify all of the follow
 ### Authentication
 
 - **Internal staff-facing services**: use Microsoft Entra ID (Azure AD).
-- **Public-facing GDS services**: use [GOV.UK One Login](https://www.sign-in.service.gov.uk/). Implement the OIDC integration following GDS guidance. Do not build a bespoke sign-in flow.
+- **Public-facing GDS services**: use [GOV.UK One Login](https://www.sign-in.service.gov.uk/){:target="\_blank"} (opens in new tab). Implement the OIDC integration following GDS guidance. Do not build a bespoke sign-in flow.
 - Do not implement custom authentication — use the approved identity provider for the service type.
 
 ### Containers and deployment
@@ -163,7 +168,7 @@ Before marking work as done or creating a pull request, verify all of the follow
 - Do not use TypeScript without an approved exception
 - Do not install frontend JavaScript frameworks (React, Vue, Angular)
 - Do not use Express — use Hapi
-- Do not use Helm 2 or 3 — use Helm 4 or later if using AKS - ask explicitly if this is required.
+- For AKS or EKS, use Helm 3 or later — never Helm 2
 - Do not log PII under any circumstances
 - Do not commit directly to the main branch. Follow trunk based development practices with feature branches and pull requests.
 - Do not reduce test coverage below the project baseline or SonarCloud baseline.
