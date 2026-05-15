@@ -1,0 +1,2258 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_OPENSEARCH",
+      "label": "OpenSearch",
+      "description": "OpenSearch data source for CDP logs",
+      "type": "datasource",
+      "pluginId": "grafana-opensearch-datasource",
+      "pluginName": "OpenSearch"
+    }
+  ],
+  "__elements": {},
+  "__requires": [
+    {
+      "type": "grafana",
+      "id": "grafana",
+      "name": "Grafana",
+      "version": "10.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "grafana-opensearch-datasource",
+      "name": "OpenSearch",
+      "version": "2.0.0"
+    },
+    {
+      "type": "panel",
+      "id": "stat",
+      "name": "Stat",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "timeseries",
+      "name": "Time series",
+      "version": ""
+    },
+    {
+      "type": "panel",
+      "id": "logs",
+      "name": "Logs",
+      "version": ""
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations \u0026 Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "CDP monitoring dashboard for trade-exports-packinglistparser service",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "title": "Overview",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"received payload\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Total Requests Processed",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Total Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 8,
+        "y": 1
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"no match\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "NOMATCH Results",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Successful Completions",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
+        "y": 1
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"sent to Service Bus\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Service Bus Messages Sent",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange",
+                "value": null
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 20,
+        "y": 1
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"warn\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Warnings",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 101,
+      "title": "HTTP Traffic",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "requests",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "2xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "4xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "5xx"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 6
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "2xx",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND res.statusCode:[200 TO 299]",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "4xx",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND res.statusCode:[400 TO 499]",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "5xx",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND res.statusCode:[500 TO 599]",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "HTTP Response Codes Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "ms",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "ms"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 6
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "alias": "Response Time",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "avg",
+              "field": "responseTime"
+            },
+            {
+              "id": "2",
+              "type": "max",
+              "field": "responseTime"
+            },
+            {
+              "id": "3",
+              "type": "percentiles",
+              "field": "responseTime",
+              "settings": {
+                "percents": ["95"]
+              }
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND responseTime:*",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "4",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "Response Time (avg / p95 / max)",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 102,
+      "title": "Packing List Processing",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "count",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Success"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "No Match"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Error"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 15
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "Success",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "No Match",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"no match\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "Error",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Error processing packing list\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "Processing Outcomes Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "ms",
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "lineWidth": 2,
+            "pointSize": 5,
+            "showPoints": "auto"
+          },
+          "unit": "ns"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 15
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": ["mean", "max"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "alias": "Parse Execution",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "avg",
+              "field": "event.duration"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND event.action:\"parse_execution\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "Blob Download",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "avg",
+              "field": "event.duration"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND event.action:\"blob_download\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "S3 Upload",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "avg",
+              "field": "event.duration"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND event.action:\"s3_upload\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "Service Bus Send",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "avg",
+              "field": "event.duration"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND event.action:\"service_bus_send\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "Get Dispatch Location",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "avg",
+              "field": "event.duration"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND event.action:\"get_dispatch_location\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "Operation Durations (ECS event.duration)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "count",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 23
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "CSV",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Detected CSV file\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "Excel",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Detected Excel file\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "PDF",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Detected PDF file\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "File Types Processed",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["count"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Input validation failed\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "Input Validation Failures Over Time",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "count",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 23
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "list",
+          "placement": "right"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "alias": "ICELAND2",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:ICELAND2",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "ASDA3",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:ASDA3",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "ASDA4",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:ASDA4",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "TESCO2",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:TESCO2",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "TESCO3",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:TESCO3",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "SAINSBURYS1",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:SAINSBURYS1",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "BOOKER2",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:BOOKER2",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "COOP1",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:COOP1",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "BANDM1",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:BANDM1",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "MANDS1",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:MANDS1",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "BOOTS1",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND message:BOOTS1",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "Parser Models Used",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "id": 103,
+      "title": "External Dependencies",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 32
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND message:\"Failed to send message to Service Bus\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Service Bus Send Failures",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 6,
+        "y": 32
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND (message:\"bearerTokenRequest() failed\" OR message:\"getDispatchLocation()\")",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Dynamics Failures",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 12,
+        "y": 32
+      },
+      "id": 32,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND message:\"Failed to create blob service client\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Blob Storage Failures",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 18,
+        "y": 32
+      },
+      "id": 33,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND message:\"Failed to call Azure API\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "MDM API Failures",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisLabel": "count",
+            "drawStyle": "bars",
+            "fillOpacity": 80,
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          }
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 34,
+      "options": {
+        "legend": {
+          "calcs": ["sum"],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "alias": "SB Failures",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND message:\"Failed to send message to Service Bus\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "Dynamics Failures",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND (message:\"bearerTokenRequest() failed\" OR message:\"getDispatchLocation()\")",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "Blob Failures",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND message:\"Failed to create blob service client\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        },
+        {
+          "alias": "MDM Failures",
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND message:\"Failed to call Azure API\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "settings": {
+                "interval": "auto"
+              },
+              "type": "date_histogram"
+            }
+          ]
+        }
+      ],
+      "title": "Dependency Failures Over Time",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 104,
+      "title": "Connectivity \u0026 Health",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 47
+      },
+      "id": 40,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:connectivity AND message:check AND message:200",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Connectivity Checks Passed",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 47
+      },
+      "id": 41,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:connectivity AND message:check AND message:503",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Connectivity Failures / Timeouts",
+      "type": "stat"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 47
+      },
+      "id": 42,
+      "options": {
+        "colorMode": "background",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": ["sum"],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "count"
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\" AND message:\"Failed to initialize\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ]
+        }
+      ],
+      "title": "Cache Init Failures",
+      "type": "stat"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 53
+      },
+      "id": 105,
+      "title": "Logs",
+      "type": "row"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 54
+      },
+      "id": 50,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "logs",
+              "settings": {
+                "limit": "100"
+              }
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND log.level:\"error\"",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ],
+          "refId": "A"
+        }
+      ],
+      "title": "Error Logs",
+      "type": "logs"
+    },
+    {
+      "datasource": "${DS_OPENSEARCH}",
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 64
+      },
+      "id": 51,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "datasource": "${DS_OPENSEARCH}",
+          "metrics": [
+            {
+              "id": "1",
+              "type": "logs",
+              "settings": {
+                "limit": "100"
+              }
+            }
+          ],
+          "query": "container_name:\"trade-exports-packinglistparser\" AND (log.level:\"error\" OR log.level:\"warn\")",
+          "timeField": "@timestamp",
+          "bucketAggs": [
+            {
+              "field": "@timestamp",
+              "id": "2",
+              "type": "date_histogram",
+              "settings": {
+                "interval": "auto"
+              }
+            }
+          ],
+          "refId": "A"
+        }
+      ],
+      "title": "Warnings \u0026 Errors Log Stream",
+      "type": "logs"
+    }
+  ],
+  "schemaVersion": 36,
+  "tags": ["cdp", "trade-exports", "packinglistparser", "dev"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "hide": 0,
+        "includeAll": false,
+        "label": "OpenSearch Data Source",
+        "multi": false,
+        "name": "DS_OPENSEARCH",
+        "options": [],
+        "query": "grafana-opensearch-datasource",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6M",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "PLP Service - Dev",
+  "uid": "plp_service_dev",
+  "version": 0
+}
