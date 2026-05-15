@@ -21,6 +21,23 @@ const cdsHeaders = {
     nirms: /NIRMS/i,
     findUnitInHeader: true,
     validateCountryOfOrigin: true
+  },
+  CDS3: {
+    establishmentNumber: {
+      regex: /RMS-GB-000252-\d{3}/i
+    },
+    regex: {
+      description: /^GoodsDescription$/i,
+      number_of_packages: /NumberOfPackages/i,
+      total_net_weight_kg: /NetWeight/i,
+      nature_of_products: /Nature Of Product/i,
+      type_of_treatment: /Type Of Treatment/i,
+      commodity_code: /CommodityCode/i
+    },
+    country_of_origin: /CountryOfOrigin/i,
+    nirms: /NIRMS/i,
+    findUnitInHeader: true,
+    validateCountryOfOrigin: true
   }
 }
 
