@@ -42,6 +42,8 @@ import { parse as parseBoots1 } from './parsers/boots/model1.js'
 // CDS Excel parsers
 import { matches as matchesCds2 } from './matchers/cds/model2.js'
 import { parse as parseCds2 } from './parsers/cds/model2.js'
+import { matches as matchesCds3 } from './matchers/cds/model3.js'
+import { parse as parseCds3 } from './parsers/cds/model3.js'
 
 // Co-op Excel parsers
 import { matches as matchesCoop1 } from './matchers/coop/model1.js'
@@ -163,6 +165,10 @@ const parsersExcel = {
   CDS2: {
     matches: matchesCds2,
     parse: parseCds2
+  },
+  CDS3: {
+    matches: matchesCds3,
+    parse: parseCds3
   },
   COOP1: {
     matches: matchesCoop1,

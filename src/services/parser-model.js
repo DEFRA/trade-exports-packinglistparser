@@ -34,6 +34,7 @@ export default Object.freeze({
 
   // CDS models
   CDS2: 'CDS2',
+  CDS3: 'CDS3',
 
   // Boots models
   BOOTS1: 'BOOTS1',
