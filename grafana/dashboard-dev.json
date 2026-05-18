@@ -316,7 +316,7 @@
               "type": "count"
             }
           ],
-          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\"",
+          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"completed successfully\" AND NOT message:NOMATCH",
           "timeField": "@timestamp",
           "bucketAggs": [
             {
