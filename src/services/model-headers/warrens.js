@@ -19,7 +19,15 @@ const warrensHeaders = {
       nature_of_products: /Nature of Product/i,
       type_of_treatment: /Type of Treatment/i
     },
-    invalidSheets: ['GC REFERENCE', 'GC REF', 'GC_REF'],
+    invalidSheets: [
+      'GC REFERENCE',
+      'GC REF',
+      'GC_REF',
+      'GC-Ref',
+      'GC- Ref',
+      'GC- Ref.',
+      'GC -REF'
+    ],
     country_of_origin: /Country of Origin/i,
     nirms: /NIRMS \/ NON NIRMS/i,
     validateCountryOfOrigin: true,

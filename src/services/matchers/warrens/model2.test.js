@@ -26,6 +26,18 @@ describe('matchesWarrens2', () => {
     expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
+  test("returns 'Empty File' when workbook contains only 'GC-Ref', 'GC- Ref' or 'GC -REF' invalid sheets", () => {
+    const packingListJson = {
+      'GC-Ref': [{ A: 'INVALID' }],
+      'GC- Ref': [{ A: 'INVALID' }],
+      'GC -REF': [{ A: 'INVALID' }]
+    }
+
+    const result = matches(packingListJson, filename)
+
+    expect(result).toBe(matcherResult.EMPTY_FILE)
+  })
+
   test("returns 'Wrong Establishment Number' matcher result for missing establishment number for one sheet", () => {
     const result = matches(
       model.invalid_Model_IncorrectEstablishmentNumber,
