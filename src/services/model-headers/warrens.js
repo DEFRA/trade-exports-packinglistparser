@@ -25,6 +25,7 @@ const warrensHeaders = {
       'GC_REF',
       'GC-Ref',
       'GC- Ref',
+      'GC- Ref.',
       'GC -REF'
     ],
     country_of_origin: /Country of Origin/i,
