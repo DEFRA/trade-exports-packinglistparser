@@ -18,11 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Depth 0 is required for branch-based versioning
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: npm
@@ -37,7 +37,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
       - run: npm install && npm test
       - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v7 #  (or check latest version on https://github.com/marketplace/actions/official-sonarqube-scan)
+        uses: SonarSource/sonarqube-scan-action@v8.2.0 #  (or check latest version on https://github.com/marketplace/actions/official-sonarqube-scan)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
