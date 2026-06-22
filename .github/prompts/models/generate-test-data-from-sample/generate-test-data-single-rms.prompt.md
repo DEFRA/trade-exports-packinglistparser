@@ -44,7 +44,7 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 - **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
 - **Establishment number patterns**:
   - **Single per sheet/document**: Modify the single establishment number location (e.g., header/company area in Excel/CSV or document header text region in PDF)
-  - **Per row/item**: Modify exactly **2-3 data rows/items** with establishment number fields
+  - **Per row/item**: Modify **ALL data rows** with establishment number fields — the single-RMS constraint requires a consistent value across every row, so partial mutation would leave the file in a mixed state that doesn't represent any real scenario.
 - **PDF-specific targeting**: Use a supported PDF mutation tool and mutate the RMS text in mapped coordinate regions. If RMS appears in multiple page locations, mutate only the scenario-required locations and leave other regions unchanged.
 - **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
 - **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
