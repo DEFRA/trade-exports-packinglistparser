@@ -29,6 +29,8 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 ### Country of Origin Scenarios (Generate if `country_of_origin` property exists)
 
+> **NIRMS prerequisite (ac6–ac15)**: CoO and ineligible item checks only run for NIRMS-eligible rows. On every row mutated in these scenarios, also set the NIRMS field to the valid NIRMS value from the happy path file.
+
 - **ac6_NullCoO_Fail**: Set country_of_origin field to blank/empty for 2-3 data rows/items.
 - **ac7_InvalidCoO_Fail**: Set country_of_origin field to invalid values including numeric codes and special characters: `"123"`, `"@GB"`, `"G#B"`, `"GBR"`, `"INVALID"`, `"-GB"`, `"G1B"` for 2-3 data rows/items.
 - **ac8_NullCoOMultiple_Fail**: Set country_of_origin field to blank/empty for multiple data rows/items (at least 3).
@@ -54,16 +56,16 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 - **ac3_InvalidNirms_Fail**: NIRMS column set to invalid values (e.g. "INVALID", "123", "Maybe"). Should fail validation.
 - **ac4_NullNirmsMultiple_Fail**: NIRMS column set to blank/empty for multiple rows. Should fail validation for all.
 - **ac5_InvalidNirmsMultiple_Fail**: NIRMS column set to different invalid values for multiple rows (3 rows). Should fail validation for all.
-- **ac6_NullCoO_Fail**: country_of_origin column set to blank/empty. Should fail validation.
-- **ac7_InvalidCoO_Fail**: country_of_origin column set to invalid values (e.g. "123", "GBR", "INVALID"). Should fail validation.
-- **ac8_NullCoOMultiple_Fail**: country_of_origin column set to blank/empty for multiple rows. Should fail validation for all.
-- **ac9_InvalidCoOMultiple_Fail**: country_of_origin column set to different invalid values for multiple rows (3 rows). Should fail validation for all.
-- **ac10_xCoO_Pass**: country_of_origin column set to "X". Should pass validation.
-- **ac11_HighRiskCoOTreatmentTypeSpecified_Fail**: country_of_origin set to a high-risk value and type_of_treatment to a specified value that should fail validation (e.g. Ineligible combination) for 2-3 data rows.
-- **ac12_HighRiskCoOTreatmentTypeSpecifiedMultiple_Fail**: Multiple rows (3 rows) with high-risk country_of_origin and specified type_of_treatment values that should fail validation.
-- **ac13_HighRiskCoOTreatmentTypeNotSpecified_Fail**: country_of_origin set to a high-risk value and type_of_treatment left blank or not specified. Should fail validation.
-- **ac14_HighRiskCoOTreatmentTypeNotSpecified_COO_InvalidMultiple_Fail**: Multiple rows (3 rows) with high-risk country_of_origin, missing type_of_treatment, and invalid country_of_origin values. Should fail validation for all.
-- **ac15_HighRiskCoOTreatmentTypeNotSpecifiedMultiple_Fail**: Multiple rows (3 rows) with high-risk country_of_origin and missing type_of_treatment. Should fail validation for all.
+- **ac6_NullCoO_Fail**: country_of_origin blank/empty (NIRMS valid). Should fail validation.
+- **ac7_InvalidCoO_Fail**: country_of_origin set to invalid values e.g. "123", "GBR", "INVALID" (NIRMS valid). Should fail validation.
+- **ac8_NullCoOMultiple_Fail**: country_of_origin blank/empty for multiple rows (NIRMS valid). Should fail validation for all.
+- **ac9_InvalidCoOMultiple_Fail**: country_of_origin set to different invalid values for multiple rows (NIRMS valid). Should fail validation for all.
+- **ac10_xCoO_Pass**: country_of_origin set to "X" (NIRMS valid). Should pass validation.
+- **ac11_HighRiskCoOTreatmentTypeSpecified_Fail**: high-risk country_of_origin + specified type_of_treatment that triggers ineligible validation (NIRMS valid). Should fail validation.
+- **ac12_HighRiskCoOTreatmentTypeSpecifiedMultiple_Fail**: 3 rows with high-risk country_of_origin + specified type_of_treatment (NIRMS valid). Should fail validation.
+- **ac13_HighRiskCoOTreatmentTypeNotSpecified_Fail**: high-risk country_of_origin + blank type_of_treatment (NIRMS valid). Should fail validation.
+- **ac14_HighRiskCoOTreatmentTypeNotSpecified_COO_InvalidMultiple_Fail**: 3 rows with high-risk country_of_origin, missing type_of_treatment, and invalid country_of_origin values (NIRMS valid). Should fail validation for all.
+- **ac15_HighRiskCoOTreatmentTypeNotSpecifiedMultiple_Fail**: 3 rows with high-risk country_of_origin and missing type_of_treatment (NIRMS valid). Should fail validation for all.
 
 ## NIRMS and Country of Origin Validation Patterns
 
@@ -128,8 +130,8 @@ Use the format-appropriate tools from `generate-test-data-from-sample.prompt.md`
 Typical mutation targets:
 
 - **NIRMS Validation**: For exporters with `nirms` property, test blank values and invalid patterns (should be recognizable values like "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS", etc.)
-- **Country of Origin Validation**: For exporters with `validateCountryOfOrigin: true`, test blank values and invalid formats (should be 2-digit ISO codes like "GB", "FR", "DE" or "X")
-- **Ineligible Items**: For exporters with all required fields, select an Ineligible item from `services/data/data-Ineligible-items.json` and set the appropriate `country_of_origin`, `commodity_code`, and `type_of_treatment` values in the data rows
+- **Country of Origin Validation**: For exporters with `validateCountryOfOrigin: true`, test blank values and invalid formats (should be 2-digit ISO codes like "GB", "FR", "DE" or "X"). Set NIRMS to the valid NIRMS value on every mutated row — CoO validation is only reached for NIRMS-eligible rows.
+- **Ineligible Items**: For exporters with all required fields, select an Ineligible item from `services/data/data-Ineligible-items.json` and set the appropriate `country_of_origin`, `commodity_code`, and `type_of_treatment` values in the data rows. Set NIRMS to the valid NIRMS value on every mutated row — ineligible item checks are only reached for NIRMS-eligible rows.
 
 ## Output
 
