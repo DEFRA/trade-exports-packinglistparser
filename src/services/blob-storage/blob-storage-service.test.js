@@ -16,9 +16,9 @@ const mockGetContainerClient = vi.fn(() => ({
   getBlockBlobClient: mockGetBlockBlobClient,
   exists: mockExists
 }))
-const mockBlobServiceClient = vi.fn(() => ({
-  getContainerClient: mockGetContainerClient
-}))
+const mockBlobServiceClient = vi.fn(function () {
+  return { getContainerClient: mockGetContainerClient }
+})
 
 vi.mock('@azure/storage-blob', () => ({
   BlobServiceClient: mockBlobServiceClient

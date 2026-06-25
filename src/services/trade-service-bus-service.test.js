@@ -20,11 +20,13 @@ const mockCreateReceiver = vi.fn(() => ({
 }))
 
 vi.mock('@azure/service-bus', () => ({
-  ServiceBusClient: vi.fn(() => ({
-    createSender: mockCreateSender,
-    createReceiver: mockCreateReceiver,
-    close: mockClose
-  }))
+  ServiceBusClient: vi.fn(function () {
+    return {
+      createSender: mockCreateSender,
+      createReceiver: mockCreateReceiver,
+      close: mockClose
+    }
+  })
 }))
 
 // Mock getAzureCredentials

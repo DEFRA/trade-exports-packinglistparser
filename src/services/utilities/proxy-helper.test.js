@@ -157,7 +157,9 @@ describe('proxy-helper', () => {
       const { HttpsProxyAgent } = await import('https-proxy-agent')
       const WebSocket = (await import('ws')).default
       const mockProxyAgent = { isProxyAgent: true }
-      HttpsProxyAgent.mockReturnValue(mockProxyAgent)
+      HttpsProxyAgent.mockImplementation(function () {
+        return mockProxyAgent
+      })
 
       const { getServiceBusConnectionOptions } = await import(
         './proxy-helper.js'
