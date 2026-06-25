@@ -43,9 +43,9 @@ vi.mock('node:fs', () => ({
 }))
 
 vi.mock('pdf.js-extract', () => ({
-  PDFExtract: vi.fn(() => ({
-    extractBuffer: mockPdfExtractBuffer
-  }))
+  PDFExtract: vi.fn(function () {
+    return { extractBuffer: mockPdfExtractBuffer }
+  })
 }))
 
 let server

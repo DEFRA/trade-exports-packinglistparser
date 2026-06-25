@@ -11,9 +11,9 @@ const mockGetContainerClient = vi.fn(() => ({
   getBlobClient: mockGetBlobClient,
   exists: mockExists
 }))
-const mockBlobServiceClient = vi.fn(() => ({
-  getContainerClient: mockGetContainerClient
-}))
+const mockBlobServiceClient = vi.fn(function () {
+  return { getContainerClient: mockGetContainerClient }
+})
 
 vi.mock('@azure/storage-blob', () => ({
   BlobServiceClient: mockBlobServiceClient
@@ -314,7 +314,7 @@ describe('ehco-blob-storage-service', () => {
         'test-container'
       )
 
-      mockBlobServiceClient.mockImplementationOnce(() => {
+      mockBlobServiceClient.mockImplementationOnce(function () {
         throw new Error('Invalid blob storage account')
       })
 

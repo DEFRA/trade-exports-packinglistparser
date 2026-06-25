@@ -10,7 +10,17 @@ export default defineConfig({
       reportsDirectory: './coverage',
       reporter: ['text', 'lcov'],
       include: ['src/**'],
-      exclude: [...configDefaults.exclude, 'coverage']
+      exclude: [
+        ...configDefaults.exclude,
+        'coverage',
+        // Vitest 4 V8 AST coverage cannot parse binary or non-JS file types
+        'src/packing-lists/**',
+        '**/*.xlsx',
+        '**/*.xls',
+        '**/*.csv',
+        '**/*.pdf',
+        '**/*.md'
+      ]
     },
     setupFiles: ['.vite/setup-files.js']
   }

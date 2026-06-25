@@ -66,7 +66,7 @@ describe('sync-scheduler', () => {
   })
 
   afterEach(() => {
-    vi.restoreAllMocks()
+    vi.resetAllMocks()
     stopSyncScheduler()
   })
 

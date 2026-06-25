@@ -63,13 +63,23 @@ describe('S3 Service', () => {
     vi.clearAllMocks()
 
     // Set up S3Client mock
-    S3Client.mockImplementation(() => mockS3Client)
+    S3Client.mockImplementation(function () {
+      return mockS3Client
+    })
 
     // Mock command constructors to return objects with input property
-    ListObjectsV2Command.mockImplementation((input) => ({ input }))
-    PutObjectCommand.mockImplementation((input) => ({ input }))
-    GetObjectCommand.mockImplementation((input) => ({ input }))
-    DeleteObjectCommand.mockImplementation((input) => ({ input }))
+    ListObjectsV2Command.mockImplementation(function (input) {
+      return { input }
+    })
+    PutObjectCommand.mockImplementation(function (input) {
+      return { input }
+    })
+    GetObjectCommand.mockImplementation(function (input) {
+      return { input }
+    })
+    DeleteObjectCommand.mockImplementation(function (input) {
+      return { input }
+    })
 
     // Import the service functions after mocking
     const s3Service = await import('./s3-service.js')

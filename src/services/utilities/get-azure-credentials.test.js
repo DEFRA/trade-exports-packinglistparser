@@ -2,10 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 
 // Mock AWS SDK
 const mockSend = vi.fn()
-const MockCognitoIdentityClient = vi.fn(() => ({
-  send: mockSend
-}))
-const MockGetOpenIdTokenForDeveloperIdentityCommand = vi.fn((params) => params)
+const MockCognitoIdentityClient = vi.fn(function () {
+  return { send: mockSend }
+})
+const MockGetOpenIdTokenForDeveloperIdentityCommand = vi.fn(function (params) {
+  return params
+})
 
 vi.mock('@aws-sdk/client-cognito-identity', () => ({
   CognitoIdentityClient: MockCognitoIdentityClient,
@@ -114,7 +116,9 @@ describe('get-azure-credentials', () => {
 
     it('should return a ClientAssertionCredential instance', () => {
       const mockCredential = { type: MOCK_TYPES.CLIENT_ASSERTION_CREDENTIAL }
-      MockClientAssertionCredential.mockReturnValue(mockCredential)
+      MockClientAssertionCredential.mockImplementation(function () {
+        return mockCredential
+      })
 
       const result = getAzureCredentials(
         TEST_IDS.TENANT_ID_ALT,
@@ -127,7 +131,7 @@ describe('get-azure-credentials', () => {
     it('should use getCognitoToken callback that requests token from Cognito', async () => {
       let capturedCallback
       MockClientAssertionCredential.mockImplementation(
-        (_tenantId, _clientId, callback) => {
+        function (_tenantId, _clientId, callback) {
           capturedCallback = callback
           return { type: MOCK_TYPES.CREDENTIAL }
         }
@@ -155,7 +159,7 @@ describe('get-azure-credentials', () => {
     it('should throw error when Cognito token request fails', async () => {
       let capturedCallback
       MockClientAssertionCredential.mockImplementation(
-        (_tenantId, _clientId, callback) => {
+        function (_tenantId, _clientId, callback) {
           capturedCallback = callback
           return { type: MOCK_TYPES.CREDENTIAL }
         }
@@ -192,7 +196,7 @@ describe('get-azure-credentials', () => {
     it('should use correct logins mapping for Cognito', async () => {
       let capturedCallback
       MockClientAssertionCredential.mockImplementation(
-        (_tenantId, _clientId, callback) => {
+        function (_tenantId, _clientId, callback) {
           capturedCallback = callback
           return { type: MOCK_TYPES.CREDENTIAL }
         }

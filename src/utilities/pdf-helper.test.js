@@ -11,9 +11,9 @@ import { PDFExtract } from 'pdf.js-extract'
 vi.mock('pdf.js-extract', () => {
   const mockExtractBuffer = vi.fn()
   return {
-    PDFExtract: vi.fn(() => ({
-      extractBuffer: mockExtractBuffer
-    }))
+    PDFExtract: vi.fn(function () {
+      return { extractBuffer: mockExtractBuffer }
+    })
   }
 })
 

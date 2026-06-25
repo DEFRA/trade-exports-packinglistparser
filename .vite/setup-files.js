@@ -1,15 +1,4 @@
-import { afterAll, beforeAll } from 'vitest'
-import createFetchMock from 'vitest-fetch-mock'
-
-const fetchMock = createFetchMock(vi)
-
-beforeAll(async () => {
-  // Setup fetch mock
-  fetchMock.enableMocks()
-  global.fetch = fetchMock
-  global.fetchMock = fetchMock
-})
-
-afterAll(async () => {
-  fetchMock.disableMocks()
-})
+// Stub the global fetch with a vi.fn() so tests that do not set up their own
+// fetch mock cannot make real HTTP calls. Individual tests override this in
+// their own beforeEach hooks as needed.
+vi.stubGlobal('fetch', vi.fn())
