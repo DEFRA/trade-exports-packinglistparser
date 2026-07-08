@@ -12,7 +12,7 @@ const manfreightHeaders = {
     },
     regex: {
       description: /Description of goods/i,
-      commodity_code: /Commodity [Cc]ode/i,
+      commodity_code: /Commodity Code/i,
       number_of_packages: /No\.\s*of\s*pkgs/i,
       total_net_weight_kg: /Total Net Weight/i,
       nature_of_products: /Nature of Product/i,
@@ -30,7 +30,7 @@ const manfreightHeaders = {
     },
     regex: {
       description: /Description of goods/i,
-      commodity_code: /Commodity [Cc]ode/i,
+      commodity_code: /Commodity Code/i,
       number_of_packages: /No\.\s*of\s*pkgs/i,
       total_net_weight_kg: /Item Net Weight/i,
       nature_of_products: /Nature of Product/i,
