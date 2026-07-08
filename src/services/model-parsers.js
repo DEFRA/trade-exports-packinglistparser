@@ -77,6 +77,12 @@ import { parse as parseGiovanni3 } from './parsers/giovanni/model3.js'
 import { matches as matchesKepak1 } from './matchers/kepak/model1.js'
 import { parse as parseKepak1 } from './parsers/kepak/model1.js'
 
+// Manfreight Excel parsers
+import { matches as matchesManfreight1 } from './matchers/manfreight/model1.js'
+import { parse as parseManfreight1 } from './parsers/manfreight/model1.js'
+import { matches as matchesManfreight2 } from './matchers/manfreight/model2.js'
+import { parse as parseManfreight2 } from './parsers/manfreight/model2.js'
+
 // Nisa Excel parsers
 import { matches as matchesNisa1 } from './matchers/nisa/model1.js'
 import { parse as parseNisa1 } from './parsers/nisa/model1.js'
@@ -201,6 +207,14 @@ const parsersExcel = {
   KEPAK1: {
     matches: matchesKepak1,
     parse: parseKepak1
+  },
+  MANFREIGHT1: {
+    matches: matchesManfreight1,
+    parse: parseManfreight1
+  },
+  MANFREIGHT2: {
+    matches: matchesManfreight2,
+    parse: parseManfreight2
   },
   MARS1: {
     matches: matchesMars1,
