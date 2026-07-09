@@ -22,6 +22,7 @@ const bandmHeaders = {
     findUnitInHeader: true,
     validateCountryOfOrigin: true,
     country_of_origin: /COUNTRY OF ORIGIN/i,
+    exempt_country_of_origin: /EXEMPT COUNTRY OF ORIGIN/i,
     blanketNirms: {
       regex: /This consignment contains only NIRMS eligible goods/i,
       value: 'NIRMS'

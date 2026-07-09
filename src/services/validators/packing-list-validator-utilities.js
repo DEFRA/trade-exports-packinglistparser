@@ -9,6 +9,8 @@ import { getNormalizedIsoCodeSet } from './iso-code-lookup-cache.js'
 import { getIneligibleIndexByCountry } from './ineligible-index-cache.js'
 import failureReasonsDescriptions from './packing-list-failure-reasons.js'
 
+const countryCodeSeparators = /[,&]/
+
 function normalizeCountryCodes(countryOfOrigin) {
   if (isNullOrEmptyString(countryOfOrigin)) {
     return []
@@ -16,7 +18,7 @@ function normalizeCountryCodes(countryOfOrigin) {
 
   return countryOfOrigin
     .toLowerCase()
-    .split(',')
+    .split(countryCodeSeparators)
     .map((code) => code.trim())
     .filter((code) => code !== '')
 }
@@ -219,8 +221,8 @@ function isInvalidCoO(countryOfOrigin) {
   }
 
   // Check if it contains comma-separated values
-  if (normalizedValue.includes(',')) {
-    const codes = normalizedValue.split(',')
+  if (countryCodeSeparators.test(normalizedValue)) {
+    const codes = normalizedValue.split(countryCodeSeparators)
     // All individual codes must be valid
     return codes.some((code) => !isValidIsoCode(code.trim()))
   }

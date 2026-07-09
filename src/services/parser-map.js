@@ -19,20 +19,54 @@ const logger = createLogger()
  */
 function findHeaderCols(header, packingListHeader) {
   const headerCols = {}
+  const headerKeys = Object.keys(packingListHeader)
 
   // Process required columns
   const regexHeader = header.regex
   for (const value in regexHeader) {
-    headerCols[value] = Object.keys(packingListHeader).find((key) => {
+    headerCols[value] = headerKeys.find((key) => {
       return regexHeader[value].test(packingListHeader[key])
     })
   }
 
   // Process optional columns
-  if (header.country_of_origin) {
+  const optionalFields = [
+    'country_of_origin',
+    'exempt_country_of_origin',
+    'total_net_weight_unit',
+    'type_of_treatment',
+    'nirms',
+    'commodity_code',
+    'nature_of_products',
+    'box_number'
+  ]
+
+  optionalFields.forEach((field) => {
+    if (header[field]) {
+      headerCols[field] = headerKeys.find((key) =>
+        header[field].test(packingListHeader[key])
+      )
+    }
+  })
+
+  if (regexHeader?.header_net_weight_unit) {
+    headerCols.header_net_weight_unit = headerKeys.find((key) => {
+      return header.regex.header_net_weight_unit.test(packingListHeader[key])
+    })
+  }
+
+  /* if (header.country_of_origin) {
     headerCols.country_of_origin = Object.keys(packingListHeader).find(
       (key) => {
         return header.country_of_origin.test(packingListHeader[key])
+      }
+    )
+  }
+
+  if (header.exempt_country_of_origin) {
+    headerCols.exempt_country_of_origin = Object.keys(packingListHeader).find(
+      (key) => {
+        return header.exempt_country_of_origin.test(packingListHeader[key])
       }
     )
   }
@@ -85,7 +119,7 @@ function findHeaderCols(header, packingListHeader) {
     headerCols.box_number = Object.keys(packingListHeader).find((key) => {
       return header.box_number.test(packingListHeader[key])
     })
-  }
+  } */
 
   return headerCols
 }
@@ -246,6 +280,16 @@ function getNirms(col, headerCols, blanketValues, hasData) {
   )
 }
 
+function getCountryOfOrigin(col, headerCols, hasData) {
+  if (!hasData) {
+    return null
+  }
+  return (
+    columnValue(col[headerCols.country_of_origin]) ||
+    columnValue(col[headerCols.exempt_country_of_origin])
+  )
+}
+
 /**
  * Map Excel/CSV data rows to standardized packing list items.
  * @param {Array<Object>} packingListJson - Raw packing list data
@@ -325,7 +369,7 @@ export function mapParser(
           blanketValues,
           hasData
         ),
-        country_of_origin: columnValue(col[headerCols.country_of_origin]),
+        country_of_origin: getCountryOfOrigin(col, headerCols, hasData),
         nirms: getNirms(col, headerCols, blanketValues, hasData),
         row_location: {
           rowNumber: actualRowNumber,

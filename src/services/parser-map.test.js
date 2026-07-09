@@ -349,7 +349,7 @@ describe('mapParser', () => {
 
     const result = mapParser(packingListJson, 0, 1, header)
 
-    expect(result[0].type_of_treatment).toBe(null)
+    expect(result[0].type_of_treatment).toBeNull()
   })
 
   it('should prefer blanketTreatmentType regex match over blanketTreatmentTypeValue', () => {
