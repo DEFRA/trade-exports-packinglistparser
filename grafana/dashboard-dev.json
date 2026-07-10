@@ -1505,207 +1505,12 @@
       "type": "timeseries"
     },
     {
-      "datasource": "OpenSearch",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "palette-classic" },
-          "custom": {
-            "axisBorderShow": false,
-            "axisLabel": "count",
-            "drawStyle": "bars",
-            "fillOpacity": 80,
-            "lineWidth": 1,
-            "stacking": { "group": "A", "mode": "normal" }
-          }
-        },
-        "overrides": [
-          {
-            "matcher": { "id": "byName", "options": "COO Missing" },
-            "properties": [
-              {
-                "id": "color",
-                "value": { "fixedColor": "orange", "mode": "fixed" }
-              }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "COO Invalid" },
-            "properties": [
-              {
-                "id": "color",
-                "value": { "fixedColor": "red", "mode": "fixed" }
-              }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Ineligible Items" },
-            "properties": [
-              {
-                "id": "color",
-                "value": { "fixedColor": "purple", "mode": "fixed" }
-              }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "Description Missing" },
-            "properties": [
-              {
-                "id": "color",
-                "value": { "fixedColor": "yellow", "mode": "fixed" }
-              }
-            ]
-          },
-          {
-            "matcher": { "id": "byName", "options": "RMS Issues" },
-            "properties": [
-              {
-                "id": "color",
-                "value": { "fixedColor": "blue", "mode": "fixed" }
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": { "h": 8, "w": 16, "x": 0, "y": 31 },
-      "id": 36,
-      "options": {
-        "legend": {
-          "calcs": ["sum"],
-          "displayMode": "list",
-          "placement": "bottom"
-        },
-        "tooltip": { "mode": "multi", "sort": "none" }
-      },
-      "targets": [
-        {
-          "alias": "COO Missing",
-          "datasource": "OpenSearch",
-          "metrics": [{ "id": "1", "type": "count" }],
-          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Missing Country of Origin\"",
-          "timeField": "@timestamp",
-          "bucketAggs": [
-            {
-              "field": "@timestamp",
-              "id": "2",
-              "settings": { "interval": "auto" },
-              "type": "date_histogram"
-            }
-          ]
-        },
-        {
-          "alias": "COO Invalid",
-          "datasource": "OpenSearch",
-          "metrics": [{ "id": "1", "type": "count" }],
-          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Invalid Country of Origin ISO Code\"",
-          "timeField": "@timestamp",
-          "bucketAggs": [
-            {
-              "field": "@timestamp",
-              "id": "2",
-              "settings": { "interval": "auto" },
-              "type": "date_histogram"
-            }
-          ]
-        },
-        {
-          "alias": "Ineligible Items",
-          "datasource": "OpenSearch",
-          "metrics": [{ "id": "1", "type": "count" }],
-          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Prohibited item identified\"",
-          "timeField": "@timestamp",
-          "bucketAggs": [
-            {
-              "field": "@timestamp",
-              "id": "2",
-              "settings": { "interval": "auto" },
-              "type": "date_histogram"
-            }
-          ]
-        },
-        {
-          "alias": "Description Missing",
-          "datasource": "OpenSearch",
-          "metrics": [{ "id": "1", "type": "count" }],
-          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Product description is missing\"",
-          "timeField": "@timestamp",
-          "bucketAggs": [
-            {
-              "field": "@timestamp",
-              "id": "2",
-              "settings": { "interval": "auto" },
-              "type": "date_histogram"
-            }
-          ]
-        },
-        {
-          "alias": "RMS Issues",
-          "datasource": "OpenSearch",
-          "metrics": [{ "id": "1", "type": "count" }],
-          "query": "container_name:\"trade-exports-packinglistparser\" AND (message:\"Check GB Establishment\" OR message:\"Multiple GB Place of Dispatch\")",
-          "timeField": "@timestamp",
-          "bucketAggs": [
-            {
-              "field": "@timestamp",
-              "id": "2",
-              "settings": { "interval": "auto" },
-              "type": "date_histogram"
-            }
-          ]
-        }
-      ],
-      "title": "Business Validation Failures Over Time",
-      "type": "timeseries"
-    },
-    {
-      "datasource": "OpenSearch",
-      "fieldConfig": {
-        "defaults": {
-          "color": { "mode": "thresholds" },
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "red", "value": 1 }
-            ]
-          }
-        }
-      },
-      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 31 },
-      "id": 37,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
-        "textMode": "auto"
-      },
-      "targets": [
-        {
-          "datasource": "OpenSearch",
-          "metrics": [{ "id": "1", "type": "count" }],
-          "query": "container_name:\"trade-exports-packinglistparser\" AND message:\"Prohibited item identified on the packing list\"",
-          "timeField": "@timestamp",
-          "bucketAggs": [
-            {
-              "field": "@timestamp",
-              "id": "2",
-              "type": "date_histogram",
-              "settings": { "interval": "auto" }
-            }
-          ]
-        }
-      ],
-      "title": "Ineligible Items Detected",
-      "type": "stat"
-    },
-    {
       "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 39
+        "y": 31
       },
       "id": 103,
       "title": "External Dependencies",
@@ -1737,7 +1542,7 @@
         "h": 6,
         "w": 6,
         "x": 0,
-        "y": 40
+        "y": 32
       },
       "id": 30,
       "options": {
@@ -1804,7 +1609,7 @@
         "h": 6,
         "w": 6,
         "x": 6,
-        "y": 40
+        "y": 32
       },
       "id": 31,
       "options": {
@@ -1871,7 +1676,7 @@
         "h": 6,
         "w": 6,
         "x": 12,
-        "y": 40
+        "y": 32
       },
       "id": 32,
       "options": {
@@ -1938,7 +1743,7 @@
         "h": 6,
         "w": 6,
         "x": 18,
-        "y": 40
+        "y": 32
       },
       "id": 33,
       "options": {
@@ -2003,7 +1808,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 46
+        "y": 38
       },
       "id": 34,
       "options": {
@@ -2175,7 +1980,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 54
+        "y": 46
       },
       "id": 35,
       "options": {
@@ -2260,7 +2065,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 62
+        "y": 54
       },
       "id": 104,
       "title": "Connectivity \u0026 Health",
@@ -2292,7 +2097,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 63
+        "y": 55
       },
       "id": 40,
       "options": {
@@ -2359,7 +2164,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 63
+        "y": 55
       },
       "id": 41,
       "options": {
@@ -2426,7 +2231,7 @@
         "h": 6,
         "w": 8,
         "x": 16,
-        "y": 63
+        "y": 55
       },
       "id": 42,
       "options": {
@@ -2473,7 +2278,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 69
+        "y": 61
       },
       "id": 105,
       "title": "Logs",
@@ -2485,7 +2290,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 70
+        "y": 62
       },
       "id": 50,
       "options": {
@@ -2534,7 +2339,7 @@
         "h": 10,
         "w": 24,
         "x": 0,
-        "y": 80
+        "y": 72
       },
       "id": 51,
       "options": {
