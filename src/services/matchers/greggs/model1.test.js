@@ -27,7 +27,7 @@ describe('matchesGreggs', () => {
 
     const result = await matches({}, 'PackingList.pdf')
 
-    expect(result).toEqual(matcherResult.EMPTY_FILE)
+    expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
   test.each([
@@ -43,6 +43,6 @@ describe('matchesGreggs', () => {
 
     const result = await matches({}, 'PackingList.pdf')
 
-    expect(result).toEqual(expected)
+    expect(result).toBe(expected)
   })
 })

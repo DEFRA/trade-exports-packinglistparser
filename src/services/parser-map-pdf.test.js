@@ -80,89 +80,71 @@ describe('mapPdfNonAiParser', () => {
 })
 
 describe('extractBlanketValuesPdf', () => {
+  const blanketValue = {
+    regex: /Type of Treatment/i,
+    x1: 360,
+    x2: 400,
+    maxHeadersY: 250
+  }
+
   it('should extract value from next row below header within X boundary', () => {
     const pageContent = [
       { x: 375, y: 195, str: 'Type of Treatment' },
       { x: 375, y: 210, str: 'FRESH' }
     ]
 
-    const blanketValue = {
-      regex: /Type of Treatment/i,
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
     const result = extractBlanketValuesPdf(pageContent, blanketValue)
 
     expect(result).toBe('FRESH')
   })
 
-  it('should return null when header is not found', () => {
-    const pageContent = [{ x: 375, y: 210, str: 'FRESH' }]
-
-    const blanketValue = {
-      regex: /Type of Treatment/i,
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
-    const result = extractBlanketValuesPdf(pageContent, blanketValue)
-
-    expect(result).toBeNull()
-  })
-
-  it('should return null when value is outside X boundary', () => {
-    const pageContent = [
-      { x: 375, y: 195, str: 'Type of Treatment' },
-      { x: 100, y: 210, str: 'FRESH' } // x is outside x1-x2 range
+  it.each([
+    ['header is not found', [{ x: 375, y: 210, str: 'FRESH' }], blanketValue],
+    [
+      'value is outside X boundary',
+      [
+        { x: 375, y: 195, str: 'Type of Treatment' },
+        { x: 100, y: 210, str: 'FRESH' }
+      ],
+      blanketValue
+    ],
+    [
+      'value Y exceeds maxHeadersY',
+      [
+        { x: 375, y: 195, str: 'Type of Treatment' },
+        { x: 375, y: 260, str: 'FRESH' }
+      ],
+      blanketValue
+    ],
+    [
+      'value Y is above header Y',
+      [
+        { x: 375, y: 195, str: 'Type of Treatment' },
+        { x: 375, y: 180, str: 'FRESH' }
+      ],
+      blanketValue
+    ],
+    ['pageContent is empty', [], blanketValue],
+    [
+      'value string results in empty after trim',
+      [
+        { x: 375, y: 195, str: 'Type of Treatment' },
+        { x: 375, y: 210, str: '' }
+      ],
+      blanketValue
+    ],
+    [
+      'an invalid regex causes an error',
+      [{ x: 375, y: 195, str: 'Test' }],
+      {
+        regex: null,
+        x1: 360,
+        x2: 400,
+        maxHeadersY: 250
+      }
     ]
-
-    const blanketValue = {
-      regex: /Type of Treatment/i,
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
-    const result = extractBlanketValuesPdf(pageContent, blanketValue)
-
-    expect(result).toBeNull()
-  })
-
-  it('should return null when value Y exceeds maxHeadersY', () => {
-    const pageContent = [
-      { x: 375, y: 195, str: 'Type of Treatment' },
-      { x: 375, y: 260, str: 'FRESH' } // y exceeds maxHeadersY
-    ]
-
-    const blanketValue = {
-      regex: /Type of Treatment/i,
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
-    const result = extractBlanketValuesPdf(pageContent, blanketValue)
-
-    expect(result).toBeNull()
-  })
-
-  it('should return null when value Y is above header Y', () => {
-    const pageContent = [
-      { x: 375, y: 195, str: 'Type of Treatment' },
-      { x: 375, y: 180, str: 'FRESH' } // y is above header
-    ]
-
-    const blanketValue = {
-      regex: /Type of Treatment/i,
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
-    const result = extractBlanketValuesPdf(pageContent, blanketValue)
+  ])('should return null when %s', (_, pageContent, currentBlanketValue) => {
+    const result = extractBlanketValuesPdf(pageContent, currentBlanketValue)
 
     expect(result).toBeNull()
   })
@@ -242,53 +224,6 @@ describe('extractBlanketValuesPdf', () => {
 
     expect(result).toBe('FRESH')
   })
-
-  it('should return null for empty pageContent array', () => {
-    const blanketValue = {
-      regex: /Type of Treatment/i,
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
-    const result = extractBlanketValuesPdf([], blanketValue)
-
-    expect(result).toBeNull()
-  })
-
-  it('should return null and handle errors gracefully', () => {
-    const blanketValue = {
-      regex: null, // will cause error
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
-    const result = extractBlanketValuesPdf(
-      [{ x: 375, y: 195, str: 'Test' }],
-      blanketValue
-    )
-
-    expect(result).toBeNull()
-  })
-
-  it('should return null when value string results in empty after trim', () => {
-    const pageContent = [
-      { x: 375, y: 195, str: 'Type of Treatment' },
-      { x: 375, y: 210, str: '' }
-    ]
-
-    const blanketValue = {
-      regex: /Type of Treatment/i,
-      x1: 360,
-      x2: 400,
-      maxHeadersY: 250
-    }
-
-    const result = extractBlanketValuesPdf(pageContent, blanketValue)
-
-    expect(result).toBeNull()
-  })
 })
 
 describe('deriveBoundaryFromRegex', () => {
@@ -345,40 +280,45 @@ describe('deriveBoundaryFromRegex', () => {
     expect(coBoundary.x2).toBeLessThanOrEqual(ccBoundary.x1)
   })
 
-  it('should fall back to deriveBoundary when regex does not match', () => {
-    const item = { x: 100, str: 'Some text', width: 80 }
-    const result = deriveBoundaryFromRegex(item, /No match/i)
+  it.each([
+    [
+      'regex does not match',
+      { x: 100, str: 'Some text', width: 80 },
+      /No match/i,
+      { x1: 100, x2: 180 }
+    ],
+    [
+      'string is empty',
+      { x: 100, str: '', width: 80 },
+      /test/i,
+      { x1: 100, x2: 180 }
+    ],
+    [
+      'width is zero',
+      { x: 100, str: 'Description of Goods', width: 0 },
+      /Description/i,
+      { x1: 100, x2: 100 }
+    ],
+    [
+      'str property is missing',
+      { x: 100, width: 80 },
+      /test/i,
+      { x1: 100, x2: 180 }
+    ],
+    [
+      'width property is missing',
+      { x: 100, str: 'test' },
+      /test/i,
+      { x1: 100, x2: 100 }
+    ]
+  ])(
+    'should fall back to deriveBoundary when %s',
+    (_, item, regex, expected) => {
+      const result = deriveBoundaryFromRegex(item, regex)
 
-    expect(result).toEqual({ x1: 100, x2: 180 })
-  })
-
-  it('should fall back to deriveBoundary when string is empty', () => {
-    const item = { x: 100, str: '', width: 80 }
-    const result = deriveBoundaryFromRegex(item, /test/i)
-
-    expect(result).toEqual({ x1: 100, x2: 180 })
-  })
-
-  it('should fall back to deriveBoundary when width is zero', () => {
-    const item = { x: 100, str: 'Description of Goods', width: 0 }
-    const result = deriveBoundaryFromRegex(item, /Description/i)
-
-    expect(result).toEqual({ x1: 100, x2: 100 })
-  })
-
-  it('should handle missing str property', () => {
-    const item = { x: 100, width: 80 }
-    const result = deriveBoundaryFromRegex(item, /test/i)
-
-    expect(result).toEqual({ x1: 100, x2: 180 })
-  })
-
-  it('should handle missing width property', () => {
-    const item = { x: 100, str: 'test' }
-    const result = deriveBoundaryFromRegex(item, /test/i)
-
-    expect(result).toEqual({ x1: 100, x2: 100 })
-  })
+      expect(result).toEqual(expected)
+    }
+  )
 })
 
 describe('discoverHeaderBoundaries', () => {

@@ -107,110 +107,87 @@ describe('packing-list-process-message-validation', () => {
     expect(result.isValid).toBe(true)
   })
 
-  it('returns error when application_id is a decimal number', () => {
+  it.each([
+    ['application_id is a decimal number', 123.45],
+    ['application_id is not positive', '0'],
+    ['application_id contains decimal characters', '123.45'],
+    ['application_id is neither a number nor a string', true]
+  ])('returns error when %s', (_, applicationId) => {
     const result = validateProcessPackingListPayload({
       ...validPayload,
-      application_id: 123.45
+      application_id: applicationId
     })
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
   })
 
-  it('returns error when application_id is not positive', () => {
-    const result = validateProcessPackingListPayload({
-      ...validPayload,
-      application_id: '0'
-    })
+  it.each([
+    [
+      'packing_list_blob is not a valid URL',
+      {
+        payload: {
+          ...validPayload,
+          packing_list_blob: 'not-a-url'
+        }
+      }
+    ],
+    [
+      'packing_list_blob is an empty string',
+      {
+        payload: {
+          ...validPayload,
+          packing_list_blob: ''
+        }
+      }
+    ],
+    [
+      'blob storage account config is missing',
+      {
+        configGet: configGetWithMissingBlobStorageAccount,
+        payload: validPayload
+      }
+    ],
+    [
+      'blob container config is missing',
+      {
+        configGet: configGetWithMissingBlobContainer,
+        payload: validPayload
+      }
+    ],
+    [
+      'ehcoBlob config is undefined',
+      {
+        configGet: configGetWithUndefinedEhcoBlob,
+        payload: validPayload
+      }
+    ],
+    [
+      'packing_list_blob host does not match configured account',
+      {
+        payload: {
+          ...validPayload,
+          packing_list_blob:
+            'https://wrongaccount.blob.core.windows.net/container/file.xlsx'
+        }
+      }
+    ],
+    [
+      'packing_list_blob container does not match configured container',
+      {
+        payload: {
+          ...validPayload,
+          packing_list_blob:
+            'https://testaccount.blob.core.windows.net/other-container/file.xlsx'
+        }
+      }
+    ]
+  ])('returns error when %s', (_, { configGet, payload }) => {
+    if (configGet) {
+      mockConfigGet.mockImplementation(configGet)
+    }
 
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
-  })
-
-  it('returns error when application_id contains decimal characters', () => {
-    const result = validateProcessPackingListPayload({
-      ...validPayload,
-      application_id: '123.45'
-    })
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
-  })
-
-  it('returns error when application_id is neither a number nor a string', () => {
-    const result = validateProcessPackingListPayload({
-      ...validPayload,
-      application_id: true
-    })
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(APPLICATION_ID_VALIDATION_ERROR)
-  })
-
-  it('returns error when packing_list_blob is not a valid URL', () => {
-    const result = validateProcessPackingListPayload({
-      ...validPayload,
-      packing_list_blob: 'not-a-url'
-    })
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(PACKING_LIST_BLOB_VALIDATION_ERROR)
-  })
-
-  it('returns error when packing_list_blob is an empty string', () => {
-    const result = validateProcessPackingListPayload({
-      ...validPayload,
-      packing_list_blob: ''
-    })
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(PACKING_LIST_BLOB_VALIDATION_ERROR)
-  })
-
-  it('returns error when blob storage account config is missing', () => {
-    mockConfigGet.mockImplementation(configGetWithMissingBlobStorageAccount)
-
-    const result = validateProcessPackingListPayload(validPayload)
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(PACKING_LIST_BLOB_VALIDATION_ERROR)
-  })
-
-  it('returns error when blob container config is missing', () => {
-    mockConfigGet.mockImplementation(configGetWithMissingBlobContainer)
-
-    const result = validateProcessPackingListPayload(validPayload)
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(PACKING_LIST_BLOB_VALIDATION_ERROR)
-  })
-
-  it('returns error when ehcoBlob config is undefined', () => {
-    mockConfigGet.mockImplementation(configGetWithUndefinedEhcoBlob)
-
-    const result = validateProcessPackingListPayload(validPayload)
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(PACKING_LIST_BLOB_VALIDATION_ERROR)
-  })
-
-  it('returns error when packing_list_blob host does not match configured account', () => {
-    const result = validateProcessPackingListPayload({
-      ...validPayload,
-      packing_list_blob:
-        'https://wrongaccount.blob.core.windows.net/container/file.xlsx'
-    })
-
-    expect(result.isValid).toBe(false)
-    expect(result.description).toContain(PACKING_LIST_BLOB_VALIDATION_ERROR)
-  })
-
-  it('returns error when packing_list_blob container does not match configured container', () => {
-    const result = validateProcessPackingListPayload({
-      ...validPayload,
-      packing_list_blob:
-        'https://testaccount.blob.core.windows.net/other-container/file.xlsx'
-    })
+    const result = validateProcessPackingListPayload(payload)
 
     expect(result.isValid).toBe(false)
     expect(result.description).toContain(PACKING_LIST_BLOB_VALIDATION_ERROR)

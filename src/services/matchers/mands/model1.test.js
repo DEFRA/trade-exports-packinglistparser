@@ -29,7 +29,7 @@ describe('matchesMandS', () => {
 
     const result = await matches({}, 'PackingList.pdf')
 
-    expect(result).toEqual(matcherResult.EMPTY_FILE)
+    expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
   test('ignores inherited header fields when validating headers', async () => {
@@ -46,7 +46,7 @@ describe('matchesMandS', () => {
 
       const result = await matches({}, 'PackingList.pdf')
 
-      expect(result).toEqual(matcherResult.CORRECT)
+      expect(result).toBe(matcherResult.CORRECT)
     } finally {
       headers.MANDS1.headers = originalHeaders
     }
@@ -72,6 +72,6 @@ describe('matchesMandS', () => {
 
     const result = await matches({}, filename)
 
-    expect(result).toEqual(expected)
+    expect(result).toBe(expected)
   })
 })

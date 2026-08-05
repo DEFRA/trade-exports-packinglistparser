@@ -18,7 +18,7 @@ const logger = createLogger()
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
  * @param {RegExp} regexExpression - Establishment number regex for the model
- * @returns {string} matcherResult - One of the matcher result codes
+ * @returns {number} matcherResult - One of the matcher result codes
  */
 export function matchesModel(packingList, filename, regexExpression) {
   try {

@@ -176,60 +176,39 @@ describe('parseMandS1', () => {
 })
 
 describe('findNetWeightUnit', () => {
-  test('should find the net weight unit from the header', () => {
-    const header = 'Tot Net Weight kg Tot Gross Weight kg'
+  test.each([
+    [
+      'header contains net and gross weight',
+      'Tot Net Weight kg Tot Gross Weight kg'
+    ],
+    ['header contains only net weight', 'Tot Net Weight kg'],
+    [
+      'header contains net weight and trailing gross weight text',
+      'Tot Net Weight kg gross weight'
+    ]
+  ])('returns kg when %s', (_, header) => {
     const result = findNetWeightUnit(header)
+
     expect(result).toBe('kg')
   })
 
-  test('should find the net weight unit from the header without gross weight', () => {
-    const header = 'Tot Net Weight kg'
+  test.each([
+    ['no valid unit is present', 'Tot Net Weight'],
+    [
+      'only gross weight should be ignored',
+      'tot Net Weight (other string) Tot Gross Weight kg'
+    ],
+    [
+      'gross weight token appears after other characters',
+      'tot Net Weight 5tgif20 Tot Gross Weight kg'
+    ],
+    ['header is undefined', undefined],
+    ['header is null', null],
+    ['header is an empty string', ''],
+    ["header does not contain 'net weight'", 'Total Weight kg']
+  ])('returns null when %s', (_, header) => {
     const result = findNetWeightUnit(header)
-    expect(result).toBe('kg')
-  })
 
-  test('should find the net weight unit from the header without gross weight kg', () => {
-    const header = 'Tot Net Weight kg gross weight'
-    const result = findNetWeightUnit(header)
-    expect(result).toBe('kg')
-  })
-
-  test('should return null if no valid unit is found', () => {
-    const header = 'Tot Net Weight'
-    const result = findNetWeightUnit(header)
-    expect(result).toBeNull()
-  })
-
-  test("shouldn't return gross weight kg", () => {
-    const header = 'tot Net Weight (other string) Tot Gross Weight kg'
-    const result = findNetWeightUnit(header)
-    expect(result).toBeNull()
-  })
-
-  test("shouldn't return gross weight kg for any characters", () => {
-    const header = 'tot Net Weight 5tgif20 Tot Gross Weight kg'
-    const result = findNetWeightUnit(header)
-    expect(result).toBeNull()
-  })
-
-  test('should return null when header is undefined', () => {
-    const result = findNetWeightUnit(undefined)
-    expect(result).toBeNull()
-  })
-
-  test('should return null when header is null', () => {
-    const result = findNetWeightUnit(null)
-    expect(result).toBeNull()
-  })
-
-  test('should return null when header is empty string', () => {
-    const result = findNetWeightUnit('')
-    expect(result).toBeNull()
-  })
-
-  test("should return null when header doesn't contain 'net weight'", () => {
-    const header = 'Total Weight kg'
-    const result = findNetWeightUnit(header)
     expect(result).toBeNull()
   })
 })
