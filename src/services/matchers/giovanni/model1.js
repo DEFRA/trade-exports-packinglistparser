@@ -64,7 +64,7 @@ export function matchesModel(packingList, filename, regexExpression) {
  * Check whether the provided packing list matches Giovanni Model 1.
  * @param {Object} packingList - PDF buffer or JSON representation
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 export function matches(packingList, filename) {
   return matchesModel(

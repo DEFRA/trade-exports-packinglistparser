@@ -436,7 +436,7 @@ describe('parseBandmModel1', () => {
       headers.BANDM1.skipRepeatedHeaders = originalSkipRepeatedHeaders
 
       // Should include the repeated header row when filtering is disabled
-      expect(result.items.length).toBe(2)
+      expect(result.items).toHaveLength(2)
     })
 
     it('handles items with no description in totals check', () => {
@@ -495,7 +495,7 @@ describe('parseBandmModel1', () => {
       const result = parse(modelWithNoDescription)
 
       // Should handle null description gracefully (not filtered as it has commodity code)
-      expect(result.items.length).toBe(2)
+      expect(result.items).toHaveLength(2)
     })
   })
 

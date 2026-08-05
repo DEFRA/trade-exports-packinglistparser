@@ -41,27 +41,53 @@ describe('matchesBuffaloadLogisticsModel1', () => {
     expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
   })
 
-  test("return 'Wrong Header' matcher result for incorrect header values", () => {
-    const packingListJson = {
-      Tabelle1: [
-        {
-          B: 'RMS-GB-000098-001'
-        },
-        {
-          A: 'NOT',
-          B: 'CORRECT',
-          C: 'HEADER'
-        }
-      ]
-    }
-
+  test.each([
+    [
+      'incorrect header values',
+      {
+        Tabelle1: [
+          {
+            B: 'RMS-GB-000098-001'
+          },
+          {
+            A: 'NOT',
+            B: 'CORRECT',
+            C: 'HEADER'
+          }
+        ]
+      }
+    ],
+    [
+      'incorrect header values of multiple sheets',
+      model.incorrectHeaderMultiple
+    ],
+    [
+      'second sheet has wrong establishment after first sheet passes establishment check',
+      {
+        Sheet1: [
+          {
+            B: 'RMS-GB-000098-001'
+          },
+          {
+            A: 'Description',
+            B: 'Nature',
+            C: 'Treatment'
+          }
+        ],
+        Sheet2: [
+          {
+            B: 'WRONG-ESTABLISHMENT'
+          },
+          {
+            A: 'Description',
+            B: 'Nature',
+            C: 'Treatment'
+          }
+        ]
+      }
+    ]
+  ])("return 'Wrong Header' matcher result when %s", (_, packingListJson) => {
     const result = matcher.matches(packingListJson, filename)
-
-    expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test("return 'Wrong Header' matcher result for incorrect header values of multiple sheets", () => {
-    const result = matcher.matches(model.incorrectHeaderMultiple, filename)
 
     expect(result).toBe(matcherResult.WRONG_HEADER)
   })
@@ -108,37 +134,5 @@ describe('matchesBuffaloadLogisticsModel1', () => {
     const result = matcher.matches(model.validModelMultipleSheets, filename)
 
     expect(result).toBe(matcherResult.CORRECT)
-  })
-
-  test("return 'Wrong Header' when second sheet has wrong establishment", () => {
-    // Note: This returns WRONG_HEADER because the first sheet passes establishment check
-    // but then when checking headers across both sheets, the second sheet fails
-    const packingListJson = {
-      Sheet1: [
-        {
-          B: 'RMS-GB-000098-001'
-        },
-        {
-          A: 'Description',
-          B: 'Nature',
-          C: 'Treatment'
-        }
-      ],
-      Sheet2: [
-        {
-          B: 'WRONG-ESTABLISHMENT'
-        },
-        {
-          A: 'Description',
-          B: 'Nature',
-          C: 'Treatment'
-        }
-      ]
-    }
-
-    const result = matcher.matches(packingListJson, filename)
-
-    // Returns WRONG_HEADER because it checks headers after establishment check
-    expect(result).toBe(matcherResult.WRONG_HEADER)
   })
 })

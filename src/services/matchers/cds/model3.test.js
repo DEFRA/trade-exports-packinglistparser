@@ -6,8 +6,15 @@ import model from '../../../../test/test-data-and-results/models/cds/model3.js'
 const filename = 'packinglist.xlsx'
 
 describe('CDS Model 3 Matcher', () => {
-  test('matches valid CDS Model 3 file', () => {
-    const result = matches(model.validModel, filename)
+  test.each([
+    ['valid CDS Model 3 file', model.validModel],
+    [
+      'valid CDS Model 3 file with multiple sheets',
+      model.validModelMultipleSheets
+    ]
+  ])('matches %s', (_, packingListJson) => {
+    const result = matches(packingListJson, filename)
+
     expect(result).toBe(matcherResult.CORRECT)
   })
 
@@ -19,56 +26,52 @@ describe('CDS Model 3 Matcher', () => {
     expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
-  test('returns WRONG_ESTABLISHMENT_NUMBER for missing establishment number', () => {
-    const packingListJson = {
-      PackingList_Extract: [
-        {},
-        {
-          P: 'INCORRECT'
-        }
-      ]
-    }
-
+  test.each([
+    [
+      'missing establishment number',
+      {
+        PackingList_Extract: [
+          {},
+          {
+            P: 'INCORRECT'
+          }
+        ]
+      }
+    ],
+    [
+      'missing establishment numbers of multiple sheets',
+      model.wrongEstablishmentMultiple
+    ]
+  ])('returns WRONG_ESTABLISHMENT_NUMBER for %s', (_, packingListJson) => {
     const result = matches(packingListJson, filename)
 
     expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
   })
 
-  test('returns WRONG_ESTABLISHMENT_NUMBER for missing establishment numbers of multiple sheets', () => {
-    const result = matches(model.wrongEstablishmentMultiple, filename)
-
-    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
-  })
-
-  test('returns WRONG_HEADER for incorrect header values', () => {
-    const packingListJson = {
-      PackingList_Extract: [
-        {
-          A: 'NOT',
-          B: 'CORRECT',
-          C: 'HEADER'
-        },
-        {
-          P: 'THE RANGE / RMS-GB-000252-002 / DN8 4HT'
-        }
-      ]
-    }
-
+  test.each([
+    [
+      'incorrect header values',
+      {
+        PackingList_Extract: [
+          {
+            A: 'NOT',
+            B: 'CORRECT',
+            C: 'HEADER'
+          },
+          {
+            P: 'THE RANGE / RMS-GB-000252-002 / DN8 4HT'
+          }
+        ]
+      }
+    ],
+    [
+      'incorrect header values of multiple sheets',
+      model.incorrectHeaderMultiple
+    ]
+  ])('returns WRONG_HEADER for %s', (_, packingListJson) => {
     const result = matches(packingListJson, filename)
 
     expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test('returns WRONG_HEADER for incorrect header values of multiple sheets', () => {
-    const result = matches(model.incorrectHeaderMultiple, filename)
-
-    expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test('matches valid CDS Model 3 file with multiple sheets', () => {
-    const result = matches(model.validModelMultipleSheets, filename)
-
-    expect(result).toBe(matcherResult.CORRECT)
   })
 
   test('returns GENERIC_ERROR when an exception occurs', () => {

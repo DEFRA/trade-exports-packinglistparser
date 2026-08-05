@@ -37,7 +37,7 @@ describe('stream-helpers', () => {
 
       const buffer = await streamToBuffer(stream)
 
-      expect(buffer.length).toBe(0)
+      expect(buffer).toHaveLength(0)
       expect(buffer.toString()).toBe('')
     })
 
@@ -66,7 +66,7 @@ describe('stream-helpers', () => {
 
       const buffer = await streamToBuffer(stream)
 
-      expect(buffer.length).toBe(10000)
+      expect(buffer).toHaveLength(10000)
       expect(buffer.toString()).toBe(largeData)
     })
 

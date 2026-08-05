@@ -6,68 +6,50 @@ import model from '../../../../test/test-data-and-results/models/fowlerwelch/mod
 const filename = 'packinglist.xlsx'
 
 describe('matchesFowlerwelch2', () => {
-  test("returns 'Empty File' matcher result for empty json", () => {
-    const packingListJson = {}
-
+  test.each([
+    ['empty json', {}],
+    [
+      'workbook containing only invalid sheets',
+      {
+        'GC REFERENCE': [{ A: 'INVALID' }],
+        'GC REF': [{ A: 'INVALID' }]
+      }
+    ]
+  ])("returns 'Empty File' matcher result for %s", (_, packingListJson) => {
     const result = matches(packingListJson, filename)
 
     expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
-  test("returns 'Empty File' when workbook contains only invalid sheets", () => {
-    const packingListJson = {
-      'GC REFERENCE': [{ A: 'INVALID' }],
-      'GC REF': [{ A: 'INVALID' }]
+  test.each([
+    ['one sheet', model.invalid_Model_IncorrectEstablishmentNumber],
+    [
+      'multiple sheets',
+      model.invalid_Model_IncorrectEstablishmentNumberMultiple
+    ]
+  ])(
+    "returns 'Wrong Establishment Number' matcher result for %s",
+    (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
+
+      expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
     }
+  )
 
+  test.each([
+    ['one sheet', model.invalid_Model_IncorrectHeader],
+    ['multiple sheets', model.invalid_Model_IncorrectHeaderMultiple]
+  ])("returns 'Wrong Header' matcher result for %s", (_, packingListJson) => {
     const result = matches(packingListJson, filename)
 
-    expect(result).toBe(matcherResult.EMPTY_FILE)
-  })
-
-  test("returns 'Wrong Establishment Number' matcher result for missing establishment number for one sheet", () => {
-    const result = matches(
-      model.invalid_Model_IncorrectEstablishmentNumber,
-      filename
-    )
-
-    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
-  })
-
-  test("returns 'Wrong Establishment Number' matcher result for missing establishment numbers of multiple sheets", () => {
-    const result = matches(
-      model.invalid_Model_IncorrectEstablishmentNumberMultiple,
-      filename
-    )
-
-    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
-  })
-
-  test("returns 'Wrong Header' matcher result for incorrect header values of one sheet", () => {
-    const filename = 'packinglist.xlsx'
-    const result = matches(model.invalid_Model_IncorrectHeader, filename)
-
     expect(result).toBe(matcherResult.WRONG_HEADER)
   })
 
-  test("returns 'Wrong Header' matcher result for incorrect header values of multiple sheets", () => {
-    const filename = 'packinglist.xlsx'
-    const result = matches(
-      model.invalid_Model_IncorrectHeaderMultiple,
-      filename
-    )
-
-    expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test('returns correct for correct headers for one sheet', () => {
-    const result = matches(model.validModel, filename)
-
-    expect(result).toBe(matcherResult.CORRECT)
-  })
-
-  test('returns correct for correct headers of multiple sheets', () => {
-    const result = matches(model.validModel_Multiple, filename)
+  test.each([
+    ['one sheet', model.validModel],
+    ['multiple sheets', model.validModel_Multiple]
+  ])('returns correct for correct headers for %s', (_, packingListJson) => {
+    const result = matches(packingListJson, filename)
 
     expect(result).toBe(matcherResult.CORRECT)
   })

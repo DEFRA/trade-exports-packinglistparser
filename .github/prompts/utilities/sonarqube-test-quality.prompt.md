@@ -19,6 +19,8 @@ Identify and resolve SonarQube quality warnings in `.test.js` files. Focus on fo
 
 The goal is to improve code quality while maintaining test clarity and not over-engineering test code.
 
+This repository uses **Vitest** for tests.
+
 ## Instructions
 
 1. **Understand the Target Test File**: Use codebase to examine the `.test.js` file and identify which SonarQube warnings apply.
@@ -40,6 +42,8 @@ The goal is to improve code quality while maintaining test clarity and not over-
    - **Split large test files**: If a single `.test.js` file testing one function/concern has grown very large due to the volume of scenarios being tested, consider organizing into multiple `.test.js` files grouped by scenario type (e.g., `parser-service.matcher.test.js` and `parser-service.integration.test.js`). This is especially relevant for comprehensive integration test files like parser-service tests.
    - Keep helper functions small and focused
    - Ensure readability is preserved — avoid over-abstraction
+   - Replace generic assertions with specific Vitest matchers when semantics are equivalent (for example, `expect(items.length).toBe(3)` => `expect(items).toHaveLength(3)`, `expect(value).toBe(null)` => `expect(value).toBeNull()`)
+   - Parameterize repeated clusters (3+ equivalent tests that differ mainly by input/expected output) using `it.each` / `test.each` with descriptive case labels
 
 4. **When to Suppress (Rarely)**:
 
@@ -60,16 +64,20 @@ In this PLP service, test files are already organized by function (one `.test.js
 
 - **Many tests in one describe block**: When a single function has many scenarios to cover (20+ test cases), they are grouped within a single `describe()` block, which can exceed complexity limits
 - **Repeated test fixtures**: Repeatedly use establishment numbers, field mappings, or Excel-to-JSON workbook shapes across multiple test cases
-- **Magic numbers in assertions**: Test checks like `expect(result.length).toBe(5)` without explaining why the value is 5
+- **Magic numbers in assertions**: Test checks like `expect(result).toHaveLength(5)` without explaining why the value is 5
+- **Generic assertions**: Assertions such as `expect(result.length).toBe(5)` or `expect(value).toBe(null)` where specific matchers (`toHaveLength`, `toBeNull`, etc.) are clearer
+- **Duplicated scenario blocks**: Multiple tests with the same setup/assertion shape that should be table-driven with `it.each`
 - **Parser-service integration tests**: Comprehensive end-to-end tests may have hundreds of scenarios, making the file very large
 
-These are best addressed by splitting large `describe` blocks into separate grouped blocks, extracting constants, replacing magic numbers, and in some cases (like parser-service tests) splitting scenarios into multiple `.test.js` files.
+These are best addressed by splitting large `describe` blocks into separate grouped blocks, extracting constants, replacing magic numbers, upgrading assertions to specific matchers, and in some cases (like parser-service tests) splitting scenarios into multiple `.test.js` files or parameterizing repetitive clusters.
 
 ## Output Requirements
 
 - Refactored `.test.js` file with extracted constants and simplified functions
 - If files are split, new files must follow `{basename}.{subfunction}.test.js`
 - Named constants replacing all magic numbers and repeated strings
+- Generic assertions replaced with specific Vitest matchers where safe
+- Repeated equivalent test clusters parameterized with `it.each` / `test.each` where it improves clarity
 - Large test functions split into smaller, focused describe/it blocks if warranted
 - Clear comments explaining why any suppressions exist (if any)
 - All tests passing and SonarQube warnings resolved
@@ -85,10 +93,12 @@ These are best addressed by splitting large `describe` blocks into separate grou
 
 ✅ All repeated constants/strings extracted to named `const` declarations at the top
 ✅ All magic numbers replaced with descriptive named constants
+✅ Generic assertions replaced with specific Vitest matchers where semantics are unchanged
+✅ Repeated equivalent test clusters parameterized (3+ tests) when it improves maintainability and failure readability
 ✅ Large describe blocks (20+ test cases) split into multiple focused describe blocks grouped by logical concern
 ✅ Files with very large scenario volumes (especially parser-service tests) organized across multiple `.test.js` files if warranted by scenario count
 ✅ Any newly created split test files follow `{basename}.{subfunction}.test.js`
 ✅ No unnecessary code duplication in test setup or assertions
-✅ All tests pass (`npm test`)
+✅ All tests pass (`npm run test`)
 ✅ SonarQube warnings are resolved (or suppressed with clear justification comments)
 ✅ Test structure is clearer and more maintainable — related tests grouped together by concern

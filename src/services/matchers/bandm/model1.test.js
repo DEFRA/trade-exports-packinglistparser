@@ -9,49 +9,31 @@ const filename = 'packinglist.xlsx'
 
 describe('matchesBandmModel1', () => {
   describe('valid matching', () => {
-    it('returns Correct for valid model', () => {
-      const result = matches(model.validModel, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for valid model with case insensitive headers', () => {
-      const result = matches(model.validModelInsensitiveHeader, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for valid model with multiple sheets', () => {
-      const result = matches(model.validModelMultipleSheets, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for multiple sheets with headers on different rows', () => {
-      const result = matches(
-        model.validModelMultipleSheetsHeadersOnDifferentRows,
-        filename
-      )
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for valid headers with no data', () => {
-      const result = matches(model.validHeadersNoData, filename)
+    it.each([
+      ['valid model', model.validModel],
+      [
+        'valid model with case insensitive headers',
+        model.validModelInsensitiveHeader
+      ],
+      ['valid model with multiple sheets', model.validModelMultipleSheets],
+      [
+        'multiple sheets with headers on different rows',
+        model.validModelMultipleSheetsHeadersOnDifferentRows
+      ],
+      ['valid headers with no data', model.validHeadersNoData]
+    ])('returns Correct for %s', (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
 
       expect(result).toBe(matcherResult.CORRECT)
     })
   })
 
   describe('empty/invalid input', () => {
-    it("returns 'Empty File' matcher result for empty json", () => {
-      const result = matches(model.emptyModel, filename)
-
-      expect(result).toBe(matcherResult.EMPTY_FILE)
-    })
-
-    it("returns 'Empty File' matcher result for object with no sheets", () => {
-      const result = matches({}, filename)
+    it.each([
+      ['empty json', model.emptyModel],
+      ['object with no sheets', {}]
+    ])("returns 'Empty File' matcher result for %s", (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
 
       expect(result).toBe(matcherResult.EMPTY_FILE)
     })
@@ -66,14 +48,14 @@ describe('matchesBandmModel1', () => {
   })
 
   describe('header validation', () => {
-    it("return 'Wrong Header' matcher result for incorrect header values", () => {
-      const result = matches(model.incorrectHeader, filename)
-
-      expect(result).toBe(matcherResult.WRONG_HEADER)
-    })
-
-    it("return 'Wrong Header' matcher result for incorrect header values of multiple sheets", () => {
-      const result = matches(model.incorrectHeaderMultiple, filename)
+    it.each([
+      ['incorrect header values', model.incorrectHeader],
+      [
+        'incorrect header values of multiple sheets',
+        model.incorrectHeaderMultiple
+      ]
+    ])("return 'Wrong Header' matcher result for %s", (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
 
       expect(result).toBe(matcherResult.WRONG_HEADER)
     })

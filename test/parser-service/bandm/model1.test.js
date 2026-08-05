@@ -186,7 +186,7 @@ describe('BANDM1 CoO Validation Tests - Type 1 - CoO', () => {
 
     expect(result).toMatchObject(testResults.xCoOTestResult)
     expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.business_checks.failure_reasons).toBe(null)
+    expect(result.business_checks.failure_reasons).toBeNull()
   })
 })
 

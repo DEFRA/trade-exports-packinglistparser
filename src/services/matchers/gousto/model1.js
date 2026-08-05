@@ -18,7 +18,7 @@ const logger = createLogger()
  * Check whether the provided packing list matches Gousto Model 1.
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 function matches(packingList, filename) {
   try {

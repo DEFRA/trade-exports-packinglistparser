@@ -110,7 +110,7 @@ describe('extractBlanketValuesPdf', () => {
 
     const result = extractBlanketValuesPdf(pageContent, blanketValue)
 
-    expect(result).toBe(null)
+    expect(result).toBeNull()
   })
 
   it('should return null when value is outside X boundary', () => {
@@ -128,7 +128,7 @@ describe('extractBlanketValuesPdf', () => {
 
     const result = extractBlanketValuesPdf(pageContent, blanketValue)
 
-    expect(result).toBe(null)
+    expect(result).toBeNull()
   })
 
   it('should return null when value Y exceeds maxHeadersY', () => {
@@ -146,7 +146,7 @@ describe('extractBlanketValuesPdf', () => {
 
     const result = extractBlanketValuesPdf(pageContent, blanketValue)
 
-    expect(result).toBe(null)
+    expect(result).toBeNull()
   })
 
   it('should return null when value Y is above header Y', () => {
@@ -164,7 +164,7 @@ describe('extractBlanketValuesPdf', () => {
 
     const result = extractBlanketValuesPdf(pageContent, blanketValue)
 
-    expect(result).toBe(null)
+    expect(result).toBeNull()
   })
 
   it('should concatenate multiple items at same Y coordinate', () => {
@@ -253,7 +253,7 @@ describe('extractBlanketValuesPdf', () => {
 
     const result = extractBlanketValuesPdf([], blanketValue)
 
-    expect(result).toBe(null)
+    expect(result).toBeNull()
   })
 
   it('should return null and handle errors gracefully', () => {
@@ -269,7 +269,7 @@ describe('extractBlanketValuesPdf', () => {
       blanketValue
     )
 
-    expect(result).toBe(null)
+    expect(result).toBeNull()
   })
 
   it('should return null when value string results in empty after trim', () => {
@@ -287,7 +287,7 @@ describe('extractBlanketValuesPdf', () => {
 
     const result = extractBlanketValuesPdf(pageContent, blanketValue)
 
-    expect(result).toBe(null)
+    expect(result).toBeNull()
   })
 })
 
@@ -500,7 +500,7 @@ describe('expandBoundariesToMidpoints', () => {
 
     // NIRMS should be between total_net_weight_kg and right edge
     expect(result.nirms).toBeDefined()
-    expect(Math.round(399.62) >= result.nirms.x1).toBe(true)
+    expect(Math.round(399.62)).toBeGreaterThanOrEqual(result.nirms.x1)
   })
 
   it('should return empty object for empty input', () => {

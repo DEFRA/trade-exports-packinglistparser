@@ -428,7 +428,7 @@ describe('Giovanni Model 3 CoO Validation Acceptance Criteria', () => {
     const result = await parsePackingList({}, filename)
 
     expect(result.items).toBeDefined()
-    expect(result.items.length).toBe(1)
+    expect(result.items).toHaveLength(1)
     expect(result.items[0].nirms).toBe('N')
     expect(result.business_checks.all_required_fields_present).toBe(true)
     expect(result.business_checks.failure_reasons).toBeNull()

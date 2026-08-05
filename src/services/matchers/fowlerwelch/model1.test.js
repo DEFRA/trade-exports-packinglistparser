@@ -33,19 +33,52 @@ describe('matchesFowlerWelch', () => {
     expect(result).toBe(MatcherResult.WRONG_ESTABLISHMENT_NUMBER)
   })
 
-  it("returns 'Wrong Header' matcher result for incorrect header values of one sheet", () => {
-    const filename = 'packinglist.xlsx'
-    const result = matches(model.invalid_Model_IncorrectHeader, filename)
-
-    expect(result).toBe(MatcherResult.WRONG_HEADER)
-  })
-
-  it("returns 'Wrong Header' matcher result for incorrect header values of multiple sheets", () => {
-    const filename = 'packinglist.xlsx'
-    const result = matches(
-      model.invalid_Model_IncorrectHeaderMultiple,
-      filename
-    )
+  it.each([
+    [
+      'incorrect header values of one sheet',
+      model.invalid_Model_IncorrectHeader
+    ],
+    [
+      'incorrect header values of multiple sheets',
+      model.invalid_Model_IncorrectHeaderMultiple
+    ],
+    [
+      "the key is equal to 'K' and doesn't include 'Net Weight' in its header",
+      {
+        'Cust Ord - Vitacress': [
+          {
+            C: 'Commodity code',
+            F: 'Description of goods',
+            H: 'No. of pkgs',
+            K: 'Item (kgs)',
+            N: 'Treatment Type (Chilled /Ambient)'
+          },
+          {
+            M: 'RMS-GB-000216-002'
+          }
+        ]
+      }
+    ],
+    [
+      "the header doesn't start with the header[key]",
+      {
+        'Cust Ord - Vitacress': [
+          {
+            C: 'Commodity code',
+            F: 'Description of goods',
+            H: '(318)',
+            K: 'Item Net Weight (kgs)',
+            N: 'Treatment Type (Chilled /Ambient)'
+          },
+          {
+            M: 'RMS-GB-000216-002'
+          }
+        ]
+      }
+    ],
+    ['all required headers are missing', model.invalidModel_MissingHeaders]
+  ])("returns 'Wrong Header' matcher result when %s", (_, packingListJson) => {
+    const result = matches(packingListJson, filename)
 
     expect(result).toBe(MatcherResult.WRONG_HEADER)
   })
@@ -60,57 +93,6 @@ describe('matchesFowlerWelch', () => {
     const result = matches(model.validModel_Multiple, filename)
 
     expect(result).toBe(MatcherResult.CORRECT)
-  })
-
-  it("if the key is equal to 'K' and doesn't include 'Net Weight' in its header, return 'Wrong Header' matcher result", () => {
-    const filename = 'packinglist.xlsx'
-    const packingListJson = {
-      'Cust Ord - Vitacress': [
-        {
-          C: 'Commodity code',
-          F: 'Description of goods',
-          H: 'No. of pkgs',
-          K: 'Item (kgs)',
-          N: 'Treatment Type (Chilled /Ambient)'
-        },
-        {
-          M: 'RMS-GB-000216-002'
-        }
-      ]
-    }
-
-    const result = matches(packingListJson, filename)
-
-    expect(result).toBe(MatcherResult.WRONG_HEADER)
-  })
-
-  it("if the header doesn't start with the header[key], return 'Wrong Header' matcher result", () => {
-    const filename = 'packinglist.xlsx'
-    const packingListJson = {
-      'Cust Ord - Vitacress': [
-        {
-          C: 'Commodity code',
-          F: 'Description of goods',
-          H: '(318)',
-          K: 'Item Net Weight (kgs)',
-          N: 'Treatment Type (Chilled /Ambient)'
-        },
-        {
-          M: 'RMS-GB-000216-002'
-        }
-      ]
-    }
-
-    const result = matches(packingListJson, filename)
-
-    expect(result).toBe(MatcherResult.WRONG_HEADER)
-  })
-
-  it("if all required headers are missing, return 'Wrong Header' matcher result", () => {
-    const filename = 'packinglist.xlsx'
-    const result = matches(model.invalidModel_MissingHeaders, filename)
-
-    expect(result).toBe(MatcherResult.WRONG_HEADER)
   })
 
   it("return 'Generic Error' matcher result when an error occurs", () => {

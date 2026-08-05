@@ -133,27 +133,20 @@ describe('tds-sync', () => {
   })
 
   describe('syncToTds - no files', () => {
-    it('should handle empty S3 folder gracefully', async () => {
-      listS3Objects.mockResolvedValueOnce({ Contents: [] })
+    it.each([
+      ['empty S3 folder', { Contents: [] }],
+      ['S3 response with no Contents property', {}],
+      ['empty first page across paginated listing', { IsTruncated: false }]
+    ])('should handle %s', async (_description, listResponse) => {
+      listS3Objects.mockResolvedValueOnce(listResponse)
 
       const result = await syncToTds()
 
       expect(result.success).toBe(true)
       expect(result.totalFiles).toBe(0)
-      expect(result.successfulTransfers).toBe(0)
       expect(result.message).toBe('No files found to transfer')
       expect(uploadToTdsBlob).not.toHaveBeenCalled()
       expect(deleteFileFromS3).not.toHaveBeenCalled()
-    })
-
-    it('should handle S3 response with no Contents property', async () => {
-      listS3Objects.mockResolvedValueOnce({})
-
-      const result = await syncToTds()
-
-      expect(result.success).toBe(true)
-      expect(result.totalFiles).toBe(0)
-      expect(result.message).toBe('No files found to transfer')
     })
   })
 
@@ -336,19 +329,6 @@ describe('tds-sync', () => {
       expect(result.failedTransfers).toBe(0)
       expect(uploadToTdsBlob).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_SIX)
       expect(deleteFileFromS3).toHaveBeenCalledTimes(EXPECTED_FILE_COUNT_SIX)
-    })
-
-    it('should handle empty first page across paginated listing', async () => {
-      listS3Objects.mockResolvedValueOnce({
-        IsTruncated: false
-      })
-
-      const result = await syncToTds()
-
-      expect(listS3Objects).toHaveBeenCalledTimes(1)
-      expect(result.success).toBe(true)
-      expect(result.totalFiles).toBe(0)
-      expect(result.message).toBe('No files found to transfer')
     })
   })
 

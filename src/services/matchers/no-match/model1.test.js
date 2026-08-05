@@ -97,32 +97,16 @@ describe('matchesNoMatch - sheet-based data', () => {
     expect(noRemosMatch(model)).toBe(true)
   })
 
-  test('recognizes Giovanni exception pattern', () => {
+  test.each([
+    ['Giovanni', '(NIRMS RMS-GB-000001-001)'],
+    ['CDS', '/ RMS-GB-000252-001 /'],
+    ['Sainsburys', 'RMS-GB-000094-001​'], // Contains zero-width space
+    ['Booker', 'RMS-GB-000077-001']
+  ])('recognizes %s exception pattern', (_name, value) => {
     const model = {
-      Sheet1: [{ A: '(NIRMS RMS-GB-000001-001)' }]
+      Sheet1: [{ A: value }]
     }
-    // This should match the exception
-    expect(noRemosMatch(model)).toBe(true)
-  })
 
-  test('recognizes CDS exception pattern', () => {
-    const model = {
-      Sheet1: [{ A: '/ RMS-GB-000252-001 /' }]
-    }
-    expect(noRemosMatch(model)).toBe(true)
-  })
-
-  test('recognizes Sainsburys exception pattern', () => {
-    const model = {
-      Sheet1: [{ A: 'RMS-GB-000094-001​' }] // Note: contains zero-width space
-    }
-    expect(noRemosMatch(model)).toBe(true)
-  })
-
-  test('recognizes Booker exception pattern', () => {
-    const model = {
-      Sheet1: [{ A: 'RMS-GB-000077-001' }]
-    }
     expect(noRemosMatch(model)).toBe(true)
   })
 })
@@ -171,22 +155,12 @@ describe('noRemosMatchPdf', () => {
     expect(result).toBe(false)
   })
 
-  test('handles null or undefined input gracefully', async () => {
-    const result = await noRemosMatchPdf(null)
-
-    expect(result).toBe(false)
-  })
-
-  test('handles empty buffer', async () => {
-    const emptyBuffer = Buffer.alloc(0)
-
-    const result = await noRemosMatchPdf(emptyBuffer)
-
-    expect(result).toBe(false)
-  })
-
-  test('handles undefined input', async () => {
-    const result = await noRemosMatchPdf(undefined)
+  test.each([
+    ['null input', null],
+    ['empty buffer', Buffer.alloc(0)],
+    ['undefined input', undefined]
+  ])('handles %s', async (_description, input) => {
+    const result = await noRemosMatchPdf(input)
 
     expect(result).toBe(false)
   })

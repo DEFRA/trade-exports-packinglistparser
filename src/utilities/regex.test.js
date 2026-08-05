@@ -106,8 +106,8 @@ describe('findMatch function', () => {
       { name: 'Jane Smith', age: 25, city: 'Paris' }
     ]
 
-    expect(findMatch('Berlin', array)).toBe(null) // No match
-    expect(findMatch('Michael', array)).toBe(null) // No match
+    expect(findMatch('Berlin', array)).toBeNull() // No match
+    expect(findMatch('Michael', array)).toBeNull() // No match
   })
 
   it('should skip non-string values and return matching string values', () => {
@@ -119,8 +119,8 @@ describe('findMatch function', () => {
 
     expect(findMatch('John', array)).toBe('John') // Matches 'John'
     expect(findMatch('Engineer', array)).toBe('Engineer') // Matches 'Engineer'
-    expect(findMatch('50000', array)).toBe(null) // Should not match number values
-    expect(findMatch('true', array)).toBe(null) // Should not match boolean values
+    expect(findMatch('50000', array)).toBeNull() // Should not match number values
+    expect(findMatch('true', array)).toBeNull() // Should not match boolean values
   })
 
   it('should return the first match it finds in the object', () => {
@@ -135,7 +135,7 @@ describe('findMatch function', () => {
 
   it('should return null if the array is empty', () => {
     const array = []
-    expect(findMatch('John', array)).toBe(null) // Empty array
+    expect(findMatch('John', array)).toBeNull() // Empty array
   })
 
   it('should return null if no objects have matching properties', () => {
@@ -144,7 +144,7 @@ describe('findMatch function', () => {
       { age: 25, city: 'Paris' }
     ]
 
-    expect(findMatch('John', array)).toBe(null) // No string properties to match
+    expect(findMatch('John', array)).toBeNull() // No string properties to match
   })
 
   it('should skip inherited properties and return the correct match', () => {
@@ -154,70 +154,50 @@ describe('findMatch function', () => {
       { name: 'John Doe', age: 30, city: 'London' }
     ]
 
-    expect(findMatch('Parent Name', array)).toBe(null) // Should not match inherited property
+    expect(findMatch('Parent Name', array)).toBeNull() // Should not match inherited property
     expect(findMatch('John', array)).toBe('John') // Matches 'John'
   })
 })
 
 describe('testAllPatterns function', () => {
-  it('should return true when all regex patterns match values in the object', () => {
-    const array = [
-      { name: 'John Doe', age: 30, city: 'London' },
-      { name: 'Jane Smith', age: 25, city: 'Paris' }
+  it.each([
+    [
+      'return true when all regex patterns match values in the object',
+      ['John', 'Doe'],
+      { name: 'John Doe', age: 30, city: 'London' }
+    ],
+    [
+      'return true when all regex patterns match across different properties',
+      ['John', 'London'],
+      { name: 'John Doe', age: 30, city: 'London' }
+    ],
+    [
+      'skip non-string values and still match patterns in string properties',
+      ['John', 'London'],
+      { name: 'John Doe', age: 30, city: 'London', active: true }
     ]
-
-    const regexArray = ['John', 'Doe']
-    expect(testAllPatterns(regexArray, array[0])).toBe(true) // All patterns match 'John Doe'
+  ])('should %s', (_description, regexArray, row) => {
+    expect(testAllPatterns(regexArray, row)).toBe(true)
   })
 
-  it('should return false when not all regex patterns match values in the object', () => {
-    const array = [
-      { name: 'John Doe', age: 30, city: 'London' },
-      { name: 'Jane Smith', age: 25, city: 'Paris' }
+  it.each([
+    [
+      'return false when not all regex patterns match values in the object',
+      ['John', 'Smith'],
+      { name: 'John Doe', age: 30, city: 'London' }
+    ],
+    [
+      'return false if no regex patterns match',
+      ['Michael', 'Berlin'],
+      { name: 'John Doe', age: 30, city: 'London' }
+    ],
+    [
+      'return false if no objects have matching properties',
+      ['John', 'Doe'],
+      { age: 30, active: true }
     ]
-
-    const regexArray = ['John', 'Smith']
-    expect(testAllPatterns(regexArray, array[0])).toBe(false) // 'Smith' doesn't match
-  })
-
-  it('should return true when all regex patterns match across different properties', () => {
-    const array = [
-      { name: 'John Doe', age: 30, city: 'London' },
-      { name: 'Jane Smith', age: 25, city: 'Paris' }
-    ]
-
-    const regexArray = ['John', 'London']
-    expect(testAllPatterns(regexArray, array[0])).toBe(true) // 'John' and 'London' match across different properties
-  })
-
-  it('should return false if no regex patterns match', () => {
-    const array = [
-      { name: 'John Doe', age: 30, city: 'London' },
-      { name: 'Jane Smith', age: 25, city: 'Paris' }
-    ]
-
-    const regexArray = ['Michael', 'Berlin']
-    expect(testAllPatterns(regexArray, array[0])).toBe(false) // No match at all
-  })
-
-  it('should skip non-string values and still match patterns in string properties', () => {
-    const array = [
-      { name: 'John Doe', age: 30, city: 'London', active: true },
-      { name: 'Jane Smith', age: 25, city: 'Paris', job: 'Engineer' }
-    ]
-
-    const regexArray = ['John', 'London']
-    expect(testAllPatterns(regexArray, array[0])).toBe(true) // Matches 'John' and 'London' and skips boolean values
-  })
-
-  it('should return false if no objects have matching properties', () => {
-    const array = [
-      { age: 30, active: true },
-      { age: 25, city: 'Paris' }
-    ]
-
-    const regexArray = ['John', 'Doe']
-    expect(testAllPatterns(regexArray, array[0])).toBe(false) // No string properties to match
+  ])('should %s', (_description, regexArray, row) => {
+    expect(testAllPatterns(regexArray, row)).toBe(false)
   })
 })
 
@@ -339,15 +319,28 @@ describe('positionFinder function', () => {
     expect(result).toEqual([0, 'name']) // First match at row 0, column 'name'
   })
 
-  it('should return null values when no match is found', () => {
-    const json = [
-      { name: 'Alice', age: 30, city: 'London' },
-      { name: 'Bob', age: 25, city: 'Paris' },
-      { name: 'Charlie', age: 35, city: 'Berlin' }
+  it.each([
+    [
+      'return null values when no match is found',
+      [
+        { name: 'Alice', age: 30, city: 'London' },
+        { name: 'Bob', age: 25, city: 'Paris' },
+        { name: 'Charlie', age: 35, city: 'Berlin' }
+      ],
+      /Michael/
+    ],
+    ['handle empty array', [], /John/],
+    [
+      'handle objects with no string properties',
+      [
+        { age: 30, active: true, salary: 50000 },
+        { age: 25, active: false, salary: 45000 }
+      ],
+      /John/
     ]
-
-    const result = positionFinder(json, /Michael/)
-    expect(result).toEqual([null, null]) // No match found
+  ])('should %s', (_description, json, pattern) => {
+    const result = positionFinder(json, pattern)
+    expect(result).toEqual([null, null])
   })
 
   it('should find matches in different columns', () => {
@@ -359,22 +352,6 @@ describe('positionFinder function', () => {
 
     const result = positionFinder(json, /NewYork/)
     expect(result).toEqual([1, 'city']) // Row 1, column 'city'
-  })
-
-  it('should handle empty array', () => {
-    const json = []
-    const result = positionFinder(json, /John/)
-    expect(result).toEqual([null, null]) // Empty array
-  })
-
-  it('should handle objects with no string properties', () => {
-    const json = [
-      { age: 30, active: true, salary: 50000 },
-      { age: 25, active: false, salary: 45000 }
-    ]
-
-    const result = positionFinder(json, /John/)
-    expect(result).toEqual([null, null]) // No string properties to match
   })
 
   it('should handle case-insensitive matching', () => {

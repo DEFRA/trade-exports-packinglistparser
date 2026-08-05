@@ -216,6 +216,6 @@ describe('BURBANK1 Empty and Partial Row Handling', () => {
     )
 
     expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.items.length).toBe(2)
+    expect(result.items).toHaveLength(2)
   })
 })

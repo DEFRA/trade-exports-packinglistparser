@@ -8,64 +8,35 @@ vi.mock('./excel-utility.js', () => ({
 }))
 
 describe('isExcel', () => {
-  it('should return true for .xls files', () => {
-    expect(isExcel('test.xls')).toBe(true)
-  })
-
-  it('should return true for .xlsx files', () => {
-    expect(isExcel('test.xlsx')).toBe(true)
-  })
-
-  it('should return true for .xls files with uppercase extension', () => {
-    expect(isExcel('test.XLS')).toBe(true)
-  })
-
-  it('should return true for .xlsx files with uppercase extension', () => {
-    expect(isExcel('test.XLSX')).toBe(true)
-  })
-
-  it('should return true for .xls files with mixed case extension', () => {
-    expect(isExcel('test.XlS')).toBe(true)
-  })
-
-  it('should return true for .xlsx files with mixed case extension', () => {
-    expect(isExcel('test.XlSx')).toBe(true)
-  })
-
-  it('should return false for .pdf files', () => {
-    expect(isExcel('test.pdf')).toBe(false)
-  })
-
-  it('should return false for .csv files', () => {
-    expect(isExcel('test.csv')).toBe(false)
-  })
-
-  it('should return false for .txt files', () => {
-    expect(isExcel('test.txt')).toBe(false)
-  })
-
-  it('should return false for .doc files', () => {
-    expect(isExcel('test.doc')).toBe(false)
-  })
-
-  it('should return false for files with no extension', () => {
-    expect(isExcel('test')).toBe(false)
-  })
-
-  it('should handle filenames with paths', () => {
-    expect(isExcel('/path/to/test.xlsx')).toBe(true)
-    expect(isExcel('/path/to/test.pdf')).toBe(false)
-  })
-
-  it('should handle filenames with multiple dots', () => {
-    expect(isExcel('test.file.name.xls')).toBe(true)
-    expect(isExcel('test.file.name.xlsx')).toBe(true)
-    expect(isExcel('test.file.name.pdf')).toBe(false)
-  })
-
-  it('should return false for files that contain xls but do not end with it', () => {
-    expect(isExcel('test.xlsx.backup')).toBe(false)
-    expect(isExcel('test.xls.old')).toBe(false)
+  it.each([
+    ['.xls files', 'test.xls', true],
+    ['.xlsx files', 'test.xlsx', true],
+    ['.xls files with uppercase extension', 'test.XLS', true],
+    ['.xlsx files with uppercase extension', 'test.XLSX', true],
+    ['.xls files with mixed case extension', 'test.XlS', true],
+    ['.xlsx files with mixed case extension', 'test.XlSx', true],
+    ['.pdf files', 'test.pdf', false],
+    ['.csv files', 'test.csv', false],
+    ['.txt files', 'test.txt', false],
+    ['.doc files', 'test.doc', false],
+    ['files with no extension', 'test', false],
+    ['filenames with paths (xlsx)', '/path/to/test.xlsx', true],
+    ['filenames with paths (pdf)', '/path/to/test.pdf', false],
+    ['filenames with multiple dots (xls)', 'test.file.name.xls', true],
+    ['filenames with multiple dots (xlsx)', 'test.file.name.xlsx', true],
+    ['filenames with multiple dots (pdf)', 'test.file.name.pdf', false],
+    [
+      'files that contain xls but do not end with it (xlsx backup)',
+      'test.xlsx.backup',
+      false
+    ],
+    [
+      'files that contain xls but do not end with it (xls old)',
+      'test.xls.old',
+      false
+    ]
+  ])('should handle %s', (_, filename, expected) => {
+    expect(isExcel(filename)).toBe(expected)
   })
 })
 

@@ -379,16 +379,12 @@ describe('isValidIsoCode edge cases', () => {
 })
 
 describe('isNullOrEmptyString', () => {
-  test('should return true for null', () => {
-    expect(isNullOrEmptyString(null)).toBe(true)
-  })
-
-  test('should return true for undefined', () => {
-    expect(isNullOrEmptyString(undefined)).toBe(true)
-  })
-
-  test('should return true for empty string', () => {
-    expect(isNullOrEmptyString('')).toBe(true)
+  test.each([
+    ['null', null],
+    ['undefined', undefined],
+    ['empty string', '']
+  ])('should return true for %s', (_, value) => {
+    expect(isNullOrEmptyString(value)).toBe(true)
   })
 
   test('should return false for non-empty values', () => {
@@ -495,7 +491,7 @@ describe('removeEmptyItems', () => {
 
     const result = removeEmptyItems(packingList.items)
 
-    expect(result.length).toBe(1)
+    expect(result).toHaveLength(1)
   })
 
   test('return empty for null item', () => {
@@ -518,7 +514,7 @@ describe('removeEmptyItems', () => {
 
     const result = removeEmptyItems(packingList.items)
 
-    expect(result.length).toBe(0)
+    expect(result).toHaveLength(0)
   })
 
   test('return empty for null item with row_location', () => {
@@ -544,7 +540,7 @@ describe('removeEmptyItems', () => {
 
     const result = removeEmptyItems(packingList.items)
 
-    expect(result.length).toBe(0)
+    expect(result).toHaveLength(0)
   })
 
   test('multiple items', () => {
@@ -575,7 +571,7 @@ describe('removeEmptyItems', () => {
 
     const result = removeEmptyItems(packingList.items)
 
-    expect(result.length).toBe(1)
+    expect(result).toHaveLength(1)
   })
 })
 

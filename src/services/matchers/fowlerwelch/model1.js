@@ -19,7 +19,7 @@ const logger = createLogger()
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
  * @param {RegExp} regexExpression - Establishment number regex for the model
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 function matchesModel(packingList, filename, regexExpression) {
   try {
@@ -65,7 +65,7 @@ function matchesModel(packingList, filename, regexExpression) {
  * Wrapper for matchesModel using the Fowler-Welch Model 1 establishment regex.
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {number} - One of matcherResult codes
  */
 function matches(packingList, filename) {
   return matchesModel(
