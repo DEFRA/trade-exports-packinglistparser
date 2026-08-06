@@ -283,7 +283,7 @@ function isNotNirms(nirms) {
     nirms,
     /^(no|red|n|r)$/i,
     /^red lane/i,
-    /^non[- ]?nirms/i
+    /^no[nt](-| | [–-] )?nirms/i
   )
 }
 

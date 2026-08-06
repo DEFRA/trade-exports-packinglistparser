@@ -409,72 +409,73 @@ describe('hasMissingNetWeightUnit', () => {
 })
 
 describe('isNirms and isNotNirms', () => {
-  test('isNirms should handle green lane variations', () => {
-    expect(isNirms('green lane')).toBe(true)
-    expect(isNirms('Green Lane Traffic')).toBe(true)
+  test.each([
+    ['green lane', 'green lane', true],
+    ['green lane with trailing text', 'Green Lane Traffic', true],
+    ['null input', null, false],
+    ['empty string input', '', false],
+    ['undefined input', undefined, false],
+    ['Cafe-Exempt hyphenated', 'Cafe-Exempt', true],
+    ['cafe-exempt lowercase hyphenated', 'cafe-exempt', true],
+    ['Café-Exempt accented hyphenated', 'Café-Exempt', true],
+    ['café-exempt lowercase accented hyphenated', 'café-exempt', true],
+    ['Cafe Exempt spaced', 'Cafe Exempt', true],
+    ['café exempt lowercase accented spaced', 'café exempt', true],
+    ['CafeExempt missing separator', 'CafeExempt', false],
+    [
+      'Cafe-exempt with trailing text still matches unanchored pattern',
+      'Cafe-exempt extra text invalid',
+      true
+    ]
+  ])('isNirms: %s', (_, value, expected) => {
+    expect(isNirms(value)).toBe(expected)
   })
 
-  test('isNotNirms should handle red lane variations', () => {
-    expect(isNotNirms('red lane')).toBe(true)
-    expect(isNotNirms('Red Lane Traffic')).toBe(true)
-  })
-
-  test('isNirms should return false for empty values', () => {
-    expect(isNirms(null)).toBe(false)
-    expect(isNirms('')).toBe(false)
-    expect(isNirms(undefined)).toBe(false)
-  })
-
-  test('isNotNirms should return false for empty values', () => {
-    expect(isNotNirms(null)).toBe(false)
-    expect(isNotNirms('')).toBe(false)
-    expect(isNotNirms(undefined)).toBe(false)
-  })
-
-  test('isNirms should handle Cafe-Exempt variations', () => {
-    expect(isNirms('Cafe-Exempt')).toBe(true)
-    expect(isNirms('cafe-exempt')).toBe(true)
-    expect(isNirms('Café-Exempt')).toBe(true)
-    expect(isNirms('café-exempt')).toBe(true)
-    expect(isNirms('Cafe Exempt')).toBe(true)
-    expect(isNirms('café exempt')).toBe(true)
-  })
-
-  test('isNirms should return false for non-Cafe-Exempt look-alikes', () => {
-    expect(isNirms('CafeExempt')).toBe(false) // missing separator
-    expect(isNirms('Cafe-exempt extra text invalid')).toBe(true) // pattern is unanchored — valid match anywhere in string
+  test.each([
+    ['red lane', 'red lane', true],
+    ['red lane with trailing text', 'Red Lane Traffic', true],
+    ['Non nirms', 'Non nirms', true],
+    ['Not – NIRMS', 'Not – NIRMS', true],
+    ['Not nirms', 'Not nirms', true],
+    ['Not-nirms', 'Not-nirms', true],
+    ['Nont-nirms', 'Nont-nirms', false],
+    ['Nont nirms', 'Nont nirms', false],
+    ['Not- nirms', 'Not- nirms', false],
+    ['null input', null, false],
+    ['empty string input', '', false],
+    ['undefined input', undefined, false]
+  ])('isNotNirms: %s', (_, value, expected) => {
+    expect(isNotNirms(value)).toBe(expected)
   })
 })
 
 describe('wrongTypeForPackages edge cases', () => {
-  test('should return true for negative numbers', () => {
-    expect(wrongTypeForPackages({ number_of_packages: -5 })).toBe(true)
-    expect(wrongTypeForPackages({ number_of_packages: '-10' })).toBe(true)
-  })
-
-  test('should return false for valid positive numbers', () => {
-    expect(wrongTypeForPackages({ number_of_packages: 0 })).toBe(false)
-    expect(wrongTypeForPackages({ number_of_packages: 100 })).toBe(false)
+  test.each([
+    ['negative number', -5, true],
+    ['negative numeric string', '-10', true],
+    ['zero', 0, false],
+    ['positive integer', 100, false]
+  ])('should evaluate %s', (_, number_of_packages, expected) => {
+    expect(wrongTypeForPackages({ number_of_packages })).toBe(expected)
   })
 })
 
 describe('wrongTypeNetWeight edge cases', () => {
-  test('should return true for negative numbers', () => {
-    expect(wrongTypeNetWeight({ total_net_weight_kg: -5 })).toBe(true)
-    expect(wrongTypeNetWeight({ total_net_weight_kg: '-10' })).toBe(true)
-  })
-
-  test('should return false for valid positive numbers', () => {
-    expect(wrongTypeNetWeight({ total_net_weight_kg: 0 })).toBe(false)
-    expect(wrongTypeNetWeight({ total_net_weight_kg: 100.5 })).toBe(false)
+  test.each([
+    ['negative number', -5, true],
+    ['negative numeric string', '-10', true],
+    ['zero', 0, false],
+    ['positive decimal', 100.5, false]
+  ])('should evaluate %s', (_, total_net_weight_kg, expected) => {
+    expect(wrongTypeNetWeight({ total_net_weight_kg })).toBe(expected)
   })
 })
 
 describe('removeEmptyItems', () => {
-  test('return true for length greater than 0', () => {
-    const packingList = {
-      registration_approval_number: 'RMS-GB-000022-999',
-      items: [
+  test.each([
+    [
+      'return true for length greater than 0',
+      [
         {
           description: 1234,
           nature_of_products: null,
@@ -484,20 +485,11 @@ describe('removeEmptyItems', () => {
           total_net_weight_kg: 'Text'
         }
       ],
-      business_checks: {
-        all_required_fields_present: false
-      }
-    }
-
-    const result = removeEmptyItems(packingList.items)
-
-    expect(result).toHaveLength(1)
-  })
-
-  test('return empty for null item', () => {
-    const packingList = {
-      registration_approval_number: 'RMS-GB-000022-999',
-      items: [
+      1
+    ],
+    [
+      'return empty for null item',
+      [
         {
           description: null,
           nature_of_products: null,
@@ -507,20 +499,11 @@ describe('removeEmptyItems', () => {
           total_net_weight_kg: null
         }
       ],
-      business_checks: {
-        all_required_fields_present: false
-      }
-    }
-
-    const result = removeEmptyItems(packingList.items)
-
-    expect(result).toHaveLength(0)
-  })
-
-  test('return empty for null item with row_location', () => {
-    const packingList = {
-      registration_approval_number: 'RMS-GB-000022-999',
-      items: [
+      0
+    ],
+    [
+      'return empty for null item with row_location',
+      [
         {
           description: null,
           nature_of_products: null,
@@ -533,20 +516,11 @@ describe('removeEmptyItems', () => {
           }
         }
       ],
-      business_checks: {
-        all_required_fields_present: false
-      }
-    }
-
-    const result = removeEmptyItems(packingList.items)
-
-    expect(result).toHaveLength(0)
-  })
-
-  test('multiple items', () => {
-    const packingList = {
-      registration_approval_number: 'RMS-GB-000022-999',
-      items: [
+      0
+    ],
+    [
+      'multiple items',
+      [
         {
           description: 1234,
           nature_of_products: null,
@@ -564,18 +538,25 @@ describe('removeEmptyItems', () => {
           total_net_weight_kg: null
         }
       ],
-      business_checks: {
-        all_required_fields_present: false
-      }
-    }
+      1
+    ]
+  ])('%s', (_, items, expectedLength) => {
+    const result = removeEmptyItems(items)
 
-    const result = removeEmptyItems(packingList.items)
-
-    expect(result).toHaveLength(1)
+    expect(result).toHaveLength(expectedLength)
   })
 })
 
 describe('getItemFailureMessage', () => {
+  const buildValidItem = (overrides = {}) => ({
+    commodity_code: '12345678',
+    description: 'Test Product',
+    number_of_packages: 10,
+    total_net_weight_kg: 5.5,
+    total_net_weight_unit: 'kg',
+    ...overrides
+  })
+
   test('multiple failure messages', () => {
     const item = {
       description: null,
@@ -593,195 +574,146 @@ describe('getItemFailureMessage', () => {
     )
   })
 
-  test('should return null when item has no failures', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg'
-    }
-    expect(getItemFailureMessage(item, false, false)).toBeNull()
-  })
+  test.each([
+    ['item has no failures', {}, false, false],
+    [
+      'unit in header is true and unit is missing',
+      { total_net_weight_unit: null },
+      false,
+      true
+    ],
+    [
+      'country of origin validation is disabled',
+      { nirms: null, country_of_origin: null },
+      false,
+      false
+    ]
+  ])(
+    'should return null when %s',
+    (_, overrides, validateCountryOfOrigin, unitInHeader) => {
+      const result = getItemFailureMessage(
+        buildValidItem(overrides),
+        validateCountryOfOrigin,
+        unitInHeader
+      )
 
-  test('should return identifier missing message', () => {
-    const item = {
-      commodity_code: null,
-      nature_of_products: null,
-      type_of_treatment: null,
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg'
+      expect(result).toBeNull()
     }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('Identifier is missing')
-  })
+  )
 
-  test('should return invalid product code message', () => {
-    const item = {
-      commodity_code: 'ABC123',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg'
-    }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('Product code is invalid')
-  })
+  test.each([
+    [
+      'identifier is missing',
+      {
+        commodity_code: null,
+        nature_of_products: null,
+        type_of_treatment: null
+      },
+      false,
+      false,
+      'Identifier is missing'
+    ],
+    [
+      'product code is invalid',
+      { commodity_code: 'ABC123' },
+      false,
+      false,
+      'Product code is invalid'
+    ],
+    [
+      'product description is missing',
+      { description: null },
+      false,
+      false,
+      'Product description is missing'
+    ],
+    [
+      'number of packages is missing',
+      { number_of_packages: null },
+      false,
+      false,
+      'No of packages is missing'
+    ],
+    [
+      'number of packages is invalid',
+      { number_of_packages: 'invalid' },
+      false,
+      false,
+      'No of packages is invalid'
+    ],
+    [
+      'net weight is missing',
+      { total_net_weight_kg: null },
+      false,
+      false,
+      'Total net weight is missing'
+    ],
+    [
+      'net weight is invalid',
+      { total_net_weight_kg: 'invalid' },
+      false,
+      false,
+      'Total net weight is invalid'
+    ],
+    [
+      'net weight unit is missing when unitInHeader is false',
+      { total_net_weight_unit: null },
+      false,
+      false,
+      'Net Weight Unit of Measure (kg) not found'
+    ],
+    [
+      'NIRMS is missing when country of origin validation is enabled',
+      { nirms: null },
+      true,
+      false,
+      'NIRMS/Non-NIRMS goods not specified'
+    ],
+    [
+      'NIRMS is invalid when country of origin validation is enabled',
+      { nirms: 'invalid' },
+      true,
+      false,
+      'Invalid entry for NIRMS/Non-NIRMS goods'
+    ],
+    [
+      'country of origin is missing for NIRMS',
+      { nirms: 'NIRMS', country_of_origin: null },
+      true,
+      false,
+      'Missing Country of Origin'
+    ],
+    [
+      'country of origin is invalid for NIRMS',
+      { nirms: 'NIRMS', country_of_origin: 'INVALID_ISO' },
+      true,
+      false,
+      'Invalid Country of Origin ISO Code'
+    ],
+    [
+      'item is ineligible',
+      {
+        commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
+        nirms: 'NIRMS',
+        country_of_origin: 'INELIGIBLE_ITEM_ISO',
+        type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
+      },
+      true,
+      false,
+      'Prohibited item identified on the packing list'
+    ]
+  ])(
+    'should include expected failure message when %s',
+    (_, overrides, validateCountryOfOrigin, unitInHeader, expectedMessage) => {
+      const result = getItemFailureMessage(
+        buildValidItem(overrides),
+        validateCountryOfOrigin,
+        unitInHeader
+      )
 
-  test('should return description missing message', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: null,
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg'
+      expect(result).toContain(expectedMessage)
     }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('Product description is missing')
-  })
-
-  test('should return packages missing message', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: null,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg'
-    }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('No of packages is missing')
-  })
-
-  test('should return packages invalid message', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 'invalid',
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg'
-    }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('No of packages is invalid')
-  })
-
-  test('should return net weight missing message', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: null,
-      total_net_weight_unit: 'kg'
-    }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('Total net weight is missing')
-  })
-
-  test('should return net weight invalid message', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 'invalid',
-      total_net_weight_unit: 'kg'
-    }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('Total net weight is invalid')
-  })
-
-  test('should return net weight unit missing message when unitInHeader is false', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: null
-    }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toContain('Net Weight Unit of Measure (kg) not found')
-  })
-
-  test('should NOT return net weight unit missing message when unitInHeader is true', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: null
-    }
-    const result = getItemFailureMessage(item, false, true)
-    expect(result).toBeNull()
-  })
-
-  test('should include NIRMS validation when validateCountryOfOrigin is true', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg',
-      nirms: null
-    }
-    const result = getItemFailureMessage(item, true, false)
-    expect(result).toContain('NIRMS/Non-NIRMS goods not specified')
-  })
-
-  test('should include invalid NIRMS message when validateCountryOfOrigin is true', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg',
-      nirms: 'invalid'
-    }
-    const result = getItemFailureMessage(item, true, false)
-    expect(result).toContain('Invalid entry for NIRMS/Non-NIRMS goods')
-  })
-
-  test('should include missing country of origin message when NIRMS and validateCountryOfOrigin is true', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg',
-      nirms: 'NIRMS',
-      country_of_origin: null
-    }
-    const result = getItemFailureMessage(item, true, false)
-    expect(result).toContain('Missing Country of Origin')
-  })
-
-  test('should include invalid country of origin message when validateCountryOfOrigin is true', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg',
-      nirms: 'NIRMS',
-      country_of_origin: 'INVALID_ISO'
-    }
-    const result = getItemFailureMessage(item, true, false)
-    expect(result).toContain('Invalid Country of Origin ISO Code')
-  })
-
-  test('should include prohibited item message when item is ineligible', () => {
-    const item = {
-      commodity_code: 'INELIGIBLE_ITEM_COMMODITY_1',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg',
-      nirms: 'NIRMS',
-      country_of_origin: 'INELIGIBLE_ITEM_ISO',
-      type_of_treatment: 'INELIGIBLE_ITEM_TREATMENT'
-    }
-    const result = getItemFailureMessage(item, true, false)
-    expect(result).toContain('Prohibited item identified on the packing list')
-  })
+  )
 
   test('should combine multiple failures with semicolons', () => {
     const item = {
@@ -799,20 +731,6 @@ describe('getItemFailureMessage', () => {
     expect(result).toContain('Net Weight Unit of Measure (kg) not found')
     // Check that failures are separated by semicolons
     expect(result?.split(';').length).toBeGreaterThan(1)
-  })
-
-  test('should NOT include country of origin validations when validateCountryOfOrigin is false', () => {
-    const item = {
-      commodity_code: '12345678',
-      description: 'Test Product',
-      number_of_packages: 10,
-      total_net_weight_kg: 5.5,
-      total_net_weight_unit: 'kg',
-      nirms: null,
-      country_of_origin: null
-    }
-    const result = getItemFailureMessage(item, false, false)
-    expect(result).toBeNull()
   })
 
   test('should handle combination of basic and country of origin failures', () => {
