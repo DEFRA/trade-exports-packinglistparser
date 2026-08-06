@@ -76,7 +76,7 @@
     "vitest": "4.1.9"
   },
   "overrides": {
-    "fast-xml-parser": "5.5.8",
+    "fast-xml-parser": "5.7.0",
     "flatted": "3.4.2"
   }
 }
