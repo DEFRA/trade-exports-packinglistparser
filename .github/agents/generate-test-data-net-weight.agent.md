@@ -1,21 +1,34 @@
 ---
-description: 'Generate test data scenarios for net weight validation in the net-weight folder. Strictly follow the scenario list and mutation instructions below.'
-agent: agent
+description: 'Generate test-data scenarios for net weight validation in the net-weight folder. Use when orchestrating parallel packing list test data generation.'
+tools: ['search/codebase', 'edit/editFiles', 'read/problems']
+user-invocable: false
 ---
 
 # Net Weight Test Scenarios
 
-_Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
+> **Context received from orchestrator:**
+>
+> - `manifestPath`: Path to the confirmed `manifest.json` (e.g., `src/packing-lists/{exporter}/test-scenarios/manifest.json`)
+> - `happyPathFile`: Path to the happy path sample file
+> - `exporterProperty`: The exporter property name (e.g., 'BOOKER2', 'ASDA1')
+>
+> Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
+
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
+>
+> - Numeric Field Corruption Guidelines (special chars, alphanumeric, negative, mixed patterns)
+> - Allowed KG unit forms
+> - Column Classification Rules
+> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
+> - Format-Specific Skills references
 
 **File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
-
-**Important**: When corrupting numeric data in these scenarios, refer to the **Numeric Field Corruption Guidelines** section in the main `generate-test-data-from-sample.prompt.md` for specific examples of special characters, alphanumeric values, negative numbers, and mixed patterns to use.
 
 ## Scenarios
 
 ### Core Net Weight Scenarios (Always Generated)
 
-- **Alpha_Numeric_TotalNetWeight_Unparse**: Set total net weight to alphanumeric values using the **Numeric Field Corruption Guidelines**: `A12.5`, `15B.2`, `C20.8`, `25D.0`, `E30.5`, `3F5.7`.
+- **Alpha_Numeric_TotalNetWeight_Unparse**: Set total net weight to alphanumeric values using the **Numeric Field Corruption Guidelines** (see shared guidelines): `A12.5`, `15B.2`, `C20.8`, `25D.0`, `E30.5`, `3F5.7`.
 - **Ambiguous_Units_in_Header_Pass**: **[HEADER ONLY — do not modify data rows.]** Use ambiguous units in the header (e.g. 'Total Net Weight (Lbs/KG Lbs)'). Note: the parser recognises the following as valid kilogram tokens: `KG`, `KGS`, `KILOGRAM`, `KILOGRAMS`, `KILO`, `KILOS`. Use tokens like `LBS` or `LB` to force an invalid-unit behaviour.
 - **sData_empty_Netweight_Fail**: Leave total net weight cells empty.
 - **Extra_Spaces_In_Header_Unparse**: **[HEADER ONLY — do not modify data rows.]** Add extra spaces in the net weight header (e.g. 'Total Net Weight').
@@ -24,7 +37,7 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 - **Header_With_Extra_Parentheses_Pass**: **[HEADER ONLY — do not modify data rows.]** Add extra parentheses in the net weight header (e.g. 'Total Net Weight (KG) ()').
 - **Header_With_Multiple_Units**: **[HEADER ONLY — do not modify data rows.]** Add multiple units in the header (e.g. 'Total Net Weight (KG/LB)').
 - **Header_With_Unit_And_Symbols_Pass**: **[HEADER ONLY — do not modify data rows.]** Add symbols to the unit in the header (e.g. 'Total Net Weight (KG\*)').
-- **Incorrect_NetweightData_All_Fail**: Set all net weight data to invalid values using the **Numeric Field Corruption Guidelines** with a mix of patterns:
+- **Incorrect_NetweightData_All_Fail**: Set all net weight data to invalid values using the **Numeric Field Corruption Guidelines** (see shared guidelines) with a mix of patterns:
   - **Special characters**: `@12.5`, `15!.2`, `#20.8`, `$25.0`, `%30.5`, `&35.7`
   - **Alphanumeric values**: `A12.5`, `15B.2`, `C20.8`, `25D.0`, `E30.5`, `3F5.7`
   - **Negative numbers**: `-12.5`, `-15.2`, `-20.8`, `-25.0`, `-30.5`
@@ -44,7 +57,7 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 **Note**: These scenarios are only generated if the exporter configuration contains a `header_net_weight_unit` property (e.g., COOP1, NISA1, NISA2, SAINSBURYS1). For exporters without this property (like ASDA4), these scenarios are skipped.
 
-- **Alpha_Numeric_UOM_Weight**: Set the unit of measure to alphanumeric values that do NOT match the allowed kilogram tokens (see main prompt). Examples: `K9G`, `L2B`, `G3M`, `K5G`, `M7L`.
+- **Alpha_Numeric_UOM_Weight**: Set the unit of measure to alphanumeric values that do NOT match the allowed kilogram tokens (see shared guidelines). Examples: `K9G`, `L2B`, `G3M`, `K5G`, `M7L`.
 - **Data_empty_NetweightUOM**: Leave unit of measure cells empty.
 - **Invalid_Unit_Type_Fail**: Set unit of measure to an invalid type (e.g. `LBS`, `LB`, `GRAM`, `G`) — do NOT use `KGS` or other allowed kg variants, as those will be treated as valid.
 - **Missing_Header_NetweightUOM**: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the unit of measure header label completely (empty cell for CSV/Excel, blanked header text region for PDF).

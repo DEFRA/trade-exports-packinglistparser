@@ -29,7 +29,13 @@ Never mutate the source template in place.
 
 Use `muhammara` library with low-level content stream replacement for true in-place edits:
 
-> **Install**: `npm install --save-dev muhammara`
+> **Install**: Do not add `muhammara` to the main project's `package.json`. Instead, place a scoped `package.json` in the closest common ancestor directory of the generation scripts (e.g. the exporter's `test-scenarios/` folder, or a shared parent). Node's module resolution will find it by walking up the tree. Add `muhammara` to that file's `dependencies` and run `npm install` from that directory:
+>
+> ```json
+> { "dependencies": { "muhammara": "^3.5.0" } }
+> ```
+>
+> PDF generation scripts use ESM `import` syntax and are plain `.js` files.
 
 ```javascript
 import muhammara from 'muhammara'

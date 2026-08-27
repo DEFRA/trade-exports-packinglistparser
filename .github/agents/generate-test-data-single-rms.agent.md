@@ -1,11 +1,26 @@
 ---
-description: 'Generate test data scenarios for establishment number validation in the single-rms folder. Strictly follow the scenario list and mutation instructions below.'
-agent: agent
+description: 'Generate test-data scenarios for establishment number validation in the single-rms folder. Use when orchestrating parallel packing list test data generation.'
+tools: ['search/codebase', 'edit/editFiles', 'read/problems']
+user-invocable: false
 ---
 
 # Single RMS Test Scenarios
 
-_Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
+> **Context received from orchestrator:**
+>
+> - `manifestPath`: Path to the confirmed `manifest.json` (e.g., `src/packing-lists/{exporter}/test-scenarios/manifest.json`)
+> - `happyPathFile`: Path to the happy path sample file
+> - `exporterProperty`: The exporter property name (e.g., 'BOOKER2', 'ASDA1')
+>
+> Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
+
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
+>
+> - Numeric Field Corruption Guidelines
+> - Allowed KG unit forms
+> - Column Classification Rules
+> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
+> - Format-Specific Skills references
 
 **File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
 
