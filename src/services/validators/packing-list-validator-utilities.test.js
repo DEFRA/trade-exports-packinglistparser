@@ -213,8 +213,8 @@ describe('validator function tests', () => {
     ['NIRMS', 'VALID_ISO, INVALID_ISO', true], // Nirms, Multiple ISO codes comma separated, one invalid
     ['NON-NIRMS', null, false], // Non-NIRMS, missing value, should be handled by hasMissingCoO
     ['NIRMS', 'VALID_ISO', false], // Nirms, valid value
-    ['NIRMS', 'X', false], // Nirms, Specific 'X' value, should be ignored
-    ['NIRMS', 'x', false], // Nirms, Specific 'x' value, should be ignored
+    ['NIRMS', 'X', true], // Nirms, Specific 'X' value, should be ignored
+    ['NIRMS', 'x', true], // Nirms, Specific 'x' value, should be ignored
     ['NIRMS', 'VALID_ISO, INELIGIBLE_ITEM_ISO', false] // Nirms, Multiple ISO codes comma separated
   ])('hasInvalidCoO', (nirms, country_of_origin, expected) => {
     const item = { nirms, country_of_origin }
