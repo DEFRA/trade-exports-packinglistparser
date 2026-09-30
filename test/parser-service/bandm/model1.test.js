@@ -181,12 +181,10 @@ describe('BANDM1 CoO Validation Tests - Type 1 - CoO', () => {
   })
 
   // AC6: CoO Value is X or x - Should pass when country of origin is "X" or "x"
-  test('AC6: matches BAndM Model 1 file, returns all_required_fields_present as true for CoO value X or x', async () => {
+  test('AC6: matches BAndM Model 1 file, returns all_required_fields_present as false for CoO value X or x', async () => {
     const result = await parserService.parsePackingList(model.xCoO, filename)
 
     expect(result).toMatchObject(testResults.xCoOTestResult)
-    expect(result.business_checks.all_required_fields_present).toBe(true)
-    expect(result.business_checks.failure_reasons).toBeNull()
   })
 })
 

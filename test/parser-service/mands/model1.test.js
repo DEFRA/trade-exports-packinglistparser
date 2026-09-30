@@ -143,12 +143,12 @@ describe('MANDS1 CoO Validation Tests - Type 1 - CoO', () => {
     )
   })
 
-  test('CoO Value is X - passes validation', async () => {
+  test('CoO Value is X - fails validation', async () => {
     vi.mocked(pdfHelper.extractPdf).mockResolvedValue(model.xCoO)
 
     const result = await parsePackingList({}, filename)
 
-    expect(result.business_checks.all_required_fields_present).toBeTruthy()
+    expect(result.business_checks.all_required_fields_present).toBeFalsy()
   })
 })
 

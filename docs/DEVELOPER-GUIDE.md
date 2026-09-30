@@ -403,12 +403,8 @@ Reference data files are located in `src/services/data/`.
 **Format:** Array of 2-letter country codes
 
 ```json
-["GB", "US", "FR", "DE", "X"]
+["GB", "US", "FR", "DE"]
 ```
-
-**Special Values:**
-
-- `"X"` - Placeholder for unknown/unspecified country
 
 **Usage:**
 

@@ -144,13 +144,15 @@ describe('GIOVANNI1 CoO Validation Tests - Type 4', () => {
     expect(result.business_checks.all_required_fields_present).toBe(true)
   })
 
-  test('BAC6: CoO placeholder X/x values pass validation', async () => {
+  test('BAC6: CoO placeholder X/x values fails validation', async () => {
     const result = await parserService.parsePackingList(
       model.cooPlaceholderX,
       filename
     )
-    expect(result.business_checks.failure_reasons).toBeNull()
-    expect(result.business_checks.all_required_fields_present).toBe(true)
+    expect(result.business_checks.failure_reasons).toContain(
+      'Invalid Country of Origin ISO Code in sheet "RANA" row 6 and sheet "RANA" row 7.'
+    )
+    expect(result.business_checks.all_required_fields_present).toBe(false)
   })
 
   test('Dynamic blanket statement sets all items to NIRMS', async () => {

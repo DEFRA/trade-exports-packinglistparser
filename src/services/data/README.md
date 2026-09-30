@@ -13,12 +13,8 @@ This folder contains static reference data used by the Packing List Parser (PLP)
 **Example:**
 
 ```json
-["GB", "US", "FR", "DE", "X"]
+["GB", "US", "FR", "DE"]
 ```
-
-**Special Values:**
-
-- `"X"` - Placeholder for unknown or unspecified country of origin
 
 **Usage:**
 
