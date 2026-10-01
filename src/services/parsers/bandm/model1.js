@@ -157,6 +157,24 @@ function cleanupWhitespace(items) {
 }
 
 /**
+ * Flags items from the NON-NIRMS sheet, defaulting nirms where not already set.
+ * @param {Array} items - Array of parsed items.
+ * @param {string} sheetName - The name of the sheet.
+ * @returns {Array} Items with nirms applied for the NON-NIRMS sheet.
+ */
+function applyNonNirmsFlag(items, sheetName) {
+  if (sheetName.trim().toUpperCase() !== NON_NIRMS_SHEET_NAME) {
+    return items
+  }
+
+  // Literal, not NON_NIRMS_SHEET_NAME, as that may later match a list of sheet names
+  return items.map((item) => ({
+    ...item,
+    nirms: item.nirms ?? 'NON-NIRMS'
+  }))
+}
+
+/**
  * Processes a single sheet to extract and filter packing list data.
  * @param {Object} sheetData - The sheet data to process.
  * @param {string} sheetName - The name of the sheet.
@@ -175,21 +193,10 @@ function processSheet(sheetData, sheetName, headerCallback) {
     sheetName
   )
 
-  const isNonNirmsSheet =
-    typeof sheetName === 'string' &&
-    sheetName.trim().toUpperCase() === NON_NIRMS_SHEET_NAME
-  const items = isNonNirmsSheet
-    ? parsedItems.map((item) => ({
-        ...item,
-        nirms: item.nirms ?? NON_NIRMS_SHEET_NAME
-      }))
-    : parsedItems
+  const items = applyNonNirmsFlag(parsedItems, sheetName)
 
-  // Filter FIRST (while we still have original string values for totals detection)
-  const filteredItems = filterDataRows(items)
-
-  // THEN clean whitespace (after filtering based on keywords)
-  return cleanupWhitespace(filteredItems)
+  // Filter FIRST (while we still have original string values for totals detection), then clean whitespace
+  return cleanupWhitespace(filterDataRows(items))
 }
 
 /**

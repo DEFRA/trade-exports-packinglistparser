@@ -24,7 +24,7 @@ const bandmHeaders = {
     country_of_origin: /COUNTRY OF ORIGIN/i,
     exempt_country_of_origin: /EXEMPT COUNTRY OF ORIGIN/i,
     blanketNirms: {
-      regex: /This (?:consignment|sheet) contains only NIRMS eligible goods/i,
+      regex: /This sheet contains only NIRMS eligible goods/i,
       value: 'NIRMS'
     },
     blanketTreatmentType: {
