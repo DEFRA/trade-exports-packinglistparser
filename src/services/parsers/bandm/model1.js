@@ -194,9 +194,9 @@ function processSheet(sheetData, sheetName, headerCallback) {
   )
 
   // Filter FIRST (while we still have original string values for totals detection), then clean whitespace
-  return cleanupWhitespace(
-    filterDataRows(applyNonNirmsFlag(parsedItems, sheetName))
-  )
+  const itemsWithNonNirmsFlag = applyNonNirmsFlag(parsedItems, sheetName)
+  const filteredItems = filterDataRows(itemsWithNonNirmsFlag)
+  return cleanupWhitespace(filteredItems)
 }
 
 /**
