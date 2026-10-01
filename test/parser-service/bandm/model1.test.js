@@ -110,7 +110,7 @@ describe('matchesBandMModel1', () => {
 })
 
 describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
-  // AC1: Null NIRMS value - Given a packing list does not have the statement 'This consignment contains only NIRMS eligible goods' specified anywhere on it
+  // AC1: Null NIRMS value - Given a packing list does not have the statement 'This sheet contains only NIRMS eligible goods' specified anywhere on it
   test('AC1: matches BAndM Model 1 file, returns all_required_fields_present as false for missing NIRMS statement', async () => {
     const result = await parserService.parsePackingList(
       model.missingNirmsStatement,

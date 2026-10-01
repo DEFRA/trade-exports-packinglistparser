@@ -107,7 +107,7 @@ describe('parseBandmModel1', () => {
     it('populates nirms field when sheet says it contains only NIRMS eligible goods', () => {
       const sheet = model.validModel.Sheet1.map((row) => ({ ...row }))
       const statementRow = sheet.find((row) =>
-        row.J?.includes('This consignment')
+        row.J?.includes('This sheet')
       )
       statementRow.J = 'This sheet contains only NIRMS eligible goods'
 
@@ -163,7 +163,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -236,7 +236,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -351,7 +351,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -415,7 +415,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -477,7 +477,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -538,7 +538,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -598,7 +598,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -658,7 +658,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -719,7 +719,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -778,7 +778,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -836,7 +836,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -896,7 +896,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -955,7 +955,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -1002,7 +1002,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -1051,7 +1051,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -1101,7 +1101,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -1161,7 +1161,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -1223,7 +1223,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -1283,7 +1283,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
@@ -1365,7 +1365,7 @@ describe('parseBandmModel1', () => {
             I: 'RMS-GB-000005-001'
           },
           {
-            J: 'This consignment contains only NIRMS eligible goods',
+            J: 'This sheet contains only NIRMS eligible goods',
             K: 'Treatment type: all products are processed'
           },
           {},
