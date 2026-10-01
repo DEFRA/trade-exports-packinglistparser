@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "engines": {
-    "node": ">=22.16.0"
+    "node": "^26"
   },
   "scripts": {
     "dev": "NODE_ENV=development npm run server:watch",
@@ -60,7 +60,7 @@
     "undici": "7.29.1",
     "uuid": "14.0.0",
     "ws": "8.21.0",
-    "xlsx": "0.20.3"
+    "xlsx": "0.18.5"
   },
   "devDependencies": {
     "@babel/core": "8.0.1",
