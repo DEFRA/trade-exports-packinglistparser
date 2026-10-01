@@ -12,6 +12,7 @@ import { rowFinder } from '../../../utilities/row-finder.js'
 import { mapParser } from '../../parser-map.js'
 
 const logger = createLogger()
+const NON_NIRMS_SHEET_NAME = 'NON-NIRMS'
 
 /**
  * Creates a callback function to find header rows by testing against header patterns.
@@ -174,8 +175,18 @@ function processSheet(sheetData, sheetName, headerCallback) {
     sheetName
   )
 
+  const isNonNirmsSheet =
+    typeof sheetName === 'string' &&
+    sheetName.trim().toUpperCase() === NON_NIRMS_SHEET_NAME
+  const items = isNonNirmsSheet
+    ? parsedItems.map((item) => ({
+        ...item,
+        nirms: item.nirms ?? NON_NIRMS_SHEET_NAME
+      }))
+    : parsedItems
+
   // Filter FIRST (while we still have original string values for totals detection)
-  const filteredItems = filterDataRows(parsedItems)
+  const filteredItems = filterDataRows(items)
 
   // THEN clean whitespace (after filtering based on keywords)
   return cleanupWhitespace(filteredItems)

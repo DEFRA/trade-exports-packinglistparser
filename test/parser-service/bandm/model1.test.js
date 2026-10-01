@@ -123,6 +123,17 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
     )
   })
 
+  test('uses NON-NIRMS sheet name when no NIRMS value is present', async () => {
+    const result = await parserService.parsePackingList(
+      { 'NON-NIRMS': model.missingNirmsStatement.Sheet1 },
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(true)
+    expect(result.items[0].nirms).toBe('NON-NIRMS')
+    expect(result.business_checks.failure_reasons).toBeNull()
+  })
+
   // AC2: Null CoO Value - Given a packing list has the NIRMS statement and the CoO value is null
   test('AC2: matches BAndM Model 1 file, returns all_required_fields_present as false for null CoO value', async () => {
     const result = await parserService.parsePackingList(model.nullCoO, filename)

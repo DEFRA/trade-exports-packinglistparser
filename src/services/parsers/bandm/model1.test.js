@@ -104,6 +104,21 @@ describe('parseBandmModel1', () => {
       expect(result.items[1].nirms).toBe('NIRMS')
     })
 
+    it('uses the blanket statement before the NON-NIRMS sheet fallback', () => {
+      const result = parse({ 'NON-NIRMS': model.validModel.Sheet1 })
+
+      expect(result.items[0].nirms).toBe('NIRMS')
+      expect(result.items[1].nirms).toBe('NIRMS')
+    })
+
+    it('uses NON-NIRMS sheet name when no NIRMS value is present', () => {
+      const result = parse({
+        'NON-NIRMS': model.missingNirmsStatement.Sheet1
+      })
+
+      expect(result.items[0].nirms).toBe('NON-NIRMS')
+    })
+
     it('populates treatment type from blanket statement', () => {
       const result = parse(model.validModel)
 
