@@ -106,7 +106,9 @@ describe('parseBandmModel1', () => {
 
     it('populates nirms field when sheet says it contains only NIRMS eligible goods', () => {
       const sheet = model.validModel.Sheet1.map((row) => ({ ...row }))
-      const statementRow = sheet.find((row) => row.J?.includes('This consignment'))
+      const statementRow = sheet.find((row) =>
+        row.J?.includes('This consignment')
+      )
       statementRow.J = 'This sheet contains only NIRMS eligible goods'
 
       const result = parse({ Sheet1: sheet })
