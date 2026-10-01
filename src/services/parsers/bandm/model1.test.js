@@ -104,6 +104,17 @@ describe('parseBandmModel1', () => {
       expect(result.items[1].nirms).toBe('NIRMS')
     })
 
+    it('populates nirms field when sheet says it contains only NIRMS eligible goods', () => {
+      const sheet = model.validModel.Sheet1.map((row) => ({ ...row }))
+      const statementRow = sheet.find((row) => row.J?.includes('This consignment'))
+      statementRow.J = 'This sheet contains only NIRMS eligible goods'
+
+      const result = parse({ Sheet1: sheet })
+
+      expect(result.items[0].nirms).toBe('NIRMS')
+      expect(result.items[1].nirms).toBe('NIRMS')
+    })
+
     it('uses the blanket statement before the NON-NIRMS sheet fallback', () => {
       const result = parse({ 'NON-NIRMS': model.validModel.Sheet1 })
 
