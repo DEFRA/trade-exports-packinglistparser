@@ -110,7 +110,7 @@ describe('matchesBandMModel1', () => {
 })
 
 describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
-  // AC1: Null NIRMS value - Given a packing list does not have the statement 'This consignment contains only NIRMS eligible goods' specified anywhere on it
+  // AC1: Null NIRMS value - Given a packing list does not have the statement 'This sheet contains only NIRMS eligible goods' specified anywhere on it
   test('AC1: matches BAndM Model 1 file, returns all_required_fields_present as false for missing NIRMS statement', async () => {
     const result = await parserService.parsePackingList(
       model.missingNirmsStatement,
@@ -121,6 +121,17 @@ describe('BANDM1 CoO Validation Tests - Type 1 - Nirms', () => {
     expect(result.business_checks.failure_reasons).toContain(
       failureReasons.NIRMS_MISSING
     )
+  })
+
+  test('uses NON-NIRMS sheet name when no NIRMS value is present', async () => {
+    const result = await parserService.parsePackingList(
+      { 'NON-NIRMS': model.missingNirmsStatement.Sheet1 },
+      filename
+    )
+
+    expect(result.business_checks.all_required_fields_present).toBe(true)
+    expect(result.items[0].nirms).toBe('NON-NIRMS')
+    expect(result.business_checks.failure_reasons).toBeNull()
   })
 
   // AC2: Null CoO Value - Given a packing list has the NIRMS statement and the CoO value is null
