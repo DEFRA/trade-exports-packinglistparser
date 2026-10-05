@@ -28,123 +28,52 @@ user-invocable: false
 
 **IMPORTANT: Conditional Scenario Generation**
 
-- Scenarios **ac1-ac5** (NIRMS-related) are **NOT required** if the exporter configuration has a `blanketNirms` optional property
-- If `blanketNirms` property exists, skip scenarios ac1-ac5 and only generate ac6+ scenarios
-- If no `blanketNirms` property exists, generate all scenarios including ac1-ac5
+- Identify the NIRMS source from the confirmed manifest and workbook: a mapped row-level `nirms` column, a `blanketNirms`/`blanketNirmsValue` statement, or a parser-recognized `NON-NIRMS` sheet name.
+- Generate row-level NIRMS scenarios **ac1-ac5** only when the workbook has a mapped NIRMS column and no blanket NIRMS fallback. Never add a NIRMS column to create a scenario.
+- Generate blanket NIRMS scenarios only when the exporter supports a blanket statement and the workbook can be mutated to exercise the stated source and fallback. A configured `blanketNirms` property alone does not imply a row-level field.
+- Generate CoO validation scenarios **ac6-ac9** only with `country_of_origin` and `validateCountryOfOrigin: true`; generate ineligible-item scenarios **ac11-ac15** only with `country_of_origin`, `commodity_code`, and a usable `type_of_treatment` source. Skip cases whose required cells, statements, or eligible rows cannot be reached, and record the reason in the scenario folder documentation.
 
-### NIRMS Scenarios (Generate only if NO `blanketNirms` property exists)
+### NIRMS Scenarios (Generate only for a mapped row-level `nirms` column without a blanket fallback)
 
-- **ac1_NotNirms_Pass**: Set NIRMS field to a valid non-NIRMS value (e.g. "NON-NIRMS" or "No") for 2-3 data rows/items.
-- **ac2_NullNirms_Fail**: Set NIRMS field to blank/empty for 2-3 data rows/items.
-- **ac3_InvalidNirms_Fail**: Set NIRMS field to invalid values (e.g. "INVALID", "123", "Maybe") for 2-3 data rows/items.
-- **ac4_NullNirmsMultiple_Fail**: Set NIRMS field to blank/empty for multiple data rows/items (at least 3).
-- **ac5_InvalidNirmsMultiple_Fail**: Set NIRMS field to different invalid values for multiple data rows/items (3 rows/items).
+For missing-value scenarios, use a sheet without a `NON-NIRMS` name fallback; otherwise clearing a cell may still produce a valid NIRMS value.
+Use values recognized by the validator (e.g. "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS"); do not assume other NIRMS-like text is valid.
 
-### Country of Origin Scenarios (Generate if `country_of_origin` property exists)
+- **ac1_NotNirms_Pass**: Set the NIRMS column to a valid non-NIRMS value (e.g. "NON-NIRMS" or "No") on one data row; NIRMS validation should pass.
+- **ac2_NullNirms_Fail**: Clear the NIRMS column on one data row; NIRMS validation should fail.
+- **ac3_InvalidNirms_Fail**: Set the NIRMS column to one invalid value (e.g. "Maybe") on one data row; NIRMS validation should fail.
+- **ac4_NullNirmsMultiple_Fail**: Clear the NIRMS column on at least 3 data rows; each should fail NIRMS validation.
+- **ac5_InvalidNirmsMultiple_Fail**: Set the NIRMS column to different invalid values (e.g. "INVALID", "123", "Maybe") on 3 data rows; each should fail NIRMS validation.
 
-> **NIRMS prerequisite (ac6–ac15)**: CoO and ineligible item checks only run for NIRMS-eligible rows. On every row mutated in these scenarios, also set the NIRMS field to the valid NIRMS value from the happy path file.
+### Blanket NIRMS Scenarios (Generate only for a supported blanket statement)
 
-- **ac6_NullCoO_Fail**: Set country_of_origin field to blank/empty for 2-3 data rows/items.
-- **ac7_InvalidCoO_Fail**: Set country_of_origin field to invalid values including numeric codes and special characters: `"123"`, `"@GB"`, `"G#B"`, `"GBR"`, `"INVALID"`, `"-GB"`, `"G1B"` for 2-3 data rows/items.
-- **ac8_NullCoOMultiple_Fail**: Set country_of_origin field to blank/empty for multiple data rows/items (at least 3).
-- **ac9_InvalidCoOMultiple_Fail**: Set country_of_origin field to different invalid values including special characters, alphanumeric, and numeric patterns for multiple data rows/items (3 rows/items): `"@GB"`, `"G1B"`, `"123"`, `"#FR"`, `"F2R"`, `"456"`, `"-DE"`, `"D3E"`, `"789"`.
-- **ac10_xCoO_Pass**: Set country_of_origin field to "X" for 2-3 data rows/items.
+- **BlanketNirms_MissingStatement_Fail**: Remove the blanket NIRMS statement from a sheet with data and no other NIRMS source; keep that sheet's name non-`NON-NIRMS`. Its items should fail for missing NIRMS.
+- **BlanketNirms_NonNirmsSheetFallback_Pass**: On a parser-recognized `NON-NIRMS` sheet, remove the blanket statement and verify that its items are classified as `NON-NIRMS` and pass NIRMS validation.
+- **BlanketNirms_StatementPrecedence_Pass**: On a parser-recognized `NON-NIRMS` sheet with the blanket NIRMS statement intact, verify that its items are classified as `NIRMS` rather than using the sheet-name fallback.
 
-### High-Risk/Ineligible Items Scenarios (Generate if `country_of_origin`, `commodity_code`, and `type_of_treatment` properties exist)
+### Country of Origin Scenarios (Generate with `country_of_origin` and `validateCountryOfOrigin: true`)
 
-- **ac11_HighRiskCoOTreatmentTypeSpecified_Fail**: Set country_of_origin to a high-risk value and type_of_treatment to a specified value that should fail validation for 2-3 data rows.
-- **ac12_HighRiskCoOTreatmentTypeSpecifiedMultiple_Fail**: Set multiple rows (3 rows) with high-risk country_of_origin and specified type_of_treatment values that should fail validation.
-- **ac13_HighRiskCoOTreatmentTypeNotSpecified_Fail**: Set country_of_origin to a high-risk value and leave type_of_treatment blank or not specified for 2-3 data rows.
-- **ac14_HighRiskCoOTreatmentTypeNotSpecified_COO_InvalidMultiple_Fail**: Set multiple rows (3 rows) with high-risk country_of_origin, missing type_of_treatment, and invalid country_of_origin values.
-- **ac15_HighRiskCoOTreatmentTypeNotSpecifiedMultiple_Fail**: Set multiple rows (3 rows) with high-risk country_of_origin and missing type_of_treatment.
+> **NIRMS prerequisite (ac6-ac9 and ac11-ac15)**: CoO and ineligible item checks only run for NIRMS-eligible rows. Use rows on a sheet where the blanket statement already makes them NIRMS-eligible; if there is a mapped row-level NIRMS column, set its values to the valid NIRMS value from the happy path file. Do not create a NIRMS field or mutate a `NON-NIRMS` sheet to simulate eligible rows. Skip these scenarios if no eligible rows can be used.
+
+Use the active ISO code dataset for valid control values (e.g. "GB", "FR", "DE"). "X" is invalid.
+
+- **ac6_NullCoO_Fail**: Clear `country_of_origin` on one NIRMS-eligible data row; CoO validation should fail.
+- **ac7_InvalidCoO_Fail**: Set `country_of_origin` to one invalid value (e.g. `"X"`, `"123"`, `"@GB"`, `"GBR"`) on one NIRMS-eligible data row; CoO validation should fail.
+- **ac8_NullCoOMultiple_Fail**: Clear `country_of_origin` on at least 3 NIRMS-eligible data rows; each should fail CoO validation.
+- **ac9_InvalidCoOMultiple_Fail**: Set `country_of_origin` to different invalid values (e.g. `"X"`, `"G1B"`, `"123"`) on 3 NIRMS-eligible data rows; each should fail CoO validation.
+
+### High-Risk/Ineligible Items Scenarios (Generate with `country_of_origin`, `commodity_code`, and a usable treatment source)
+
+Select a rule from `src/services/data/data-ineligible-items.json` (or the active MDM data). Use a valid ISO country, a commodity code matching the rule's prefix, and a treatment value that actually triggers the rule; `!treatment` entries are exceptions, not literal treatment values. For specified-treatment cases, use a mapped row field or a mutable blanket treatment statement. For missing-treatment cases, verify the parsed value is null after mutation; clearing a row field alone may leave a blanket fallback. Skip cases that cannot be represented in the source file.
+
+- **ac11_HighRiskCoOTreatmentTypeSpecified_Fail**: On one NIRMS-eligible row, set a matching country, commodity code, and specified treatment; ineligible-item validation should fail.
+- **ac12_HighRiskCoOTreatmentTypeSpecifiedMultiple_Fail**: Set matching country, commodity code, and specified treatment on 3 NIRMS-eligible rows; each should fail ineligible-item validation.
+- **ac13_HighRiskCoOTreatmentTypeNotSpecified_Fail**: On one NIRMS-eligible row, set a matching country and commodity code, and leave the parsed treatment null; use a rule that fails without treatment.
+- **ac14_HighRiskCoOTreatmentTypeNotSpecified_COO_InvalidMultiple_Fail**: On 3 separate NIRMS-eligible rows, create at least one ineligible item with missing parsed treatment and two invalid CoO values; verify both failure types. An invalid CoO on the same row prevents the ineligible-item check.
+- **ac15_HighRiskCoOTreatmentTypeNotSpecifiedMultiple_Fail**: On 3 NIRMS-eligible rows, set matching countries and commodity codes with null parsed treatment; each should fail ineligible-item validation.
 
 ### Baseline Scenario (Always generate)
 
-**You must generate and mutate all applicable scenarios based on the exporter configuration conditional logic above.**
-
-## Documentation: Country of Origin, NIRMS, and High-Risk/Ineligible Items Scenario Types
-
-- **ac1_NotNirms_Pass**: NIRMS column set to a valid non-NIRMS value (e.g. "NON-NIRMS" or "No"). Should pass validation.
-- **ac2_NullNirms_Fail**: NIRMS column set to blank/empty. Should fail validation.
-- **ac3_InvalidNirms_Fail**: NIRMS column set to invalid values (e.g. "INVALID", "123", "Maybe"). Should fail validation.
-- **ac4_NullNirmsMultiple_Fail**: NIRMS column set to blank/empty for multiple rows. Should fail validation for all.
-- **ac5_InvalidNirmsMultiple_Fail**: NIRMS column set to different invalid values for multiple rows (3 rows). Should fail validation for all.
-- **ac6_NullCoO_Fail**: country_of_origin blank/empty (NIRMS valid). Should fail validation.
-- **ac7_InvalidCoO_Fail**: country_of_origin set to invalid values e.g. "123", "GBR", "INVALID" (NIRMS valid). Should fail validation.
-- **ac8_NullCoOMultiple_Fail**: country_of_origin blank/empty for multiple rows (NIRMS valid). Should fail validation for all.
-- **ac9_InvalidCoOMultiple_Fail**: country_of_origin set to different invalid values for multiple rows (NIRMS valid). Should fail validation for all.
-- **ac10_xCoO_Pass**: country_of_origin set to "X" (NIRMS valid). Should pass validation.
-- **ac11_HighRiskCoOTreatmentTypeSpecified_Fail**: high-risk country_of_origin + specified type_of_treatment that triggers ineligible validation (NIRMS valid). Should fail validation.
-- **ac12_HighRiskCoOTreatmentTypeSpecifiedMultiple_Fail**: 3 rows with high-risk country_of_origin + specified type_of_treatment (NIRMS valid). Should fail validation.
-- **ac13_HighRiskCoOTreatmentTypeNotSpecified_Fail**: high-risk country_of_origin + blank type_of_treatment (NIRMS valid). Should fail validation.
-- **ac14_HighRiskCoOTreatmentTypeNotSpecified_COO_InvalidMultiple_Fail**: 3 rows with high-risk country_of_origin, missing type_of_treatment, and invalid country_of_origin values (NIRMS valid). Should fail validation for all.
-- **ac15_HighRiskCoOTreatmentTypeNotSpecifiedMultiple_Fail**: 3 rows with high-risk country_of_origin and missing type_of_treatment (NIRMS valid). Should fail validation for all.
-
-## NIRMS and Country of Origin Validation Patterns
-
-### NIRMS Validation (for exporters with `nirms` property)
-
-- **Valid NIRMS Values**: "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS", "NIRMS Eligible", "Non-NIRMS", "Cafe Exempt", etc.
-- **Invalid NIRMS Values**: "INVALID", "Maybe", "Unknown", "123", blank/empty values
-- **Test Patterns**:
-  - Blank/empty cells in NIRMS column should trigger validation failure
-  - Unrecognized text values should trigger validation failure
-
-### Country of Origin Validation (for exporters with `validateCountryOfOrigin: true`)
-
-- **Valid Country Codes**: 2-digit ISO codes ("GB", "FR", "DE", "IE", "NL", etc.) or "X"
-- **Invalid Country Codes**: 3+ digit codes ("GBR", "FRA"), numeric values ("123"), text ("INVALID"), blank/empty values
-- **Test Patterns**:
-  - Missing/blank country of origin should trigger validation failure
-  - Non-ISO format codes should trigger validation failure
-  - Valid 2-digit ISO codes should pass validation
-  - "X" value should pass validation (used for mixed/unknown origins)
-
-### Ineligible Items Validation (for exporters with country_of_origin, commodity_code, and type_of_treatment fields)
-
-- **Ineligible Combinations**: Items that match entries in services/data/data-Ineligible-items.json based on exact combination of country_of_origin + commodity_code + type_of_treatment
-- **Common Examples**:
-  - CN + 07061000 + Chilled (Chinese carrots, chilled)
-  - BR + 0207 + Fresh (Brazilian poultry, fresh)
-  - ZA + 08054000 + Raw (South African grapefruit, raw)
-  - IN + 100610 + Fresh (Indian rice, fresh)
-- **Test Patterns**:
-  - Select any entry from the Ineligible items JSON file
-  - Set the corresponding values in the data rows (not headers)
-  - Should trigger FAILUREREASON due to Ineligible item detection
-  - Use realistic descriptions for the Ineligible items (e.g., "Chinese Fresh Carrots", "Brazilian Raw Chicken", etc.)
-
-## Conditional Scenario Planning
-
-Based on the exporter configuration, determine which country-of-origin-related scenarios to generate:
-
-- **NIRMS Scenarios (ac1-ac5)**: Generate only if the exporter has a `nirms` property **AND** does **NOT** have a `blanketNirms` property. If `blanketNirms` exists, skip scenarios ac1-ac5.
-- **Country of Origin Success Scenarios**: If the exporter has a `country_of_origin` property, generate Country of Origin success scenarios (ac10).
-- **Country of Origin Validation Scenarios**: If the exporter has both `country_of_origin` and `validateCountryOfOrigin: true`, generate Country of Origin validation scenarios (ac6-ac9).
-- **Ineligible Items Scenarios**: If the exporter has `country_of_origin`, `commodity_code` (from regex), and `type_of_treatment` properties, generate Ineligible items scenarios (ac11-ac14).
-- **Baseline Scenario**: Always generate the Happypath scenario regardless of configuration.
-
-### Configuration Property Checks:
-
-1. Check for `blanketNirms` property first - if present, skip NIRMS scenarios (ac1-ac5)
-2. Check for `nirms` property - if present and no `blanketNirms`, generate NIRMS scenarios (ac1-ac5)
-3. Check for `country_of_origin` property - if present, generate country of origin scenarios (ac6-ac10)
-4. Check for `validateCountryOfOrigin: true` - if present with `country_of_origin`, generate validation scenarios (ac6-ac9)
-5. Check for all three properties (`country_of_origin`, `commodity_code`, `type_of_treatment`) - if all present, generate Ineligible items scenarios (ac11-ac15)
-
-## Apply Mutations
-
-Use the format-appropriate skill loaded from the shared guidelines to mutate scenario files:
-
-- Excel: `exceljs` cell mutations (load `excel-test-data-generation` skill)
-- CSV: PowerShell Import-Csv/Export-Csv or text mutation (load `csv-test-data-generation` skill)
-- PDF: supported coordinate/region mutations with a PDF tool (load `pdf-test-data-generation` skill)
-
-Typical mutation targets:
-
-- **NIRMS Validation**: For exporters with `nirms` property, test blank values and invalid patterns (should be recognizable values like "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS", etc.)
-- **Country of Origin Validation**: For exporters with `validateCountryOfOrigin: true`, test blank values and invalid formats (should be 2-digit ISO codes like "GB", "FR", "DE" or "X"). Set NIRMS to the valid NIRMS value on every mutated row — CoO validation is only reached for NIRMS-eligible rows.
-- **Ineligible Items**: For exporters with all required fields, select an Ineligible item from `services/data/data-Ineligible-items.json` and set the appropriate `country_of_origin`, `commodity_code`, and `type_of_treatment` values in the data rows. Set NIRMS to the valid NIRMS value on every mutated row — ineligible item checks are only reached for NIRMS-eligible rows.
+**Happypath**: Copy the input file unchanged with the input extension. Generate and mutate all other applicable scenarios above.
 
 ## Output
 
