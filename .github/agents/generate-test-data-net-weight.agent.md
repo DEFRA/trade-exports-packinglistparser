@@ -14,19 +14,11 @@ user-invocable: false
 >
 > Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations. Use `exporterProperty` to select the exporter configuration; check its header regexes and unit source against the manifest before choosing mutations.
 
-> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
->
-> - Numeric Field Corruption Guidelines (special chars, alphanumeric, negative, mixed patterns)
-> - Allowed KG unit forms
-> - Column Classification Rules
-> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
-> - Format-Specific Skills references
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying mutations. It is the source of truth for field classification, blanket-field handling, common mutation scope, file format, outcome verification, and integrity requirements.
 
-**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
+**Net-weight-specific outcomes**: `Pass` means the intended parser matches and all business validation passes. `Fail` means the intended parser matches but net-weight validation fails for the stated reason. `Unparse` means no parser matches; retain valid establishment data and all unrelated required fields so the named mutation alone causes the outcome.
 
-**Expected outcomes**: `Pass` means the intended parser matches and all business validation passes. `Fail` means that parser matches but net-weight validation fails for the stated reason. `Unparse` means no parser matches; retain valid establishment data and all unrelated required fields so the named mutation alone causes the outcome. Check the relevant result, not just the filename suffix.
-
-**Mutation scope**: Listed values are examples to choose from, not a requirement to use every value. Modify 2-3 data rows/items unless the scenario explicitly says `All`; header-only scenarios change only the named header and leave every data row/item untouched. Preserve all other content from the happy path sample. If the sample has fewer than two data items, report the limitation instead of editing unrelated content.
+**Net-weight-specific constraint**: Listed values are examples to choose from, not a requirement to use every value. If the sample has fewer than two data items, report the limitation instead of editing unrelated content. Follow the shared guidelines for mutation scope and preserving unrelated content.
 
 ## Scenarios
 
@@ -55,12 +47,6 @@ user-invocable: false
 - **With `header_net_weight_unit` property**: Up to 12 files (8 core + 4 UOM-specific).
 - **Without `header_net_weight_unit` property**: Up to 8 files (core scenarios only).
 - Report any case that cannot produce its stated outcome for the selected model rather than counting it as generated.
-
-## Mutation Checks
-
-- `Missing_Header` means clear the named label entirely; other header cases replace only the named label or unit token. Do not remove a column when only its header or selected data cells should change.
-- For every generated case except `Happypath`, confirm the copy differs from the original and only the specified header or data items changed. `Happypath` must be an exact copy.
-- Check the resulting parser match and validation outcome against the scenario suffix. Report cases that cannot satisfy it with the selected exporter; do not invent a success result from a filename alone.
 
 ## Output
 

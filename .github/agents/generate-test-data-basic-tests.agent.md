@@ -14,17 +14,9 @@ user-invocable: false
 >
 > Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
 
-> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
->
-> - Numeric Field Corruption Guidelines (special chars, alphanumeric, negative, mixed patterns)
-> - Allowed KG unit forms
-> - Column Classification Rules
-> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
-> - Format-Specific Skills references
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying mutations. It is the source of truth for field classification, blanket-field handling, common mutation scope, file format, outcome verification, and integrity requirements.
 
 Generate and seed a suite of test data and Excel/CSV/PDF files for core functionality and data validation scenarios. Each scenario must be based on the provided happy path sample file, with targeted mutations as described below. All files must be placed in `src/packing-lists/{exporter}/test-scenarios/basic-tests/`.
-
-**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`). If a scenario is listed with `.xlsx`, treat it as a base-name example and emit the scenario file using the actual input format extension.
 
 **IMPORTANT: Only generate scenarios if the required data/columns are present in the template.**
 
@@ -34,14 +26,6 @@ Generate and seed a suite of test data and Excel/CSV/PDF files for core function
 - If a mandatory field is missing from both the template and the configuration, skip all scenarios that require it.
 
 Document in the scenario folder's README which scenarios were skipped due to missing fields.
-
-## Blanket Fields
-
-Before generating any scenario, read the manifest and identify any fields classified under `blanket` (e.g. `blanketNatureOfProductsValue`, `blanketTreatmentTypeValue`, `blanketNirmsValue`). These are single header-area values that apply to the whole consignment — they are **not** per-row data columns and **not** column headers in the data table.
-
-- **Never target blanket cells** when clearing optional/other data, clearing mandatory data, or mutating header labels.
-- **Treat blanket fields as absent** for any scenario condition that checks "if field X is present" — a blanket field does not satisfy that condition.
-- **Preserve blanket rows** in `NoData_ExceptSingleRMS_Fail` — only clear the actual data rows.
 
 ## Scenarios (CONDITIONAL GENERATION)
 
@@ -73,11 +57,11 @@ Before generating any scenario, read the manifest and identify any fields classi
 - Missing_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the commodity code header.
 - Missing_MandatoryHeader_NoofPacakges_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the number of packages header.
 - Missing_MandatoryHeader_TotNetWeight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the total net weight header.
-- Incorrect_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Insert invalid data types in mandatory per-row fields across every data row, spanning multiple distinct establishment identifiers. Generate distinct identifiers that match the establishment-number pattern in the manifest. Use the **Numeric Field Corruption Guidelines** (see shared guidelines) with a mix of special characters, alphanumeric values, and negative numbers:
+- Incorrect_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Insert invalid data types in mandatory per-row fields across every data row, spanning multiple distinct establishment identifiers. Use the **Numeric Field Corruption Guidelines** (see shared guidelines) with a mix of special characters, alphanumeric values, and negative numbers:
   - **Row 1**: Special characters (`@123456`, `@5`, `@12.5`)
   - **Row 2**: Alphanumeric values (`ABC123`, `A5`, `A12.5`)
   - **Row 3**: Negative numbers (`-123456`, `-5`, `-12.5`)
-- Missing_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Clear mandatory per-row data across every data row, spanning multiple distinct establishment identifiers. Generate distinct identifiers that match the establishment-number pattern in the manifest.
+- Missing_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Clear mandatory per-row data across every data row, spanning multiple distinct establishment identifiers.
 - Missing_MandatoryData_CommodityCode_Fail.xlsx: Only generate if commodity_code field is present. Clear commodity-code data in exactly three data rows. If the template also contains both `nature_of_products` and `type_of_treatment` **as per-row columns** (not blanket fields), you MUST also clear one of those two fields in the same rows (alternate across rows to exercise both combinations). If either is a blanket field, omit that part of the mutation.
 - Missing_MandatoryData_CommodityCode_Nature_Fail.xlsx: Only generate if commodity_code and nature_of_products fields are present **as per-row columns** (not blanket fields). Clear both commodity code and nature of products data.
 - Missing_MandatoryData_Desc_Fail.xlsx: Only generate if description field is present. Clear description data in multiple rows.
@@ -88,26 +72,10 @@ Before generating any scenario, read the manifest and identify any fields classi
   - **Row 3**: Negative numbers (`-5`, `-10`, `-15`)
 - Missing_MandatoryData_Totnetweight_Fail.xlsx: Only generate if total_net_weight_kg field is present. Clear total net weight data in multiple rows.
 - AllMandatoryDataIsMissing_Fail.xlsx: Clear all mandatory per-row data across every data row while keeping headers and blanket values.
-- NoData_ExceptSingleRMS_Fail.xlsx: Remove all data rows while preserving the existing establishment/RMS identifier in its header area and preserving blanket rows.
+- NoData_ExceptSingleRMS_Fail.xlsx: Remove all data rows while preserving the existing establishment/RMS identifier in its header area.
 - InvalidCommodityCode_MultipleRows_Fail.xlsx: Only generate if commodity_code field is present. Insert invalid commodity code formats across multiple rows using the **Numeric Field Corruption Guidelines** (see shared guidelines):
   - **Row 1**: Special characters (`@123456`, `123!56`, `12#456`)
   - **Row 2**: Alphanumeric values (`ABC123`, `12DEF6`, `123A56`)
   - **Row 3**: Negative numbers (`-123456`, `-000123`, `-999999`)
 
 **You must generate and mutate all scenarios above, if the required fields are present.**
-
-## Mutation Scope Guidelines
-
-- **Missing vs Incorrect Header Scenarios**:
-  - **"Missing"**: **Remove/clear** headers completely (empty cells for CSV/Excel, blanked label region for PDF)
-  - **"Incorrect"**: Replace headers with non-empty text that does not match the field's configured regex. Never clear an incorrect header; reserve clearing for "Missing" scenarios.
-- **Header-only scenarios** (any scenario marked `[HEADER ONLY]` above): Modify header labels only — **do NOT modify any data rows**
-- **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
-- **"Multiple" scenarios**: Modify exactly **3 data rows/items** unless the scenario is also explicitly marked "All"; when both apply, "All" controls and every data row is modified.
-- **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail"). For numeric corruption scenarios affecting all rows, use the listed patterns for rows 1-3, then cycle through mixed invalid patterns from the shared guidelines for subsequent rows.
-- **Optional-data scenarios**: Apply the specified clearing or invalid-data mutation to all non-mandatory per-row columns (optional and other) across every data row, while preserving mandatory data and all headers. Never target blanket fields.
-- **Multiple-location scenarios**: Use at least two distinct establishment identifiers across the affected rows. Each identifier must match the establishment-number pattern in the manifest.
-- **NoData_ExceptSingleRMS_Fail**: Preserve the existing establishment/RMS identifier in its header area and any blanket rows; remove only data rows.
-- **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
-- **Do not modify all rows/items**: For scenarios not explicitly marked "All", change only the specified number of rows/items, not entire columns/regions.
-- **Baseline scenario**: `Happypath` should remain completely unmodified

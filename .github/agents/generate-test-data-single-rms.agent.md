@@ -14,15 +14,7 @@ user-invocable: false
 >
 > Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
 
-> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
->
-> - Numeric Field Corruption Guidelines
-> - Allowed KG unit forms
-> - Column Classification Rules
-> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
-> - Format-Specific Skills references
-
-**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying mutations. It is the source of truth for field classification, blanket-field handling, common mutation scope, file format, outcome verification, and integrity requirements.
 
 **Important**: These scenarios cover representative RMS outcomes: valid variations, a non-GB number, malformed formats, missing RMS, and multiple distinct GB RMS numbers. Use the full parser-discovery and validation flow to determine outcomes; direct parser invocation can produce a different result.
 
@@ -49,4 +41,3 @@ Generate each scenario above. Scenario suffixes describe the expected outcome wh
 - **Mixed valid/invalid-length or mixed-country scenarios**: Keep a valid GB RMS in all mapped locations, then change only the scenario's named location to the invalid-length or non-GB value.
 - **Multiple RMS scenario**: Use the minimum mapped locations needed to create exactly two distinct valid GB RMS values. Preserve other occurrences unless they would introduce another distinct value or invalidate the intended case.
 - **PDF-specific targeting**: Use a supported PDF mutation tool and mutate the RMS text in mapped coordinate regions. If RMS appears in multiple page locations, mutate only the scenario-required locations and leave other regions unchanged.
-- Preserve all non-RMS rows, cells, and regions from the template.

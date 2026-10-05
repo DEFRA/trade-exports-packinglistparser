@@ -14,15 +14,7 @@ user-invocable: false
 >
 > Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
 
-> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
->
-> - Numeric Field Corruption Guidelines (special chars, alphanumeric, negative, mixed patterns for commodity_code etc.)
-> - Allowed KG unit forms
-> - Column Classification Rules
-> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
-> - Format-Specific Skills references (Excel/CSV/PDF tools)
-
-**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying mutations. It is the source of truth for field classification, blanket-field handling, common mutation scope, file format, outcome verification, and integrity requirements.
 
 ## Scenarios
 
@@ -49,6 +41,11 @@ Use values recognized by the validator (e.g. "Yes", "No", "Green", "Red", "NIRMS
 - **BlanketNirms_MissingStatement_Fail**: Remove the blanket NIRMS statement from a sheet with data and no other NIRMS source; keep that sheet's name non-`NON-NIRMS`. Its items should fail for missing NIRMS.
 - **BlanketNirms_NonNirmsSheetFallback_Pass**: On a parser-recognized `NON-NIRMS` sheet, remove the blanket statement and verify that its items are classified as `NON-NIRMS` and pass NIRMS validation.
 - **BlanketNirms_StatementPrecedence_Pass**: On a parser-recognized `NON-NIRMS` sheet with the blanket NIRMS statement intact, verify that its items are classified as `NIRMS` rather than using the sheet-name fallback.
+
+### Blanket NIRMS and CoO Interaction
+
+- A blanket NIRMS statement on a `NON-NIRMS` sheet takes precedence over the sheet-name fallback and makes that sheet's rows NIRMS-eligible.
+- Before using a `NON-NIRMS` sheet in a `_Pass` precedence scenario, inspect every parsed CoO source on that sheet, including exempt-country fallback columns. Ensure all newly eligible rows have valid ISO origins and do not match an ineligible-item rule. If the source values cannot meet those conditions without unrelated mutations, skip the pass scenario and document why.
 
 ### Country of Origin Scenarios (Generate with `country_of_origin` and `validateCountryOfOrigin: true`)
 

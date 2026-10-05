@@ -157,23 +157,35 @@ These steps apply to all scenario-based test data generation:
    ```powershell
    New-Item -ItemType Directory -Path "src/packing-lists/{exporter}/test-scenarios/{scenario-folder}" -Force
    ```
-2. **Copy the happy path sample file** to each scenario filename. Do not create blank files from scratch. **Preserve the file extension (.csv, .xlsx/.xls, or .pdf)**. See the relevant skill for the exact copy command.
+2. **Copy the happy path sample file** to each scenario filename. Do not create blank files from scratch. Keep each scenario's prescribed base name and use the happy path file's extension (`.csv`, `.xlsx/.xls`, or `.pdf`). A filename example with `.xlsx` shows only the base name when the input uses another format. See the relevant skill for the exact copy command.
 
 3. **For each scenario,** apply the described mutations to the copied file using the format-appropriate method — see the relevant skill for commands and tooling. Never modify the original template file.
 4. **Unless otherwise stated,** modify only the relevant rows/fields as specified by the scenario.
 5. **Mutation Scope Rules**: Follow these guidelines for all scenarios:
+   - **Blanket fields**: Identify blanket fields from the manifest/configuration before mutating. They are consignment-level values, not per-row data or table headers. Do not treat a blanket field as proof that its corresponding per-row field is present. Preserve blanket values during row/header mutations and data-row removal unless the scenario explicitly targets that blanket statement.
    - **Missing vs Incorrect Scenarios**:
      - **"Missing"**: **Remove/clear** headers or data completely (empty cells)
      - **"Incorrect"**: **Modify** headers or data to wrong text that doesn't match expected patterns
    - **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
    - **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
    - **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail")
+   - **Multiple-location scenarios**: Use at least two distinct establishment identifiers across affected rows; each must match the configured establishment-number pattern.
    - **Header scenarios**: Modify header labels only, leave data rows/items unchanged
    - **Preserve remaining rows/items**: All other data should remain unchanged from the template
    - **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions
    - **Baseline scenario**: `Happypath` should remain completely unmodified
 6. **After mutation,** verify that the file is no longer identical to the template.
 7. **Track mutation progress** using PowerShell or CLI commands to ensure all files have been modified.
+
+## Scenario Outcome Verification
+
+Scenario suffixes are expected outcomes, not evidence that a generated file behaves as intended. Verify the result using parser discovery and the full validation flow when available:
+
+- **Pass**: The intended parser matches and complete packing-list validation succeeds.
+- **Fail**: The intended parser matches and the named validation fails on the targeted row or rows. For combined scenarios, verify each named failure independently. An unrelated failure elsewhere is not sufficient.
+- **Unparse**: Parser discovery does not match the intended parser. Keep unrelated identifying and required data valid so the named mutation explains the result.
+- Whenever a mutation changes a row's eligibility for downstream checks, rerun those checks for every newly eligible row. Do not infer success from the targeted field alone.
+- If executable validation is unavailable, trace the parser mappings and validator conditions for the affected rows, and document what could not be verified.
 
 ## Format-Specific Skills
 
@@ -182,6 +194,13 @@ Load the relevant skill based on the input file format before applying any mutat
 ### Excel Generation Skill
 
 Load the `excel-test-data-generation` skill for the full workflow, mutation patterns, merged-cell handling, and troubleshooting.
+
+#### XLSX Package Preservation
+
+- For `.xlsx` files, mutate a copy of the original workbook package and change only the targeted cells in the relevant worksheet XML. Preserve all other ZIP entries, including styles, images, relationships, shared strings, and workbook metadata.
+- Do not rewrite the entire workbook with SheetJS using `cellStyles: true`; it can expand each sheet's column definitions to all 16,384 Excel columns and substantially inflate the output. Disabling style handling is not an acceptable workaround unless formatting and embedded assets are independently verified as preserved.
+- Compare the generated file size with the source. Treat output over 110% of the source size as a failure to investigate, not an allowed budget. Inspect per-entry sizes and fix unnecessary expansion before accepting the file.
+- Confirm that every package entry outside the intended worksheet XML files is unchanged, and that only the scenario's targeted cells differ within those worksheets.
 
 ### PDF Generation Skill
 

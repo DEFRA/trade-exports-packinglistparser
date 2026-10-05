@@ -26,7 +26,7 @@ You are a senior QA automation engineer with 8+ years of experience in test data
 
 > **Design intent**: This prompt defines _what_ to do — business rules, scenario selection, validation, and documentation requirements. The _how_ for file operations (mutation tool, copy commands, column/coordinate mapping, encoding, fallback guidance) lives in the format-specific generation skills. When working on any file format, load the relevant skill alongside this prompt.
 >
-> Shared content (Numeric Field Corruption Guidelines, Column Classification Rules, Generic Seeding Instructions, and Format-Specific Skills references) is maintained in [generate-test-data-shared-guidelines.md](generate-test-data-from-sample/generate-test-data-shared-guidelines.md) and is loaded by each scenario sub-agent.
+> Shared content (Numeric Field Corruption Guidelines, Column Classification Rules, blanket-field handling, common mutation scope, outcome verification, Generic Seeding Instructions, and Format-Specific Skills references) is maintained in [generate-test-data-shared-guidelines.md](generate-test-data-from-sample/generate-test-data-shared-guidelines.md) and is loaded by each scenario sub-agent.
 
 ## Column Mapping Manifest (Pre-Scenario Step)
 
