@@ -25,10 +25,16 @@ user-invocable: false
 - Generate blanket NIRMS scenarios only when the exporter supports a blanket statement and the workbook can be mutated to exercise the stated source and fallback. A configured `blanketNirms` property alone does not imply a row-level field.
 - Generate CoO validation scenarios **ac6-ac9** only with `country_of_origin` and `validateCountryOfOrigin: true`; generate ineligible-item scenarios **ac11-ac15** only with `country_of_origin`, `commodity_code`, and a usable `type_of_treatment` source. Skip cases whose required cells, statements, or eligible rows cannot be reached, and record the reason in the scenario folder documentation.
 
+### NIRMS Validation Values
+
+- **NIRMS-eligible**: `Yes`, `NIRMS`, `Green`, `Y`, `G`, `Green Lane`, `Cafe Exempt`, `Cafe-Exempt`, and `Café-Exempt`. These make CoO and ineligible-item checks applicable.
+- **Non-NIRMS**: `No`, `Red`, `N`, `R`, `Red Lane`, `Non-NIRMS`, and `Non NIRMS`. These pass NIRMS validation without making the row eligible for CoO checks.
+- **Invalid**: unrecognized values such as `INVALID`, `Maybe`, `Unknown`, `123`, or `NIRMS Eligible`. A blank/empty value is **missing**, not a valid NIRMS value. Verify any other candidate against `isNirms`/`isNotNirms` in `src/services/validators/packing-list-validator-utilities.js` before using it.
+
 ### NIRMS Scenarios (Generate only for a mapped row-level `nirms` column without a blanket fallback)
 
 For missing-value scenarios, use a sheet without a `NON-NIRMS` name fallback; otherwise clearing a cell may still produce a valid NIRMS value.
-Use values recognized by the validator (e.g. "Yes", "No", "Green", "Red", "NIRMS", "NON-NIRMS"); do not assume other NIRMS-like text is valid.
+Use values recognized by the validator above; do not assume other NIRMS-like text is valid.
 
 - **ac1_NotNirms_Pass**: Set the NIRMS column to a valid non-NIRMS value (e.g. "NON-NIRMS" or "No") on one data row; NIRMS validation should pass.
 - **ac2_NullNirms_Fail**: Clear the NIRMS column on one data row; NIRMS validation should fail.
@@ -40,7 +46,7 @@ Use values recognized by the validator (e.g. "Yes", "No", "Green", "Red", "NIRMS
 
 - **BlanketNirms_MissingStatement_Fail**: Remove the blanket NIRMS statement from a sheet with data and no other NIRMS source; keep that sheet's name non-`NON-NIRMS`. Its items should fail for missing NIRMS.
 - **BlanketNirms_NonNirmsSheetFallback_Pass**: On a parser-recognized `NON-NIRMS` sheet, remove the blanket statement and verify that its items are classified as `NON-NIRMS` and pass NIRMS validation.
-- **BlanketNirms_StatementPrecedence_Pass**: On a parser-recognized `NON-NIRMS` sheet with the blanket NIRMS statement intact, verify that its items are classified as `NIRMS` rather than using the sheet-name fallback.
+- **BlanketNirms_StatementPrecedence_Pass**: On a parser-recognized `NON-NIRMS` sheet without the blanket statement in the source, add a parser-recognized NIRMS blanket statement and verify that its items become `NIRMS` rather than using the sheet-name fallback. Skip this scenario if the source already has the statement on that sheet or no distinct mutation can exercise precedence; document the reason instead of creating an unchanged copy.
 
 ### Blanket NIRMS and CoO Interaction
 

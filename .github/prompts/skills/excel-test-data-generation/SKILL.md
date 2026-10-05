@@ -1,6 +1,6 @@
 ---
 name: excel-test-data-generation
-description: Generate Excel test data with style-safe workbook mutations, merged-cell handling, and mapping verification for scenario-based test suites
+description: Generate Excel test data with best-effort formatting preservation, merged-cell handling, and mapping verification for scenario-based test suites
 ---
 
 # Excel Test Data Generation Skill
@@ -11,12 +11,12 @@ description: Generate Excel test data with style-safe workbook mutations, merged
 
 ## Core Principles
 
-- **Always binary-copy the template first** using `fs.copyFileSync` — this is the only way to guarantee all formatting, styles, images, and merged cells are fully preserved.
+- **Always binary-copy the template first** using `fs.copyFileSync` — the baseline copy preserves all workbook bytes; subsequent ExcelJS saves are best effort.
 - **Use `exceljs` for targeted mutations only** — open the copied file, apply only the required cell changes, then save back to the same path.
 - **Never use `xlsx` (SheetJS) to write scenario files** — it strips cell styles and reformats number cells, producing files that differ visually from the template even when data is unchanged.
-- **Never use `exceljs` to re-read and re-write unchanged files** — even a round-trip with no mutations will alter compression and may lose some style fidelity. Only process files that actually need mutations.
+- **Never use `exceljs` to re-read and re-write unchanged files** — even a round-trip with no mutations can rewrite styles, relationships, metadata, or embedded content. Only process files that actually need mutations; do not assume untouched ZIP entries remain identical.
 - Validate mapping from both headers and multiple data rows before bulk changes.
-- Preserve formatting, merged ranges, and non-target cells.
+- Check formatting, merged ranges, and non-target cell values after each mutation.
 - Apply one trial mutation before applying scenario-wide changes.
 
 ## Workflow
@@ -45,6 +45,7 @@ description: Generate Excel test data with style-safe workbook mutations, merged
 7. Re-read and verify the trial mutation landed in the intended column/cell(s).
 8. Apply remaining scenario mutations.
 9. Re-read and verify final values and merged-cell consistency.
+10. Compare unrelated cell values, styles, merged ranges, and any embedded images or other required features with the source. Report features that cannot be verified or are lost; do not claim full package preservation after an ExcelJS save.
 
 ## ExcelJS Pattern
 
@@ -57,7 +58,7 @@ description: Generate Excel test data with style-safe workbook mutations, merged
 import ExcelJS from 'exceljs'
 import { copyFileSync } from 'node:fs'
 
-// Step 1: binary-exact copy — preserves ALL formatting, styles, images, merges
+// Step 1: binary-exact copy before mutation
 copyFileSync(TEMPLATE, outPath)
 
 // Step 2: open the copy and apply only the required mutations
@@ -122,7 +123,7 @@ Visual column layout can differ from actual data columns when templates use merg
 - Header is in expected column(s).
 - Data values align with expected column(s).
 - Merged field values are consistent across all merged columns.
-- Non-target rows and columns remain unchanged.
+- Non-target row and column values remain unchanged.
 
 ### manifest.json column reference format
 
@@ -134,7 +135,7 @@ Document all field-to-column mappings in manifest.json using Excel column letter
 - Multiple scenarios: mutate exactly 3 rows/items.
 - All scenarios: mutate all applicable rows/items only when explicitly required.
 - Header-only scenarios: mutate header labels only.
-- Preserve all other rows/items and workbook structure.
+- Keep non-target row/item values and parser-relevant worksheet structure unchanged; report any lost workbook features.
 
 ## BOOKER2 Lessons (Excel)
 

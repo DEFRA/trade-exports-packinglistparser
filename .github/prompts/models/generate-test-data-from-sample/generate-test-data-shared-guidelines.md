@@ -195,12 +195,12 @@ Load the relevant skill based on the input file format before applying any mutat
 
 Load the `excel-test-data-generation` skill for the full workflow, mutation patterns, merged-cell handling, and troubleshooting.
 
-#### XLSX Package Preservation
+#### XLSX Best-Effort Preservation
 
-- For `.xlsx` files, mutate a copy of the original workbook package and change only the targeted cells in the relevant worksheet XML. Preserve all other ZIP entries, including styles, images, relationships, shared strings, and workbook metadata.
-- Do not rewrite the entire workbook with SheetJS using `cellStyles: true`; it can expand each sheet's column definitions to all 16,384 Excel columns and substantially inflate the output. Disabling style handling is not an acceptable workaround unless formatting and embedded assets are independently verified as preserved.
-- Compare the generated file size with the source. Treat output over 110% of the source size as a failure to investigate, not an allowed budget. Inspect per-entry sizes and fix unnecessary expansion before accepting the file.
-- Confirm that every package entry outside the intended worksheet XML files is unchanged, and that only the scenario's targeted cells differ within those worksheets.
+- Binary-copy the source before mutation; keep `Happypath` byte-for-byte identical. For other `.xlsx` scenarios, follow the Excel generation skill's targeted ExcelJS mutation workflow. An ExcelJS save can rewrite or remove ZIP entries even when cell values appear unchanged; do not promise package-entry identity.
+- Do not rewrite the workbook with SheetJS using `cellStyles: true`; it can expand each sheet's column definitions to all 16,384 Excel columns and substantially inflate the output. Disabling style handling is not an acceptable workaround unless formatting and embedded assets are independently verified as preserved.
+- Reopen each generated workbook and verify the intended changes, unrelated cell values, styles, merged ranges, and any embedded images or other required features against the source. If a feature cannot be verified or is lost, document the limitation; do not claim it was preserved.
+- Compare generated file size with the source. Investigate output over 110% of the source size, including per-entry sizes where useful, before accepting the file.
 
 ### PDF Generation Skill
 
