@@ -46,6 +46,7 @@ Generate each scenario above. Scenario suffixes describe the expected outcome wh
 - Modify only establishment-number locations needed for the scenario; leave unrelated data unchanged.
 - **One RMS value per sheet/document**: Modify the mapped RMS location once.
 - **RMS repeated per row/item**: For a scenario representing one RMS value, apply the same mutation to every mapped RMS occurrence, including any header/company occurrence identified in the manifest. Do not leave a mixture of original and mutated values.
+- **Mixed valid/invalid-length or mixed-country scenarios**: Keep a valid GB RMS in all mapped locations, then change only the scenario's named location to the invalid-length or non-GB value.
 - **Multiple RMS scenario**: Use the minimum mapped locations needed to create exactly two distinct valid GB RMS values. Preserve other occurrences unless they would introduce another distinct value or invalidate the intended case.
 - **PDF-specific targeting**: Use a supported PDF mutation tool and mutate the RMS text in mapped coordinate regions. If RMS appears in multiple page locations, mutate only the scenario-required locations and leave other regions unchanged.
 - Preserve all non-RMS rows, cells, and regions from the template.

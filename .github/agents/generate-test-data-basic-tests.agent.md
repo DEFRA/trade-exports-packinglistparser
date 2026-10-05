@@ -49,38 +49,36 @@ Before generating any scenario, read the manifest and identify any fields classi
 
 - Happypath.xlsx: Exact copy of the input file for baseline validation.
 - Missing_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** all optional column headers completely so they are blank cells.
-- Missing_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Clear all data in optional columns while preserving headers.
-- Incorrect_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Insert invalid/incorrect data in all optional columns. For numeric optional fields (if any), use the **Numeric Field Corruption Guidelines** (see shared guidelines) with special characters, alphanumeric values, and negative numbers. For text optional fields, use invalid formats or unexpected values.
+- Missing_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Clear data in all non-mandatory per-row columns (optional and other) across every data row while preserving headers.
+- Incorrect_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Insert invalid/incorrect data in all non-mandatory per-row columns (optional and other) across every data row. For numeric fields, use the **Numeric Field Corruption Guidelines** (see shared guidelines) with special characters, alphanumeric values, and negative numbers. For text fields, use invalid formats or unexpected values.
 - Incorrect_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **[HEADER ONLY — do not modify data rows.]** **Modify** optional column headers to incorrect text that doesn't match the original regex patterns (e.g., change "Country of Origin" to "Country Origin").
-- OnlyMandatoryDataIsFilled_Pass.xlsx: Only generate if optional columns are present. Clear all optional data while keeping mandatory data intact.
+- OnlyMandatoryDataIsFilled_Pass.xlsx: Only generate if optional columns are present. Clear all non-mandatory per-row data (optional and other) across every data row while keeping mandatory data intact.
 - DescriptionHasDoubleQuotesShould_Pass.xlsx: **Add actual double quotes** to description field data to test special character handling:
-  - **For Excel files**: Change "Product Name" to "\"Product Name\""
-  - **For CSV files**: Change "Product Name" to "\"\"Product Name\"\"" (properly escaped for CSV format)
+  - **For Excel and CSV files**: Set the logical description value to `"Product Name"` (the value includes literal double-quote characters; CSV serialization and escaping are handled by the CSV writer).
   - **For PDF files**: Overlay or replace the description text region with quoted text, preserving page layout
 - MandatoryHeaders_CaseInSensitive_Pass.xlsx: **[HEADER ONLY — do not modify data rows.]** Change the case of mandatory headers to test case/formatting variations.
 - Incorrect_Mandatatypes_Excl_netandNopkgs_ProductCode_Pass.xlsx: Insert non-standard data types in non-critical mandatory fields excluding net weight and number of packages. Use the **Numeric Field Corruption Guidelines** (see shared guidelines) — apply special characters, alphanumeric values, and negative numbers to fields like commodity_code, nature_of_products, type_of_treatment. Only target fields that appear as **per-row columns** in the manifest (skip any classified as `blanket`). Examples:
   - **Nature of products**: `@Frozen`, `A5Food`, `-Products`, `-B!Food`
   - **Type of treatment**: `@Chilled`, `F5resh`, `-Frozen`, `-C!old`
-- Incorrect_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the commodity_code column.
-- Incorrect_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** ALL mandatory header names.
-- Incorrect_MandatoryHeader_Desc_Unparse.xlsx: Only generate if description field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the description column.
-- Incorrect_MandatoryHeader_TotNetweight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the total_net_weight_kg column.
-- Incorrect_MandatoryHeader_NoofPakgs_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the number_of_packages column.
-- Incorrect_MandatoryHeader_TreatmentType_Unparse.xlsx: Only generate if type_of_treatment is present **as a per-row column header** (listed under `mandatory` in the manifest, not under `blanket`). **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the type_of_treatment column.
+- Incorrect_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** Replace the commodity-code header with non-empty text that does not match its configured regex.
+- Incorrect_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** Replace every mandatory per-row header with non-empty text that does not match that field's configured regex. Do not clear the headers.
+- Incorrect_MandatoryHeader_Desc_Unparse.xlsx: Only generate if description field is present. **[HEADER ONLY — do not modify data rows.]** Replace the description header with non-empty text that does not match its configured regex.
+- Incorrect_MandatoryHeader_TotNetweight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** Replace the total net weight header with non-empty text that does not match its configured regex.
+- Incorrect_MandatoryHeader_NoofPakgs_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** Replace the number-of-packages header with non-empty text that does not match its configured regex.
+- Incorrect_MandatoryHeader_TreatmentType_Unparse.xlsx: Only generate if type_of_treatment is present **as a per-row column header** (listed under `mandatory` in the manifest, not under `blanket`). **[HEADER ONLY — do not modify data rows.]** Replace the treatment-type header with non-empty text that does not match its configured regex.
 - Incorrect_MandatoryHeader_TotNetweightKGS_Fail.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Modify** the net weight header to use different unit terminology that does NOT match the allowed-kg regex (e.g., change "Total Net Weight (KG)" to "Total Net Weight (LBS)" or "Total Net Weight (LB)"). Do NOT use `KGS` or other allowed kg variants, as those will be treated as valid.
 - Empty_MultipleRowsColumns_Pass.xlsx: Include empty rows in the data section while maintaining valid structure.
-- Missing_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** ALL mandatory header names completely.
+- Missing_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** all mandatory per-row header names completely.
 - Missing_MandatoryHeader_Description_unparse.xlsx: Only generate if description field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the description header.
 - Missing_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the commodity code header.
 - Missing_MandatoryHeader_NoofPacakges_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the number of packages header.
 - Missing_MandatoryHeader_TotNetWeight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the total net weight header.
-- Incorrect_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Insert invalid data types in mandatory fields across multiple rows and locations. Use the **Numeric Field Corruption Guidelines** (see shared guidelines) with a mix of special characters, alphanumeric values, and negative numbers:
+- Incorrect_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Insert invalid data types in mandatory per-row fields across every data row, spanning multiple distinct establishment identifiers. Generate distinct identifiers that match the establishment-number pattern in the manifest. Use the **Numeric Field Corruption Guidelines** (see shared guidelines) with a mix of special characters, alphanumeric values, and negative numbers:
   - **Row 1**: Special characters (`@123456`, `@5`, `@12.5`)
   - **Row 2**: Alphanumeric values (`ABC123`, `A5`, `A12.5`)
   - **Row 3**: Negative numbers (`-123456`, `-5`, `-12.5`)
-  - **Additional rows**: Mixed patterns (`-A123!`, `-A5!`, `-A12.5!`)
-- Missing_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Clear mandatory data across multiple rows and locations.
-- Missing_MandatoryData_CommodityCode_Fail.xlsx: Only generate if commodity_code field is present. Clear commodity code data in multiple rows. If the template also contains both `nature_of_products` and `type_of_treatment` **as per-row columns** (not blanket fields), you MUST also clear one of those two fields in the same rows (alternate across rows to exercise both combinations). If either is a blanket field, omit that part of the mutation.
+- Missing_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Clear mandatory per-row data across every data row, spanning multiple distinct establishment identifiers. Generate distinct identifiers that match the establishment-number pattern in the manifest.
+- Missing_MandatoryData_CommodityCode_Fail.xlsx: Only generate if commodity_code field is present. Clear commodity-code data in exactly three data rows. If the template also contains both `nature_of_products` and `type_of_treatment` **as per-row columns** (not blanket fields), you MUST also clear one of those two fields in the same rows (alternate across rows to exercise both combinations). If either is a blanket field, omit that part of the mutation.
 - Missing_MandatoryData_CommodityCode_Nature_Fail.xlsx: Only generate if commodity_code and nature_of_products fields are present **as per-row columns** (not blanket fields). Clear both commodity code and nature of products data.
 - Missing_MandatoryData_Desc_Fail.xlsx: Only generate if description field is present. Clear description data in multiple rows.
 - Missing_MandatoryData_Noofpkgs_Fail.xlsx: Only generate if number_of_packages field is present. Clear number of packages data in multiple rows.
@@ -88,15 +86,13 @@ Before generating any scenario, read the manifest and identify any fields classi
   - **Row 1**: Special characters (`@5`, `5!`, `#10`)
   - **Row 2**: Alphanumeric values (`A5`, `5B`, `C10`)
   - **Row 3**: Negative numbers (`-5`, `-10`, `-15`)
-  - **Additional rows**: Mixed patterns (`-A5!`, `@-10`, `#-C15`)
 - Missing_MandatoryData_Totnetweight_Fail.xlsx: Only generate if total_net_weight_kg field is present. Clear total net weight data in multiple rows.
-- AllMandatoryDataIsMissing_Fail.xlsx: Clear ALL mandatory data while keeping headers.
-- NoData_ExceptSingleRMS_Fail.xlsx: Remove all data rows except establishment number information.
+- AllMandatoryDataIsMissing_Fail.xlsx: Clear all mandatory per-row data across every data row while keeping headers and blanket values.
+- NoData_ExceptSingleRMS_Fail.xlsx: Remove all data rows while preserving the existing establishment/RMS identifier in its header area and preserving blanket rows.
 - InvalidCommodityCode_MultipleRows_Fail.xlsx: Only generate if commodity_code field is present. Insert invalid commodity code formats across multiple rows using the **Numeric Field Corruption Guidelines** (see shared guidelines):
   - **Row 1**: Special characters (`@123456`, `123!56`, `12#456`)
   - **Row 2**: Alphanumeric values (`ABC123`, `12DEF6`, `123A56`)
   - **Row 3**: Negative numbers (`-123456`, `-000123`, `-999999`)
-  - **Additional rows**: Mixed patterns (`-A123!`, `@BC456`, `-12#D56`)
 
 **You must generate and mutate all scenarios above, if the required fields are present.**
 
@@ -104,11 +100,14 @@ Before generating any scenario, read the manifest and identify any fields classi
 
 - **Missing vs Incorrect Header Scenarios**:
   - **"Missing"**: **Remove/clear** headers completely (empty cells for CSV/Excel, blanked label region for PDF)
-  - **"Incorrect"**: **Modify** headers to wrong text that doesn't match regex patterns
+  - **"Incorrect"**: Replace headers with non-empty text that does not match the field's configured regex. Never clear an incorrect header; reserve clearing for "Missing" scenarios.
 - **Header-only scenarios** (any scenario marked `[HEADER ONLY]` above): Modify header labels only — **do NOT modify any data rows**
 - **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
-- **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
-- **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail")
+- **"Multiple" scenarios**: Modify exactly **3 data rows/items** unless the scenario is also explicitly marked "All"; when both apply, "All" controls and every data row is modified.
+- **"All" scenarios**: Modify **all data rows/items** when explicitly stated (e.g., "All_Fail"). For numeric corruption scenarios affecting all rows, use the listed patterns for rows 1-3, then cycle through mixed invalid patterns from the shared guidelines for subsequent rows.
+- **Optional-data scenarios**: Apply the specified clearing or invalid-data mutation to all non-mandatory per-row columns (optional and other) across every data row, while preserving mandatory data and all headers. Never target blanket fields.
+- **Multiple-location scenarios**: Use at least two distinct establishment identifiers across the affected rows. Each identifier must match the establishment-number pattern in the manifest.
+- **NoData_ExceptSingleRMS_Fail**: Preserve the existing establishment/RMS identifier in its header area and any blanket rows; remove only data rows.
 - **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
-- **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions
+- **Do not modify all rows/items**: For scenarios not explicitly marked "All", change only the specified number of rows/items, not entire columns/regions.
 - **Baseline scenario**: `Happypath` should remain completely unmodified
