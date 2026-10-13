@@ -936,7 +936,7 @@ open coverage/lcov-report/index.html
 
 - [Main README](../README.md) - Setup and getting started
 - [Integration Guide](./INTEGRATION-GUIDE.md) - Service integration patterns
-- [Packing List Processing](./PACKING-LIST-PROCESSING.md) - Processing workflow
+- [Packing List Process Documentation](./packing-list-process/README.md) - Processing workflow, validation rules, and parser discovery
 - [MDM S3 Sync Implementation](./MDM-S3-SYNC-IMPLEMENTATION.md) - MDM sync details
 - [Secrets Setup](../SECRETS-SETUP.md) - Environment configuration
 - [Dynamics Service](./DYNAMICS-SERVICE.md) - Dynamics 365 integration

@@ -407,8 +407,7 @@ See the [Developer Guide](DEVELOPER-GUIDE.md#error-handling-and-logging) for ful
 
 ## Documentation References
 
-- [Packing List Processing Implementation](PACKING-LIST-PROCESSING.md)
+- [Packing List Process Documentation](packing-list-process/README.md)
 - [Parsers README](../src/services/parsers/README.md)
 - [Matchers README](../src/services/matchers/README.md)
 - [Model Headers README](../src/services/model-headers/README.md)
-- [Original Flow Documentation](flow/original-adp-packing-list-processing-flow.md)
