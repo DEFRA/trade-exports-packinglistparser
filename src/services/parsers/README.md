@@ -280,6 +280,6 @@ These tests verify the full parser discovery flow including:
 
 ## See Also
 
-- [Original ADP Packing List Processing Flow](../../../docs/flow/original-adp-packing-list-processing-flow.md)
-- [Parser Discovery Extraction Detailed](../../../docs/flow/parser-discovery-extraction-detailed.md)
-- [Generic Parser Discovery and Extraction Flow](../../../docs/flow/parser-discovery-extraction-generic.md)
+- [Packing List Process Documentation](../../../docs/packing-list-process/README.md)
+- [Parser Discovery Extraction Detailed](../../../docs/packing-list-process/parser-discovery-extraction-detailed.md)
+- [Generic Parser Discovery and Extraction Flow](../../../docs/packing-list-process/parser-discovery-extraction-generic.md)
