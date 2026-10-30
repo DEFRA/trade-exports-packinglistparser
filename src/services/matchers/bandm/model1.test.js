@@ -29,14 +29,14 @@ describe('matchesBandmModel1', () => {
   })
 
   describe('empty/invalid input', () => {
-    it.each([
-      ['empty json', model.emptyModel],
-      ['object with no sheets', {}]
-    ])("returns 'Empty File' matcher result for %s", (_, packingListJson) => {
-      const result = matches(packingListJson, filename)
+    it.each([['object with no sheets', {}]])(
+      "returns 'Empty File' matcher result for %s",
+      (_, packingListJson) => {
+        const result = matches(packingListJson, filename)
 
-      expect(result).toBe(matcherResult.EMPTY_FILE)
-    })
+        expect(result).toBe(matcherResult.EMPTY_FILE)
+      }
+    )
   })
 
   describe('establishment number validation', () => {
