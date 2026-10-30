@@ -79,7 +79,8 @@ function matchesTotalsPattern(row, headerCols, pattern) {
   if (
     pattern.descriptionEmpty &&
     pattern.commodityCodeEmpty &&
-    hasNonEmptyField(row, headerCols.country_of_origin)
+    (hasNonEmptyField(row, headerCols.country_of_origin) ||
+      hasNonEmptyField(row, headerCols.exempt_country_of_origin))
   ) {
     return false
   }

@@ -144,7 +144,8 @@ function cleanupWhitespace(items) {
       'description',
       'commodity_code',
       'nature_of_products',
-      'country_of_origin'
+      'country_of_origin',
+      'exempt_country_of_origin'
     ]
     stringFields.forEach((field) => {
       if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {

@@ -10,6 +10,10 @@ Matchers determine which parser should be used for a given packing list by:
 2. Validating header row patterns
 3. Matching against known retailer formats
 
+## Multi-Sheet Excel Packing Lists
+
+Excel packing lists are expected to have the RMS (establishment) number on **each sheet**. Matchers check every sheet, and a sheet without a valid RMS number causes `WRONG_ESTABLISHMENT_NUMBER` to be returned for the whole file. Some matchers skip empty sheets that appear before the first populated sheet.
+
 ## Structure
 
 ```
