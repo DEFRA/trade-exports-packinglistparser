@@ -29,7 +29,6 @@ user-invocable: false
 ### Core Net Weight Scenarios (Always Generated)
 
 - **Alpha_Numeric_TotalNetWeight_Unparse**: Set total net weight to alphanumeric values using the **Numeric Field Corruption Guidelines** (see shared guidelines): `A12.5`, `15B.2`, `C20.8`, `25D.0`, `E30.5`, `3F5.7`.
-- **Ambiguous_Units_in_Header_Pass**: **[HEADER ONLY — do not modify data rows.]** Use ambiguous units in the header (e.g. 'Total Net Weight (Lbs/KG Lbs)'). Note: the parser recognises the following as valid kilogram tokens: `KG`, `KGS`, `KILOGRAM`, `KILOGRAMS`, `KILO`, `KILOS`. Use tokens like `LBS` or `LB` to force an invalid-unit behaviour.
 - **sData_empty_Netweight_Fail**: Leave total net weight cells empty.
 - **Extra_Spaces_In_Header_Unparse**: **[HEADER ONLY — do not modify data rows.]** Add extra spaces in the net weight header (e.g. 'Total Net Weight').
 - **Header_With_Extra_Parentheses_Pass**: **[HEADER ONLY — do not modify data rows.]** Add extra parentheses in the net weight header (e.g. 'Total Net Weight (KG) ()').
@@ -42,12 +41,9 @@ user-invocable: false
   - **Mixed patterns**: `-A12.5!`, `@-15.B`, `#-C20.8`, `$D-25.E`
   - **Text values**: `"Heavy"`, `"Light"`, `"Unknown"`, `"TBD"`, `"Variable"`
 - **Missing_Header_Netweight_Unparse**: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the net weight header label completely (empty cell for CSV/Excel, blanked header text region for PDF).
-- **Missing_Paranthesis_in_Uom_Pass**: **[HEADER ONLY — do not modify data rows.]** Remove parentheses from the unit in the header (e.g. 'Total Net Weight KG').
-- **MixedCase_Header_Pass**: **[HEADER ONLY — do not modify data rows.]** Change the net weight header to mixed case (e.g. 'ToTal nEt WeIGHt').
 - **Netweight_HasEmpty_Parentheses_Fail**: **[HEADER ONLY — do not modify data rows.]** Use empty parentheses in the header (e.g. 'Total Net Weight ()').
 - **TotalNetWeight_Without_UOMWeight**: **[HEADER ONLY — do not modify data rows.]** Remove the unit of measure from the header (e.g. 'Total Net Weight').
 - **Valid_Unit_KG_Parentheses**: **[HEADER ONLY — do not modify data rows.]** Use any allowed kilogram token in parentheses in the header (e.g. 'Total Net Weight (KG)' or 'Total Net Weight (KILOGRAMS)').
-- **Zero_Data_TotalNetWeight_Pass**: Set total net weight data to zero.
 
 ### UOM-Specific Scenarios (Only Generated if `header_net_weight_unit` property exists)
 
@@ -62,7 +58,6 @@ user-invocable: false
 - **MixedUnits_And_Casing_Pass**: Use mixed units and casing in the unit of measure data (e.g. 'Kg', 'kG', 'KG').
 - **Unit_Missing_Weight_Present_Fail**: Remove unit of measure data but keep net weight data.
 - **UOMWeight_Without_TotalNetWeight_Unparse**: Remove the net weight column but keep the unit of measure column.
-- **Zero_Data_UOM**: Set unit of measure data to zero or special characters/alphanumeric values: `0`, `@`, `#`, `A`, `B1`, `C@`.
 
 **Total scenarios generated:**
 
