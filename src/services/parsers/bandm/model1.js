@@ -12,6 +12,7 @@ import { rowFinder } from '../../../utilities/row-finder.js'
 import { mapParser } from '../../parser-map.js'
 
 const logger = createLogger()
+const NON_NIRMS_SHEET_NAME = 'NON-NIRMS'
 
 /**
  * Creates a callback function to find header rows by testing against header patterns.
@@ -143,7 +144,8 @@ function cleanupWhitespace(items) {
       'description',
       'commodity_code',
       'nature_of_products',
-      'country_of_origin'
+      'country_of_origin',
+      'exempt_country_of_origin'
     ]
     stringFields.forEach((field) => {
       if (typeof cleaned[field] === 'string' && cleaned[field].trim() === '') {
@@ -153,6 +155,24 @@ function cleanupWhitespace(items) {
 
     return cleaned
   })
+}
+
+/**
+ * Flags items from the NON-NIRMS sheet, defaulting nirms where not already set.
+ * @param {Array} items - Array of parsed items.
+ * @param {string} sheetName - The name of the sheet.
+ * @returns {Array} Items with nirms applied for the NON-NIRMS sheet.
+ */
+function applyNonNirmsFlag(items, sheetName) {
+  if (sheetName.trim().toUpperCase() !== NON_NIRMS_SHEET_NAME) {
+    return items
+  }
+
+  // Literal, not NON_NIRMS_SHEET_NAME, as that may later match a list of sheet names
+  return items.map((item) => ({
+    ...item,
+    nirms: item.nirms ?? 'NON-NIRMS'
+  }))
 }
 
 /**
@@ -174,10 +194,9 @@ function processSheet(sheetData, sheetName, headerCallback) {
     sheetName
   )
 
-  // Filter FIRST (while we still have original string values for totals detection)
-  const filteredItems = filterDataRows(parsedItems)
-
-  // THEN clean whitespace (after filtering based on keywords)
+  // Filter FIRST (while we still have original string values for totals detection), then clean whitespace
+  const itemsWithNonNirmsFlag = applyNonNirmsFlag(parsedItems, sheetName)
+  const filteredItems = filterDataRows(itemsWithNonNirmsFlag)
   return cleanupWhitespace(filteredItems)
 }
 

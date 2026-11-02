@@ -12,18 +12,15 @@ const filename = 'packinglist-giovanni-model1.xlsx'
 
 describe('Giovanni Model 1 Matcher', () => {
   describe('Valid packing lists', () => {
-    test('matches valid Giovanni Model 1 file', () => {
-      const result = matches(model.validModel, filename)
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    test('matches valid Giovanni Model 1 with multiple sheets', () => {
-      const result = matches(model.validModelMultipleSheets, filename)
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    test('matches valid headers with no data', () => {
-      const result = matches(model.validHeadersNoData, filename)
+    test.each([
+      ['valid Giovanni Model 1 file', model.validModel],
+      [
+        'valid Giovanni Model 1 with multiple sheets',
+        model.validModelMultipleSheets
+      ],
+      ['valid headers with no data', model.validHeadersNoData]
+    ])('matches %s', (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
       expect(result).toBe(matcherResult.CORRECT)
     })
   })
@@ -77,52 +74,55 @@ describe('Giovanni Model 1 Matcher', () => {
   })
 
   describe('Establishment number pattern validation', () => {
-    test('accepts establishment number without suffix', () => {
-      const testData = {
-        RANA: [
-          { A: 'RMS-GB-000153' },
-          {
-            C: 'DESCRIPTION',
-            E: 'Commodity Code',
-            G: 'Quantity',
-            H: 'Net Weight (KG)'
-          }
-        ]
-      }
+    test.each([
+      [
+        'accepts establishment number without suffix',
+        {
+          RANA: [
+            { A: 'RMS-GB-000153' },
+            {
+              C: 'DESCRIPTION',
+              E: 'Commodity Code',
+              G: 'Quantity',
+              H: 'Net Weight (KG)'
+            }
+          ]
+        },
+        matcherResult.CORRECT
+      ],
+      [
+        'accepts establishment number with suffix',
+        {
+          RANA: [
+            { A: 'RMS-GB-000153-001' },
+            {
+              C: 'DESCRIPTION',
+              E: 'Commodity Code',
+              G: 'Quantity',
+              H: 'Net Weight (KG)'
+            }
+          ]
+        },
+        matcherResult.CORRECT
+      ],
+      [
+        'rejects establishment number with wrong prefix',
+        {
+          RANA: [
+            { A: 'RMS-GB-999999' },
+            {
+              C: 'DESCRIPTION',
+              E: 'Commodity Code',
+              G: 'Quantity',
+              H: 'Net Weight (KG)'
+            }
+          ]
+        },
+        matcherResult.WRONG_ESTABLISHMENT_NUMBER
+      ]
+    ])('%s', (_, testData, expected) => {
       const result = matches(testData, filename)
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    test('accepts establishment number with suffix', () => {
-      const testData = {
-        RANA: [
-          { A: 'RMS-GB-000153-001' },
-          {
-            C: 'DESCRIPTION',
-            E: 'Commodity Code',
-            G: 'Quantity',
-            H: 'Net Weight (KG)'
-          }
-        ]
-      }
-      const result = matches(testData, filename)
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    test('rejects establishment number with wrong prefix', () => {
-      const testData = {
-        RANA: [
-          { A: 'RMS-GB-999999' },
-          {
-            C: 'DESCRIPTION',
-            E: 'Commodity Code',
-            G: 'Quantity',
-            H: 'Net Weight (KG)'
-          }
-        ]
-      }
-      const result = matches(testData, filename)
-      expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
+      expect(result).toBe(expected)
     })
   })
 
@@ -132,62 +132,60 @@ describe('Giovanni Model 1 Matcher', () => {
       expect(result).toBe(matcherResult.CORRECT)
     })
 
-    test('rejects when description header is missing', () => {
-      const testData = {
-        RANA: [
-          { A: 'RMS-GB-000153' },
-          {
-            E: 'Commodity Code',
-            G: 'Quantity',
-            H: 'Net Weight (KG)'
-          }
-        ]
-      }
-      const result = matches(testData, filename)
-      expect(result).toBe(matcherResult.WRONG_HEADER)
-    })
-
-    test('rejects when commodity code header is missing', () => {
-      const testData = {
-        RANA: [
-          { A: 'RMS-GB-000153' },
-          {
-            C: 'DESCRIPTION',
-            G: 'Quantity',
-            H: 'Net Weight (KG)'
-          }
-        ]
-      }
-      const result = matches(testData, filename)
-      expect(result).toBe(matcherResult.WRONG_HEADER)
-    })
-
-    test('rejects when quantity header is missing', () => {
-      const testData = {
-        RANA: [
-          { A: 'RMS-GB-000153' },
-          {
-            C: 'DESCRIPTION',
-            E: 'Commodity Code',
-            H: 'Net Weight (KG)'
-          }
-        ]
-      }
-      const result = matches(testData, filename)
-      expect(result).toBe(matcherResult.WRONG_HEADER)
-    })
-
-    test('rejects when net weight header is missing', () => {
-      const testData = {
-        RANA: [
-          { A: 'RMS-GB-000153' },
-          {
-            C: 'DESCRIPTION',
-            E: 'Commodity Code',
-            G: 'Quantity'
-          }
-        ]
-      }
+    test.each([
+      [
+        'description header is missing',
+        {
+          RANA: [
+            { A: 'RMS-GB-000153' },
+            {
+              E: 'Commodity Code',
+              G: 'Quantity',
+              H: 'Net Weight (KG)'
+            }
+          ]
+        }
+      ],
+      [
+        'commodity code header is missing',
+        {
+          RANA: [
+            { A: 'RMS-GB-000153' },
+            {
+              C: 'DESCRIPTION',
+              G: 'Quantity',
+              H: 'Net Weight (KG)'
+            }
+          ]
+        }
+      ],
+      [
+        'quantity header is missing',
+        {
+          RANA: [
+            { A: 'RMS-GB-000153' },
+            {
+              C: 'DESCRIPTION',
+              E: 'Commodity Code',
+              H: 'Net Weight (KG)'
+            }
+          ]
+        }
+      ],
+      [
+        'net weight header is missing',
+        {
+          RANA: [
+            { A: 'RMS-GB-000153' },
+            {
+              C: 'DESCRIPTION',
+              E: 'Commodity Code',
+              G: 'Quantity'
+            }
+          ]
+        }
+      ]
+    ])('rejects when %s', (_, testData) => {
       const result = matches(testData, filename)
       expect(result).toBe(matcherResult.WRONG_HEADER)
     })

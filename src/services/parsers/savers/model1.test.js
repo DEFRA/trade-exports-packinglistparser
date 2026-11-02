@@ -117,7 +117,7 @@ describe('parseSaversModel1', () => {
           item.number_of_packages === 0 &&
           item.total_net_weight_kg === 0
       )
-      expect(emptyRows.length).toBe(0)
+      expect(emptyRows).toHaveLength(0)
     })
   })
 

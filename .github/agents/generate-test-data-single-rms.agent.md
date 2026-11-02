@@ -1,0 +1,50 @@
+---
+description: 'Generate test-data scenarios for establishment number validation in the single-rms folder. Use when orchestrating parallel packing list test data generation.'
+tools: ['search/codebase', 'edit/editFiles', 'read/problems']
+user-invocable: false
+---
+
+# Single RMS Test Scenarios
+
+> **Context received from orchestrator:**
+>
+> - `manifestPath`: Path to the confirmed `manifest.json` (e.g., `src/packing-lists/{exporter}/test-scenarios/manifest.json`)
+> - `happyPathFile`: Path to the happy path sample file
+> - `exporterProperty`: The exporter property name (e.g., 'BOOKER2', 'ASDA1')
+>
+> Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
+
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
+>
+> - Numeric Field Corruption Guidelines
+> - Allowed KG unit forms
+> - Column Classification Rules
+> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
+> - Format-Specific Skills references
+
+**File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
+
+**Important**: When corrupting RMS establishment numbers in these scenarios, use specific patterns to test validation. The scenarios below include examples with special characters, alphanumeric values, and invalid numeric patterns.
+
+## Scenarios
+
+- **RMSHasWrongFinal3DigitsShould_Pass**: Change the last 3 digits of the RMS number (e.g. RMS-GB-000015-666)
+- **MixedCaseEstablishmentNumberFormat_Pass**: Use mixed case (e.g. Rms-Gb-000015-010)
+- **RMSHasWrongMiddle6DigitsShouldBe_Unparse**: Change the middle 6 digits (e.g. RMS-GB-234515-010)
+- **RMSHasWrongRegexWithAdditionalHyphenShouldBe_Fail**: Double the hyphens (e.g. RMS--GB--000015--010)
+- **InvalidEstablishmentFormats_Fail**: Remove all hyphens (e.g. RMSGB000015010)
+- **Malformed_RMS_Number_Fail**: Add -extra to the end (e.g. RMS-GB-000015-010-extra)
+- **RMSWithExtraDashBeforeEstablishmentNumberShould_Fail**: Add an extra dash at the start (e.g. -RMS-GB-000015-010)
+- **Empty_RMS_Fail**: Remove the RMS number entirely (all data rows blank)
+  **You must generate and mutate all scenarios above.**
+
+## Mutation Scope Guidelines
+
+- **Standard scenarios**: Modify exactly **2-3 data rows/items** unless scenario specifies otherwise
+- **Establishment number patterns**:
+  - **Single per sheet/document**: Modify the single establishment number location (e.g., header/company area in Excel/CSV or document header text region in PDF)
+  - **Per row/item**: Modify **ALL data rows** with establishment number fields — the single-RMS constraint requires a consistent value across every row, so partial mutation would leave the file in a mixed state that doesn't represent any real scenario.
+- **PDF-specific targeting**: Use a supported PDF mutation tool and mutate the RMS text in mapped coordinate regions. If RMS appears in multiple page locations, mutate only the scenario-required locations and leave other regions unchanged.
+- **"Multiple" scenarios**: Modify exactly **3 data rows/items** (minimum for "multiple")
+- **Preserve remaining rows/items**: All other data rows/items should remain unchanged from the template
+- **Do not modify all rows/items**: Only change the specified number of rows/items per scenario, not entire columns/regions

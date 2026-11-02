@@ -8,7 +8,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -69,7 +69,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -130,7 +130,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -157,7 +157,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -204,7 +204,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -253,7 +253,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -411,7 +411,7 @@ export default {
         I: null
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -439,7 +439,7 @@ export default {
         J: 'RMS-GB-000005-002'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -478,7 +478,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -557,7 +557,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -597,7 +597,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -637,7 +637,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -725,7 +725,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -813,7 +813,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -865,7 +865,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -905,7 +905,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {},
@@ -993,7 +993,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods'
+        J: 'This sheet contains only NIRMS eligible goods'
       },
       {},
       {
@@ -1032,7 +1032,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods'
+        J: 'This sheet contains only NIRMS eligible goods'
       },
       {},
       {
@@ -1119,7 +1119,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods'
+        J: 'This sheet contains only NIRMS eligible goods'
       },
       {
         A: 'PRODUCT CODE (SHORT)',
@@ -1154,7 +1154,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {
@@ -1191,7 +1191,7 @@ export default {
         I: 'RMS-GB-000005-001'
       },
       {
-        J: 'This consignment contains only NIRMS eligible goods',
+        J: 'This sheet contains only NIRMS eligible goods',
         K: 'Treatment type: all products are processed'
       },
       {

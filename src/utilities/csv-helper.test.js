@@ -14,67 +14,46 @@ vi.mock('./csv-utility.js', () => ({
 }))
 
 describe('isCsv', () => {
-  it('should return true for .csv files', () => {
-    expect(isCsv('test.csv')).toBe(true)
-  })
-
-  it('should return true for .csv files with uppercase extension', () => {
-    expect(isCsv('test.CSV')).toBe(true)
-  })
-
-  it('should return true for .csv files with mixed case extension', () => {
-    expect(isCsv('test.CsV')).toBe(true)
-  })
-
-  it('should return false for .xlsx files', () => {
-    expect(isCsv('test.xlsx')).toBe(false)
-  })
-
-  it('should return false for .xls files', () => {
-    expect(isCsv('test.xls')).toBe(false)
-  })
-
-  it('should return false for .pdf files', () => {
-    expect(isCsv('test.pdf')).toBe(false)
-  })
-
-  it('should return false for .txt files', () => {
-    expect(isCsv('test.txt')).toBe(false)
-  })
-
-  it('should return false for files with no extension', () => {
-    expect(isCsv('test')).toBe(false)
-  })
-
-  it('should handle filenames with paths', () => {
-    expect(isCsv('/path/to/test.csv')).toBe(true)
-    expect(isCsv('/path/to/test.pdf')).toBe(false)
-  })
-
-  it('should handle filenames with multiple dots', () => {
-    expect(isCsv('test.file.name.csv')).toBe(true)
-    expect(isCsv('test.file.name.xlsx')).toBe(false)
-  })
-
-  it('should return false for files that contain csv but do not end with it', () => {
-    expect(isCsv('test.csv.backup')).toBe(false)
-    expect(isCsv('test.csv.old')).toBe(false)
-    expect(isCsv('csvfile.txt')).toBe(false)
-  })
-
-  it('should handle Windows-style paths', () => {
-    expect(isCsv('C:\\Users\\test\\file.csv')).toBe(true)
-    expect(isCsv('C:\\Users\\test\\file.xlsx')).toBe(false)
-  })
-
-  it('should handle empty string', () => {
-    expect(isCsv('')).toBe(false)
-  })
-
-  it('should handle filenames with special characters', () => {
-    expect(isCsv('test-file_2023.csv')).toBe(true)
-    expect(isCsv('test (1).csv')).toBe(true)
-    expect(isCsv('test@file.csv')).toBe(true)
+  it.each([
+    ['.csv files', 'test.csv', true],
+    ['.csv files with uppercase extension', 'test.CSV', true],
+    ['.csv files with mixed case extension', 'test.CsV', true],
+    ['.xlsx files', 'test.xlsx', false],
+    ['.xls files', 'test.xls', false],
+    ['.pdf files', 'test.pdf', false],
+    ['.txt files', 'test.txt', false],
+    ['files with no extension', 'test', false],
+    ['filenames with paths (csv)', '/path/to/test.csv', true],
+    ['filenames with paths (pdf)', '/path/to/test.pdf', false],
+    ['filenames with multiple dots (csv)', 'test.file.name.csv', true],
+    ['filenames with multiple dots (xlsx)', 'test.file.name.xlsx', false],
+    [
+      'files that contain csv but do not end with it (backup)',
+      'test.csv.backup',
+      false
+    ],
+    [
+      'files that contain csv but do not end with it (old)',
+      'test.csv.old',
+      false
+    ],
+    [
+      'files that contain csv but do not end with it (name contains csv)',
+      'csvfile.txt',
+      false
+    ],
+    ['Windows-style paths (csv)', 'C:\\Users\\test\\file.csv', true],
+    ['Windows-style paths (xlsx)', 'C:\\Users\\test\\file.xlsx', false],
+    ['empty string', '', false],
+    [
+      'filenames with special characters (hyphen and underscore)',
+      'test-file_2023.csv',
+      true
+    ],
+    ['filenames with special characters (parentheses)', 'test (1).csv', true],
+    ['filenames with special characters (symbol)', 'test@file.csv', true]
+  ])('should handle %s', (_, filename, expected) => {
+    expect(isCsv(filename)).toBe(expected)
   })
 })
 

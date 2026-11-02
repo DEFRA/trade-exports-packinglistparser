@@ -19,48 +19,53 @@ describe('matchesBookerModel2', () => {
     expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
-  test("returns 'Wrong Establishment Number' matcher result for missing establishment number", () => {
-    const packingListJson = {
-      Sheet1: [
-        {},
-        {
-          H: 'INCORRECT'
-        }
-      ]
+  test.each([
+    [
+      'missing establishment number',
+      {
+        Sheet1: [
+          {},
+          {
+            H: 'INCORRECT'
+          }
+        ]
+      }
+    ],
+    [
+      'missing establishment numbers of multiple sheets',
+      model.wrongEstablishmentMultiple
+    ]
+  ])(
+    "returns 'Wrong Establishment Number' matcher result for %s",
+    (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
+
+      expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
     }
+  )
 
+  test.each([
+    [
+      'incorrect header values',
+      {
+        Sheet1: [
+          {
+            B: 'NOT',
+            D: 'CORRECT',
+            F: 'HEADER'
+          },
+          {
+            H: 'RMS-GB-000077-010'
+          }
+        ]
+      }
+    ],
+    [
+      'incorrect header values of multiple sheets',
+      model.incorrectHeaderMultiple
+    ]
+  ])("return 'Wrong Header' matcher result for %s", (_, packingListJson) => {
     const result = matches(packingListJson, filename)
-
-    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
-  })
-
-  test("returns 'Wrong Establishment Number' matcher result for missing establishment numbers of multiple sheets", () => {
-    const result = matches(model.wrongEstablishmentMultiple, filename)
-
-    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
-  })
-
-  test("return 'Wrong Header' matcher result for incorrect header values", () => {
-    const packingListJson = {
-      Sheet1: [
-        {
-          B: 'NOT',
-          D: 'CORRECT',
-          F: 'HEADER'
-        },
-        {
-          H: 'RMS-GB-000077-010'
-        }
-      ]
-    }
-
-    const result = matches(packingListJson, filename)
-
-    expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test("return 'Wrong Header' matcher result for incorrect header values of multiple sheets", () => {
-    const result = matches(model.incorrectHeaderMultiple, filename)
 
     expect(result).toBe(matcherResult.WRONG_HEADER)
   })

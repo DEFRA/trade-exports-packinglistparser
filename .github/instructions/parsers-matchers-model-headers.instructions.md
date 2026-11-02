@@ -114,6 +114,7 @@ Each matcher must:
 - Export a `matches(packingList, filename)` function returning a `matcherResult` constant.
 - Return `matcherResult.EMPTY_FILE` when no sheets are present.
 - Return `matcherResult.WRONG_ESTABLISHMENT_NUMBER` when the regex does not match.
+- For Excel packing lists, expect the RMS number on each sheet: check every sheet and return `WRONG_ESTABLISHMENT_NUMBER` if any sheet lacks it (only empty sheets before the first populated sheet may be skipped).
 - Return `matcherResult.WRONG_HEADER` when header validation fails.
 - Return `matcherResult.CORRECT` on a successful match, and log it at `info` level with the filename.
 - Catch all errors, log with `formatError`, and return `matcherResult.GENERIC_ERROR`.

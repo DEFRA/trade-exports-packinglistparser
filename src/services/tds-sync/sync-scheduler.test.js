@@ -81,11 +81,10 @@ describe('TDS sync-scheduler', () => {
 
   describe('stopTdsSyncScheduler', () => {
     it('should stop the scheduler', () => {
-      startTdsSyncScheduler()
-      stopTdsSyncScheduler()
-
-      // Should not throw
-      expect(true).toBe(true)
+      expect(() => {
+        startTdsSyncScheduler()
+        stopTdsSyncScheduler()
+      }).not.toThrow()
     })
   })
 

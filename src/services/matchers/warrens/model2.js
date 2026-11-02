@@ -64,7 +64,7 @@ export function matchesModel(packingList, filename, regexExpression) {
  * Check whether the provided packing list matches Warrens Model 2.
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
- * @returns {string} - One of matcherResult codes
+ * @returns {strnumbering} - One of matcherResult codes
  */
 export function matches(packingList, filename) {
   return matchesModel(

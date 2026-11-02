@@ -59,12 +59,42 @@ function findHeaderCols(header, packingListHeader) {
 }
 
 /**
+ * Resolve blanket value from a regex config when present and matched.
+ * @param {Object|null} blanketConfig - Config with regex/value.
+ * @param {Array<Object>} packingListJson - Raw packing list data.
+ * @returns {*} Resolved blanket value or null.
+ */
+function resolveBlanketValueByRegex(blanketConfig, packingListJson) {
+  if (!blanketConfig) {
+    return null
+  }
+
+  return regex.test(blanketConfig.regex, packingListJson)
+    ? blanketConfig.value
+    : null
+}
+
+/**
+ * Resolve blanket value from offset config when present.
+ * @param {Object|null} blanketConfig - Config with regex/valueCellOffset.
+ * @param {Array<Object>} packingListJson - Raw packing list data.
+ * @returns {*} Resolved blanket value or null.
+ */
+function resolveBlanketValueByOffset(blanketConfig, packingListJson) {
+  if (!blanketConfig) {
+    return null
+  }
+
+  return getBlanketValueFromOffset(packingListJson, blanketConfig)
+}
+
+/**
  * Extract blanket values (applies to all rows) from document.
  * @param {Object} header - Header configuration
  * @param {Array<Object>} packingListJson - Raw packing list data
  * @param {Object} headerCols - Mapped header columns
  * @param {number} headerRow - Header row index
- * @returns {Object} Blanket values (netWeightUnit, blanketNirms, blanketTreatmentType)
+ * @returns {Object} Blanket values (netWeightUnit, blanketNirms, blanketTreatmentType, blanketNatureOfProducts)
  */
 function extractBlanketValues(header, packingListJson, headerCols, headerRow) {
   const netWeightUnit = header.findUnitInHeader
@@ -76,29 +106,27 @@ function extractBlanketValues(header, packingListJson, headerCols, headerRow) {
       ))
     : null
 
-  const blanketNirms = regex.test(header.blanketNirms?.regex, packingListJson)
-    ? header.blanketNirms?.value
-    : null
+  const blanketNirms =
+    resolveBlanketValueByRegex(header.blanketNirms, packingListJson) ??
+    resolveBlanketValueByOffset(header.blanketNirmsValue, packingListJson)
 
-  let blanketTreatmentType = null
-  if (
-    header.blanketTreatmentType &&
-    regex.test(header.blanketTreatmentType?.regex, packingListJson)
-  ) {
-    blanketTreatmentType = header.blanketTreatmentType.value
-  }
-
-  if (blanketTreatmentType === null && header.blanketTreatmentTypeValue) {
-    blanketTreatmentType = getBlanketValueFromOffset(
-      packingListJson,
-      header.blanketTreatmentTypeValue
+  const blanketTreatmentType =
+    resolveBlanketValueByRegex(header.blanketTreatmentType, packingListJson) ??
+    resolveBlanketValueByOffset(
+      header.blanketTreatmentTypeValue,
+      packingListJson
     )
-  }
+
+  const blanketNatureOfProducts = resolveBlanketValueByOffset(
+    header.blanketNatureOfProductsValue,
+    packingListJson
+  )
 
   return {
     netWeightUnit,
     blanketNirms,
-    blanketTreatmentType
+    blanketTreatmentType,
+    blanketNatureOfProducts
   }
 }
 
@@ -179,6 +207,25 @@ function getTypeOfTreatment(col, headerCols, blanketValues, hasData) {
 }
 
 /**
+ * Get nature of products value (from column or blanket value).
+ * @param {Object} col - Row data
+ * @param {Object} headerCols - Mapped header columns
+ * @param {Object} blanketValues - Blanket values
+ * @param {boolean} hasData - Whether row has data
+ * @returns {*} Nature of products value
+ */
+function getNatureOfProducts(col, headerCols, blanketValues, hasData) {
+  if (!hasData) {
+    return null
+  }
+  return (
+    columnValue(col[headerCols.nature_of_products]) ||
+    blanketValues.blanketNatureOfProducts ||
+    null
+  )
+}
+
+/**
  * Get net weight unit (from column, header, or blanket value).
  * @param {Object} col - Row data
  * @param {Object} headerCols - Mapped header columns
@@ -219,7 +266,7 @@ function getCountryOfOrigin(col, headerCols, hasData) {
     return null
   }
   return (
-    columnValue(col[headerCols.country_of_origin]) ||
+    columnValue(col[headerCols.country_of_origin]) ??
     columnValue(col[headerCols.exempt_country_of_origin])
   )
 }
@@ -287,7 +334,12 @@ export function mapParser(
 
       return {
         description: columnValue(col[headerCols.description]),
-        nature_of_products: columnValue(col[headerCols.nature_of_products]),
+        nature_of_products: getNatureOfProducts(
+          col,
+          headerCols,
+          blanketValues,
+          hasData
+        ),
         type_of_treatment: getTypeOfTreatment(
           col,
           headerCols,

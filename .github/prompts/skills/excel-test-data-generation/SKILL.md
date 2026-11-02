@@ -50,12 +50,15 @@ description: Generate Excel test data with style-safe workbook mutations, merged
 
 ### Correct two-step pattern (binary copy + targeted mutation)
 
+> **Runtime note**: The main project has `"type": "module"` in its `package.json`. Generation scripts are plain `.js` ESM files. `exceljs` is not in the main project's dependencies — see [Fallback Guidance](#fallback-guidance) for the separate `package.json` to install it.
+
 ```javascript
-const ExcelJS = require('exceljs')
-const fs = require('fs')
+// file: generate-<scenario>-scenarios.js
+import ExcelJS from 'exceljs'
+import { copyFileSync } from 'node:fs'
 
 // Step 1: binary-exact copy — preserves ALL formatting, styles, images, merges
-fs.copyFileSync(TEMPLATE, outPath)
+copyFileSync(TEMPLATE, outPath)
 
 // Step 2: open the copy and apply only the required mutations
 const wb = new ExcelJS.Workbook()
@@ -86,8 +89,11 @@ exceljs uses **1-based column numbers**: A=1, B=2, C=3, … Z=26. You can also p
 ### Baseline Happypath — no exceljs needed
 
 ```javascript
+import { copyFileSync } from 'node:fs'
+import { join } from 'node:path'
+
 // Happypath must be a bit-for-bit copy of the template — skip exceljs entirely
-fs.copyFileSync(TEMPLATE, path.join(OUT_DIR, 'Happypath.xlsx'))
+copyFileSync(TEMPLATE, join(OUT_DIR, 'Happypath.xlsx'))
 ```
 
 ### Why NOT xlsx (SheetJS) for writes
@@ -184,4 +190,33 @@ Document all field-to-column mappings in manifest.json using Excel column letter
 
 ## Fallback Guidance
 
-`xlsx` (SheetJS) is acceptable for **read-only inspection** (mapping discovery, row counting, structure analysis) but must **never** be used to write scenario files. If `exceljs` cannot be installed, fall back to PowerShell/CLI binary copy for file creation and accept that targeted cell mutations cannot be applied without `exceljs`.
+`xlsx` (SheetJS) is acceptable for **read-only inspection** (mapping discovery, row counting, structure analysis) but must **never** be used to write scenario files.
+
+### Installing exceljs via a separate package.json
+
+`exceljs` must not be added to the main project's `package.json`. Instead, place a scoped `package.json` in the closest common ancestor directory of the generation scripts being created. Node's module resolution walks up the directory tree, so any script will find `exceljs` in the nearest `node_modules/` above it.
+
+For example, if scripts are written to `src/packing-lists/{exporter}/test-scenarios/`, place the `package.json` in `src/packing-lists/{exporter}/test-scenarios/` or any parent folder up to (but not including) the project root. Use whichever level makes sense for the exporter structure — a shared `package.json` one level above multiple exporter folders avoids duplication.
+
+Create the `package.json` if it does not already exist:
+
+```json
+{
+  "description": "Dependencies for packing-list test-data generation scripts only — not part of the main application.",
+  "dependencies": {
+    "exceljs": "^4.4.0"
+  }
+}
+```
+
+Then install from the same directory:
+
+```bash
+npm install
+```
+
+The resulting `node_modules/` and `package-lock.json` should be covered by `.gitignore`. Check the project's existing ignore patterns before adding new entries.
+
+### Script file naming
+
+Generation scripts are plain `.js` ESM files — no special extension required. `exceljs` supports ESM `import` natively.

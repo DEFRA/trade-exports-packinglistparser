@@ -34,9 +34,6 @@ export function matches(packingList, filename) {
       )
 
       // If no establishment number found, skip empty sheets or return error
-      if (!hasEstablishmentNumber && result === matcherResult.EMPTY_FILE) {
-        continue
-      }
       if (!hasEstablishmentNumber) {
         return matcherResult.WRONG_ESTABLISHMENT_NUMBER
       }

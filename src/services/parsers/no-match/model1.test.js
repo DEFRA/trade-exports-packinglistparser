@@ -9,7 +9,7 @@ describe('no-match parsers', () => {
     expect(result.parserModel).toBe(parserModel.NOREMOS)
     expect(result.business_checks.all_required_fields_present).toBe(false)
     expect(result.items).toEqual([])
-    expect(result.registration_approval_number).toBe(null)
+    expect(result.registration_approval_number).toBeNull()
   })
 
   test('unrecognisedParse returns NOMATCH result', () => {
@@ -18,6 +18,6 @@ describe('no-match parsers', () => {
     expect(result.parserModel).toBe(parserModel.NOMATCH)
     expect(result.business_checks.all_required_fields_present).toBe(false)
     expect(result.items).toEqual([])
-    expect(result.registration_approval_number).toBe(null)
+    expect(result.registration_approval_number).toBeNull()
   })
 })

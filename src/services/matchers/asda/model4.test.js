@@ -23,13 +23,12 @@ describe('ASDA Model 4 CSV Matcher', () => {
     expect(result).toBe(matcherResult.CORRECT)
   })
 
-  test('should return EMPTY_FILE for empty CSV', () => {
-    const result = matches(model.emptyModel, filename)
-    expect(result).toBe(matcherResult.EMPTY_FILE)
-  })
-
-  test('should return EMPTY_FILE for null input', () => {
-    const result = matches(null, filename)
+  test.each([
+    ['empty CSV', model.emptyModel],
+    ['null input', null],
+    ['null data during error handling path', null]
+  ])('should return EMPTY_FILE for %s', (_, packingListJson) => {
+    const result = matches(packingListJson, filename)
     expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
@@ -41,12 +40,6 @@ describe('ASDA Model 4 CSV Matcher', () => {
   test('should return WRONG_HEADER for CSV with wrong headers', () => {
     const result = matches(model.wrongHeaders, filename)
     expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test('should return EMPTY_FILE and log error when exception occurs', () => {
-    const invalidData = null
-    const result = matches(invalidData, filename)
-    expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
   test('should return GENERIC_ERROR when an exception is thrown during matching', () => {

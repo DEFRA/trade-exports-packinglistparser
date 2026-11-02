@@ -1,17 +1,28 @@
 ---
-description: 'Generate test data scenarios for core functionality and data validation in the basic-tests folder. Strictly follow the scenario list and mutation instructions below.'
-agent: agent
+description: 'Generate test-data scenarios for basic functionality and data validation in the basic-tests folder. Use when orchestrating parallel packing list test data generation.'
+tools: ['search/codebase', 'edit/editFiles', 'read/problems']
+user-invocable: false
 ---
 
 # Basic Tests Scenario Generation and Seeding
 
+> **Context received from orchestrator:**
+>
+> - `manifestPath`: Path to the confirmed `manifest.json` (e.g., `src/packing-lists/{exporter}/test-scenarios/manifest.json`)
+> - `happyPathFile`: Path to the happy path sample file
+> - `exporterProperty`: The exporter property name (e.g., 'BOOKER2', 'ASDA1')
+>
+> Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
+
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
+>
+> - Numeric Field Corruption Guidelines (special chars, alphanumeric, negative, mixed patterns)
+> - Allowed KG unit forms
+> - Column Classification Rules
+> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
+> - Format-Specific Skills references
+
 Generate and seed a suite of test data and Excel/CSV/PDF files for core functionality and data validation scenarios. Each scenario must be based on the provided happy path sample file, with targeted mutations as described below. All files must be placed in `src/packing-lists/{exporter}/test-scenarios/basic-tests/`.
-
-**Important**: When corrupting numeric data in these scenarios, refer to the **Numeric Field Corruption Guidelines** section in the main `generate-test-data-from-sample.prompt.md` for specific examples of special characters, alphanumeric values, negative numbers, and mixed patterns to use.
-
-# Basic Test Scenarios
-
-_Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
 
 **File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`). If a scenario is listed with `.xlsx`, treat it as a base-name example and emit the scenario file using the actual input format extension.
 
@@ -24,14 +35,19 @@ _Follow the generic instructions in `generate-test-data-from-sample.prompt.md` f
 
 Document in the scenario folder's README which scenarios were skipped due to missing fields.
 
+## Blanket Fields
+
+Before generating any scenario, read the manifest and identify any fields classified under `blanket` (e.g. `blanketNatureOfProductsValue`, `blanketTreatmentTypeValue`, `blanketNirmsValue`). These are single header-area values that apply to the whole consignment — they are **not** per-row data columns and **not** column headers in the data table.
+
+- **Never target blanket cells** when clearing optional/other data, clearing mandatory data, or mutating header labels.
+- **Treat blanket fields as absent** for any scenario condition that checks "if field X is present" — a blanket field does not satisfy that condition.
+- **Preserve blanket rows** in `NoData_ExceptSingleRMS_Fail` — only clear the actual data rows.
+
 ## Scenarios (CONDITIONAL GENERATION)
 
 **Only generate a scenario if the required field/column is present in the template.**
 
 - Happypath.xlsx: Exact copy of the input file for baseline validation.
-- Missing_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** all optional column headers completely so they are blank cells.
-- Missing_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Clear all data in optional columns while preserving headers.
-- Incorrect_OptionalData_All_Pass.xlsx: Only generate if optional columns are present. Insert invalid/incorrect data in all optional columns. For numeric optional fields (if any), use the **Numeric Field Corruption Guidelines** with special characters, alphanumeric values, and negative numbers. For text optional fields, use invalid formats or unexpected values.
 - Incorrect_OptionalHeader_All_Pass.xlsx: Only generate if optional columns are present. **[HEADER ONLY — do not modify data rows.]** **Modify** optional column headers to incorrect text that doesn't match the original regex patterns (e.g., change "Country of Origin" to "Country Origin").
 - OnlyMandatoryDataIsFilled_Pass.xlsx: Only generate if optional columns are present. Clear all optional data while keeping mandatory data intact.
 - DescriptionHasDoubleQuotesShould_Pass.xlsx: **Add actual double quotes** to description field data to test special character handling:
@@ -39,33 +55,29 @@ Document in the scenario folder's README which scenarios were skipped due to mis
   - **For CSV files**: Change "Product Name" to "\"\"Product Name\"\"" (properly escaped for CSV format)
   - **For PDF files**: Overlay or replace the description text region with quoted text, preserving page layout
 - MandatoryHeaders_CaseInSensitive_Pass.xlsx: **[HEADER ONLY — do not modify data rows.]** Change the case of mandatory headers to test case/formatting variations.
-- Incorrect_Mandatatypes_Excl_netandNopkgs_ProductCode_Pass.xlsx: Insert non-standard data types in non-critical mandatory fields excluding net weight and number of packages. Use the **Numeric Field Corruption Guidelines** from the main prompt - apply special characters, alphanumeric values, and negative numbers to fields like commodity_code, nature_of_products, type_of_treatment. Examples:
+- Incorrect_Mandatatypes_Excl_netandNopkgs_ProductCode_Pass.xlsx: Insert non-standard data types in non-critical mandatory fields excluding net weight and number of packages. Use the **Numeric Field Corruption Guidelines** (see shared guidelines) — apply special characters, alphanumeric values, and negative numbers to fields like commodity_code, nature_of_products, type_of_treatment. Only target fields that appear as **per-row columns** in the manifest (skip any classified as `blanket`). Examples:
   - **Nature of products**: `@Frozen`, `A5Food`, `-Products`, `-B!Food`
   - **Type of treatment**: `@Chilled`, `F5resh`, `-Frozen`, `-C!old`
 - Incorrect_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the commodity_code column.
 - Incorrect_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** ALL mandatory header names.
-- Incorrect_MandatoryHeader_Desc_Unparse.xlsx: Only generate if description field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the description column.
 - Incorrect_MandatoryHeader_TotNetweight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the total_net_weight_kg column.
 - Incorrect_MandatoryHeader_NoofPakgs_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the number_of_packages column.
-- Incorrect_MandatoryHeader_TreatmentType_Unparse.xlsx: Only generate if type_of_treatment field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the type_of_treatment column.
+- Incorrect_MandatoryHeader_TreatmentType_Unparse.xlsx: Only generate if type_of_treatment is present **as a per-row column header** (listed under `mandatory` in the manifest, not under `blanket`). **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** the header name for the type_of_treatment column.
 - Incorrect_MandatoryHeader_TotNetweightKGS_Fail.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Modify** the net weight header to use different unit terminology that does NOT match the allowed-kg regex (e.g., change "Total Net Weight (KG)" to "Total Net Weight (LBS)" or "Total Net Weight (LB)"). Do NOT use `KGS` or other allowed kg variants, as those will be treated as valid.
 - Empty_MultipleRowsColumns_Pass.xlsx: Include empty rows in the data section while maintaining valid structure.
 - Missing_MandatoryHeader_All_Unparse.xlsx: **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** ALL mandatory header names completely.
-- Missing_MandatoryHeader_Description_unparse.xlsx: Only generate if description field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the description header.
 - Missing_MandatoryHeader_CommodityCode_Unparse.xlsx: Only generate if commodity_code field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the commodity code header.
-- Missing_MandatoryHeader_NoofPacakges_Unparse.xlsx: Only generate if number_of_packages field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the number of packages header.
-- Missing_MandatoryHeader_TotNetWeight_Unparse.xlsx: Only generate if total_net_weight_kg field is present. **[HEADER ONLY — do not modify data rows.]** **Remove (clear/empty)** only the total net weight header.
-- Incorrect_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Insert invalid data types in mandatory fields across multiple rows and locations. Use the **Numeric Field Corruption Guidelines** from the main prompt with a mix of special characters, alphanumeric values, and negative numbers:
+- Incorrect_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Insert invalid data types in mandatory fields across multiple rows and locations. Use the **Numeric Field Corruption Guidelines** (see shared guidelines) with a mix of special characters, alphanumeric values, and negative numbers:
   - **Row 1**: Special characters (`@123456`, `@5`, `@12.5`)
   - **Row 2**: Alphanumeric values (`ABC123`, `A5`, `A12.5`)
   - **Row 3**: Negative numbers (`-123456`, `-5`, `-12.5`)
   - **Additional rows**: Mixed patterns (`-A123!`, `-A5!`, `-A12.5!`)
 - Missing_MandatoryData_MultipleRowsWithMultipleLocations_All_Fail.xlsx: Clear mandatory data across multiple rows and locations.
-- Missing_MandatoryData_CommodityCode_Fail.xlsx: Only generate if commodity_code field is present. Clear commodity code data in multiple rows. If the template also contains both `nature_of_products` and `type_of_treatment`, you MUST also clear one of those two fields in the same rows (clear either `nature_of_products` OR `type_of_treatment` for each affected row). Alternate which related field is cleared across rows when mutating multiple rows so tests exercise both combinations (commodity code + nature missing, commodity code + treatment missing).
-- Missing_MandatoryData_CommodityCode_Nature_Fail.xlsx: Only generate if commodity_code and nature_of_products fields are present. Clear both commodity code and nature of products data.
+- Missing_MandatoryData_CommodityCode_Fail.xlsx: Only generate if commodity_code field is present. Clear commodity code data in multiple rows. If the template also contains both `nature_of_products` and `type_of_treatment` **as per-row columns** (not blanket fields), you MUST also clear one of those two fields in the same rows (alternate across rows to exercise both combinations). If either is a blanket field, omit that part of the mutation.
+- Missing_MandatoryData_CommodityCode_Nature_Fail.xlsx: Only generate if commodity_code and nature_of_products fields are present **as per-row columns** (not blanket fields). Clear both commodity code and nature of products data.
 - Missing_MandatoryData_Desc_Fail.xlsx: Only generate if description field is present. Clear description data in multiple rows.
 - Missing_MandatoryData_Noofpkgs_Fail.xlsx: Only generate if number_of_packages field is present. Clear number of packages data in multiple rows.
-- Invalid_NoofPackages_MultipleRows_Fail.xlsx: Only generate if number_of_packages field is present. Insert invalid number of packages values using the **Numeric Field Corruption Guidelines**:
+- Invalid_NoofPackages_MultipleRows_Fail.xlsx: Only generate if number_of_packages field is present. Insert invalid number of packages values using the **Numeric Field Corruption Guidelines** (see shared guidelines):
   - **Row 1**: Special characters (`@5`, `5!`, `#10`)
   - **Row 2**: Alphanumeric values (`A5`, `5B`, `C10`)
   - **Row 3**: Negative numbers (`-5`, `-10`, `-15`)
@@ -73,7 +85,7 @@ Document in the scenario folder's README which scenarios were skipped due to mis
 - Missing_MandatoryData_Totnetweight_Fail.xlsx: Only generate if total_net_weight_kg field is present. Clear total net weight data in multiple rows.
 - AllMandatoryDataIsMissing_Fail.xlsx: Clear ALL mandatory data while keeping headers.
 - NoData_ExceptSingleRMS_Fail.xlsx: Remove all data rows except establishment number information.
-- InvalidCommodityCode_MultipleRows_Fail.xlsx: Only generate if commodity_code field is present. Insert invalid commodity code formats across multiple rows using the **Numeric Field Corruption Guidelines**:
+- InvalidCommodityCode_MultipleRows_Fail.xlsx: Only generate if commodity_code field is present. Insert invalid commodity code formats across multiple rows using the **Numeric Field Corruption Guidelines** (see shared guidelines):
   - **Row 1**: Special characters (`@123456`, `123!56`, `12#456`)
   - **Row 2**: Alphanumeric values (`ABC123`, `12DEF6`, `123A56`)
   - **Row 3**: Negative numbers (`-123456`, `-000123`, `-999999`)

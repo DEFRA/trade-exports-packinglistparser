@@ -371,8 +371,9 @@ export default {
   // AC6: CoO Value is X or x
   xCoOTestResult: {
     business_checks: {
-      all_required_fields_present: true,
-      failure_reasons: null
+      all_required_fields_present: false,
+      failure_reasons:
+        'Invalid Country of Origin ISO Code in sheet "Sheet1" row 7 and sheet "Sheet1" row 8.\n'
     },
     items: [
       {

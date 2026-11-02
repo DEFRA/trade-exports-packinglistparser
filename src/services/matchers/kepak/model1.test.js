@@ -9,47 +9,22 @@ const filename = 'packinglist.xlsx'
 
 describe('matchesKepakModel1', () => {
   describe('valid matching', () => {
-    it('returns Correct for valid model', () => {
-      const result = matches(model.validModel, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for valid model with NIRMS', () => {
-      const result = matches(model.validModelWithNirms, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for valid model with dragdown', () => {
-      const result = matches(model.validModelWithDragdown, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for multiple sheets with valid establishment numbers', () => {
-      const result = matches(model.validModelMultipleSheets, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for model with multiple RMS numbers', () => {
-      const result = matches(model.multipleRms, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for model with missing KG unit', () => {
-      const result = matches(model.missingKgunit, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for multiple sheets with headers on different rows', () => {
-      const result = matches(
-        model.validModelMultipleSheetsHeadersOnDifferentRows,
-        filename
-      )
+    it.each([
+      ['valid model', model.validModel],
+      ['valid model with NIRMS', model.validModelWithNirms],
+      ['valid model with dragdown', model.validModelWithDragdown],
+      [
+        'multiple sheets with valid establishment numbers',
+        model.validModelMultipleSheets
+      ],
+      ['model with multiple RMS numbers', model.multipleRms],
+      ['model with missing KG unit', model.missingKgunit],
+      [
+        'multiple sheets with headers on different rows',
+        model.validModelMultipleSheetsHeadersOnDifferentRows
+      ]
+    ])('returns Correct for %s', (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
 
       expect(result).toBe(matcherResult.CORRECT)
     })
@@ -103,38 +78,15 @@ describe('matchesKepakModel1', () => {
   })
 
   describe('edge cases with valid patterns', () => {
-    it('returns Correct for model with missing NIRMS statement', () => {
-      const result = matches(model.missingNirmsStatement, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for model with null Country of Origin', () => {
-      const result = matches(model.nullCoO, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for model with invalid Country of Origin', () => {
-      const result = matches(model.invalidCoO, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for model with X Country of Origin', () => {
-      const result = matches(model.xCoO, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for model with ineligible item', () => {
-      const result = matches(model.ineligibleItemWithTreatment, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for model with missing column cells', () => {
-      const result = matches(model.invalidModel_MissingColumnCells, filename)
+    it.each([
+      ['model with missing NIRMS statement', model.missingNirmsStatement],
+      ['model with null Country of Origin', model.nullCoO],
+      ['model with invalid Country of Origin', model.invalidCoO],
+      ['model with X Country of Origin', model.xCoO],
+      ['model with ineligible item', model.ineligibleItemWithTreatment],
+      ['model with missing column cells', model.invalidModel_MissingColumnCells]
+    ])('returns Correct for %s', (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
 
       expect(result).toBe(matcherResult.CORRECT)
     })

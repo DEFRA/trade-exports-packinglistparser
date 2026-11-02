@@ -333,127 +333,78 @@ describe('packing-list-process-service', () => {
       expect(lastInfoMsg).toContain(result.data.parserModel)
     })
 
-    it('should return validation failure when application_id is not a positive integer', async () => {
-      const invalidPayload = {
-        ...mockPayload,
-        application_id: -1
-      }
-
-      const result = await processPackingList(invalidPayload)
-
-      expect(result).toEqual({
-        result: 'failure',
-        error: expect.stringContaining(
-          'Validation failed: application_id must be a positive integer'
-        ),
-        errorType: 'client'
-      })
-      expect(
-        mockDownloadBlobFromApplicationFormsContainerAsJson
-      ).not.toHaveBeenCalled()
-    })
-
-    it('should return validation failure when application_id is decimal', async () => {
-      const invalidPayload = {
-        ...mockPayload,
-        application_id: 123.45
-      }
-
-      const result = await processPackingList(invalidPayload)
-
-      expect(result).toEqual({
-        result: 'failure',
-        error: expect.stringContaining(
-          'Validation failed: application_id must be a positive integer'
-        ),
-        errorType: 'client'
-      })
-      expect(
-        mockDownloadBlobFromApplicationFormsContainerAsJson
-      ).not.toHaveBeenCalled()
-    })
-
-    it('should return validation failure when packing_list_blob is not a valid URL', async () => {
-      const invalidPayload = {
-        ...mockPayload,
-        packing_list_blob: 'not-a-url'
-      }
-
-      const result = await processPackingList(invalidPayload)
-
-      expect(result).toEqual({
-        result: 'failure',
-        error: expect.stringContaining(PACKING_LIST_BLOB_VALIDATION_ERROR),
-        errorType: 'client'
-      })
-      expect(
-        mockDownloadBlobFromApplicationFormsContainerAsJson
-      ).not.toHaveBeenCalled()
-    })
-
-    it('should return validation failure when packing_list_blob URL host is not the configured EHCO account', async () => {
-      const invalidPayload = {
-        ...mockPayload,
-        packing_list_blob:
-          'https://differentaccount.blob.core.windows.net/container/file.xlsx'
-      }
-
-      const result = await processPackingList(invalidPayload)
-
-      expect(result).toEqual({
-        result: 'failure',
-        error: expect.stringContaining(PACKING_LIST_BLOB_VALIDATION_ERROR),
-        errorType: 'client'
-      })
-      expect(
-        mockDownloadBlobFromApplicationFormsContainerAsJson
-      ).not.toHaveBeenCalled()
-    })
-
-    it('should return validation failure when packing_list_blob URL container is not the configured EHCO container', async () => {
-      const invalidPayload = {
-        ...mockPayload,
-        packing_list_blob:
-          'https://testaccount.blob.core.windows.net/wrong-container/file.xlsx'
-      }
-
-      const result = await processPackingList(invalidPayload)
-
-      expect(result).toEqual({
-        result: 'failure',
-        error: expect.stringContaining(PACKING_LIST_BLOB_VALIDATION_ERROR),
-        errorType: 'client'
-      })
-      expect(
-        mockDownloadBlobFromApplicationFormsContainerAsJson
-      ).not.toHaveBeenCalled()
-    })
-
-    it('should return validation failure when EstablishmentId is not a UUID', async () => {
-      const invalidPayload = {
-        ...mockPayload,
-        SupplyChainConsignment: {
-          DispatchLocation: {
-            IDCOMS: {
-              EstablishmentId: 'EST-001'
+    it.each([
+      [
+        'application_id is not a positive integer',
+        {
+          ...mockPayload,
+          application_id: -1
+        },
+        'Validation failed: application_id must be a positive integer'
+      ],
+      [
+        'application_id is decimal',
+        {
+          ...mockPayload,
+          application_id: 123.45
+        },
+        'Validation failed: application_id must be a positive integer'
+      ],
+      [
+        'packing_list_blob is not a valid URL',
+        {
+          ...mockPayload,
+          packing_list_blob: 'not-a-url'
+        },
+        PACKING_LIST_BLOB_VALIDATION_ERROR
+      ],
+      [
+        'packing_list_blob URL host is not the configured EHCO account',
+        {
+          ...mockPayload,
+          packing_list_blob:
+            'https://differentaccount.blob.core.windows.net/container/file.xlsx'
+        },
+        PACKING_LIST_BLOB_VALIDATION_ERROR
+      ],
+      [
+        'packing_list_blob URL container is not the configured EHCO container',
+        {
+          ...mockPayload,
+          packing_list_blob:
+            'https://testaccount.blob.core.windows.net/wrong-container/file.xlsx'
+        },
+        PACKING_LIST_BLOB_VALIDATION_ERROR
+      ],
+      [
+        'EstablishmentId is not a UUID',
+        {
+          ...mockPayload,
+          SupplyChainConsignment: {
+            DispatchLocation: {
+              IDCOMS: {
+                EstablishmentId: 'EST-001'
+              }
             }
           }
-        }
+        },
+        'Validation failed: SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID string'
+      ]
+    ])(
+      'should return validation failure when %s',
+      async (_description, invalidPayload, expectedError) => {
+        const result = await processPackingList(invalidPayload)
+
+        expect(result).toEqual({
+          result: 'failure',
+          error: expect.stringContaining(expectedError),
+          errorType: 'client'
+        })
+        expect(
+          mockDownloadBlobFromApplicationFormsContainerAsJson
+        ).not.toHaveBeenCalled()
       }
-
-      const result = await processPackingList(invalidPayload)
-
-      expect(result).toEqual({
-        result: 'failure',
-        error: expect.stringContaining(
-          'Validation failed: SupplyChainConsignment.DispatchLocation.IDCOMS.EstablishmentId must be a UUID string'
-        ),
-        errorType: 'client'
-      })
-      expect(
-        mockDownloadBlobFromApplicationFormsContainerAsJson
-      ).not.toHaveBeenCalled()
-    })
+    )
 
     it('should return server failure when establishment ID extraction fails during parsing step', async () => {
       const supplyChainConsignment = {}
@@ -497,166 +448,89 @@ describe('packing-list-process-service', () => {
       )
     })
 
-    it('should correctly map NIRMS boolean values', async () => {
-      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
-        mockPackingList
-      )
-      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
-      mockParsePackingList.mockResolvedValue(mockParsedData)
-      mockUploadJsonFileToS3.mockResolvedValue(undefined)
-      mockSendMessageToQueue.mockResolvedValue(undefined)
-      mockIsNirms.mockReturnValue(true)
-
-      await processPackingList(mockPayload)
-
-      const uploadCall = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
-      expect(uploadCall.items[0].nirms).toBe(true)
-    })
-
-    it('should correctly map NOT NIRMS boolean values', async () => {
-      const parsedDataNotNirms = {
-        ...mockParsedData,
-        items: [
-          {
-            ...mockParsedData.items[0],
-            nirms: 'NOT NIRMS',
-            failure: null,
-            row_location: {
-              rowNumber: 5,
-              sheetName: 'Sheet1'
+    it.each([
+      ['NIRMS', true, false, true],
+      ['NOT NIRMS', false, true, false],
+      ['INVALID', false, false, null]
+    ])(
+      'should map %s values to %s',
+      async (nirmsValue, isNirmsValue, isNotNirmsValue, expectedNirms) => {
+        const parsedDataWithNirmsValue = {
+          ...mockParsedData,
+          items: [
+            {
+              ...mockParsedData.items[0],
+              nirms: nirmsValue,
+              failure: null,
+              row_location: {
+                rowNumber: 5,
+                sheetName: 'Sheet1'
+              }
             }
+          ]
+        }
+
+        mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+          mockPackingList
+        )
+        mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+        mockParsePackingList.mockResolvedValue(parsedDataWithNirmsValue)
+        mockUploadJsonFileToS3.mockResolvedValue(undefined)
+        mockSendMessageToQueue.mockResolvedValue(undefined)
+        mockIsNirms.mockReturnValue(isNirmsValue)
+        mockIsNotNirms.mockReturnValue(isNotNirmsValue)
+
+        await processPackingList(mockPayload)
+
+        const uploadCall = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
+        expect(uploadCall.items[0].nirms).toBe(expectedNirms)
+      }
+    )
+
+    it.each([
+      [
+        'rejected_other',
+        MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR,
+        'failure reasons and rejected_other status'
+      ],
+      [
+        'rejected_ineligible',
+        PROHIBITED_ITEM_IDENTIFIED_ERROR,
+        'rejected_ineligible status when prohibited items detected'
+      ],
+      [
+        'rejected_coo',
+        INVALID_COUNTRY_OF_ORIGIN_ERROR,
+        'rejected_coo status when country of origin issues detected'
+      ]
+    ])(
+      'should handle failures with %s',
+      async (approvalStatus, reasonsForFailure) => {
+        const parsedDataWithFailures = {
+          ...mockParsedData,
+          approvalStatus,
+          reasonsForFailure,
+          business_checks: {
+            all_required_fields_present: false,
+            failure_reasons: reasonsForFailure
           }
-        ]
-      }
-      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
-        mockPackingList
-      )
-      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
-      mockParsePackingList.mockResolvedValue(parsedDataNotNirms)
-      mockUploadJsonFileToS3.mockResolvedValue(undefined)
-      mockSendMessageToQueue.mockResolvedValue(undefined)
-      mockIsNotNirms.mockReturnValue(true)
-
-      await processPackingList(mockPayload)
-
-      const uploadCall = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
-      expect(uploadCall.items[0].nirms).toBe(false)
-    })
-
-    it('should map invalid NIRMS values to null', async () => {
-      const parsedDataInvalidNirms = {
-        ...mockParsedData,
-        items: [
-          {
-            ...mockParsedData.items[0],
-            nirms: 'INVALID',
-            failure: null,
-            row_location: {
-              rowNumber: 5,
-              sheetName: 'Sheet1'
-            }
-          }
-        ]
-      }
-      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
-        mockPackingList
-      )
-      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
-      mockParsePackingList.mockResolvedValue(parsedDataInvalidNirms)
-      mockUploadJsonFileToS3.mockResolvedValue(undefined)
-      mockSendMessageToQueue.mockResolvedValue(undefined)
-      mockIsNirms.mockReturnValue(false)
-      mockIsNotNirms.mockReturnValue(false)
-
-      await processPackingList(mockPayload)
-
-      const uploadCall = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
-      expect(uploadCall.items[0].nirms).toBe(null)
-    })
-
-    it('should handle failures with failure reasons and rejected_other status', async () => {
-      const parsedDataWithFailures = {
-        ...mockParsedData,
-        approvalStatus: 'rejected_other',
-        reasonsForFailure: MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR,
-        business_checks: {
-          all_required_fields_present: false,
-          failure_reasons: MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR
         }
+        mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
+          mockPackingList
+        )
+        mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
+        mockParsePackingList.mockResolvedValue(parsedDataWithFailures)
+        mockUploadJsonFileToS3.mockResolvedValue(undefined)
+        mockSendMessageToQueue.mockResolvedValue(undefined)
+        mockIsNirms.mockReturnValue(true)
+
+        await processPackingList(mockPayload)
+
+        const messageCall = mockSendMessageToQueue.mock.calls[0][0]
+        expect(messageCall.body.approvalStatus).toBe(approvalStatus)
+        expect(messageCall.body.failureReasons).toBe(reasonsForFailure)
       }
-      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
-        mockPackingList
-      )
-      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
-      mockParsePackingList.mockResolvedValue(parsedDataWithFailures)
-      mockUploadJsonFileToS3.mockResolvedValue(undefined)
-      mockSendMessageToQueue.mockResolvedValue(undefined)
-      mockIsNirms.mockReturnValue(true)
-
-      await processPackingList(mockPayload)
-
-      const messageCall = mockSendMessageToQueue.mock.calls[0][0]
-      expect(messageCall.body.approvalStatus).toBe('rejected_other')
-      expect(messageCall.body.failureReasons).toBe(
-        MISSING_COMMODITY_AND_INVALID_WEIGHT_ERROR
-      )
-    })
-
-    it('should handle failures with rejected_ineligible status when prohibited items detected', async () => {
-      const parsedDataWithFailures = {
-        ...mockParsedData,
-        approvalStatus: 'rejected_ineligible',
-        reasonsForFailure: PROHIBITED_ITEM_IDENTIFIED_ERROR,
-        business_checks: {
-          all_required_fields_present: false,
-          failure_reasons: PROHIBITED_ITEM_IDENTIFIED_ERROR
-        }
-      }
-      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
-        mockPackingList
-      )
-      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
-      mockParsePackingList.mockResolvedValue(parsedDataWithFailures)
-      mockUploadJsonFileToS3.mockResolvedValue(undefined)
-      mockSendMessageToQueue.mockResolvedValue(undefined)
-      mockIsNirms.mockReturnValue(true)
-
-      await processPackingList(mockPayload)
-
-      const messageCall = mockSendMessageToQueue.mock.calls[0][0]
-      expect(messageCall.body.approvalStatus).toBe('rejected_ineligible')
-      expect(messageCall.body.failureReasons).toBe(
-        PROHIBITED_ITEM_IDENTIFIED_ERROR
-      )
-    })
-
-    it('should handle failures with rejected_coo status when country of origin issues detected', async () => {
-      const parsedDataWithFailures = {
-        ...mockParsedData,
-        approvalStatus: 'rejected_coo',
-        reasonsForFailure: INVALID_COUNTRY_OF_ORIGIN_ERROR,
-        business_checks: {
-          all_required_fields_present: false,
-          failure_reasons: INVALID_COUNTRY_OF_ORIGIN_ERROR
-        }
-      }
-      mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
-        mockPackingList
-      )
-      mockGetDispatchLocation.mockResolvedValue(mockDispatchLocation)
-      mockParsePackingList.mockResolvedValue(parsedDataWithFailures)
-      mockUploadJsonFileToS3.mockResolvedValue(undefined)
-      mockSendMessageToQueue.mockResolvedValue(undefined)
-      mockIsNirms.mockReturnValue(true)
-
-      await processPackingList(mockPayload)
-
-      const messageCall = mockSendMessageToQueue.mock.calls[0][0]
-      expect(messageCall.body.approvalStatus).toBe('rejected_coo')
-      expect(messageCall.body.failureReasons).toBe(
-        INVALID_COUNTRY_OF_ORIGIN_ERROR
-      )
-    })
+    )
 
     it('should create service bus message with correct structure', async () => {
       mockDownloadBlobFromApplicationFormsContainerAsJson.mockResolvedValue(
@@ -833,7 +707,7 @@ describe('packing-list-process-service', () => {
       await processPackingList(mockPayload)
 
       const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
-      expect(uploadedData.items[0].location).toBe(null)
+      expect(uploadedData.items[0].location).toBeNull()
       expect(uploadedData.items[0].row).toBe(7)
     })
 
@@ -888,7 +762,7 @@ describe('packing-list-process-service', () => {
 
       const uploadedData = JSON.parse(mockUploadJsonFileToS3.mock.calls[0][1])
       // Invalid mapped rows are removed before persistence.
-      expect(uploadedData.items.length).toBe(1)
+      expect(uploadedData.items).toHaveLength(1)
       expect(uploadedData.items[0].description).toBe('Good Item')
     })
 

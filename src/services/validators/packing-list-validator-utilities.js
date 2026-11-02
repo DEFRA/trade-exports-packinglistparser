@@ -214,12 +214,6 @@ function isInvalidCoO(countryOfOrigin) {
   }
 
   const normalizedValue = countryOfOrigin.trim().toLowerCase()
-
-  // Special case for "x"
-  if (normalizedValue === 'x') {
-    return false
-  }
-
   // Check if it contains comma-separated values
   if (countryCodeSeparators.test(normalizedValue)) {
     const codes = normalizedValue.split(countryCodeSeparators)
@@ -283,7 +277,7 @@ function isNotNirms(nirms) {
     nirms,
     /^(no|red|n|r)$/i,
     /^red lane/i,
-    /^non[- ]?nirms/i
+    /^no[nt](-| | [–-] )?nirms/i
   )
 }
 

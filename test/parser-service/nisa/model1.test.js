@@ -100,10 +100,10 @@ describe('parsePackingList', () => {
     )
   })
 
-  test('matches valid NISA Model 1 file, calls parser and returns all_required_fields_present as true for X CoO', async () => {
+  test('matches valid NISA Model 1 file, calls parser and returns all_required_fields_present as false for X CoO', async () => {
     const result = await parsePackingList(model.xCoO, filename)
 
-    expect(result.business_checks.all_required_fields_present).toBeTruthy()
+    expect(result.business_checks.all_required_fields_present).toBeFalsy()
   })
 
   test('matches valid NISA Model 1 file, calls parser and returns all_required_fields_present as false for ineligible items', async () => {

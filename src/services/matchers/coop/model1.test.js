@@ -6,8 +6,11 @@ import model from '../../../../test/test-data-and-results/models/coop/model1.js'
 const filename = 'packinglist.xlsx'
 
 describe('Co-op Model 1 Matcher', () => {
-  test('returns Correct', () => {
-    const result = matches(model.validModel, filename)
+  test.each([
+    ['valid model', model.validModel],
+    ['valid model with multiple sheets', model.validModelMultipleSheets]
+  ])('returns Correct for %s', (_, packingListJson) => {
+    const result = matches(packingListJson, filename)
 
     expect(result).toBe(matcherResult.CORRECT)
   })
@@ -20,50 +23,37 @@ describe('Co-op Model 1 Matcher', () => {
     expect(result).toBe(matcherResult.EMPTY_FILE)
   })
 
-  test('returns WRONG_ESTABLISHMENT_NUMBER for missing establishment number', () => {
-    const packingListJson = {
-      PackingList_Extract: [
-        {},
-        {},
-        {
-          E: 'INCORRECT'
-        }
-      ]
-    }
-
+  test.each([
+    [
+      'missing establishment number',
+      {
+        PackingList_Extract: [
+          {},
+          {},
+          {
+            E: 'INCORRECT'
+          }
+        ]
+      }
+    ],
+    ['incorrect establishment number', model.wrongEstablishment],
+    [
+      'incorrect establishment on multiple sheets',
+      model.wrongEstablishmentMultiple
+    ]
+  ])('returns WRONG_ESTABLISHMENT_NUMBER for %s', (_, packingListJson) => {
     const result = matches(packingListJson, filename)
 
     expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
   })
 
-  test('returns WRONG_ESTABLISHMENT_NUMBER for incorrect establishment number', () => {
-    const result = matches(model.wrongEstablishment, filename)
-
-    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
-  })
-
-  test('returns WRONG_ESTABLISHMENT_NUMBER for incorrect establishment on multiple sheets', () => {
-    const result = matches(model.wrongEstablishmentMultiple, filename)
-
-    expect(result).toBe(matcherResult.WRONG_ESTABLISHMENT_NUMBER)
-  })
-
-  test('returns WRONG_HEADER for incorrect headers', () => {
-    const result = matches(model.incorrectHeader, filename)
+  test.each([
+    ['incorrect headers', model.incorrectHeader],
+    ['incorrect headers on multiple sheets', model.incorrectHeaderMultiple]
+  ])('returns WRONG_HEADER for %s', (_, packingListJson) => {
+    const result = matches(packingListJson, filename)
 
     expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test('returns WRONG_HEADER for incorrect headers on multiple sheets', () => {
-    const result = matches(model.incorrectHeaderMultiple, filename)
-
-    expect(result).toBe(matcherResult.WRONG_HEADER)
-  })
-
-  test('returns Correct for valid model with multiple sheets', () => {
-    const result = matches(model.validModelMultipleSheets, filename)
-
-    expect(result).toBe(matcherResult.CORRECT)
   })
 
   test('returns GENERIC_ERROR when an error is thrown during processing', () => {

@@ -30,7 +30,6 @@ updates:
           - 'husky'
           - 'vitest'
           - 'nodemon'
-          - 'npm-run-all'
 
       types:
         patterns:

@@ -102,11 +102,10 @@ describe('sync-scheduler', () => {
 
   describe('stopSyncScheduler', () => {
     it('should stop both schedulers', () => {
-      startSyncScheduler()
-      stopSyncScheduler()
-
-      // Should not throw
-      expect(true).toBe(true)
+      expect(() => {
+        startSyncScheduler()
+        stopSyncScheduler()
+      }).not.toThrow()
     })
   })
 

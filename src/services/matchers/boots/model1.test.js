@@ -18,6 +18,6 @@ describe('matchesBoots', () => {
 
     const result = matches(inputModel, filename)
 
-    expect(result).toEqual(expected)
+    expect(result).toBe(expected)
   })
 })

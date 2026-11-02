@@ -243,7 +243,7 @@ Instructions for setting up SonarCloud can be found in [sonar-project.properties
 - Cache system and synchronization services
 - Testing guidelines and best practices
 
-📋 **[Packing List Processing Flow](./docs/flow/to-be-cdp-packing-list-processing-flow.md)** - Complete processing workflow including:
+📋 **[Packing List Process Documentation](./docs/packing-list-process/README.md)** - Complete processing workflow including:
 
 - HTTP request handling and parsing pipeline
 - Parser discovery and data extraction

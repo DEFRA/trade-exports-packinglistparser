@@ -392,4 +392,33 @@ describe('mapParser', () => {
     // Should use blanketTreatmentType value, not call positionFinder
     expect(result[0].type_of_treatment).toBe('Processed')
   })
+
+  it('should preserve a numeric 0 country of origin value instead of treating it as empty', () => {
+    const packingListJson = [
+      {
+        A: 'Description',
+        B: 'Commodity Code',
+        C: 'Country of Origin'
+      },
+      {
+        A: 'Test Item',
+        B: '1234567890',
+        C: 0
+      }
+    ]
+
+    const header = {
+      regex: {
+        description: /Description/i,
+        commodity_code: /Commodity Code/i,
+        country_of_origin: /Country of Origin/i
+      },
+      findUnitInHeader: false
+    }
+
+    const result = mapParser(packingListJson, 0, 1, header)
+
+    // 0 is a present-but-invalid value; it must not be discarded to null.
+    expect(result[0].country_of_origin).toBe(0)
+  })
 })

@@ -48,7 +48,7 @@ describe('ASDA Model 4 CSV Parser', () => {
 
   test('should extract correct number of items', () => {
     const result = parse(model.validModel)
-    expect(result.items.length).toBe(2)
+    expect(result.items).toHaveLength(2)
   })
 
   test('should handle parsing errors gracefully', () => {

@@ -1,15 +1,28 @@
 ---
-description: 'Generate test data scenarios for country of origin, NIRMS, and Ineligible items validation in the country-of-origin folder. Strictly follow the scenario list and mutation instructions below.'
-agent: agent
+description: 'Generate test-data scenarios for country of origin, NIRMS, and Ineligible items validation in the country-of-origin folder. Use when orchestrating parallel packing list test data generation.'
+tools: ['search/codebase', 'edit/editFiles', 'read/problems']
+user-invocable: false
 ---
 
 # Country of Origin Test Scenarios
 
-_Follow the generic instructions in `generate-test-data-from-sample.prompt.md` for folder creation, copying, and mutation steps._
+> **Context received from orchestrator:**
+>
+> - `manifestPath`: Path to the confirmed `manifest.json` (e.g., `src/packing-lists/{exporter}/test-scenarios/manifest.json`)
+> - `happyPathFile`: Path to the happy path sample file
+> - `exporterProperty`: The exporter property name (e.g., 'BOOKER2', 'ASDA1')
+>
+> Read `manifest.json` at the provided path before starting — it contains the confirmed field/column mappings, establishment number pattern, header row locations, and file format details needed for all mutations.
+
+> **Shared guidelines**: Load [generate-test-data-shared-guidelines.md](../prompts/models/generate-test-data-from-sample/generate-test-data-shared-guidelines.md) before applying any mutations. It contains:
+>
+> - Numeric Field Corruption Guidelines (special chars, alphanumeric, negative, mixed patterns for commodity_code etc.)
+> - Allowed KG unit forms
+> - Column Classification Rules
+> - Generic Seeding Instructions (folder creation, file copy, mutation scope rules)
+> - Format-Specific Skills references (Excel/CSV/PDF tools)
 
 **File naming rule**: Keep the scenario base names below, but always use the same extension as the input happy path file (`.xlsx/.xls`, `.csv`, or `.pdf`).
-
-**Important**: When corrupting numeric data (like commodity_code values) in these scenarios, refer to the **Numeric Field Corruption Guidelines** section in the main `generate-test-data-from-sample.prompt.md` for specific examples of special characters, alphanumeric values, negative numbers, and mixed patterns to use.
 
 ## Scenarios
 
@@ -121,11 +134,11 @@ Based on the exporter configuration, determine which country-of-origin-related s
 
 ## Apply Mutations
 
-Use the format-appropriate tools from `generate-test-data-from-sample.prompt.md` to mutate scenario files:
+Use the format-appropriate skill loaded from the shared guidelines to mutate scenario files:
 
-- Excel: `exceljs` cell mutations
-- CSV: PowerShell Import-Csv/Export-Csv or text mutation
-- PDF: supported coordinate/region mutations with a PDF tool
+- Excel: `exceljs` cell mutations (load `excel-test-data-generation` skill)
+- CSV: PowerShell Import-Csv/Export-Csv or text mutation (load `csv-test-data-generation` skill)
+- PDF: supported coordinate/region mutations with a PDF tool (load `pdf-test-data-generation` skill)
 
 Typical mutation targets:
 

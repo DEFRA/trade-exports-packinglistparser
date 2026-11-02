@@ -9,29 +9,16 @@ const filename = 'packinglist.xlsx'
 
 describe('matchesSaversModel1', () => {
   describe('valid matching', () => {
-    it('returns Correct for valid model', () => {
-      const result = matches(model.validModel, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for valid model with multiple sheets', () => {
-      const result = matches(model.validModelMultipleSheets, filename)
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for multiple sheets with headers on different rows', () => {
-      const result = matches(
-        model.validModelMultipleSheetsHeadersOnDifferentRows,
-        filename
-      )
-
-      expect(result).toBe(matcherResult.CORRECT)
-    })
-
-    it('returns Correct for valid headers with no data', () => {
-      const result = matches(model.validHeadersNoData, filename)
+    it.each([
+      ['valid model', model.validModel],
+      ['valid model with multiple sheets', model.validModelMultipleSheets],
+      [
+        'multiple sheets with headers on different rows',
+        model.validModelMultipleSheetsHeadersOnDifferentRows
+      ],
+      ['valid headers with no data', model.validHeadersNoData]
+    ])('returns Correct for %s', (_, packingListJson) => {
+      const result = matches(packingListJson, filename)
 
       expect(result).toBe(matcherResult.CORRECT)
     })

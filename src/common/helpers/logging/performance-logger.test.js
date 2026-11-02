@@ -115,20 +115,13 @@ function defineToEventReasonTests() {
       expect(toEventReason({ a: 1 })).toBe('{"a":1}')
     })
 
-    it('returns undefined for null', () => {
-      expect(toEventReason(null)).toBeUndefined()
-    })
-
-    it('returns undefined for undefined', () => {
-      expect(toEventReason(undefined)).toBeUndefined()
-    })
-
-    it('returns undefined for empty string', () => {
-      expect(toEventReason('')).toBeUndefined()
-    })
-
-    it('returns undefined for 0', () => {
-      expect(toEventReason(0)).toBeUndefined()
+    it.each([
+      ['null', null],
+      ['undefined', undefined],
+      ['empty string', ''],
+      ['0', 0]
+    ])('returns undefined for %s', (_description, value) => {
+      expect(toEventReason(value)).toBeUndefined()
     })
   })
 }
@@ -170,65 +163,33 @@ function defineLogEcsEventFieldTests(getLogger) {
     )
   })
 
-  it('includes outcome when provided', () => {
-    logEcsEvent(getLogger(), {
-      message: 'msg',
-      action: 'act',
-      outcome: 'success'
-    })
-    expect(getLogger().info).toHaveBeenCalledWith(
-      expect.objectContaining({
-        event: expect.objectContaining({ outcome: 'success' })
-      }),
-      'msg'
-    )
-  })
+  it.each([
+    ['outcome', { outcome: 'success' }, 'success'],
+    ['duration', { duration: EXPLICIT_DURATION_NS }, EXPLICIT_DURATION_NS],
+    ['reason', { reason: 'something went wrong' }, 'something went wrong']
+  ])(
+    'includes %s when provided',
+    (_description, extraOptions, expectedValue) => {
+      logEcsEvent(getLogger(), {
+        message: 'msg',
+        action: 'act',
+        ...extraOptions
+      })
+      const [eventArg, messageArg] = getLogger().info.mock.calls[0]
+      expect(messageArg).toBe('msg')
+      expect(eventArg.event).toMatchObject(extraOptions)
+      expect(Object.values(extraOptions)).toContain(expectedValue)
+    }
+  )
 
-  it('omits outcome when not provided', () => {
-    logEcsEvent(getLogger(), { message: 'msg', action: 'act' })
-    const [eventArg] = getLogger().info.mock.calls[0]
-    expect(eventArg.event).not.toHaveProperty('outcome')
-  })
-
-  it('includes duration when provided', () => {
-    logEcsEvent(getLogger(), {
-      message: 'msg',
-      action: 'act',
-      duration: EXPLICIT_DURATION_NS
-    })
-    expect(getLogger().info).toHaveBeenCalledWith(
-      expect.objectContaining({
-        event: expect.objectContaining({ duration: EXPLICIT_DURATION_NS })
-      }),
-      'msg'
-    )
-  })
-
-  it('omits duration when undefined', () => {
-    logEcsEvent(getLogger(), { message: 'msg', action: 'act' })
-    const [eventArg] = getLogger().info.mock.calls[0]
-    expect(eventArg.event).not.toHaveProperty('duration')
-  })
-
-  it('includes reason when provided', () => {
-    logEcsEvent(getLogger(), {
-      message: 'msg',
-      action: 'act',
-      reason: 'something went wrong'
-    })
-    expect(getLogger().info).toHaveBeenCalledWith(
-      expect.objectContaining({
-        event: expect.objectContaining({ reason: 'something went wrong' })
-      }),
-      'msg'
-    )
-  })
-
-  it('omits reason when not provided', () => {
-    logEcsEvent(getLogger(), { message: 'msg', action: 'act' })
-    const [eventArg] = getLogger().info.mock.calls[0]
-    expect(eventArg.event).not.toHaveProperty('reason')
-  })
+  it.each(['outcome', 'duration', 'reason'])(
+    'omits %s when not provided',
+    (propertyName) => {
+      logEcsEvent(getLogger(), { message: 'msg', action: 'act' })
+      const [eventArg] = getLogger().info.mock.calls[0]
+      expect(eventArg.event).not.toHaveProperty(propertyName)
+    }
+  )
 
   it('uses the default category of application', () => {
     logEcsEvent(getLogger(), { message: 'msg', action: 'act' })

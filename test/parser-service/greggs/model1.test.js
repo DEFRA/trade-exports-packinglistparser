@@ -24,7 +24,8 @@ vi.mock('../../../src/services/data/data-ineligible-items.json', () => ({
   default: []
 }))
 
-describe('parsePackingList - Greggs Model 1', () => {
+// Skipped while the GREGGS1 parser is deactivated in model-parsers.js
+describe.skip('parsePackingList - Greggs Model 1', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

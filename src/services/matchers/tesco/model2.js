@@ -16,7 +16,7 @@ const logger = createLogger()
  * Tesco matcher (model 2)
  * @param {Object} packingList - Excel->JSON representation keyed by sheet
  * @param {string} filename - Source filename for logging
- * @returns {string} matcherResult - One of the matcher result codes
+ * @returns {number} matcherResult - One of the matcher result codes
  */
 export function matches(packingList, filename) {
   try {

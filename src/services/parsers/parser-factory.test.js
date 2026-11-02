@@ -291,7 +291,7 @@ describe('Parser Factory - Unrecognised Files', () => {
       expect(result.parserModel).toBe(parserModel.NOMATCH)
       expect(result.items).toEqual([])
       expect(result.business_checks.all_required_fields_present).toBe(false)
-      expect(result.registration_approval_number).toBe(null)
+      expect(result.registration_approval_number).toBeNull()
     })
   })
 
@@ -327,7 +327,7 @@ describe('Parser Factory - Unrecognised Files', () => {
         'TEST-LOCATION'
       )
 
-      expect(result.items.length).toBe(1)
+      expect(result.items).toHaveLength(1)
       expect(result.items[0]).toHaveProperty('failure')
       expect(result.items[0].failure).not.toBeNull()
       expect(result.items[0].failure).toContain('Identifier is missing')
@@ -363,7 +363,7 @@ describe('Parser Factory - Unrecognised Files', () => {
         'TEST-LOCATION'
       )
 
-      expect(result.items.length).toBe(1)
+      expect(result.items).toHaveLength(1)
       expect(result.items[0]).toHaveProperty('failure')
       expect(result.items[0].failure).toBeNull()
     })
@@ -616,7 +616,7 @@ describe('Parser Factory - Unrecognised Files', () => {
         'TEST-LOCATION'
       )
 
-      expect(result.items.length).toBe(2)
+      expect(result.items).toHaveLength(2)
       expect(result.items[0].failure).toBeNull()
       expect(result.items[1].failure).not.toBeNull()
     })
