@@ -235,9 +235,4 @@ function filterValidatableRows(
     })
 }
 
-export {
-  isTotalsRow,
-  isRepeatedHeaderRow,
-  isEmptyRow,
-  filterValidatableRows
-}
+export { isTotalsRow, isRepeatedHeaderRow, isEmptyRow, filterValidatableRows }

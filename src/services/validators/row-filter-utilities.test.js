@@ -503,5 +503,4 @@ describe('Row Filter Utilities', () => {
       expect(result[0]).toHaveProperty('sheetName', 'TestSheet')
     })
   })
-
 })
