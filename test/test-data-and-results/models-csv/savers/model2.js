@@ -173,6 +173,21 @@ const fillerRowSpuriousCommodity = [
 
 const fillerRowEmpty = ['', '', '', '', '', '', '', '', '', '', '', '']
 
+const fillerRowNotApplicableText = [
+  '',
+  '',
+  'N/A',
+  '',
+  '',
+  '0',
+  'NA',
+  '0',
+  'n/a',
+  'N/A',
+  'NA',
+  'n/a'
+]
+
 // Genuine rows interleaved with and followed by filler rows. Used to confirm
 // filler rows are excluded and surviving rows keep their original row numbers.
 const modelWithFillerRows = [
@@ -196,7 +211,8 @@ const modelWithFillerRows = [
   fillerRowNotApplicable,
   dataRow2,
   fillerRowSpuriousCommodity,
-  fillerRowEmpty
+  fillerRowEmpty,
+  fillerRowNotApplicableText
 ]
 
 export default {

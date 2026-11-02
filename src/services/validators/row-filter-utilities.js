@@ -235,55 +235,9 @@ function filterValidatableRows(
     })
 }
 
-// Fields whose values indicate a genuine data row. commodity_code and
-// total_net_weight_unit are excluded because filler rows can carry a spurious
-// commodity code or a lone unit while holding no real product data.
-const MEANINGFUL_FIELDS = [
-  'description',
-  'nature_of_products',
-  'type_of_treatment',
-  'country_of_origin',
-  'nirms',
-  'number_of_packages',
-  'total_net_weight_kg'
-]
-
-// Matches N/A, NA, n/a and the Excel error variants #N/A, #NA
-const NOT_APPLICABLE_PATTERN = /^#?n\/?a$/i
-
-/**
- * Check if a mapped item value carries no meaningful data.
- * @param {*} value - Mapped item field value
- * @returns {boolean} - True if null, empty, "N/A"/"NA", or numeric zero
- */
-function isMeaninglessValue(value) {
-  if (value === null || value === undefined) {
-    return true
-  }
-
-  const text = String(value).trim()
-  if (text === '' || NOT_APPLICABLE_PATTERN.test(text)) {
-    return true
-  }
-
-  const numeric = Number.parseFloat(text)
-  return !Number.isNaN(numeric) && numeric === 0
-}
-
-/**
- * Check if a mapped packing list item has no meaningful data across the fields
- * that identify a genuine row (see MEANINGFUL_FIELDS).
- * @param {Object} row - Mapped packing list item
- * @returns {boolean} - True if every meaningful field is empty/N/A/zero
- */
-function hasNoMeaningfulData(row) {
-  return MEANINGFUL_FIELDS.every((field) => isMeaninglessValue(row[field]))
-}
-
 export {
   isTotalsRow,
   isRepeatedHeaderRow,
   isEmptyRow,
-  filterValidatableRows,
-  hasNoMeaningfulData
+  filterValidatableRows
 }

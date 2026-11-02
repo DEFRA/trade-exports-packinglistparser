@@ -12,9 +12,38 @@ import { mapParser } from '../../parser-map.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
 import * as regex from '../../../utilities/regex.js'
-import { hasNoMeaningfulData } from '../../validators/row-filter-utilities.js'
 
 const logger = createLogger()
+
+const MEANINGFUL_FIELDS = [
+  'description',
+  'nature_of_products',
+  'type_of_treatment',
+  'country_of_origin',
+  'nirms',
+  'number_of_packages',
+  'total_net_weight_kg'
+]
+
+const NOT_APPLICABLE_PATTERN = /^#?n\/?a$/i
+
+function isMeaninglessValue(value) {
+  if (value === null || value === undefined) {
+    return true
+  }
+
+  const text = String(value).trim()
+  if (text === '' || NOT_APPLICABLE_PATTERN.test(text)) {
+    return true
+  }
+
+  const numeric = Number.parseFloat(text)
+  return !Number.isNaN(numeric) && numeric === 0
+}
+
+function hasNoMeaningfulData(row) {
+  return MEANINGFUL_FIELDS.every((field) => isMeaninglessValue(row[field]))
+}
 
 /**
  * Parse the provided CSV packing list for SAVERS model 2.
