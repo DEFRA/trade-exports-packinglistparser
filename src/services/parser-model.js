@@ -95,6 +95,7 @@ export default Object.freeze({
 
   // Savers models
   SAVERS1: 'SAVERS1',
+  SAVERS2: 'SAVERS2',
 
   // Burbank models
   BURBANK1: 'BURBANK1'

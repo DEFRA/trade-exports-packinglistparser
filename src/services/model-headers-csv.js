@@ -6,10 +6,12 @@
  */
 import { csvIcelandHeaders } from './model-headers/iceland.js'
 import { csvAsdaHeaders } from './model-headers/asda.js'
+import { saversHeadersCsv } from './model-headers/savers.js'
 
 const modelHeadersCsv = {
   ...csvIcelandHeaders,
-  ...csvAsdaHeaders
+  ...csvAsdaHeaders,
+  ...saversHeadersCsv
 }
 
 export default modelHeadersCsv

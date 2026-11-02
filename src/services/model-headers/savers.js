@@ -26,4 +26,26 @@ const saversHeaders = {
   }
 }
 
-export { saversHeaders }
+const saversHeadersCsv = {
+  SAVERS2: {
+    establishmentNumber: {
+      regex: /RMS-GB-000247-(\d{3})?/i
+    },
+    regex: {
+      description: /Item Description/i,
+      commodity_code: /EU Commodity Code/i,
+      number_of_packages: /CASE Quantity/i,
+      total_net_weight_kg: netWeight,
+      nature_of_products: /Nature of Product/i,
+      type_of_treatment: /Type of Treatment/i
+    },
+    country_of_origin: /Country of Origin/i,
+    nirms: /NIRMS \/ SPS Item/i,
+    validateCountryOfOrigin: true,
+    findUnitInHeader: true,
+    invalidSheets: [],
+    deprecated: false
+  }
+}
+
+export { saversHeaders, saversHeadersCsv }

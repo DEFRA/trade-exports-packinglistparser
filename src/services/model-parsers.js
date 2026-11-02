@@ -11,6 +11,10 @@
 import { matches as matchesIceland2 } from './matchers/iceland/model2.js'
 import { parse as parseIceland2 } from './parsers/iceland/model2.js'
 
+// Savers CSV parsers
+import { matches as matchesSavers2 } from './matchers/savers/model2.js'
+import { parse as parseSavers2 } from './parsers/savers/model2.js'
+
 // ASDA CSV parsers
 import { matches as matchesAsda4 } from './matchers/asda/model4.js'
 import { parse as parseAsda4 } from './parsers/asda/model4.js'
@@ -282,6 +286,10 @@ const parsersCsv = {
   ICELAND2: {
     matches: matchesIceland2,
     parse: parseIceland2
+  },
+  SAVERS2: {
+    matches: matchesSavers2,
+    parse: parseSavers2
   }
 }
 
