@@ -43,6 +43,50 @@ export default {
       }
     ]
   },
+  validModel000629: {
+    Tabelle1: [
+      {
+        A: 'NIIRMS Dispatch number',
+        B: 'RMS-GB-000629-001',
+        C: 'Dispatch address',
+        D: 'Buffaload Logistics, Gateway Industrial Estate, Crewe, Cheshire, CW1 6YY'
+      },
+      {
+        A: 'Commodity Code',
+        B: 'Description of goods',
+        C: 'ISO',
+        D: 'No. of pkgs',
+        E: 'Type of pkgs',
+        F: 'Item Gross Weight (kgs)',
+        G: 'Total Net Weight (kgs)',
+        H: 'Type of Treatment',
+        I: 'NIRMS/ NON NIRMS',
+        J: 'Nature of Product'
+      },
+      {
+        A: '1905908000',
+        B: "60008347 - Take-Out Club Classic Crust Kickin' Meat Feast",
+        C: 'GB',
+        D: 6,
+        E: 'Cases',
+        F: 3.782,
+        G: 3.552,
+        H: 'Chilled',
+        I: 'NON-NIRMS'
+      },
+      {
+        A: '1905908000',
+        B: "60008348 - Take-Out Club Classic Crust Smokin' BBQ Pulled Pork",
+        C: 'GB',
+        D: 5,
+        E: 'Cases',
+        F: 3.788,
+        G: 3.558,
+        H: 'Chilled',
+        I: 'NON-NIRMS'
+      }
+    ]
+  },
   validHeadersNoData: {
     Tabelle1: [
       {

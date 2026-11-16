@@ -34,6 +34,38 @@ export default {
     },
     parserModel: parserModel.BUFFALOAD1
   },
+  validTestResult000629: {
+    registration_approval_number: 'RMS-GB-000629-001',
+    items: [
+      {
+        description:
+          "60008347 - Take-Out Club Classic Crust Kickin' Meat Feast",
+        nature_of_products: null,
+        type_of_treatment: 'Chilled',
+        commodity_code: '1905908000',
+        number_of_packages: 6,
+        total_net_weight_kg: 3.552,
+        total_net_weight_unit: 'kgs',
+        nirms: 'NON-NIRMS'
+      },
+      {
+        description:
+          "60008348 - Take-Out Club Classic Crust Smokin' BBQ Pulled Pork",
+        nature_of_products: null,
+        type_of_treatment: 'Chilled',
+        commodity_code: '1905908000',
+        number_of_packages: 5,
+        total_net_weight_kg: 3.558,
+        total_net_weight_unit: 'kgs',
+        nirms: 'NON-NIRMS'
+      }
+    ],
+    business_checks: {
+      all_required_fields_present: true,
+      failure_reasons: null
+    },
+    parserModel: parserModel.BUFFALOAD1
+  },
   validTestResultForMultipleSheets: {
     registration_approval_number: 'RMS-GB-000098-001',
     items: [

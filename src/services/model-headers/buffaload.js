@@ -11,7 +11,7 @@ const noOfPackagesRegex = /No. of pkgs/i
 const buffaloadHeaders = {
   BUFFALOAD1: {
     establishmentNumber: {
-      regex: /^RMS-GB-000098-\d{3}$/i
+      regex: /^RMS-GB-(000098|000629)-\d{3}$/i
     },
     regex: {
       description: descriptionOfGoodsRegex,

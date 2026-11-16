@@ -13,6 +13,12 @@ describe('matchesBuffaloadLogisticsModel1', () => {
     expect(result).toBe(matcherResult.CORRECT)
   })
 
+  test('returns Correct for RMS-GB-000629 establishment number', () => {
+    const result = matcher.matches(model.validModel000629, filename)
+
+    expect(result).toBe(matcherResult.CORRECT)
+  })
+
   test("returns 'Empty File' matcher result for empty json", () => {
     const packingListJson = {}
 

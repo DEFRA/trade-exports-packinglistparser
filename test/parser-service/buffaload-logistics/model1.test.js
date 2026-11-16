@@ -40,6 +40,15 @@ describe('matchesBuffaloadModel1', () => {
     expect(result).toMatchObject(test_results.validTestResult)
   })
 
+  test('matches valid Buffaload Model 1 file with RMS-GB-000629 establishment number, calls parser and returns all_required_fields_present as true', async () => {
+    const result = await parserService.parsePackingList(
+      model.validModel000629,
+      filename
+    )
+
+    expect(result).toMatchObject(test_results.validTestResult000629)
+  })
+
   test('matches valid Buffaload Model 1 file, calls parser, but returns all_required_fields_present as false when cells missing', async () => {
     const result = await parserService.parsePackingList(
       model.invalidModel_MissingColumnCells,
