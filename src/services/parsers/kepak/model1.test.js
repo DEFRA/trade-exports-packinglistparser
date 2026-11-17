@@ -28,6 +28,27 @@ describe('parseKepakModel1', () => {
       expect(result).toMatchObject(test_results.validTestResult)
     })
 
+    it('filters dragdown rows with blanks and zeros', () => {
+      const result = parse(model.validModelWithBlankDragdown)
+
+      expect(result).toMatchObject(test_results.validTestResult)
+      expect(result.items).toHaveLength(2)
+    })
+
+    it('filters dragdown rows with whitespace-only cells', () => {
+      const result = parse(model.validModelWithWhitespaceDragdown)
+
+      expect(result).toMatchObject(test_results.validTestResult)
+      expect(result.items).toHaveLength(2)
+    })
+
+    it('retains rows with data in any checked field alongside whitespace', () => {
+      const result = parse(model.partiallyPopulatedRowsWithWhitespace)
+
+      expect(result.items).toHaveLength(4)
+      expect(result.items[0].description).toBe(' Product ')
+    })
+
     it('parses empty json', () => {
       const result = parse(model.emptyModel)
 

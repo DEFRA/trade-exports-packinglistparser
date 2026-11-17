@@ -41,11 +41,16 @@ export function parse(packingListJson) {
 
     // Filter callback to remove drag-down/empty rows
     const notDragDownCallback = function (item) {
-      return !(
-        item.description === 0 &&
-        item.commodity_code === 0 &&
-        item.number_of_packages === 0 &&
-        item.total_net_weight_kg === 0
+      return ![
+        item.description,
+        item.commodity_code,
+        item.number_of_packages,
+        item.total_net_weight_kg
+      ].every(
+        (value) =>
+          value === 0 ||
+          value === null ||
+          (typeof value === 'string' && value.trim() === '')
       )
     }
 
