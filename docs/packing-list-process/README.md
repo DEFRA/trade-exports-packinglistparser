@@ -14,6 +14,10 @@ specific audiences.
   file/function pointers, and how to add a new retailer parser.
 - **[validation-rules.md](./validation-rules.md)** — full per-field and
   per-stage validation rules (moved, unchanged).
+- **[packing-list-validation.md](./packing-list-validation.md)** — flowchart of
+  all four validation stages, including pass/fail results and number cleanup.
+- **[packing-list-validation.svg](./packing-list-validation.svg)** — standalone
+  SVG version of the validation flowchart.
 - **[parser-discovery-extraction-generic.md](./parser-discovery-extraction-generic.md)** —
   generic parser discovery algorithm (moved, unchanged).
 - **[parser-discovery-extraction-detailed.md](./parser-discovery-extraction-detailed.md)** —

@@ -1,0 +1,135 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1100" height="2380" viewBox="0 0 1100 2380" role="img" aria-labelledby="title desc" font-family="-apple-system, Segoe UI, Helvetica, Arial, sans-serif">
+  <title id="title">Packing list validation</title>
+  <desc id="desc">Four validation stages after parser selection and extraction. Remove empty lines, check every remaining product line including conditional NIRMS, country and ineligible-goods rules, assess the whole list, then report pass or fail and clear invalid numbers. All applicable failures are collected; a failure does not stop later checks.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#4A5568"/>
+    </marker>
+    <style>
+      .stage { fill: #F3F4F6; stroke: #D1D5DB; }
+      .box { fill: #FFFFFF; stroke: #CBD5E0; stroke-width: 1.5; }
+      .decision { fill: #DCE8E0; stroke: #5F8575; stroke-width: 1.5; }
+      .finding { fill: #E3ECFB; stroke: #5B7FBD; stroke-width: 1.5; }
+      .note { fill: #FDF6E8; stroke: #E0A83E; stroke-width: 1.5; }
+      .flow { fill: none; stroke: #4A5568; stroke-width: 1.5; marker-end: url(#arrow); }
+      text { fill: #1A202C; font-size: 15px; }
+      .heading { font-size: 15px; font-weight: 700; }
+      .small { font-size: 13px; fill: #5A6B82; }
+      .label { font-size: 13px; font-weight: 600; }
+      .white { fill: #FFFFFF; }
+    </style>
+  </defs>
+  <rect width="1100" height="2380" fill="#FFFFFF"/>
+
+  <text x="28" y="38" font-size="24" font-weight="700" style="font-size:24px">Packing list validation</text>
+  <text x="28" y="64" class="small">After parser selection and extraction | Collect every applicable failure; do not stop at the first error</text>
+  <line x1="28" y1="80" x2="1072" y2="80" stroke="#E2E8F0"/>
+  <rect x="320" y="104" width="460" height="44" rx="6" class="box"/>
+  <text x="550" y="132" text-anchor="middle">Parsed packing list and extracted product lines</text>
+  <path d="M550,148 V222" class="flow"/>
+
+  <rect x="28" y="172" width="1044" height="30" class="stage"/>
+  <text x="40" y="193" class="heading">STAGE 1: Remove empty product lines</text>
+  <rect x="270" y="224" width="560" height="78" rx="6" class="box"/>
+  <text x="550" y="249" text-anchor="middle" class="heading">Remove lines with only null or undefined data fields</text>
+  <text x="550" y="272" text-anchor="middle" class="small">Ignore row location. A line containing an empty string is retained.</text>
+  <text x="550" y="290" text-anchor="middle" class="small">If no lines remain, skip Stage 2 and record this in Stage 3.</text>
+  <path d="M550,302 V396" class="flow"/>
+  <text x="564" y="327" class="label">Remaining lines</text>
+  <path d="M270,263 H90 V1578 H268" class="flow"/>
+  <text x="105" y="250" class="label">No lines remain</text>
+
+  <rect x="28" y="350" width="1044" height="30" class="stage"/>
+  <text x="40" y="371" class="heading">STAGE 2: Validate each remaining product line</text>
+  <rect x="270" y="398" width="560" height="190" rx="6" class="box"/>
+  <text x="550" y="425" text-anchor="middle" class="heading">Check all core product fields</text>
+  <text x="292" y="453">Identifier: commodity code OR both nature and treatment</text>
+  <text x="292" y="477">Supplied commodity code: digits only after removing whitespace</text>
+  <text x="292" y="501">Product description: not empty</text>
+  <text x="292" y="525">Packages and net weight: not empty, numeric and non-negative</text>
+  <text x="292" y="549">Unit: contains kg, kgs, kilo, kilos, kilogram or kilograms</text>
+  <text x="292" y="574" class="small">Unit matching ignores case and accepts a match within a longer value.</text>
+  <path d="M550,588 V622" class="flow"/>
+
+  <polygon points="550,624 730,680 550,736 370,680" class="decision"/>
+  <text x="550" y="676" text-anchor="middle" class="heading">Country-of-origin</text>
+  <text x="550" y="697" text-anchor="middle" class="heading">validation enabled?</text>
+  <path d="M370,680 H190 V1348 H550 V1370" class="flow"/>
+  <text x="329" y="666" class="label">No</text>
+  <path d="M550,736 V778" class="flow"/>
+  <text x="565" y="763" class="label">Yes</text>
+
+  <rect x="270" y="780" width="560" height="156" rx="6" class="box"/>
+  <text x="550" y="807" text-anchor="middle" class="heading">Validate NIRMS designation and country</text>
+  <text x="292" y="835">Require a recognised NIRMS or non-NIRMS designation.</text>
+  <text x="292" y="859">For NIRMS lines: require country of origin and valid ISO codes.</text>
+  <text x="292" y="883">Split multiple country codes on commas or ampersands.</text>
+  <text x="292" y="907">Every part must be valid; record missing or invalid values.</text>
+  <text x="292" y="926" class="small">Designation and country matching ignore case and surrounding spaces.</text>
+  <path d="M550,936 V972" class="flow"/>
+
+  <polygon points="550,974 770,1044 550,1114 330,1044" class="decision"/>
+  <text x="550" y="1024" text-anchor="middle" class="heading">NIRMS line with</text>
+  <text x="550" y="1046" text-anchor="middle" class="heading">present, valid country</text>
+  <text x="550" y="1068" text-anchor="middle" class="heading">and a commodity code?</text>
+  <path d="M770,1044 H910 V1348 H550" class="flow"/>
+  <text x="795" y="1030" class="label">No: skip goods assessment</text>
+  <path d="M550,1114 V1156" class="flow"/>
+  <text x="565" y="1141" class="label">Yes</text>
+
+  <rect x="270" y="1158" width="560" height="166" rx="6" class="note"/>
+  <text x="550" y="1185" text-anchor="middle" class="heading">Assess ineligible goods across all listed countries</text>
+  <text x="292" y="1211">Match country rules and commodity-code prefixes.</text>
+  <text x="292" y="1233">No matching rules: no ineligible finding.</text>
+  <text x="292" y="1255">Any ! exceptions: allow only if treatment matches any exception.</text>
+  <text x="292" y="1277">Otherwise: prohibit if any rule has no treatment, the line has</text>
+  <text x="292" y="1299">no treatment, or treatments match. Record prohibited items.</text>
+  <text x="292" y="1317" class="small">Trim line treatment; compare ignoring case. Exceptions take precedence.</text>
+  <path d="M550,1324 V1370" class="flow"/>
+
+  <rect x="270" y="1372" width="560" height="68" rx="6" class="finding"/>
+  <text x="550" y="1398" text-anchor="middle" class="heading">Keep all line failures and repeat Stage 2 for every line</text>
+  <text x="550" y="1422" text-anchor="middle" class="small">A failed check never prevents the other applicable checks.</text>
+  <path d="M550,1440 V1522" class="flow"/>
+
+  <rect x="28" y="1474" width="1044" height="30" class="stage"/>
+  <text x="40" y="1495" class="heading">STAGE 3: Validate the packing list as a whole</text>
+  <rect x="270" y="1524" width="560" height="132" rx="6" class="box"/>
+  <text x="550" y="1551" text-anchor="middle" class="heading">Combine line failures with list-wide checks</text>
+  <text x="292" y="1577">Registration approval number must be present.</text>
+  <text x="292" y="1599">Parser must not report a missing registration number.</text>
+  <text x="292" y="1621">At least one product line must remain after empty-line removal.</text>
+  <text x="292" y="1643">No more than one establishment number may be listed.</text>
+  <path d="M550,1656 V1700" class="flow"/>
+  <polygon points="550,1702 730,1756 550,1810 370,1756" class="decision"/>
+  <text x="550" y="1752" text-anchor="middle" class="heading">All applicable</text>
+  <text x="550" y="1774" text-anchor="middle" class="heading">checks pass?</text>
+  <path d="M370,1756 H225 V1902" class="flow"/>
+  <text x="300" y="1742" class="label">Yes</text>
+  <path d="M730,1756 H875 V1902" class="flow"/>
+  <text x="785" y="1742" class="label">No</text>
+
+  <rect x="28" y="1846" width="1044" height="30" class="stage"/>
+  <text x="40" y="1867" class="heading">STAGE 4: Report results and clean invalid numbers</text>
+  <rect x="60" y="1904" width="330" height="74" rx="6" fill="#15685F"/>
+  <text x="225" y="1932" text-anchor="middle" class="heading white">PASS</text>
+  <text x="225" y="1958" text-anchor="middle" class="white">Mark as having all required fields</text>
+  <rect x="710" y="1904" width="330" height="74" rx="6" fill="#B23A3A"/>
+  <text x="875" y="1932" text-anchor="middle" class="heading white">FAIL</text>
+  <text x="875" y="1958" text-anchor="middle" class="white">Mark as missing required fields</text>
+  <path d="M225,1978 V2006 H550 V2032" class="flow"/>
+  <path d="M875,1978 V2006 H550" class="flow"/>
+  <rect x="270" y="2034" width="560" height="104" rx="6" class="finding"/>
+  <text x="550" y="2061" text-anchor="middle" class="heading">Attach failure reasons where checks failed</text>
+  <text x="550" y="2085" text-anchor="middle">Retain semicolon-separated messages on each product line.</text>
+  <text x="550" y="2107" text-anchor="middle">Include row, sheet and row, or page and row locations.</text>
+  <text x="550" y="2128" text-anchor="middle" class="small">Show the first three locations per failure, then a count of the remainder.</text>
+  <path d="M550,2138 V2172" class="flow"/>
+  <rect x="270" y="2174" width="560" height="70" rx="6" class="box"/>
+  <text x="550" y="2202" text-anchor="middle" class="heading">Replace invalid package counts and net weights with null</text>
+  <text x="550" y="2226" text-anchor="middle">Keep their product lines and previously recorded failures.</text>
+  <path d="M550,2244 V2278" class="flow"/>
+  <rect x="370" y="2280" width="360" height="44" rx="22" class="box"/>
+  <text x="550" y="2308" text-anchor="middle" class="heading">Return validation result</text>
+  <text x="550" y="2357" text-anchor="middle" class="small">Header weight units and blanket NIRMS statements may change messages, but do not excuse missing line values.</text>
+</svg>
