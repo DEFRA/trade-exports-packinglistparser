@@ -1232,4 +1232,26 @@ model.partiallyPopulatedRowsWithWhitespace = {
   ]
 }
 
+model.numericStringZeroDragdown = {
+  KEPAK: [
+    ...model.validModel.KEPAK,
+    { C: '00', E: '0.00', G: ' 0.00 ', H: '000.000' }
+  ]
+}
+
+model.countryOfOriginFilteringRows = {
+  KEPAK: [
+    ...model.validModel.KEPAK.slice(0, -2),
+    ...[0, '0', '00', '0.00', ' \t', null, '', 'GB', 'INVALID'].map(
+      (countryOfOrigin) => ({
+        C: 0,
+        E: '00',
+        F: countryOfOrigin,
+        G: null,
+        H: '0.00'
+      })
+    )
+  ]
+}
+
 export default model

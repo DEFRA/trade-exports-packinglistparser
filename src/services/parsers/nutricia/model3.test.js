@@ -4,6 +4,15 @@ import model from '../../../../test/test-data-and-results/models/nutricia/model3
 import testResults from '../../../../test/test-data-and-results/results/nutricia/model3.js'
 
 describe('parseNutriciaModel3', () => {
+  test('checks zero and empty country of origin but retains non-empty country values', () => {
+    const result = parse(model.countryOfOriginFilteringRows)
+
+    expect(result.items.map((item) => item.country_of_origin)).toEqual([
+      'GB',
+      'INVALID'
+    ])
+  })
+
   test('parses populated json', () => {
     const result = parse(model.validModel)
 
@@ -20,6 +29,20 @@ describe('parseNutriciaModel3', () => {
     const result = parse(model.emptyModel)
 
     expect(result).toMatchObject(testResults.emptyTestResult)
+  })
+
+  test('filters zero and empty rows while retaining country of origin data', () => {
+    const result = parse(model.mixedZeroAndEmptyDragdownRows)
+
+    expect(result.items).toHaveLength(4)
+    expect(
+      result.items.some(
+        (item) => item.description === null && item.country_of_origin === 'GB'
+      )
+    ).toBe(true)
+    expect(
+      result.items.some((item) => item.description === 'Partial data row')
+    ).toBe(true)
   })
 
   test('parses multiple sheets with headers on different rows', () => {

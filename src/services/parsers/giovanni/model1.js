@@ -12,6 +12,7 @@ import * as regex from '../../../utilities/regex.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
+import { isZeroOrEmpty } from '../../parser-row-filter.js'
 
 const logger = createLogger()
 
@@ -59,26 +60,15 @@ export function parse(packingListJson) {
       packingListContents = packingListContents.concat(packingListContentsTemp)
     }
 
-    // Filter out drag-down rows with all zeros
+    // Filter out drag-down rows with zero or empty values in all core fields
     packingListContents = packingListContents.filter(
       (row) =>
-        !(
-          row.description === 0 &&
-          row.commodity_code === 0 &&
-          row.number_of_packages === 0 &&
-          row.total_net_weight_kg === 0
-        )
-    )
-
-    // Filter out rows with all null values
-    packingListContents = packingListContents.filter(
-      (row) =>
-        !(
-          row.description === null &&
-          row.commodity_code === null &&
-          row.number_of_packages === null &&
-          row.total_net_weight_kg === null
-        )
+        ![
+          row.description,
+          row.commodity_code,
+          row.number_of_packages,
+          row.total_net_weight_kg
+        ].every(isZeroOrEmpty)
     )
 
     return combineParser.combine(

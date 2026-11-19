@@ -11,6 +11,7 @@ import { rowFinder } from '../../../utilities/row-finder.js'
 import { mapParser } from '../../parser-map.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
+import { isZeroOrEmpty } from '../../parser-row-filter.js'
 import * as regex from '../../../utilities/regex.js'
 
 const logger = createLogger()
@@ -46,12 +47,7 @@ export function parse(packingListJson) {
         item.commodity_code,
         item.number_of_packages,
         item.total_net_weight_kg
-      ].every(
-        (value) =>
-          value === 0 ||
-          value === null ||
-          (typeof value === 'string' && value.trim() === '')
-      )
+      ].every(isZeroOrEmpty)
     }
 
     // Process each sheet

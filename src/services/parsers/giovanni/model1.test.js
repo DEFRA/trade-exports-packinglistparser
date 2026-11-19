@@ -117,6 +117,21 @@ describe('Giovanni Model 1 Parser', () => {
   })
 
   describe('Row filtering', () => {
+    test('filters drag-down rows regardless of country of origin value', () => {
+      const result = parse(model.countryOfOriginFilteringRows)
+
+      expect(result.items).toEqual([])
+    })
+
+    test('filters mixed zero and empty rows but keeps partial data rows', () => {
+      const result = parse(model.mixedZeroAndEmptyDragdownRows)
+
+      expect(result.items).toHaveLength(3)
+      expect(
+        result.items.some((item) => item.description === 'Partial data row')
+      ).toBe(true)
+    })
+
     test('filters out drag-down rows with all zeros', () => {
       const testData = {
         RANA: [

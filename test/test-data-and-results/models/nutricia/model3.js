@@ -16,7 +16,7 @@ const PROTEIN_DRINK = 'NUTRICIA PROTEIN DRINK'
 const HEAT_TREATED = 'Heat Treated'
 const PASTEURISED = 'Pasteurised'
 
-export default {
+const model = {
   validModel: {
     Sheet1: [
       { A: RMS_001 },
@@ -495,3 +495,51 @@ export default {
     ]
   }
 }
+
+model.mixedZeroAndEmptyDragdownRows = {
+  Sheet1: [
+    ...model.validModel.Sheet1.slice(0, -1),
+    {
+      A: '0.00',
+      B: ' ',
+      C: null,
+      D: '00',
+      E: '\t',
+      F: 'Processed'
+    },
+    {
+      A: '0',
+      B: null,
+      C: 'GB',
+      D: '0.00',
+      E: ' ',
+      F: 'Processed'
+    },
+    {
+      A: '0',
+      B: 'Partial data row',
+      C: null,
+      D: 1,
+      E: '',
+      F: 'Processed'
+    },
+    ...model.validModel.Sheet1.slice(-1)
+  ]
+}
+
+model.countryOfOriginFilteringRows = {
+  Sheet1: [
+    ...model.validModel.Sheet1.slice(0, -3),
+    ...[0, '0', '00', '0.00', ' \t', null, '', 'GB', 'INVALID'].map(
+      (countryOfOrigin) => ({
+        A: '00',
+        B: 0,
+        C: countryOfOrigin,
+        D: null,
+        E: '0.00'
+      })
+    )
+  ]
+}
+
+export default model
