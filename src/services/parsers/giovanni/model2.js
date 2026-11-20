@@ -12,8 +12,10 @@ import * as regex from '../../../utilities/regex.js'
 import { rowFinder } from '../../../utilities/row-finder.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
+import { isZeroOrEmpty } from '../../parser-row-filter.js'
 
 const logger = createLogger()
+const GIOVANNI_BLANK_VALUE = '(blank)'
 
 /**
  * Parse the provided packing list JSON for GIOVANNI model 2.
@@ -59,12 +61,14 @@ export function parse(packingListJson) {
 
     packingListContents = packingListContents.filter(
       (row) =>
-        !(
-          row.description === '(blank)' &&
-          row.commodity_code === '(blank)' &&
-          row.number_of_packages === 0 &&
-          (row.total_net_weight_kg === 0 || row.total_net_weight_kg === null) &&
-          row.country_of_origin === '(blank)'
+        ![
+          row.description,
+          row.commodity_code,
+          row.number_of_packages,
+          row.total_net_weight_kg,
+          row.country_of_origin
+        ].every(
+          (value) => isZeroOrEmpty(value) || value === GIOVANNI_BLANK_VALUE
         )
     )
 

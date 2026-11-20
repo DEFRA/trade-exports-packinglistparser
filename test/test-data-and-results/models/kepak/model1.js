@@ -1,4 +1,4 @@
-export default {
+const model = {
   validModel: {
     KEPAK: [
       {},
@@ -1206,3 +1206,52 @@ export default {
     ]
   }
 }
+
+model.validModelWithBlankDragdown = {
+  KEPAK: [
+    ...model.validModelWithDragdown.KEPAK.slice(0, -1),
+    { C: 0, E: '', F: 0, G: '', H: 0 }
+  ]
+}
+
+model.validModelWithWhitespaceDragdown = {
+  KEPAK: [
+    ...model.validModel.KEPAK,
+    { C: ' ', E: '\t', G: '\r\n', H: '   ' },
+    { C: 0, E: ' ', G: null, H: '\t' }
+  ]
+}
+
+model.partiallyPopulatedRowsWithWhitespace = {
+  KEPAK: [
+    ...model.validHeadersNoData.KEPAK,
+    { C: ' Product ', E: ' ', G: null, H: 0 },
+    { C: '\t', E: '1602509590', G: 0, H: null },
+    { C: null, E: 0, G: 1, H: '\r\n' },
+    { C: 0, E: null, G: ' ', H: 1.5 }
+  ]
+}
+
+model.numericStringZeroDragdown = {
+  KEPAK: [
+    ...model.validModel.KEPAK,
+    { C: '00', E: '0.00', G: ' 0.00 ', H: '000.000' }
+  ]
+}
+
+model.countryOfOriginFilteringRows = {
+  KEPAK: [
+    ...model.validModel.KEPAK.slice(0, -2),
+    ...[0, '0', '00', '0.00', ' \t', null, '', 'GB', 'INVALID'].map(
+      (countryOfOrigin) => ({
+        C: 0,
+        E: '00',
+        F: countryOfOrigin,
+        G: null,
+        H: '0.00'
+      })
+    )
+  ]
+}
+
+export default model

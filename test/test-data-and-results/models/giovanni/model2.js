@@ -1,4 +1,4 @@
-export default {
+const model = {
   validModel: {
     'SUMMARY FOR GC': [
       {
@@ -325,3 +325,28 @@ export default {
     ]
   }
 }
+
+model.mixedZeroEmptyAndBlankDragdownRows = {
+  'SUMMARY FOR GC': [
+    ...model.validModel['SUMMARY FOR GC'],
+    { C: '(blank)', F: '(blank)', G: 0, H: '0.00', E: ' ' },
+    { C: '(blank)', F: 'IT', G: '00', H: 0, E: ' ' }
+  ]
+}
+
+model.countryOfOriginFilteringRows = {
+  'SUMMARY FOR GC': [
+    ...model.validModel['SUMMARY FOR GC'].slice(0, -2),
+    ...[0, '0', '00', '0.00', ' \t', null, '', '(blank)', 'IT', 'INVALID'].map(
+      (countryOfOrigin) => ({
+        C: '(blank)',
+        E: '00',
+        F: countryOfOrigin,
+        G: null,
+        H: '0.00'
+      })
+    )
+  ]
+}
+
+export default model

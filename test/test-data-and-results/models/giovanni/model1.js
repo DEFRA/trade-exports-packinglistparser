@@ -1,4 +1,4 @@
-export default {
+const model = {
   validModel: {
     RANA: [
       {
@@ -700,3 +700,28 @@ export default {
     ]
   }
 }
+
+model.mixedZeroAndEmptyDragdownRows = {
+  RANA: [
+    ...model.validModel.RANA,
+    { C: '00', E: '0.00', F: '\t', G: ' \t', H: 0 },
+    { C: 'Partial data row', E: '0.00', F: 'IT', G: 0, H: ' ' }
+  ]
+}
+
+model.countryOfOriginFilteringRows = {
+  RANA: [
+    ...model.validModel.RANA.slice(0, -2),
+    ...[0, '0', '00', '0.00', ' \t', null, '', 'IT', 'INVALID'].map(
+      (countryOfOrigin) => ({
+        C: 0,
+        E: '00',
+        F: countryOfOrigin,
+        G: null,
+        H: '0.00'
+      })
+    )
+  ]
+}
+
+export default model

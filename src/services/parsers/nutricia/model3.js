@@ -11,6 +11,7 @@ import { rowFinder } from '../../../utilities/row-finder.js'
 import { mapParser } from '../../parser-map.js'
 import { matchesHeader } from '../../matches-header.js'
 import MatcherResult from '../../matcher-result.js'
+import { isZeroOrEmpty } from '../../parser-row-filter.js'
 import * as regex from '../../../utilities/regex.js'
 
 const logger = createLogger()
@@ -29,7 +30,7 @@ function filterNonDataRows(items) {
       item.country_of_origin
     ]
 
-    return coreDataFields.some((value) => value !== null)
+    return !coreDataFields.every(isZeroOrEmpty)
   })
 }
 

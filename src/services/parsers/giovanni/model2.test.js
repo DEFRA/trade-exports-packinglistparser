@@ -43,6 +43,27 @@ describe('Giovanni Model 2 Parser', () => {
   })
 
   describe('Invalid packing lists', () => {
+    it('checks zero, empty and (blank) country of origin but retains non-empty country values', () => {
+      const result = parse(model.countryOfOriginFilteringRows)
+
+      expect(result.items.map((item) => item.country_of_origin)).toEqual([
+        'IT',
+        'INVALID'
+      ])
+    })
+
+    it('filters mixed zero, empty and (blank) rows while preserving country data', () => {
+      const result = parse(model.mixedZeroEmptyAndBlankDragdownRows)
+
+      expect(result.items).toHaveLength(3)
+      expect(
+        result.items.some(
+          (item) =>
+            item.description === '(blank)' && item.country_of_origin === 'IT'
+        )
+      ).toBe(true)
+    })
+
     it('handles missing cells gracefully', () => {
       const result = parse(model.invalidModel_MissingColumnCells)
       // Parser doesn't validate - validation happens in parser-service

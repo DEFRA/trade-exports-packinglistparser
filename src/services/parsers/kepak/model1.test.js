@@ -8,6 +8,12 @@ const logger = createLogger()
 
 describe('parseKepakModel1', () => {
   describe('basic parsing', () => {
+    it('filters dragdown rows regardless of country of origin value', () => {
+      const result = parse(model.countryOfOriginFilteringRows)
+
+      expect(result.items).toEqual([])
+    })
+
     it('parses json', () => {
       const result = parse(model.validModel)
 
@@ -26,6 +32,34 @@ describe('parseKepakModel1', () => {
       const result = parse(model.validModelWithDragdown)
 
       expect(result).toMatchObject(test_results.validTestResult)
+    })
+
+    it('filters dragdown rows with blanks and zeros', () => {
+      const result = parse(model.validModelWithBlankDragdown)
+
+      expect(result).toMatchObject(test_results.validTestResult)
+      expect(result.items).toHaveLength(2)
+    })
+
+    it('filters dragdown rows with whitespace-only cells', () => {
+      const result = parse(model.validModelWithWhitespaceDragdown)
+
+      expect(result).toMatchObject(test_results.validTestResult)
+      expect(result.items).toHaveLength(2)
+    })
+
+    it('filters dragdown rows with zero-like numeric strings', () => {
+      const result = parse(model.numericStringZeroDragdown)
+
+      expect(result).toMatchObject(test_results.validTestResult)
+      expect(result.items).toHaveLength(2)
+    })
+
+    it('retains rows with data in any checked field alongside whitespace', () => {
+      const result = parse(model.partiallyPopulatedRowsWithWhitespace)
+
+      expect(result.items).toHaveLength(4)
+      expect(result.items[0].description).toBe(' Product ')
     })
 
     it('parses empty json', () => {
