@@ -37,6 +37,11 @@ value; failures return `result: "failure"` with an `error` message.
 
 ## Field-Level Acceptance Rules
 
+Recognising a template or column only tells the service where to read data.
+It does not validate the values inside that column. For each field's
+conditions, unchecked aspects and failure examples, see the
+[validation coverage tables](./validation-rules.md#stage-2-validate-each-product-line).
+
 Empty means `null`, `undefined`, or `''` (empty string). A value containing
 only spaces is **not** empty for this purpose, but may still fail other
 checks.
@@ -66,6 +71,9 @@ checks.
 These checks only apply when country-of-origin validation is enabled for the
 packing list:
 
+- **Model coverage:** BOOTS1, FOWLERWELCH1 and GIOVANNI2 do not enable these
+  checks. The [model coverage table](./validation-rules.md#model-specific-check-coverage)
+  lists the supported Excel, CSV and PDF settings.
 - **NIRMS designation** must be supplied. Accepted NIRMS values include
   `yes`, `nirms`, `green`, `y`, `g`, and anything starting `green lane`.
   Accepted non-NIRMS values include `no`, `red`, `n`, `r`, and anything
@@ -79,25 +87,53 @@ packing list:
 
 ## Ineligible Goods — Example Scenarios
 
-A product line is only assessed for ineligible goods when it's a NIRMS item
-with a valid country of origin and a commodity code.
+A product line is only assessed for ineligible goods when country validation
+is enabled and it's a NIRMS item with a valid country of origin and a
+commodity code. Missing prerequisites mean **not assessed**, not passed.
 
-**1. Blanket ban (no treatment restriction)**
-Brazil (BR) cannot export commodity code `0207` (poultry meat) under any
-circumstances — a rule with no treatment restriction applies regardless of
-how the item was treated.
+The following rules are illustrative, not statements of current country
+restrictions. Their outcomes concern this assessment only; other checks
+can still fail.
 
-**2. Conditional ban (specific treatment restricted)**
-China (CN) can export commodity code `0706` (vegetables), but **not** if it
-is chilled. The same code treated as `Raw` is allowed.
+**1. Blanket prohibition (no treatment restriction)**
+A matching rule with no treatment restriction flags the item regardless of
+its treatment, provided no matching exception exists.
+
+**2. Conditional prohibition (specific treatment restricted)**
+A matching standard rule prohibiting `Chilled` flags `Chilled`, but not
+`Raw` or the misspelling `Chiled`. There is no separate recognised-treatment
+or spelling check. No prohibited finding does not verify treatment validity.
 
 **3. Exception rule (restricted unless treatment matches)**
-China (CN) normally cannot export commodity code `0706`, **except** when it
-is marked `Raw`. Any other treatment (e.g. `Chilled`) remains prohibited.
+A matching `!Raw` exception produces no prohibited finding for `' RAW '`
+because comparisons ignore case and surrounding spaces. Missing treatment
+or any other treatment, including misspellings, produces a prohibited finding.
 
 If more than one rule matches a line, exception rules take precedence:
-the line is allowed only if its treatment matches an exception; otherwise
-it's prohibited.
+the line avoids a prohibited finding only if its treatment matches an
+exception; otherwise it's prohibited.
+
+### Treatment Completeness Is a Different Check
+
+Without a commodity code, both nature and treatment must contain a value.
+`unknown-treatment` therefore satisfies treatment presence, even though its
+meaning is not validated. Missing treatment fails the identifier check.
+When a code is supplied, treatment is not required for identifier
+completeness, but missing treatment can still trigger an applicable
+ineligibility rule. See the [treatment examples](./validation-rules.md#treatment-type-what-is-and-is-not-validated).
+
+### Passed, Failed and Unchecked Data
+
+- **Passed:** a check ran and its condition was satisfied.
+- **Failed:** a check ran and found a problem.
+- **Not assessed:** an existing check was skipped because its prerequisites
+  or the parser setting prevented it from running.
+- **Not validated:** no check exists for that aspect, such as evidence that
+  the declared treatment actually occurred.
+
+These labels explain coverage; the service does not return a separate
+passed/skipped status for every check. An absent failure message does not
+prove a conditional assessment ran.
 
 ## Failure Messages You Might See
 

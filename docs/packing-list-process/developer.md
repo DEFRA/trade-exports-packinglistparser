@@ -63,6 +63,18 @@ logic) are documented in [validation-rules.md](./validation-rules.md).
 - `findParser()` — Step 5: discovers the appropriate parser based on file type and content.
 - `generateParsedPackingList()` — Steps 6 & 7: extracts data and runs validation.
 
+The [model coverage table](./validation-rules.md#model-specific-check-coverage)
+documents which supported models enable NIRMS, country and ineligibility checks.
+Its settings come from [Excel](../../src/services/model-headers.js),
+[CSV](../../src/services/model-headers-csv.js) and
+[PDF](../../src/services/model-headers-pdf.js) header registries.
+[parser-combine.js](../../src/services/parser-combine.js) copies
+`validateCountryOfOrigin` into the parsed result, defaulting to `false`.
+[packing-list-column-validator.js](../../src/services/validators/packing-list-column-validator.js)
+uses that flag to activate the conditional checks. Re-align the table when
+models or their settings change. Header recognition and field extraction do
+not themselves establish that a treatment value is recognised or correct.
+
 ## Result Shape
 
 ```javascript

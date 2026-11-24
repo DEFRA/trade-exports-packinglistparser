@@ -13,7 +13,8 @@ specific audiences.
 - **[developer.md](./developer.md)** — developer onboarding: architecture,
   file/function pointers, and how to add a new retailer parser.
 - **[validation-rules.md](./validation-rules.md)** — full per-field and
-  per-stage validation rules (moved, unchanged).
+  per-stage rules, checked/unchecked coverage, model-specific settings,
+  treatment examples and failure-message reference.
 - **[packing-list-validation.md](./packing-list-validation.md)** — flowchart of
   all four validation stages, including pass/fail results and number cleanup.
 - **[packing-list-validation.svg](./packing-list-validation.svg)** — standalone

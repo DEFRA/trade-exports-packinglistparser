@@ -101,6 +101,59 @@ numeric formats, NIRMS/country-of-origin checks, and ineligible-goods
 assessment. The full rules, acceptance tables and failure-message reference
 are in [validation-rules.md](./validation-rules.md).
 
+### What Validation Establishes
+
+Recognising a template or column is not the same as validating its contents.
+The process is: **recognise the template -> extract values -> check
+completeness -> check format -> apply conditional business rules**.
+For example, recognising a "Type of Treatment" column identifies where to
+read treatment data; it does not establish that the values are recognised
+treatments.
+
+The checks have different limits:
+
+- **Completeness:** description must be present; without a commodity code,
+  nature and treatment must both be present. There is no general
+  recognised-value check for description, nature or treatment.
+- **Format:** a supplied commodity code must contain only digits after
+  whitespace is removed, but its length, catalogue existence and accuracy
+  for the product are not checked. Packages and weight must convert to
+  non-negative numbers; package counts need not be whole numbers.
+- **Conditional business rules:** the selected parser's setting controls
+  NIRMS, country and ineligibility checks. Country-code recognition does not
+  verify the actual origin of the goods. Treatment is compared with matching
+  ineligibility rules, not a general list of valid treatments or evidence
+  that treatment occurred.
+
+Treatment comparisons ignore case and surrounding spaces, but do not
+correct spelling or recognise synonyms. A misspelling can therefore fail to
+match a treatment-specific standard prohibition without producing a separate
+invalid-treatment failure. Matching exceptions take precedence: if any exist,
+the treatment must match at least one exception or the item is prohibited.
+
+### How to Describe Check Coverage
+
+These labels explain the documentation; they are not additional statuses
+returned by the service:
+
+| Label         | Meaning                                                                         |
+| ------------- | ------------------------------------------------------------------------------- |
+| Passed        | The check ran and its condition was satisfied.                                  |
+| Failed        | The check ran and found a problem.                                              |
+| Not assessed  | A check exists, but a prerequisite or parser setting prevented it from running. |
+| Not validated | No check exists for that aspect of the supplied data.                           |
+
+When country validation is disabled, NIRMS, country and ineligibility checks
+are not assessed. When enabled, non-NIRMS lines do not undergo country or
+ineligibility checks. Ineligibility is also not assessed when the NIRMS
+designation is unrecognised, country is missing or invalid, or commodity code
+is missing. These skipped checks do not erase other failures.
+
+See the [coverage tables](./validation-rules.md#stage-2-validate-each-product-line),
+[treatment examples](./validation-rules.md#treatment-type-what-is-and-is-not-validated)
+and [model settings](./validation-rules.md#model-specific-check-coverage) for
+the precise conditions and limits.
+
 ### Ineligible Goods Assessment (One Product Line)
 
 This flow assumes country-of-origin validation is enabled and that the NIRMS
